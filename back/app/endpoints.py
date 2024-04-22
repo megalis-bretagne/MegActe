@@ -1,5 +1,5 @@
 from flask import current_app
-from flask import json, g, request
+from flask import json
 import requests
 import logging
 from requests.auth import HTTPBasicAuth

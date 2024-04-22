@@ -45,6 +45,8 @@ def create_app(config_file = "config/config.yml"):
     app = Flask(__name__)
     CORS(app, resources={r"*": {"origins": "*"}})
     read_config(app, config_file)
+    with app.app_context():
+        from . import endpoints
     return app
 
 
@@ -57,10 +59,7 @@ def read_config(app, config_file):
     # Load common settings
     app.config.update(config_data)
 
-app = create_app()
-with app.app_context():
-    from . import endpoints
 def app_base():
-    return app
+    return create_app()
 
 # TODO passer à fast API
