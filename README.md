@@ -26,4 +26,4 @@ Outils développer avec la version 3.X de Pastell.
 
 ## Documentation techniques
 
-* [Architecture](docs/architecture.mdp)
+* [Architecture](docs/architecture.md)
