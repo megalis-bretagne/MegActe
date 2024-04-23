@@ -31,7 +31,7 @@ jobs:
       - name: Run Codacy Analysis CLI
         uses: codacy/codacy-analysis-cli-action@v4.4.0
         with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          api-token: ${{ secrets.CODACY_API }}
           upload: true
           max-allowed-issues: 1000
 
