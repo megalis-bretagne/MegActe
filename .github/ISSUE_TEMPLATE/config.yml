@@ -1,0 +1,9 @@
+---
+blank_issues_enabled: false
+contact_links:
+  - name: Demande de nouvelle fonctionnalité
+    url: https://github.com/megalis-bretagne/MegActe/discussions/categories/ideas
+    about: Proposer une nouvelle fonctionnalité
+  - name: Questions
+    url: https://github.com/megalis-bretagne/MegActe/discussions/categories/q-a
+    about: Demander de l'aide
