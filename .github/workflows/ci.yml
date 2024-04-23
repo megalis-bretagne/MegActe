@@ -23,15 +23,16 @@ permissions:
 jobs:
   Analyse-code:
     name: Analyse Code
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@main
-
+        
       - name: Run Codacy Analysis CLI
         uses: codacy/codacy-analysis-cli-action@v4.4.0
         with:
-          api-token: ${{ secrets.CODACY_API }}
+          project-token: ${{ secrets.CODACY_API }}
           upload: true
           max-allowed-issues: 1000
 
