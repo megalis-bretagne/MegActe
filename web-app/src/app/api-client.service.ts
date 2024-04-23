@@ -73,10 +73,6 @@ export class ApiClientService {
     const formData = new FormData();
     formData.append("file_name", file.name);
     formData.append("file_content", file);
-    const parameters = {
-      "file_name": file.name,
-      "file_content": file
-    }
     return lastValueFrom(this.http.post<DocUploaded>(`${this.settings.apiUrl}/document/${id_doc}/file/${element}/${numero}`, formData));
   }
 

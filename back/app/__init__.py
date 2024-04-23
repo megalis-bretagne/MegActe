@@ -13,28 +13,37 @@ PASTELL_SESSIONS = {}
 
 def login_required(f):
 
-   @wraps(f)
-   def wrap(*args, **kwargs):
-       authorization = request.headers.get("authorization", None)
-       if not authorization:
-           return json.dumps({'error': 'no authorization token provided'}), 401, {'Content-type': 'application/json'}
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        authorization = request.headers.get("authorization", None)
+        if not authorization:
+            return (
+                json.dumps({"error": "no authorization token provided"}),
+                401,
+                {"Content-type": "application/json"},
+            )
 
-       try:
-           token = authorization.split(' ')[1]
-           resp = decode(token, None, verify=False, algorithms=['HS256'])
-           g.user = resp['name']
-           g.username = resp['preferred_username']
-           g.email = resp['email']
-           g.uid = resp['uid']
+        try:
+            token = authorization.split(" ")[1]
+            resp = decode(token, None, verify=False, algorithms=["HS256"])
+            g.user = resp["name"]
+            g.username = resp["preferred_username"]
+            g.email = resp["email"]
+            g.uid = resp["uid"]
 
-       except exceptions.DecodeError as identifier:
-           return json.dumps({'error': 'invalid authorization token'}), 401, {'Content-type': 'application/json'}
+        except exceptions.DecodeError:
+            return (
+                json.dumps({"error": "invalid authorization token"}),
+                401,
+                {"Content-type": "application/json"},
+            )
 
-       return f(*args, **kwargs)
+        return f(*args, **kwargs)
 
-   return wrap
+    return wrap
 
-def create_app(config_file = "config/config.yml"):
+
+def create_app(config_file="config/config.yml"):
     logging.basicConfig(
         format="%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
@@ -59,7 +68,9 @@ def read_config(app, config_file):
     # Load common settings
     app.config.update(config_data)
 
+
 def app_base():
     return create_app()
+
 
 # TODO passer à fast API

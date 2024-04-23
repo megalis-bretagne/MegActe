@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import {NgForm, UntypedFormGroup, Validators, UntypedFormControl, FormGroupDirective} from '@angular/forms';
-import {MatSnackBarModule} from '@angular/material/snack-bar';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { NgForm, UntypedFormGroup, Validators, UntypedFormControl, FormGroupDirective } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { PastellSnackComponent } from '../components/pastell-snack.component';
 import { ApiClientService } from '../api-client.service';
-import {MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS} from '@angular/material-moment-adapter';
-import {DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, ErrorStateMatcher} from '@angular/material/core';
+import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, ErrorStateMatcher } from '@angular/material/core';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -21,7 +20,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 // the `default as` syntax.
 import * as _moment from 'moment';
 // tslint:disable-next-line:no-duplicate-imports
-import {default as _rollupMoment} from 'moment';
+import { default as _rollupMoment } from 'moment';
 import { NGXLogger } from 'ngx-logger';
 
 const moment = _rollupMoment || _moment;
@@ -57,29 +56,29 @@ export const MY_FORMATS = {
       deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
     },
 
-    {provide: MAT_DATE_FORMATS, useValue: MY_FORMATS},
+    { provide: MAT_DATE_FORMATS, useValue: MY_FORMATS },
   ]
 })
 export class DeliberationsFormComponent implements OnInit {
   isLinear: boolean;
-  status!:UntypedFormControl;
-  pastellLink!:UntypedFormControl;
+  status!: UntypedFormControl;
+  pastellLink!: UntypedFormControl;
   lastSendedParameters = {};
   firstFormGroup!: UntypedFormGroup;
   secondFormGroup!: UntypedFormGroup;
   details!: UntypedFormGroup;
   firstCtrl!: UntypedFormControl;
-  idDoc!:UntypedFormControl;
+  idDoc!: UntypedFormControl;
   arrete!: UntypedFormControl;
   date!: UntypedFormControl;
   //idDoc = '';
   classification!: UntypedFormControl;
   opendata!: UntypedFormControl;
   numero_acte!: UntypedFormControl;
-  classifications : string[] = [];
+  classifications: string[] = [];
 
   /******/
-  pastelForm! : UntypedFormGroup;
+  pastelForm!: UntypedFormGroup;
 
   matcher = new MyErrorStateMatcher();
 
@@ -110,7 +109,7 @@ export class DeliberationsFormComponent implements OnInit {
       opendata: this.opendata
     });
 
-    this.secondFormGroup =  new UntypedFormGroup({
+    this.secondFormGroup = new UntypedFormGroup({
       arrete: this.arrete
     })
 
@@ -129,7 +128,7 @@ export class DeliberationsFormComponent implements OnInit {
     private _apiClient: ApiClientService,
     public snackBar: MatSnackBar,
     private _logger: NGXLogger,
-    ) {}
+  ) { }
 
   ngOnInit() {
     this.createFormControls();
@@ -138,7 +137,7 @@ export class DeliberationsFormComponent implements OnInit {
 
   }
 
-  onNewFile(event:Event) {
+  onNewFile(event: Event) {
     const files = (event?.target as HTMLInputElement)?.files as FileList;
     const name = (event?.target as HTMLInputElement)?.name;
     this._logger.debug(this.firstFormGroup.value);
@@ -149,7 +148,7 @@ export class DeliberationsFormComponent implements OnInit {
 
   getClassification() {
     if (this.idDoc && this.classifications.length == 0) {
-      this._apiClient.getClassification(this.idDoc.value).then( (infos: any) => {
+      this._apiClient.getClassification(this.idDoc.value).then((infos: any) => {
         if (infos.externalData.classification) {
           const tmp = []
           for (const [k, v] of Object.entries(infos.externalData.classification)) {
@@ -166,7 +165,7 @@ export class DeliberationsFormComponent implements OnInit {
 
   part1() {
     if (this.firstFormGroup.invalid) {
-      return ;
+      return;
     }
     const parameters = {
       'type': 'deliberations-studio',
@@ -176,19 +175,19 @@ export class DeliberationsFormComponent implements OnInit {
 
     }
     if (!this.idDoc.value) {
-      this._apiClient.createDoc(parameters).then( (infos:any) => {
+      this._apiClient.createDoc(parameters).then((infos: any) => {
         if (infos.pastel.info) {
           this.firstFormGroup.patchValue({
-            idDoc : infos.pastel.id_d,
+            idDoc: infos.pastel.id_d,
             pastellLink: infos.link,
             status: "0"
           })
 
           this.getClassification();
-          const snackBarRef = this.snackBar.openFromComponent(PastellSnackComponent, { data : { 'message': 'a bien été créé', 'document': this.idDoc.value, 'link': this.pastellLink.value}});
+          this.snackBar.openFromComponent(PastellSnackComponent, { data: { 'message': 'a bien été créé', 'document': this.idDoc.value, 'link': this.pastellLink.value } });
           this._logger.debug(infos.pastel.info);
           if (infos.pastel.info.id_d) {
-            this._apiClient.updateDoc(infos.pastel.info.id_d, parameters).then( (infos:any) => {
+            this._apiClient.updateDoc(infos.pastel.info.id_d, parameters).then((infos: any) => {
               this.lastSendedParameters = parameters;
               this._logger.info(infos);
             })
@@ -197,8 +196,8 @@ export class DeliberationsFormComponent implements OnInit {
       })
 
     } else {
-      if (JSON.stringify(this.lastSendedParameters) != JSON.stringify(parameters) ){
-        this._apiClient.updateDoc(this.idDoc.value, parameters).then( (infos:any) => {
+      if (JSON.stringify(this.lastSendedParameters) != JSON.stringify(parameters)) {
+        this._apiClient.updateDoc(this.idDoc.value, parameters).then((infos: any) => {
           this._logger.info(infos);
         })
       } else {
@@ -219,14 +218,14 @@ export class DeliberationsFormComponent implements OnInit {
       'date_de_lacte': moment(this.date.value).format("YYYY-MM-DD"),
       'classification': this.classification.value,
       'type_acte': '99_DE',
-      'publication_open_data' : (this.opendata.value==true?'3':'1')
+      'publication_open_data': (this.opendata.value == true ? '3' : '1')
 
     }
 
-    this._apiClient.updateDoc(this.idDoc.value, parameters).then( (infos:any) => {
+    this._apiClient.updateDoc(this.idDoc.value, parameters).then((infos: any) => {
       this._logger.info(infos);
       //send tdt
-      this._apiClient.sendDoc(this.idDoc.value,'orientation').then( (infos:any) => {
+      this._apiClient.sendDoc(this.idDoc.value, 'orientation').then((infos: any) => {
         this._logger.debug(infos);
         let status;
         if (infos.action!.result === true) {

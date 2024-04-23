@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import {NgForm, UntypedFormGroup, Validators, UntypedFormControl, FormGroupDirective} from '@angular/forms';
+import { NgForm, UntypedFormGroup, Validators, UntypedFormControl, FormGroupDirective } from '@angular/forms';
 import { PastellSnackComponent } from '../components/pastell-snack.component';
 import { ApiClientService } from '../api-client.service';
-import {MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS} from '@angular/material-moment-adapter';
-import {DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, ErrorStateMatcher} from '@angular/material/core';
+import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, ErrorStateMatcher } from '@angular/material/core';
 import { HttpClient } from '@angular/common/http';
-import {DocCreated, DocUploaded} from '../interfaces/pastell';
+import { DocCreated, DocUploaded } from '../interfaces/pastell';
 import { LocalService } from '../services/local.service';
 
 
@@ -23,7 +23,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 // the `default as` syntax.
 import * as _moment from 'moment';
 // tslint:disable-next-line:no-duplicate-imports
-import {default as _rollupMoment} from 'moment';
+import { default as _rollupMoment } from 'moment';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { NGXLogger } from 'ngx-logger';
 
@@ -46,10 +46,10 @@ export const MY_FORMATS = {
 interface FileItem {
   name: string;
   source: string;
-  index : number;
+  index: number;
 }
 
-interface NatureItem  {
+interface NatureItem {
   id: string;
   value: string
 }
@@ -77,7 +77,7 @@ interface Classification {
       deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
     },
 
-    {provide: MAT_DATE_FORMATS, useValue: MY_FORMATS},
+    { provide: MAT_DATE_FORMATS, useValue: MY_FORMATS },
   ]
 })
 
@@ -85,14 +85,14 @@ interface Classification {
 
 export class NoTdtFormComponent implements OnInit {
   annexesEnabled: boolean;
-  pastellLink:string;
+  pastellLink: string;
   lastSendedParameters = {};
   firstFormGroup!: UntypedFormGroup;
   secondFormGroup!: UntypedFormGroup;
   thirdFormGroup!: UntypedFormGroup;
   objet!: UntypedFormControl;
-  nature_autres!:UntypedFormControl;
-  idDoc:string;
+  nature_autres!: UntypedFormControl;
+  idDoc: string;
   arrete!: UntypedFormControl;
   autre_document_attache!: UntypedFormControl;
   date!: UntypedFormControl;
@@ -100,18 +100,18 @@ export class NoTdtFormComponent implements OnInit {
   classification!: UntypedFormControl;
   opendata!: UntypedFormControl;
   numero_acte!: UntypedFormControl;
-  classifications : Classification;
-  natures_autres :NatureItem[] = [];
-  filesAnnexe : FileItem[] = [];
-  fileActe : FileItem[] = [];
+  classifications: Classification;
+  natures_autres: NatureItem[] = [];
+  filesAnnexe: FileItem[] = [];
+  fileActe: FileItem[] = [];
   formEnabled: boolean;
   waiting: boolean;
   waiting_file: boolean;
   defaultOpendata: string;
-  step:number;
+  step: number;
   totalSteps: number;
-  progress:number;
-  pastelForm! : UntypedFormGroup;
+  progress: number;
+  pastelForm!: UntypedFormGroup;
 
   matcher = new MyErrorStateMatcher();
 
@@ -139,7 +139,7 @@ export class NoTdtFormComponent implements OnInit {
 
 
 
-    this.secondFormGroup =  new UntypedFormGroup({
+    this.secondFormGroup = new UntypedFormGroup({
       arrete: this.arrete,
       autre_document_attache: this.autre_document_attache
 
@@ -153,7 +153,7 @@ export class NoTdtFormComponent implements OnInit {
     this.pastelForm = new UntypedFormGroup({
       firstFormGroup: this.firstFormGroup,
       secondFormGroup: this.secondFormGroup,
-      thirdFormGroup : this.thirdFormGroup
+      thirdFormGroup: this.thirdFormGroup
     });
   }
 
@@ -166,7 +166,7 @@ export class NoTdtFormComponent implements OnInit {
     private http: HttpClient,
     private _logger: NGXLogger,
     private localStore: LocalService
-    ) {}
+  ) { }
 
   ngOnInit() {
     this.createFormControls();
@@ -190,13 +190,13 @@ export class NoTdtFormComponent implements OnInit {
 
   }
 
-  findValidControls():number {
+  findValidControls(): number {
     const valid = [];
-    const controls = {...this.firstFormGroup.controls, ...this.secondFormGroup.controls, ...this.thirdFormGroup.controls};
+    const controls = { ...this.firstFormGroup.controls, ...this.secondFormGroup.controls, ...this.thirdFormGroup.controls };
     for (const name in controls) {
-        if (controls[name].valid) {
-            valid.push(name);
-        }
+      if (controls[name].valid) {
+        valid.push(name);
+      }
     }
     return valid.length;
   }
@@ -211,21 +211,20 @@ export class NoTdtFormComponent implements OnInit {
     if (this.firstFormGroup.valid && this.thirdFormGroup.valid) {
       //format date
       val.date_de_lacte = moment(val.date_de_lacte).format("YYYY-MM-DD");
-      this._apiClient.updateDoc(this.idDoc, val).then( (infos:any) => {
+      this._apiClient.updateDoc(this.idDoc, val).then((infos: any) => {
         this._logger.info(infos);
       })
     }
   }
 
   onChanges() {
-    const that = this;
     this.firstFormGroup.valueChanges.subscribe(val => {
-      const all_values = {...val, ...this.thirdFormGroup.value};
+      const all_values = { ...val, ...this.thirdFormGroup.value };
       this.update(all_values);
     });
     this.thirdFormGroup.valueChanges.subscribe(val => {
       this.update(val);
-     });
+    });
 
   }
 
@@ -233,32 +232,32 @@ export class NoTdtFormComponent implements OnInit {
     //Show spinner
     this.toggleBtn()
     // Vrrsement GED/OPENDATA
-    this._apiClient.sendDoc(this.idDoc,'orientation').then( (response:any) => {
+    this._apiClient.sendDoc(this.idDoc, 'orientation').then((response: any) => {
       if (response.action.result) {
-        const snackBarRef = this.snackBar.openFromComponent(PastellSnackComponent, { data : { 'message': 'a été publié avec succès', 'document': this.idDoc, 'link': this.pastellLink}});
+        this.snackBar.openFromComponent(PastellSnackComponent, { data: { 'message': 'a été publié avec succès', 'document': this.idDoc, 'link': this.pastellLink } });
         this.toggleBtn();
         this.formEnabled = false;
       }
     })
   }
 
-  toggleBtn () {
+  toggleBtn() {
     const btn = document.getElementById('apply-btn');
     if (btn.hasAttribute('busy')) {
-        btn.removeAttribute('busy');
+      btn.removeAttribute('busy');
     } else {
-        btn.setAttribute('busy','');
+      btn.setAttribute('busy', '');
     }
-}
+  }
 
   deleteActe(idDoc) {
-    this._apiClient.deleteDoc(idDoc).then( (infos:any) => {
+    this._apiClient.deleteDoc(idDoc).then((infos: any) => {
       this._logger.info(infos);
       if (infos.pastel.result) {
-        this.snackBar.openFromComponent(PastellSnackComponent, { data : { 'message': 'a été supprimé', 'document': this.idDoc, 'link': this.pastellLink}});
+        this.snackBar.openFromComponent(PastellSnackComponent, { data: { 'message': 'a été supprimé', 'document': this.idDoc, 'link': this.pastellLink } });
 
-      } else if (infos.pastel.status){
-        this.snackBar.openFromComponent(PastellSnackComponent, { data : { 'message': 'n\'existe plus', 'document': this.idDoc, 'link': this.pastellLink}});
+      } else if (infos.pastel.status) {
+        this.snackBar.openFromComponent(PastellSnackComponent, { data: { 'message': 'n\'existe plus', 'document': this.idDoc, 'link': this.pastellLink } });
       }
       this.pastelForm.reset();
       this.formEnabled = false;
@@ -274,10 +273,10 @@ export class NoTdtFormComponent implements OnInit {
     const parameters = {
       type: 'autres-studio-sans-tdt'
     }
-    this._apiClient.createDoc(parameters).then( (response: DocCreated) => {
+    this._apiClient.createDoc(parameters).then((response: DocCreated) => {
       if (response.pastel) {
         this.idDoc = response.pastel.id_d;
-        this.pastellLink =  response.link;
+        this.pastellLink = response.link;
         this.filesAnnexe = [];
         this.fileActe = [];
         this.formEnabled = true;
@@ -286,36 +285,36 @@ export class NoTdtFormComponent implements OnInit {
     })
   }
 
-  async onNewFile(event:Event) {
+  async onNewFile(event: Event) {
     const element = (event?.target as HTMLInputElement);
     const files = element?.files as FileList;
     const name = element?.name;
     const multiple = element?.multiple;
     const docsUploaded = this.filesAnnexe.length;
     for (let i = 0; i < files.length; i++) {
-       const file = files.item(i);
-       this.waiting_file = true;
-       const res:DocUploaded = await this._apiClient.uploadFile(this.idDoc, name, file, i + docsUploaded);
-       this._logger.debug(res);
-       this.waiting_file = false;
-       if (element.required) { this.step +=1; }
-       this.refreshProgress(0);
-       if (multiple && name == "autre_document_attache") {
-         this.filesAnnexe.push({ name : file.name, source: "autre_document_attache", index: i + docsUploaded });
-       } else {
-         this.fileActe.push({ name: file.name, source: name, index: i });
-       }
+      const file = files.item(i);
+      this.waiting_file = true;
+      const res: DocUploaded = await this._apiClient.uploadFile(this.idDoc, name, file, i + docsUploaded);
+      this._logger.debug(res);
+      this.waiting_file = false;
+      if (element.required) { this.step += 1; }
+      this.refreshProgress(0);
+      if (multiple && name == "autre_document_attache") {
+        this.filesAnnexe.push({ name: file.name, source: "autre_document_attache", index: i + docsUploaded });
+      } else {
+        this.fileActe.push({ name: file.name, source: name, index: i });
+      }
     }
 
   }
 
-  async removeFile(file:FileItem) {
-    const res:any = await this._apiClient.deleteFile(this.idDoc, file.source, file.index);
+  async removeFile(file: FileItem) {
+    const res: any = await this._apiClient.deleteFile(this.idDoc, file.source, file.index);
     if (file.source === "autre_document_attache") {
       if (res.pastel.data.autre_document_attache) {
         //check is file is deleted
-        const files:string[] = res.pastel.data.autre_document_attache;
-        if (files.indexOf(file.name) == -1 ) {
+        const files: string[] = res.pastel.data.autre_document_attache;
+        if (files.indexOf(file.name) == -1) {
           if (this.filesAnnexe[file.index].name == file.name) {
             this.filesAnnexe.splice(file.index, 1);
             this.filesAnnexe.forEach((element, index) => {
@@ -334,12 +333,10 @@ export class NoTdtFormComponent implements OnInit {
   }
 
   getReferentiels() {
-    const options = {observe: 'body', responseType: 'json'};
-    this.http.get('assets/referentiels.json').subscribe( (data: any) =>
-      {
-        this.classifications = data.classification;
-        this.natures_autres = data.natures_autres;
-      }
+    this.http.get('assets/referentiels.json').subscribe((data: any) => {
+      this.classifications = data.classification;
+      this.natures_autres = data.natures_autres;
+    }
     );
   }
 

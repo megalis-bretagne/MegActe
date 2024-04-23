@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, OnInit } from '@angular/core';
 import { ApiClientService } from '../api-client.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -41,17 +41,17 @@ export class DocumentsListComponent implements OnInit {
 
   dataSource = new MatTableDataSource<DocumentInfos>();
 
-  @ViewChild(MatPaginator, {static: true}) paginator!: MatPaginator;
+  @ViewChild(MatPaginator, { static: true }) paginator!: MatPaginator;
 
   constructor(
     private apiClient: ApiClientService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
   }
 
   loadDocuments(): void {
-    this.apiClient.getDocuments().then( (data: any) => {
+    this.apiClient.getDocuments().then((data: any) => {
       this.dataSource = new MatTableDataSource<DocumentInfos>(JSON.parse(JSON.stringify(data)));
       this.dataSource.paginator = this.paginator;
     })
@@ -63,7 +63,7 @@ export class DocumentsListComponent implements OnInit {
     this.loadDocuments();
   }
 
-  editDocument(doc:DocumentInfos) {
+  editDocument(doc: DocumentInfos) {
     console.log(doc);
   }
 
