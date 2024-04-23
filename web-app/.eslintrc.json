@@ -1,34 +1,45 @@
 {
   "root": true,
   "ignorePatterns": [
-    "projects/**/*"
+    "back/**/*",
+    "docker/**/*"
   ],
+  "globals": {
+    "document": true,
+    "window": true
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  },
   "overrides": [
     {
       "files": [
         "*.ts"
       ],
+      "parserOptions": {
+        "project": [
+          "tsconfig.json"
+        ],
+        "createDefaultProgram": true
+      },
       "extends": [
         "eslint:recommended",
-        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@angular-eslint/recommended",
         "plugin:@angular-eslint/template/process-inline-templates"
       ],
       "rules": {
-        "@angular-eslint/directive-selector": [
+        "no-irregular-whitespace": [
           "error",
           {
-            "type": "attribute",
-            "prefix": "app",
-            "style": "camelCase"
+            "skipComments": true
           }
         ],
-        "@angular-eslint/component-selector": [
+        "no-unused-vars": [
           "error",
           {
-            "type": "element",
-            "prefix": "app",
-            "style": "kebab-case"
+            "argsIgnorePattern": "(^_)|(^http$)|(^dialogRef$)|(^settings$)"
           }
         ]
       }
@@ -37,11 +48,16 @@
       "files": [
         "*.html"
       ],
-      "extends": [
-        "plugin:@angular-eslint/template/recommended",
-        "plugin:@angular-eslint/template/accessibility"
+      "parser": "@angular-eslint/template-parser",
+      "plugins": [
+        "@angular-eslint/template"
       ],
-      "rules": {}
+      "extends": [
+        "plugin:@angular-eslint/template/recommended"
+      ],
+      "rules": {
+        "@angular-eslint/template/prefer-self-closing-tags": "error"
+      }
     }
   ]
 }
