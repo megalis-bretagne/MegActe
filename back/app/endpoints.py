@@ -228,7 +228,6 @@ def addFile(id_doc, element, numero="0"):
                 files={"file_content": file},
                 data={"file_name": filename},
                 auth=HTTPBasicAuth(u, p),
-                timeout=2000,
             )
             status = PA_request.status_code
             if status == 201:
