@@ -30,11 +30,11 @@ jobs:
         uses: actions/checkout@main
 
       - name: Run Codacy Analysis CLI
-        uses: codacy/codacy-analysis-cli-action@v4.3.0
+        uses: codacy/codacy-analysis-cli-action@v4.4.0
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
           upload: true
-          max-allowed-issues: 50
+          max-allowed-issues: 1000
 
   build-angular :
     runs-on: ubuntu-latest

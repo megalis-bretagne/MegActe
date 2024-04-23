@@ -85,7 +85,7 @@ def user():
                     current_user["siren"] = siren
                     ressource3 = "/utilisateur/%s/role" % id_u
                     request3 = requests.get(
-                        root_url + ressource3, auth=HTTPBasicAuth(u, p)
+                        root_url + ressource3, auth=HTTPBasicAuth(u, p), timeout=2000
                     )
                     current_user["roles"] = json.loads(request3.text)
                     infos = current_user
@@ -170,7 +170,7 @@ def document(id_doc=None, element=None, field=None, id_action=None):
         ressource = "/entite/%s/document/%s" % (IDE, id_doc)
         params = request.get_json()
         PA_request = requests.patch(
-            root_url + ressource, data=params, auth=HTTPBasicAuth(u, p)
+            root_url + ressource, data=params, auth=HTTPBasicAuth(u, p), timeout=2000
         )
         status = PA_request.status_code
         if status == 200:
@@ -228,6 +228,7 @@ def addFile(id_doc, element, numero="0"):
                 files={"file_content": file},
                 data={"file_name": filename},
                 auth=HTTPBasicAuth(u, p),
+                timeout=2000,
             )
             status = PA_request.status_code
             if status == 201:
