@@ -4,7 +4,7 @@
       <h4>ne passant pas par le contrôle de légalité</h4>
     </div>
       <div class="custom-center">
-      <mat-progress-bar color="accent" mode="query" *ngIf="waiting"></mat-progress-bar>
+      <mat-progress-bar color="accent" mode="query" *ngIf="waiting" />
       <mat-card class="form-card" *ngIf="formEnabled">
         <mat-card-title>Nouvelle publication d'acte
           <mat-chip selected color="primary"><a [href]="pastellLink" target="_blank">{{idDoc}}</a></mat-chip>
@@ -69,11 +69,11 @@
                   calendar_month
                 </mat-icon>
               </mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
+              <mat-datepicker #picker />
             </mat-form-field>
           </form>
         </div>
-        <mat-divider></mat-divider>
+        <mat-divider />
 
         <form [formGroup]="secondFormGroup" enctype = "multipart/form-data">
           <mat-grid-list cols="6" rowHeight="100px">
@@ -88,7 +88,7 @@
             </div>
             </mat-grid-tile>
             <mat-grid-tile colspan="4">
-              <mat-spinner color="accent" diameter="40" *ngIf="waiting_file" ></mat-spinner>
+              <mat-spinner color="accent" diameter="40" *ngIf="waiting_file" />
             <mat-chip-listbox class="mat-chip-list-stacked2" #chipList aria-label="Acte">
               <mat-chip-option selected color="primary" *ngFor="let file of fileActe" (removed)="removeFile(file)">
                 {{file.name}}
@@ -101,7 +101,7 @@
           </mat-grid-list>
 
         <mat-grid-list cols="6" class="grid-file" *ngIf="annexesEnabled">
-          <mat-divider></mat-divider>
+          <mat-divider />
           <mat-grid-tile class="grid-file" colspan="2">
             <mat-label>Annexes</mat-label>
             <input type="file" multiple class="file-upload" name="autre_document_attache" class="file-input" formControlName="autre_document_attache" (change)="onNewFile($event)" #fileUpload2>
@@ -127,7 +127,7 @@
         </form>
 
       </mat-card-content>
-      <mat-divider inset></mat-divider>
+      <mat-divider inset />
       <mat-card-actions  align="end">
         <form [formGroup]="thirdFormGroup">
           <div class="form-group">
@@ -141,7 +141,7 @@
         <button id="apply-btn" type="submit" mat-raised-button color="primary" [disabled]="pastelForm.invalid">
           <span class="my-loader" aria-hidden="true">
             <mat-icon>
-              <mat-spinner color="accent" diameter="20"></mat-spinner>
+              <mat-spinner color="accent" diameter="20" />
             </mat-icon>
           </span>
           <span class="my-loader sr-only">Traitement en cours...</span>
@@ -150,7 +150,7 @@
       </mat-card-actions>
       </form>
       <mat-card-footer>
-        <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+        <mat-progress-bar mode="determinate" [value]="progress" />
       </mat-card-footer>
     </mat-card>
       </div>

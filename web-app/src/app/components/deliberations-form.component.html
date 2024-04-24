@@ -87,7 +87,7 @@
                   calendar_month
                 </mat-icon>
               </mat-datepicker-toggle>
-              <mat-datepicker #picker></mat-datepicker>
+              <mat-datepicker #picker />
 
             </mat-form-field>
 
@@ -129,15 +129,15 @@
               <p>Echec dans la publication du document<a [href]="pastellLink.value" target="_blank">{{idDoc.value}}</a></p>
             </div>
           </mat-card-content>
-          <mat-divider inset></mat-divider>
+          <mat-divider inset />
           <mat-card-actions>
             <button mat-button color="primary" (click)="stepper.reset();pastelForm.enable()">Recommencer</button>
             <button mat-button disabled color="warn">Supprimer</button>
           </mat-card-actions>
           <mat-card-footer>
-            <mat-progress-bar *ngIf="status.value === '0'" mode="indeterminate"></mat-progress-bar>
-            <mat-progress-bar *ngIf="status.value === '1'" mode="determinate" value="100"></mat-progress-bar>
-            <mat-progress-bar *ngIf="status.value === '2'"  mode="determinate" value="20"></mat-progress-bar>
+            <mat-progress-bar *ngIf="status.value === '0'" mode="indeterminate" />
+            <mat-progress-bar *ngIf="status.value === '1'" mode="determinate" value="100" />
+            <mat-progress-bar *ngIf="status.value === '2'"  mode="determinate" value="20" />
           </mat-card-footer>
         </mat-card>
 

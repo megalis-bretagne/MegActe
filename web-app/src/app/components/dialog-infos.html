@@ -1,5 +1,5 @@
 <h1 mat-dialog-title>{{data.title}}</h1>
-<mat-divider></mat-divider>
+<mat-divider />
 <div mat-dialog-content *ngIf="data.dialogId === 'infos'">
   <mat-list>
     <mat-list-item>
@@ -25,7 +25,7 @@
   </mat-list>
 </div>
 <div mat-dialog-content *ngIf="data.dialogId === 'user'">
-  <mat-divider></mat-divider>
+  <mat-divider />
   <mat-list>
     <mat-list-item>
       <mat-icon mat-list-icon>account_circle</mat-icon>
@@ -38,7 +38,7 @@
   </mat-list>
 
 </div>
-<mat-divider></mat-divider>
+<mat-divider />
 <div mat-dialog-actions>
   <button mat-button mat-dialog-close>Fermer</button>
 </div>
