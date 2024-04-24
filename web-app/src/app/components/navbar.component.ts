@@ -13,7 +13,7 @@ export interface DialogData {
   dialogId: string;
   user: string;
   organisme: string;
-  title:string;
+  title: string;
 }
 
 
@@ -33,7 +33,7 @@ export class NavbarComponent implements OnInit {
   repositoryUrl: string;
 
   constructor(
-    private keycloakAuthService : AuthService,
+    private keycloakAuthService: AuthService,
     private apiClient: ApiClientService,
     public dialog: MatDialog,
     private _logger: NGXLogger,
@@ -49,43 +49,45 @@ export class NavbarComponent implements OnInit {
   }
 
   openInfosDialog() {
-    this.dialog.open(DialogNavBar, {
+    this.dialog.open(DialogNavBarComponent, {
       data: {
-        title : 'Informations',
+        title: 'Informations',
         version: this.version,
         pastellVersion: this.pastellVersion,
         repository: this.repositoryUrl,
         dialogId: 'infos'
-      }});
+      }
+    });
   }
 
   openUserDialog() {
-    this.dialog.open(DialogNavBar, {
+    this.dialog.open(DialogNavBarComponent, {
       data: {
         title: 'Mon compte',
         user: this.user,
         organisme: this.organisme,
         dialogId: 'user'
-      }});
+      }
+    });
   }
 
   ngOnInit() {
-    this.apiClient.getVersion().then( (infos:any) => {
+    this.apiClient.getVersion().then((infos: any) => {
       this.pastellVersion = infos.pastel;
-    } )
+    })
 
-    this.apiClient.getUser().then( (infos:any) => {
+    this.apiClient.getUser().then((infos: any) => {
       this.user = infos.user;
       this._logger.debug(infos);
       this.apiClient.setEntity(infos.details['id_e']);
       this.organisme = infos.details.organisme;
       this.marqueBlancheUrl = `${this.marqueBlancheUrl}?siren=${infos.details['siren']}`
-    } )
+    })
 
   }
 
 
-  async logout(event:Event) {
+  async logout(event: Event) {
     event.preventDefault();
     await this.keycloakAuthService.logout();
   }
@@ -96,9 +98,8 @@ export class NavbarComponent implements OnInit {
   selector: 'dialog-infos',
   templateUrl: 'dialog-infos.html',
 })
-
-export class DialogNavBar {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) {}
+export class DialogNavBarComponent {
+  constructor(@Inject(MAT_DIALOG_DATA) public data: DialogData) { }
 }
 
 

@@ -205,7 +205,7 @@ export class NoTdtFormComponent implements OnInit {
     this.progress = (this.step += step) / this.totalSteps * 100;
   }
 
-  update(val) {
+  update(val: { date_de_lacte?: any; }) {
     this.step = this.findValidControls();
     this.refreshProgress(0);
     if (this.firstFormGroup.valid && this.thirdFormGroup.valid) {
@@ -250,7 +250,7 @@ export class NoTdtFormComponent implements OnInit {
     }
   }
 
-  deleteActe(idDoc) {
+  deleteActe(idDoc: string) {
     this._apiClient.deleteDoc(idDoc).then((infos: any) => {
       this._logger.info(infos);
       if (infos.pastel.result) {

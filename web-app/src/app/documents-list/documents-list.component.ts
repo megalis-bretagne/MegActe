@@ -1,4 +1,4 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ApiClientService } from '../api-client.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -33,7 +33,7 @@ export interface DocumentInfos {
   templateUrl: './documents-list.component.html',
   styleUrls: ['./documents-list.component.css']
 })
-export class DocumentsListComponent implements OnInit {
+export class DocumentsListComponent {
 
 
 
@@ -47,8 +47,6 @@ export class DocumentsListComponent implements OnInit {
     private apiClient: ApiClientService
   ) { }
 
-  ngOnInit(): void {
-  }
 
   loadDocuments(): void {
     this.apiClient.getDocuments().then((data: any) => {
@@ -57,10 +55,6 @@ export class DocumentsListComponent implements OnInit {
     })
 
 
-  }
-
-  ngAfterViewInit() {
-    this.loadDocuments();
   }
 
   editDocument(doc: DocumentInfos) {

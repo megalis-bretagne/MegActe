@@ -9,8 +9,8 @@ import { environment } from 'src/environments/environment';
 })
 export class DashboardComponent implements OnInit {
 
-  constructor() {}
-  items = [];
+  constructor() { }
+  items: { id: string; enabled: boolean; title: string; description: string; img: string; button: string; link: string; }[] = [];
 
 
   ngOnInit(): void {
@@ -25,7 +25,7 @@ export class DashboardComponent implements OnInit {
         "link": "/deliberations"
       },
       {
-        id:'actes',
+        id: 'actes',
         enabled: (environment.modules.indexOf('actes') >= 0),
         title: 'Actes non soumis au contrôle de légalité ',
         description: 'Publier un <strong>acte</strong> en <strong>opendata</strong>, sans envoi au contrôle de légalité, de type Procès verbal, arrêté temporaire, liste des délibérations... ',
@@ -42,9 +42,9 @@ export class DashboardComponent implements OnInit {
 
 @Pipe({ name: "safeHtml" })
 export class SafeHtmlPipe implements PipeTransform {
-  constructor(private sanitizer: DomSanitizer) {}
+  constructor(private sanitizer: DomSanitizer) { }
 
-  transform(value:string) {
+  transform(value: string) {
     return this.sanitizer.bypassSecurityTrustHtml(value);
   }
 }

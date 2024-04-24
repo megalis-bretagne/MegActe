@@ -55,7 +55,7 @@ jobs:
         with:
           # caching node_modules
           path: web-app/node_modules
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('web-app/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
 
@@ -64,6 +64,11 @@ jobs:
         working-directory: web-app
         run: |
           npm install
+
+      - name: Linting
+        working-directory: web-app
+        run: |
+          npm run lint
 
       - name: Build angular
         working-directory: web-app

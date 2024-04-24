@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import {KeycloakService} from 'keycloak-angular';
-import {SettingsService} from '../../environments/settings.service';
+import { KeycloakService } from 'keycloak-angular';
+import { SettingsService } from '../../environments/settings.service';
 
 @Injectable({
   providedIn: 'root'
@@ -8,8 +8,7 @@ import {SettingsService} from '../../environments/settings.service';
 export class AuthService {
 
   constructor(private keycloakService: KeycloakService,
-              private settings: SettingsService)
-  {}
+    private settings: SettingsService) { }
 
   checkLogin(): Promise<Keycloak.KeycloakProfile> {
     return this.keycloakService.loadUserProfile();
