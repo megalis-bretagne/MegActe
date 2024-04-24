@@ -39,7 +39,10 @@
         "no-unused-vars": [
           "error",
           {
-            "argsIgnorePattern": "(^_)|(^http$)|(^dialogRef$)|(^settings$)"
+            "vars": "all",
+            "args": "none",
+            "ignoreRestSiblings": true,
+            "argsIgnorePattern": "(^_)|(^http$)"
           }
         ]
       }
