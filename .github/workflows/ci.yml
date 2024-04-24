@@ -65,6 +65,11 @@ jobs:
         run: |
           npm install
 
+      - name: Linting
+        working-directory: web-app
+        run: |
+          npm run lint
+
       - name: Build angular
         working-directory: web-app
         run: |
