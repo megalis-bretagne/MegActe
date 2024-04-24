@@ -1,6 +1,6 @@
 ---
-name: Rapport d'interface utilisateur (UI)
-about: Rapporter une amélioration cosmétique sur l'UI
+name:  Problème cosmétique (UI)
+about: Rapporter un problème sur l'interface graphique (UI)
 title: "[UI]"
 labels: Front
 assignees: ''
@@ -13,5 +13,5 @@ assignees: ''
 **Description**
 Une description claire et concise du problème rencontré.
 
-**Amélioration UI attendu**
-Décrire l'amélioration attendu
+**Amélioration/Correction UI attendu**
+Décrire l'amélioration attendue

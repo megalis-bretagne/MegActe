@@ -1,14 +1,14 @@
 ---
 name: Bug report
-about: Rapporter un bug/disfonctionnement de l'application
+about: Rapporter un bug/dysfonctionnement de l'application
 title: "[BUG]"
 labels: bug
 assignees: ''
 
 ---
 
-**Décrire le disfonctionnement**
-Une description clair et concise du problème
+**Décrire le dysfonctionnement**
+Une description claire et concise du problème
 
 **Comment peut-on reproduire ?**
 Indiquer clairement les étapes pour reproduire le bug
