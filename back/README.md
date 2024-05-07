@@ -19,7 +19,7 @@ source .venv/bin/activate
 
 * installer les dépendances
 ```
-pip install -r requirement.txt
+pip install -r requirements.txt
 ```
 
 ## Configuration
