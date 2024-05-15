@@ -31,6 +31,12 @@ pip install -r requirements.txt
 
 Dans le dossier back.
 ``` 
-python3 manage.py
+uvicorn app.main:app --host <HOST> --port <PORT> --reload
+```
+
+## Accès au swagger :
+Dans le navigateur : 
+```
+http://HOST:PORT/docs 
 ```
 

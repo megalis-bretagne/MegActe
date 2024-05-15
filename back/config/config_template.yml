@@ -3,3 +3,8 @@ PASTELL:
   USER : <USER>
   PASSWORD : <PWD>
   RESTRITED_ROLES : ['admin_default', 'user_default']
+
+KEYCLOAK:
+  token_url: <URL>
+  refresh_url: <URL>
+  auth_url: <URL>
