@@ -300,7 +300,7 @@ def getAllPastellEntities():
     ressource = "/entite"
     request = requests.get(root_url + ressource, auth=HTTPBasicAuth(u, p), timeout=2000)
     data = json.loads(request.text)
-    for entity in enumerate(data):
+    for entity in data:
         e = entity["siren"]
         # Keep only entites mere + Hack Z_TEST_MEGALIS
         if entity["entite_mere"] == "0" and entity["id_e"] != "2177":
