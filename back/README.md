@@ -34,8 +34,8 @@ Dans le dossier back.
 uvicorn app.main:app --host <HOST> --port <PORT> --reload
 ```
 
-## Accès au swagger :
-Dans le navigateur : 
+## Accès au swagger
+Dans le navigateur :
 ```
 http://HOST:PORT/docs 
 ```

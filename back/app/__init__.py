@@ -2,13 +2,8 @@ from functools import wraps
 from flask import request, g
 from jwt import decode, exceptions
 import json
-import logging
 
 import yaml
-from .routers import users, health
-from fastapi import FastAPI, Depends
-from fastapi.security import OAuth2AuthorizationCodeBearer
-from fastapi.middleware.cors import CORSMiddleware
 
 
 def login_required(f):
@@ -51,6 +46,3 @@ def read_config(config_file):
         config_data = {}
     # Load common settings
     return config_data
-
-
-
