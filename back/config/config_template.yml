@@ -8,3 +8,5 @@ KEYCLOAK:
   token_url: <URL>
   refresh_url: <URL>
   auth_url: <URL>
+  jwks_url: <URL>/protocol/openid-connect/certs
+  client_id: <client_id>
