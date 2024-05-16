@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NgForm, UntypedFormGroup, Validators, UntypedFormControl, FormGroupDirective } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { PastellSnackComponent } from '../components/pastell-snack.component';
+import { PastellSnackComponent } from './pastell-snack.component';
 import { ApiClientService } from '../api-client.service';
 import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, ErrorStateMatcher } from '@angular/material/core';
