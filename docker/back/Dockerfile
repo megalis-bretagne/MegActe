@@ -13,4 +13,4 @@ COPY config/ ./config/
 RUN rm /appli/config/config_template.yml
 
 
-CMD ["waitress-serve","--port=80","--call", "app:app_base"]
+CMD ["fastapi", "run", "app/main.py", "--port", "80"]

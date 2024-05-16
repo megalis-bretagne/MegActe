@@ -1,14 +1,9 @@
 from functools import wraps
-from flask import request, g, Flask
+from flask import request, g
 from jwt import decode, exceptions
 import json
-import yaml
-import logging
-from flask_cors import CORS
 
-PASTELL_ENTITIES = {}
-# Store the link between user id and entity id
-PASTELL_SESSIONS = {}
+import yaml
 
 
 def login_required(f):
@@ -43,34 +38,11 @@ def login_required(f):
     return wrap
 
 
-def create_app(config_file="config/config.yml"):
-    logging.basicConfig(
-        format="%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    )
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
-
-    app = Flask(__name__)
-    CORS(app, resources={r"*": {"origins": "*"}})
-    read_config(app, config_file)
-    with app.app_context():
-        from . import endpoints
-    return app
-
-
-def read_config(app, config_file):
+def read_config(config_file):
     try:
         with open(config_file) as yamlfile:
             config_data = yaml.load(yamlfile, Loader=yaml.FullLoader)
     except Exception:
         config_data = {}
     # Load common settings
-    app.config.update(config_data)
-
-
-def app_base():
-    return create_app()
-
-
-# TODO passer à fast API
+    return config_data
