@@ -4,8 +4,10 @@ from ..database import Base
 
 
 class UserPastell(Base):
-    __tablename__ = "table_name"
+    __tablename__ = "megacte_pastell_users"
 
     id = Column(Integer, primary_key=True)
-    email = Column(String, unique=True, index=True)
+    login = Column(String, unique=True)
+    id_user = Column(Integer, unique=True)
+    pwd_pastell = Column(Integer, unique=True)
     # TO COMPLETE
