@@ -3,5 +3,5 @@ from pydantic import BaseModel
 
 class UserCreate(BaseModel):
     login: str
-    id_user: int
+    id_pastell: int
     pwd_pastell: str

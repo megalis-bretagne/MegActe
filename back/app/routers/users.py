@@ -43,12 +43,12 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
 def add_user(user_data: UserCreate, db: Session = Depends(get_db)):
 
     # Todo :
-    # - Chiffré le pwd
+    # - Chiffrer le pwd
     # - Envoyer le pwd non chifré à PASTELL via API: PATCH api/v2/utilisateur/ <ID_U> -d'password=<PWD>'
 
     new_user = UserPastell(
         login=user_data.login,
-        id_user=user_data.id_user,
+        id_pastell=user_data.id_pastell,
         pwd_pastell=user_data.pwd_pastell,
     )
     db.add(new_user)
@@ -66,7 +66,7 @@ def update_user(user_id: int, user_data: UserCreate, db: Session = Depends(get_d
         raise HTTPException(status_code=404, detail="User not found")
 
     db_user.login = user_data.login
-    db_user.id_user = user_data.id_user
+    db_user.id_pastell = user_data.id_pastell
     db.commit()
     db.refresh(db_user)
 
