@@ -10,4 +10,5 @@ class UserPastell(Base):
     # id_public = Column(UUID(as_uuid=True), unique=True, default=uuid.uuid4)
     login = Column(String, unique=True)
     id_pastell = Column(Integer, unique=True)
-    pwd_pastell = Column(Integer, unique=True)
+    pwd_pastell = Column(String, unique=True)
+    pwd_key = Column(String, unique=True)
