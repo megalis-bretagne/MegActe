@@ -73,7 +73,7 @@ def get_current_user(payload: dict = Depends(validate_token)):
     """
 
     user_info = {
-        "email": payload.get("email"),
+        "login": payload.get("email"),
         "username": payload.get("preferred_username"),
     }
     return user_info
