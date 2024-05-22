@@ -6,9 +6,13 @@ from ..models.users import UserPastell
 from ..database import get_db
 from ..dependencies import get_current_user
 from ..schemas.user_schemas import UserCreate
-from ..services.user_service import encrypt_password, generate_key, decrypt_password
+from ..services.user_service import (
+    encrypt_password,
+    generate_key,
+    decrypt_password,
+    send_password_to_pastell,
+)
 import base64
-
 
 router = APIRouter()
 
@@ -25,7 +29,7 @@ def get_user(
     return current_user["login"]
 
 
-# Get liste tous les users
+# Get liste de tous les users
 @router.get("/users/getAll", tags=["users"])
 def get_all_users(db: Session = Depends(get_db)):
     users = db.query(UserPastell).all()
@@ -41,15 +45,11 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
-# Todo :
-# - Chiffrer le pwd => DONE
-# - Envoyer le pwd non chifré à PASTELL via API: PATCH api/v2/utilisateur/ <ID_U> -d'password=<PWD>'
-
-
 # Add user
 @router.post("/users/add", response_model=UserCreate, tags=["users"])
 def add_user(user_data: UserCreate, db: Session = Depends(get_db)):
 
+    # Chiffrer le pwd
     key = generate_key(user_data.pwd_pastell)
     encrypted_pwd = encrypt_password(user_data.pwd_pastell, key)
 
@@ -63,10 +63,16 @@ def add_user(user_data: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
+    # Envoyer le pwd non chifré à PASTELL
+    try:
+        send_password_to_pastell(user_data.id_pastell, user_data.pwd_pastell)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
     return new_user
 
 
-# Récuperer un pwd déchiffrer
+# Récupérer un pwd chiffré et le déchiffrer
 @router.get("/users/decrypt_password/{user_id}", tags=["users"])
 def get_decrypted_password(user_id: int, db: Session = Depends(get_db)):
     user = db.query(UserPastell).filter(UserPastell.id == user_id).first()

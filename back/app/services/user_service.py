@@ -2,6 +2,8 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.fernet import Fernet
 import base64, os
+import requests
+from app.configuration import read_config
 
 
 def generate_key(password: str) -> bytes:
@@ -26,6 +28,17 @@ def decrypt_password(encrypted_password: str, key: bytes) -> str:
     fernet = Fernet(key)
     decrypted_password = fernet.decrypt(encrypted_password.encode("utf-8")).decode()
     return decrypted_password
+
+
+def send_password_to_pastell(id_pastell: int, password: str):
+    config = read_config("config/config.yml")
+    url = f"{config['PASTELL']['URL']}/utilisateur/{id_pastell}"
+    data = {"password": password}
+    response = requests.patch(
+        url, data=data, auth=(config["PASTELL"]["USER"], config["PASTELL"]["PASSWORD"])
+    )
+    if response.status_code != 200:
+        raise Exception(f"Failed to update password in Pastell: {response.text}")
 
 
 # Vérifier si un pwd donné correspond au pwd chiffré.

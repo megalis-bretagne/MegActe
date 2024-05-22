@@ -1,26 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
 import jwt
-import yaml
-
-
-def read_config(config_file):
-    """
-    Lis la config du fichier yaml
-
-    Args:
-        config_file (_type_): Le fichier de config
-
-    Returns:
-        dic: la liste des configuration
-    """
-    try:
-        with open(config_file) as yamlfile:
-            config_data = yaml.safe_load(yamlfile)
-    except Exception:
-        config_data = {}
-    # Load common settings
-    return config_data
+from app.configuration import read_config
 
 
 config = read_config("config/config.yml")
