@@ -14,6 +14,7 @@ from ..services.user_service import (
 )
 import base64
 
+
 router = APIRouter()
 
 
@@ -30,6 +31,7 @@ def get_user(
 
 
 # Get liste de tous les users
+
 @router.get("/users/getAll", tags=["users"])
 def get_all_users(db: Session = Depends(get_db)):
     users = db.query(UserPastell).all()
@@ -53,11 +55,13 @@ def add_user(user_data: UserCreate, db: Session = Depends(get_db)):
     key = generate_key(user_data.pwd_pastell)
     encrypted_pwd = encrypt_password(user_data.pwd_pastell, key)
 
+
     new_user = UserPastell(
         login=user_data.login,
         id_pastell=user_data.id_pastell,
         pwd_pastell=encrypted_pwd,
         pwd_key=base64.urlsafe_b64encode(key).decode("utf-8"),
+
     )
     db.add(new_user)
     db.commit()
@@ -85,6 +89,7 @@ def get_decrypted_password(user_id: int, db: Session = Depends(get_db)):
             raise HTTPException(status_code=400, detail="Decryption failed.")
     else:
         raise HTTPException(status_code=404, detail="User not found.")
+
 
 
 # Update User
