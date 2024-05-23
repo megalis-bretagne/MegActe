@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from ..models.users import UserPastell
@@ -13,11 +13,9 @@ from ..services.user_service import (
 )
 import base64
 from ..exceptions.custom_exceptions import (
-    PastellException,
     UserNotFoundException,
     DecryptionException,
 )
-
 
 
 router = APIRouter()
@@ -37,6 +35,7 @@ def get_user(
 
 # Get liste de tous les users
 
+
 @router.get("/users/getAll", tags=["users"])
 def get_all_users(db: Session = Depends(get_db)):
     users = db.query(UserPastell).all()
@@ -55,18 +54,24 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
 # Add user
 @router.post("/users/add", response_model=UserCreate, tags=["users"])
 def add_user(user_data: UserCreate, db: Session = Depends(get_db)):
+    """Ajouter un nouvel utilisateur dans la BD et envoyer le mot de passe non chifré à PASTELL
 
+    Args:
+        user_data (UserCreate): Les données du user à ajouter.
+        db (Session, optional): La session de base de données. Defaults to Depends(get_db).
+
+    Returns:
+        UserPastell: L'utilisateur nouvellement créé.
+    """
     # Chiffrer le pwd
     key = generate_key(user_data.pwd_pastell)
     encrypted_pwd = encrypt_password(user_data.pwd_pastell, key)
-
 
     new_user = UserPastell(
         login=user_data.login,
         id_pastell=user_data.id_pastell,
         pwd_pastell=encrypted_pwd,
         pwd_key=base64.urlsafe_b64encode(key).decode("utf-8"),
-
     )
     db.add(new_user)
     db.commit()
@@ -91,7 +96,6 @@ def get_decrypted_password(user_id: int, db: Session = Depends(get_db)):
         return {"decrypted_password": decrypted_password}
     except Exception:
         raise DecryptionException()
-
 
 
 # Update User

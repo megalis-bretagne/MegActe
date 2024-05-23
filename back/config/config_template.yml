@@ -10,3 +10,5 @@ KEYCLOAK:
   auth_url: <URL>
   jwks_url: <URL>/protocol/openid-connect/certs
   client_id: <client_id>
+
+  TIMEOUT: <TIME>
