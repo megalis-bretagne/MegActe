@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .dependencies import validate_token
 from .routers import users, health
+from .exceptions.error_handlers import add_exception_handlers
 
 
 app = FastAPI()
@@ -15,6 +16,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+add_exception_handlers(app)
 
 
 app.include_router(users.router, dependencies=[Depends(validate_token)])
