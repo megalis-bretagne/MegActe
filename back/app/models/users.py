@@ -11,3 +11,4 @@ class UserPastell(Base):
     id_pastell = Column(Integer, unique=True)
     pwd_pastell = Column(String, unique=True)
     pwd_key = Column(String, unique=True)
+
