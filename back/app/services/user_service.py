@@ -4,6 +4,7 @@ from cryptography.fernet import Fernet
 import base64, os
 import requests
 from app.configuration import read_config
+from ..exceptions.custom_exceptions import PastellException
 
 
 def generate_key(password: str) -> bytes:
@@ -38,15 +39,7 @@ def send_password_to_pastell(id_pastell: int, password: str):
         url, data=data, auth=(config["PASTELL"]["USER"], config["PASTELL"]["PASSWORD"])
     )
     if response.status_code != 200:
-        raise Exception(f"Failed to update password in Pastell: {response.text}")
-
-
-# Vérifier si un pwd donné correspond au pwd chiffré.
-# def verify_password(encrypted_password: str, salt: bytes, password: str) -> bool:
-#     key = generate_key(password, salt)
-#     fernet = Fernet(key)
-#     try:
-#         decrypted_password = fernet.decrypt(encrypted_password.encode("utf-8")).decode()
-#         return decrypted_password == password
-#     except:
-#         return False
+        raise PastellException(
+            status_code=response.status_code,
+            detail="Failed to update password in Pastell",
+        )
