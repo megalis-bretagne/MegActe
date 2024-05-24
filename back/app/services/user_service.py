@@ -12,6 +12,7 @@ from ..schemas.user_schemas import UserCreate
 from ..exceptions.custom_exceptions import (
     UserNotFoundException,
     DecryptionException,
+    UserRegistrationException,
 )
 from ..models.users import UserPastell
 
@@ -83,6 +84,7 @@ def add_user_to_db(user_data: UserCreate, db: Session):
     key = generate_key(user_data.pwd_pastell)
     encrypted_pwd = encrypt_password(user_data.pwd_pastell, key)
 
+    # Enregistrer l'user dans la BD
     new_user = UserPastell(
         login=user_data.login,
         id_pastell=user_data.id_pastell,
@@ -92,6 +94,9 @@ def add_user_to_db(user_data: UserCreate, db: Session):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    if new_user.id is None:
+        raise UserRegistrationException("Failed to register the user in the database")
 
     # Envoyer le pwd non chifré à PASTELL
 
