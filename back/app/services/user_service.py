@@ -8,7 +8,9 @@ from ..exceptions.custom_exceptions import PastellException
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import Session
 
-from ..schemas.user_schemas import UserCreate
+from ..schemas.user_schemas import UserCreate, UserInfo
+from ..schemas.entite_schemas import EntiteInfo
+
 from ..exceptions.custom_exceptions import (
     UserNotFoundException,
     DecryptionException,
@@ -142,3 +144,75 @@ def delete_user_from_db(user_id: int, db: Session):
     db.commit()
 
     return {"message": "User deleted successfully"}
+
+
+# Get user context
+def get_user_context_service(current_user: dict, db: Session):
+    """Récupère le contexte du user à partir de Pastell en utilisant le jeton Keycloak réceptionner côté API
+
+    Args:
+        current_user (dict): Le dictionnaire contenant les infos du user actuel, incluant son login.
+        db (Session): La session de BD
+
+    Raises:
+        UserNotFoundException: Si le user n'est pas trouvé dans la BD.
+        PastellException:  Si les infos du user ne peuvent pas être récupérées depuis Pastell.
+        PastellException: Si les entités du user ne peuvent pas être récupérées depuis Pastell.
+    Returns:
+       dict: Un dictionnaire contenant les infos du user et ses entités.
+    """
+    login = current_user["login"]
+    user = db.query(UserPastell).filter(UserPastell.login == login).first()
+    if not user:
+        raise UserNotFoundException()
+
+    # Récupérer les infos du user depuis Pastell
+    config = read_config("config/config.yml")
+    user_info_url = f"{config['PASTELL']['URL']}/utilisateur/{user.id_pastell}"
+    user_info_response = requests.get(
+        user_info_url,
+        auth=(
+            user.login,
+            decrypt_password(
+                user.pwd_pastell, base64.urlsafe_b64decode(user.pwd_key.encode("utf-8"))
+            ),
+        ),
+    )
+    if user_info_response.status_code != 200:
+        raise PastellException(
+            status_code=user_info_response.status_code,
+            detail="Failed to retrieve user info from Pastell",
+        )
+
+    user_info_data = user_info_response.json()
+
+    if "certificat" not in user_info_data or not isinstance(
+        user_info_data["certificat"], list
+    ):
+        user_info_data["certificat"] = []
+
+    user_info = UserInfo(**user_info_data)
+
+    # Récupérer les entités du user depuis Pastell
+    entites_url = f"{config['PASTELL']['URL']}/entite/"
+    entites_response = requests.get(
+        entites_url,
+        auth=(
+            user.login,
+            decrypt_password(
+                user.pwd_pastell, base64.urlsafe_b64decode(user.pwd_key.encode("utf-8"))
+            ),
+        ),
+    )
+    if entites_response.status_code != 200:
+        raise PastellException(
+            status_code=entites_response.status_code,
+            detail="Failed to retrieve user entities from Pastell",
+        )
+
+    entites_data = entites_response.json()
+
+    # Convertir les données des entités en objets EntiteInfo
+    user_entites = [EntiteInfo(**entite) for entite in entites_data]
+
+    return {"user_info": user_info, "entites": user_entites}

@@ -10,6 +10,7 @@ from ..services.user_service import (
     get_decrypted_password_from_db,
     update_user_in_db,
     delete_user_from_db,
+    get_user_context_service,
 )
 
 router = APIRouter()
@@ -34,7 +35,7 @@ def get_all_users(db: Session = Depends(get_db)):
 
 
 # Get user by id
-@router.get("/users/{user_id}", tags=["users"])
+@router.get("/users/get_user/{user_id}", tags=["users"])
 def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
     return get_user_by_id_from_db(user_id, db)
 
@@ -61,3 +62,11 @@ def update_user(user_id: int, user_data: UserCreate, db: Session = Depends(get_d
 @router.delete("/users/{user_id}", tags=["users"])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     return delete_user_from_db(user_id, db)
+
+
+# Get user context
+@router.get("/users/context", tags=["users"], response_model=dict)
+def get_user_context(
+    current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    return get_user_context_service(current_user, db)
