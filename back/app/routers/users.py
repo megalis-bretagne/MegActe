@@ -56,11 +56,3 @@ def update_user(user_id: int, user_data: UserCreate, db: Session = Depends(get_d
 @router.delete("/user/{user_id}", tags=["users"])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     return delete_user_from_db(user_id, db)
-
-
-# Get user context
-@router.get("/users/context", tags=["users"], response_model=dict)
-def get_user_context(
-    current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
-):
-    return get_user_context_service(current_user, db)
