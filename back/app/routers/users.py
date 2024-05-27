@@ -27,8 +27,6 @@ def get_user(current_user: dict = Depends(get_current_user)):
 
 
 # Get liste de tous les users
-
-
 @router.get("/users/getAll", tags=["users"])
 def get_all_users(db: Session = Depends(get_db)):
     return get_all_users_from_db(db)

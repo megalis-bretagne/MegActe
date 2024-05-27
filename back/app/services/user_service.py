@@ -6,7 +6,6 @@ import requests
 from app.configuration import read_config
 from ..exceptions.custom_exceptions import PastellException
 from sqlalchemy.orm import Session
-from sqlalchemy.orm import Session
 
 from ..schemas.user_schemas import UserCreate, UserInfo
 from ..schemas.entite_schemas import EntiteInfo
@@ -15,6 +14,7 @@ from ..exceptions.custom_exceptions import (
     UserNotFoundException,
     DecryptionException,
     UserRegistrationException,
+    UserPasswordNullException,
 )
 from ..models.users import UserPastell
 
@@ -146,6 +146,25 @@ def delete_user_from_db(user_id: int, db: Session):
     return {"message": "User deleted successfully"}
 
 
+def get_pastell_auth(user: UserPastell):
+    """Récupère les infos d'authentification pour l'utilisateur de Pastell.
+
+    Cette fonction utilise le login du user et déchiffre son mdp pour générer les infors d'authentification nécessaires aux requêtes HTTP vers Pastell.
+
+    Args:
+        user (UserPastell): L'objet user contenant le login, le mdp chiffré et la clé de chiffrement.
+
+    Returns:
+        tuple: Un tuple contenant le login du user et son mdp déchiffré.
+    """
+    return (
+        user.login,
+        decrypt_password(
+            user.pwd_pastell, base64.urlsafe_b64decode(user.pwd_key.encode("utf-8"))
+        ),
+    )
+
+
 # Get user context
 def get_user_context_service(current_user: dict, db: Session):
     """Récupère le contexte du user à partir de Pastell en utilisant le jeton Keycloak réceptionner côté API
@@ -166,17 +185,18 @@ def get_user_context_service(current_user: dict, db: Session):
     if not user:
         raise UserNotFoundException()
 
+    if not user.pwd_pastell:
+        raise UserPasswordNullException()
+
     # Récupérer les infos du user depuis Pastell
     config = read_config("config/config.yml")
+    timeout = config.get("TIMEOUT")
+
     user_info_url = f"{config['PASTELL']['URL']}/utilisateur/{user.id_pastell}"
     user_info_response = requests.get(
         user_info_url,
-        auth=(
-            user.login,
-            decrypt_password(
-                user.pwd_pastell, base64.urlsafe_b64decode(user.pwd_key.encode("utf-8"))
-            ),
-        ),
+        auth=get_pastell_auth(user),
+        timeout=timeout,
     )
     if user_info_response.status_code != 200:
         raise PastellException(
@@ -193,16 +213,15 @@ def get_user_context_service(current_user: dict, db: Session):
 
     user_info = UserInfo(**user_info_data)
 
+    if user_info.id_e == 0:
+        return {"user_info": user_info}
+
     # Récupérer les entités du user depuis Pastell
     entites_url = f"{config['PASTELL']['URL']}/entite/"
     entites_response = requests.get(
         entites_url,
-        auth=(
-            user.login,
-            decrypt_password(
-                user.pwd_pastell, base64.urlsafe_b64decode(user.pwd_key.encode("utf-8"))
-            ),
-        ),
+        auth=get_pastell_auth(user),
+        timeout=timeout,
     )
     if entites_response.status_code != 200:
         raise PastellException(
