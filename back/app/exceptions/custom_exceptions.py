@@ -48,3 +48,35 @@ class UserNotFoundException(HTTPException):
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "User not found".
         """
         super().__init__(status_code=404, detail=detail)
+
+
+class UserRegistrationException(HTTPException):
+    """Exception pour les erreurs d'enregistrement du user dans la BD.
+
+    Args:
+        HTTPException (HTTPException): Classe de base pour les exceptions HTTP.
+    """
+
+    def __init__(self, detail: str = "User registration failed"):
+        """Initialise une UserRegistrationException.
+
+        Args:
+            detail (str, optional): Le message détaillé de l'erreur. Defaults to "User registration failed".
+        """
+        super().__init__(status_code=500, detail=detail)
+
+
+class UserPasswordNullException(HTTPException):
+    """Exception pour les erreurs lorsque le mdp du user est null.
+
+    Args:
+        HTTPException (HTTPException): Classe de base pour les exceptions HTTP.
+    """
+
+    def __init__(self, detail: str = "User password is null"):
+        """Initialise une UserPasswordNullException.
+
+        Args:
+            detail (str, optional): Le message détaillé de l'erreur. Defaults to "User password is null".
+        """
+        super().__init__(status_code=400, detail=detail)
