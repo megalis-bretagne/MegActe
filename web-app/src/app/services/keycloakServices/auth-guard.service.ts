@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { Location } from '@angular/common';
-import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, } from '@angular/router';
 import { KeycloakAuthGuard, KeycloakService } from 'keycloak-angular';
 
+
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
-export class AuthGuard extends KeycloakAuthGuard {
+export class AuthGuardService extends KeycloakAuthGuard {
+
   constructor(
     protected override readonly router: Router,
     protected readonly keycloak: KeycloakService,
@@ -29,7 +31,7 @@ export class AuthGuard extends KeycloakAuthGuard {
     // Get the roles required from the route.
     const requiredRoles = route.data['roles'];
 
-    // Allow the user to to proceed if no additional roles are required to access the route.
+    // Allow the user to proceed if no additional roles are required to access the route.
     if (!(requiredRoles instanceof Array) || requiredRoles.length === 0) {
       return true;
     }

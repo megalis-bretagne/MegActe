@@ -1,16 +1,1 @@
 /* You can add global styles to this file, and also import other style files */
-
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
-.container {
-    padding-top: 60px;
-    padding-bottom: 100px;
-}
-
-.grid-file>.mat-grid-tile-content {
-    justify-content: start;
-  }
-
-.panel-classification.mat-select-panel {
-min-width: 500px;
-}

@@ -1,14 +1,14 @@
 export class Keycloak {
-  issuer = '';
-  realm = '';
-  clientId = '';
-  urlLogout!: '';
+    issuer = '';
+    realm = '';
+    clientId = '';
+    urlLogout!: '';
 }
 
 export class Settings {
-  production = false;
-  keycloak: Keycloak | undefined;
-  urlmarqueblanche = "";
-  apiUrl = "" ;
-  opendataToolUrl = "";
+    production = false;
+    keycloak: Keycloak | undefined;
+    urlmarqueblanche = "";
+    apiUrl = "";
+    opendataToolUrl = "";
 }
