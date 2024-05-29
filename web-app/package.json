@@ -24,6 +24,8 @@
     "@angular/platform-browser": "^17.3.8",
     "@angular/platform-browser-dynamic": "^17.3.8",
     "@angular/router": "^17.3.8",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
     "keycloak-angular": "^15.2.1",
     "keycloak-js": "^22.0.1",
     "moment": "^2.29.3",

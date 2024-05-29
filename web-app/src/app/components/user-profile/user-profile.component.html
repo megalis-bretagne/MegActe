@@ -1,1 +1,69 @@
-<p>user-profile works!</p>
+<div *ngIf="userContext" class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body" style="background: #5e72e4; color: white;">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h2>Bonjour {{ userContext.user_info.nom }} {{ userContext.user_info.prenom }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Denomination</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Siren</th>
+                                <!-- <th scope="col"></th> -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let entite of userContext.entites">
+                                <td>{{ entite.denomination }}</td>
+                                <td>{{ entite.siren }}</td>
+                                <td>{{ entite.type }}</td>
+                                <!-- <td class="text-right">
+                                    <div ngbDropdown placement="bottom-right">
+                                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink"
+                                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            ::
+                                        </a>
+                                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                            <li><a class="dropdown-item" href="#">Action</a></li>
+                                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                        </ul>
+                                    </div>
+                                </td> -->
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <div *ngIf="userContext">
+    <h2>Informations de l'utilisateur</h2>
+    <p><strong>Nom:</strong> {{ userContext.user_info.nom }}</p>
+    <p><strong>Prénom:</strong> {{ userContext.user_info.prenom }}</p>
+    <p><strong>Email:</strong> {{ userContext.user_info.email }}</p>
+    <p><strong>Login:</strong> {{ userContext.user_info.login }}</p>
+
+    <h3>Entités</h3>
+    <div *ngFor="let entite of userContext.entites">
+        <p><strong>Denomination:</strong> {{ entite.denomination }}</p>
+        <p><strong>SIREN:</strong> {{ entite.siren }}</p>
+        <p><strong>Type:</strong> {{ entite.type }}</p>
+    </div>
+</div> -->

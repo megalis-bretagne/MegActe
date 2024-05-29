@@ -1,1 +1,43 @@
 /* You can add global styles to this file, and also import other style files */
+@import "~bootstrap/dist/css/bootstrap.min.css";
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.container-fluid {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.row {
+    margin: 0;
+    padding: 0;
+
+}
+
+.sidebar {
+    background-color: #ffffff;
+    border-right: 1px solid #dee2e6;
+    height: 100vh;
+}
+
+.navbar {
+    background: #5e72e4;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 1001;
+    margin: 0;
+    padding: 0;
+}
+
+.content {
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 56px);
+    padding: 20px;
+}

@@ -1,0 +1,92 @@
+.card {
+    border-radius: 0.5rem;
+    background-color: #fff;
+}
+
+.card-body {
+    background-color: #5e72e4;
+    color: white;
+}
+
+.table-responsive {
+    margin-top: 20px;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.thead-light th {
+    color: #8898aa;
+    background-color: #f8f9fa;
+}
+
+.table-flush td {
+    border-top: 0;
+}
+
+.avatar-group {
+    display: flex;
+}
+
+.avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    margin-right: -10px;
+}
+
+.badge-dot {
+    padding-right: 1rem;
+}
+
+.badge-dot i {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.bg-warning {
+    background-color: #fb6340;
+}
+
+.bg-success {
+    background-color: #2dce89;
+}
+
+.bg-danger {
+    background-color: #f5365c;
+}
+
+.progress {
+    height: 5px;
+    border-radius: 2px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    background-color: #5e72e4;
+    border-radius: 2px;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.dropdown-menu-right {
+    right: 0;
+    left: auto;
+}
+
+.dropdown-menu-arrow:before {
+    position: absolute;
+    top: -7px;
+    right: 10px;
+    display: inline-block;
+    border-right: 7px solid transparent;
+    border-bottom: 7px solid #fff;
+    border-left: 7px solid transparent;
+    content: "";
+}
