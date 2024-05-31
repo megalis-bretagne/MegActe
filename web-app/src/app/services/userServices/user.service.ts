@@ -19,7 +19,6 @@ export class UserService {
   getUserContext(): Observable<UserContext> {
     return new Observable(observer => {
       this.keycloakService.getToken().then(token => {
-        console.log('Token:', token);
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
         this.http.get<UserContext>(this.apiUrl, { headers }).subscribe(
           data => {

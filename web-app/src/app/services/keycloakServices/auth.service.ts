@@ -18,6 +18,10 @@ export class AuthService {
   }
 
   logout(): void {
-    this.keycloakService.logout(this.settings.settings.keycloak.urlLogout);
+    this.keycloakService.logout(this.settings.settings.keycloak.urlLogout).then(() => {
+      console.log('Déconnexion réussie');
+    }).catch((err) => {
+      console.error('Erreur lors de la déconnexion', err);
+    });
   }
 }
