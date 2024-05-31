@@ -54,7 +54,7 @@ export class UserProfileComponent implements OnInit {
   updateDisplayedPages() {
     const visiblePages = 5; // Nombre de pages à afficher
     let startPage = Math.max(1, this.currentPage - Math.floor(visiblePages / 2));
-    let endPage = Math.min(this.totalPages, startPage + visiblePages - 1);
+    const endPage = Math.min(this.totalPages, startPage + visiblePages - 1);
 
     // Ajuste startPage si on est à la fin
     if (endPage - startPage < visiblePages - 1) {
