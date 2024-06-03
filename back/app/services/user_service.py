@@ -17,6 +17,7 @@ from ..exceptions.custom_exceptions import (
     UserPasswordNullException,
 )
 from ..models.users import UserPastell
+from ..schemas.flux_schemas import Acte
 
 
 def generate_key(password: str) -> bytes:
@@ -235,3 +236,51 @@ def get_user_context_service(current_user: dict, db: Session):
     user_entites = [EntiteInfo(**entite) for entite in entites_data]
 
     return {"user_info": user_info, "entites": user_entites}
+
+
+# Get liste des flux dispo pour l'utilisateur connecté
+def get_user_flux_service(current_user: dict, db: Session):
+    """Récupère les flux disponibles pour l'utilisateur depuis Pastell
+
+    Args:
+        current_user (dict): Le dictionnaire contenant les infos du user actuel, incluant son login.
+        db (Session): La session de BD
+
+    Raises:
+        UserNotFoundException: Si le user n'est pas trouvé dans la BD.
+        PastellException: Si les flux ne peuvent pas être récupérés depuis Pastell.
+
+    Returns:
+       list: Une liste contenant les flux disponibles pour l'utilisateur.
+    """
+    login = current_user["login"]
+    user = db.query(UserPastell).filter(UserPastell.login == login).first()
+    if not user:
+        raise UserNotFoundException()
+
+    if not user.pwd_pastell:
+        raise UserPasswordNullException()
+
+    # Récupérer les flux depuis Pastell
+    config = read_config("config/config.yml")
+    timeout = config.get("TIMEOUT")
+
+    flux_url = f"{config['PASTELL']['URL']}/flux"
+    flux_response = requests.get(
+        flux_url,
+        auth=get_pastell_auth(user),
+        timeout=timeout,
+    )
+
+    if flux_response.status_code != 200:
+        raise PastellException(
+            status_code=flux_response.status_code,
+            detail="Failed to retrieve flux from Pastell",
+        )
+
+    flux_data = flux_response.json()
+
+    # Convertir données Flux -> objets Flux
+    user_flux = [Acte(**flux) for flux in flux_data.values()]
+
+    return user_flux

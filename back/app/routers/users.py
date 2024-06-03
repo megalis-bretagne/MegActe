@@ -10,7 +10,9 @@ from ..services.user_service import (
     update_user_in_db,
     delete_user_from_db,
     get_user_context_service,
+    get_user_flux_service,
 )
+from ..schemas.flux_schemas import Acte
 
 router = APIRouter()
 
@@ -56,3 +58,11 @@ def update_user(user_id: int, user_data: UserCreate, db: Session = Depends(get_d
 @router.delete("/user/{user_id}", tags=["users"])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     return delete_user_from_db(user_id, db)
+
+
+# Get liste des flux dispo pour l'utilisateur connecté
+@router.get("/users/flux", response_model=list[Acte], tags=["users"])
+def get_user_flux(
+    current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    return get_user_flux_service(current_user, db)
