@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NGXLogger } from 'ngx-logger';
 import { UserContext } from 'src/app/model/user.model';
 import { AuthService } from 'src/app/services/keycloakServices/auth.service';
 import { UserService } from 'src/app/services/userServices/user.service';
@@ -11,7 +12,7 @@ import { UserService } from 'src/app/services/userServices/user.service';
 export class NavbarComponent implements OnInit {
   userContext: UserContext | undefined;
 
-  constructor(private userService: UserService, private authService: AuthService) { }
+  constructor(private userService: UserService, private authService: AuthService, private logger: NGXLogger) { }
 
   ngOnInit(): void {
     this.userService.getUserContext().subscribe(
@@ -19,13 +20,12 @@ export class NavbarComponent implements OnInit {
         this.userContext = data;
       },
       (error) => {
-        console.error('Error fetching user context', error);
+        this.logger.error('Error fetching user context', error);
       }
     );
   }
 
-  logout(event: Event): void {
-    event.preventDefault();
+  logout(): void {
     this.authService.logout();
   }
 }

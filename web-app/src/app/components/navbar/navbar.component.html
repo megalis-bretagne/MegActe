@@ -7,12 +7,6 @@
                         <div class="fr-header__logo">
                             <img src="../../../assets/img/megalis_logo.png" alt="Logo de megalis bretagne" class="logo">
                         </div>
-                        <div class="fr-header__navbar">
-                            <button class="fr-btn--menu fr-btn" data-fr-opened="false" aria-controls="modal-499"
-                                aria-haspopup="menu" id="button-500" title="Menu">
-                                Menu
-                            </button>
-                        </div>
                     </div>
                     <div class="fr-header__service">
                         <a href="/" title="Accueil Megacte">
@@ -27,16 +21,16 @@
                     <div class="fr-header__tools-links">
                         <ul class="fr-btns-group">
                             <li>
-                                <a class="fr-btn" routerLink="/user-profile">
+                                <a class="fr-btn" routerLink="/user-profile" aria-label="Accéder au profil utilisateur">
                                     <span class="fr-icon-account-circle-fill" aria-hidden="true"></span>
                                     {{ userContext.user_info.prenom }} {{ userContext.user_info.nom }}
                                 </a>
                             </li>
                             <li>
-                                <a class="fr-btn" href="" (click)="logout($event)">
+                                <button class="fr-btn" (click)="logout()" aria-label="Déconnexion" type="button">
                                     <span class="fr-icon-logout-box-r-fill" aria-hidden="true"></span>
                                     Déconnexion
-                                </a>
+                                </button>
                             </li>
                         </ul>
                     </div>
