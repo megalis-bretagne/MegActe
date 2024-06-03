@@ -15,14 +15,17 @@ export class NavbarComponent implements OnInit {
   constructor(private userService: UserService, private authService: AuthService, private logger: NGXLogger) { }
 
   ngOnInit(): void {
-    this.userService.getUserContext().subscribe(
-      (data: UserContext) => {
+    this.userService.getUserContext().subscribe({
+      next: (data: UserContext) => {
         this.userContext = data;
       },
-      (error) => {
+      error: (error) => {
         this.logger.error('Error fetching user context', error);
+      },
+      complete: () => {
+        this.logger.info('User context fetching completed');
       }
-    );
+    });
   }
 
   logout(): void {
