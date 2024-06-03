@@ -1,0 +1,41 @@
+<header role="banner" class="fr-header">
+    <div class="fr-header__body">
+        <div class="fr-container">
+            <div class="fr-header__body-row">
+                <div class="fr-header__brand fr-enlarge-link">
+                    <div class="fr-header__brand-top">
+                        <div class="fr-header__logo">
+                            <img src="../../../assets/img/megalis_logo.png" alt="Logo de megalis bretagne" class="logo">
+                        </div>
+                    </div>
+                    <div class="fr-header__service">
+                        <a href="/" title="Accueil Megacte">
+                            <p class="fr-header__service-title">
+                                Megacte
+                            </p>
+                        </a>
+                        <p class="fr-header__service-tagline">Gestion des actes administratifs</p>
+                    </div>
+                </div>
+                <div class="fr-header__tools">
+                    <div class="fr-header__tools-links">
+                        <ul class="fr-btns-group">
+                            <li>
+                                <a class="fr-btn" routerLink="/user-profile" aria-label="Accéder au profil utilisateur">
+                                    <span class="fr-icon-account-circle-fill" aria-hidden="true"></span>
+                                    {{ userContext.user_info.prenom }} {{ userContext.user_info.nom }}
+                                </a>
+                            </li>
+                            <li>
+                                <button class="fr-btn" (click)="logout()" aria-label="Déconnexion" type="button">
+                                    <span class="fr-icon-logout-box-r-fill" aria-hidden="true"></span>
+                                    Déconnexion
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

@@ -1,38 +1,29 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { DeliberationsComponent } from './components/deliberations.component';
-import { AuthGuard } from './services/auth-guard.service';
-import { DashboardComponent } from './components/dashboard.component';
-import { ActesAutresComponent } from './components/actes-autres.component';
-
-
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { AuthGuardService } from './services/keycloakServices/auth-guard.service';
+import { UserProfileComponent } from './components/user-profile/user-profile.component';
 
 const routes: Routes = [
- {
-    path: '',
-    component: DashboardComponent,
-    canActivate: [AuthGuard]
-},
-{
-  path: 'deliberations',
-  component: DeliberationsComponent,
-  canActivate: [AuthGuard]
-},
-{
-  path: 'autres-actes',
-  component: ActesAutresComponent,
-  canActivate: [AuthGuard]
-}
-,{
-  path: '**',
-  redirectTo: ''
-}
+    {
+        path: '',
+        component: DashboardComponent,
+        canActivate: [AuthGuardService]
+    },
+    {
+        path: 'user-profile',
+        component: UserProfileComponent
+    },
+    {
+        path: '**',
+        redirectTo: ''
+    }
 
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule]
 
 })
 export class AppRoutingModule { }

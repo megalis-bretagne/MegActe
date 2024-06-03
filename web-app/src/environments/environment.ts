@@ -3,10 +3,9 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
-  version:'beta 1',
-  repositoryUrl: 'https://github.com/megalis-bretagne/proto',
-  modules: ['deliberations', 'actes']
+    production: false,
+    version: 'V1.0.0',
+    repositoryUrl: 'https://github.com/megalis-bretagne/MegActe'
 };
 
 /*
