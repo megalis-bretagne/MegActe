@@ -61,7 +61,7 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 
 
 # Get liste des flux dispo pour l'utilisateur connecté
-@router.get("/users/flux", response_model=list[Acte], tags=["users"])
+@router.get("/flux", response_model=list[Acte], tags=["users"])
 def get_user_flux(
     current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
 ):
