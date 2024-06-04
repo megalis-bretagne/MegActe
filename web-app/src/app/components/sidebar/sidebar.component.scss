@@ -1,9 +1,13 @@
-.sidebar {
-    height: 100vh;
-    background-color: #ffffff;
-    border-right: 1px solid #dee2e6;
+.toggle-container {
+    margin: 0 1rem;
+}
+
+
+.fr-sidemenu__inner {
     padding: 0;
     margin: 0;
-    display: flex;
-    flex-direction: column;
+}
+
+.fr-sidemenu {
+    padding: 0;
 }
