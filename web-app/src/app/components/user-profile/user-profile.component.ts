@@ -9,6 +9,7 @@ import { UserService } from 'src/app/services/userServices/user.service';
   styleUrls: ['./user-profile.component.scss']
 })
 export class UserProfileComponent implements OnInit {
+  // @Input() userContext: UserContext | undefined;
   userContext: UserContext | undefined;
   currentPage: number = 1;
   itemsPerPage: number = 15;
@@ -18,6 +19,14 @@ export class UserProfileComponent implements OnInit {
 
   constructor(private userService: UserService, private logger: NGXLogger
   ) { }
+
+  // ngOnInit(): void {
+  //   if (this.userContext) {
+  //     this.logger.info('User context fetching completed');
+  //   } else {
+  //     this.logger.error('Error fetching user context');
+  //   }
+  // }
 
   ngOnInit(): void {
     this.userService.getUserContext().subscribe({

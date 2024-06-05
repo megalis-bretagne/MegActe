@@ -12,14 +12,20 @@ import { SettingsService } from 'src/environments/settings.service';
 export class UserService {
 
   private apiUrl: string;
+  // private userContext: UserContext | undefined;
 
   constructor(private http: HttpClient, private keycloakService: KeycloakService, private settingsService: SettingsService) {
     this.apiUrl = this.settingsService.apiUrl;
+    // this.getUserContext().subscribe(context => this.userContext = context);
   }
 
   getUserContext(): Observable<UserContext> {
     return this.http.get<UserContext>(this.apiUrl + '/user');
   }
+
+  // getUserContextData(): UserContext | undefined {
+  //   return this.userContext;
+  // }
 
   getUserFlux(): Observable<Acte[]> {
     return this.http.get<Acte[]>(this.apiUrl + '/flux');

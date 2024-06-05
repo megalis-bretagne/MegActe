@@ -14,6 +14,13 @@ export class NavbarComponent implements OnInit {
 
   constructor(private userService: UserService, private authService: AuthService, private logger: NGXLogger) { }
 
+  // ngOnInit(): void {
+  //   if (this.userContext) {
+  //     this.logger.info('User context fetching completed');
+  //   } else {
+  //     this.logger.error('Error fetching user context');
+  //   }
+  // }
   ngOnInit(): void {
     this.userService.getUserContext().subscribe({
       next: (data: UserContext) => {

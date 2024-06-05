@@ -18,7 +18,8 @@ export class SidebarComponent implements OnInit {
   ngOnInit(): void {
     this.userService.getUserFlux().subscribe(
       (data: Acte[]) => {
-        this.actes = data;
+        this.actes = Object.values(data);
+        console.log(this.actes)
         this.sortActes();
         this.groupActesByType();
       },
@@ -32,17 +33,18 @@ export class SidebarComponent implements OnInit {
   }
 
   groupActesByType(): void {
-    this.groupedActes = Object.values(
-      this.actes.reduce((acc: { [type: string]: GroupedActes }, acte: Acte) => {
-        const existingGroup = acc[acte.type];
-        if (!existingGroup) {
-          acc[acte.type] = { type: acte.type, nom: [acte.nom] };
-        } else {
-          existingGroup.nom.push(acte.nom);
-        }
-        return acc;
-      }, {})
-    );
+    const grouped = this.actes.reduce((acc: { [type: string]: string[] }, acte: Acte) => {
+      if (!acc[acte.type]) {
+        acc[acte.type] = [];
+      }
+      acc[acte.type].push(acte.nom);
+      return acc;
+    }, {});
+
+    this.groupedActes = Object.keys(grouped).map(type => ({
+      type,
+      nom: grouped[type]
+    }));
   }
 
   sortActes(): void {
