@@ -16,8 +16,6 @@ from ..exceptions.custom_exceptions import (
     UserRegistrationException,
 )
 from ..models.users import UserPastell
-from ..schemas.flux_schemas import Acte
-from ..utils.decorators import inject_user_and_config
 
 
 def generate_key(password: str) -> bytes:
@@ -167,14 +165,11 @@ def get_pastell_auth(user: UserPastell):
 
 
 # Get user context
-@inject_user_and_config
-def get_user_context_service(user: UserPastell, config: dict, timeout: int):
+def get_user_context_service(user):
     """Récupère le contexte du user à partir de Pastell en utilisant le jeton Keycloak réceptionner côté API
 
     Args:
-        user (UserPastell): L'utilisateur récupéré depuis la BD.
-        config (dict): La configuration de l'app.
-        timeout (int): Le délai d'attente pour les requêtes.
+        user : L'utilisateur récupéré depuis la BD
 
     Raises:
         PastellException:  Si les infos du user ne peuvent pas être récupérées depuis Pastell.
@@ -183,6 +178,10 @@ def get_user_context_service(user: UserPastell, config: dict, timeout: int):
     Returns:
        dict: Un dictionnaire contenant les infos du user et ses entités.
     """
+
+    # Récupérer les infos du user depuis Pastell
+    config = read_config("config/config.yml")
+    timeout = config.get("TIMEOUT")
 
     user_info_url = f"{config['PASTELL']['URL']}/utilisateur/{user.id_pastell}"
     user_info_response = requests.get(
@@ -230,14 +229,11 @@ def get_user_context_service(user: UserPastell, config: dict, timeout: int):
 
 
 # Get liste des flux dispo pour l'utilisateur connecté
-@inject_user_and_config
-def get_user_flux_service(user: UserPastell, config: dict, timeout: int):
+def get_user_flux_service(user):
     """Récupère les flux disponibles pour l'utilisateur depuis Pastell
 
     Args:
-        user (UserPastell): L'utilisateur récupéré depuis la BD.
-        config (dict): La configuration de l'app.
-        timeout (int): Le délai d'attente pour les requêtes.
+        user: L'utilisateur pour lequel les flux doivent être récupérés.
 
     Raises:
         PastellException:  Si les flux du user ne peuvent pas être récupérées depuis Pastell.
@@ -245,6 +241,10 @@ def get_user_flux_service(user: UserPastell, config: dict, timeout: int):
     Returns:
        list: Une liste contenant les flux disponibles pour l'utilisateur.
     """
+
+    # Récupérer les infos du user depuis Pastell
+    config = read_config("config/config.yml")
+    timeout = config.get("TIMEOUT")
 
     flux_url = f"{config['PASTELL']['URL']}/flux"
     flux_response = requests.get(
@@ -259,9 +259,4 @@ def get_user_flux_service(user: UserPastell, config: dict, timeout: int):
             detail="Failed to retrieve flux from Pastell",
         )
 
-    flux_data = flux_response.json()
-
-    # Convertir données Flux -> objets Flux
-    user_flux = [Acte(**flux) for flux in flux_data.values()]
-
-    return user_flux
+    return flux_response.json()

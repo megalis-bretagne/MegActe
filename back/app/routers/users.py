@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from ..database import get_db
-from ..dependencies import get_current_user
+from ..database import get_user_from_db
 from ..schemas.user_schemas import UserCreate
 from ..services.user_service import (
     get_all_users_from_db,
@@ -12,7 +12,7 @@ from ..services.user_service import (
     get_user_context_service,
     get_user_flux_service,
 )
-from ..schemas.flux_schemas import Acte
+from ..models.users import UserPastell
 
 router = APIRouter()
 
@@ -24,10 +24,8 @@ router = APIRouter()
     response_model=dict,
     description="Récupère les informations de l'utilisateur connecté",
 )
-def get_user(
-    current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
-):
-    return get_user_context_service(current_user, db)
+def get_user(user: UserPastell = Depends(get_user_from_db)):
+    return get_user_context_service(user)
 
 
 # Get liste de tous les users
@@ -61,14 +59,6 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 
 
 # Get liste des flux dispo pour l'utilisateur connecté
-@router.get("/flux", response_model=list[Acte], tags=["users"])
-def get_user_flux(
-    current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
-):
-    return get_user_flux_service(current_user, db)
-
-
-# @inject_user_and_config
-# @router.get("/flux", response_model=None, tags=["users"])
-# def get_user_flux(user: UserPastell, config: dict, timeout: int):
-#     return get_user_flux_service(user, config, timeout)
+@router.get("/flux", tags=["users"])
+def get_user_flux(user: UserPastell = Depends(get_user_from_db)):
+    return get_user_flux_service(user)
