@@ -10,3 +10,14 @@
 .fr-sidemenu {
     padding: 0;
 }
+
+.fr-sidemenu__link,
+.fr-sidemenu__btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.fr-sidemenu__text {
+    flex-grow: 1;
+}
