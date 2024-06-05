@@ -177,9 +177,9 @@ def get_user_context_service(user: UserPastell, config: dict, timeout: int):
         timeout (int): Le délai d'attente pour les requêtes.
 
     Raises:
-        UserNotFoundException: Si le user n'est pas trouvé dans la BD.
         PastellException:  Si les infos du user ne peuvent pas être récupérées depuis Pastell.
         PastellException: Si les entités du user ne peuvent pas être récupérées depuis Pastell.
+
     Returns:
        dict: Un dictionnaire contenant les infos du user et ses entités.
     """
@@ -235,13 +235,12 @@ def get_user_flux_service(user: UserPastell, config: dict, timeout: int):
     """Récupère les flux disponibles pour l'utilisateur depuis Pastell
 
     Args:
-        current_user (dict): Le dictionnaire contenant les infos du user actuel, incluant son login.
-        db (Session): La session de BD
-
-    Raises:
         user (UserPastell): L'utilisateur récupéré depuis la BD.
         config (dict): La configuration de l'app.
         timeout (int): Le délai d'attente pour les requêtes.
+
+    Raises:
+        PastellException:  Si les flux du user ne peuvent pas être récupérées depuis Pastell.
 
     Returns:
        list: Une liste contenant les flux disponibles pour l'utilisateur.
