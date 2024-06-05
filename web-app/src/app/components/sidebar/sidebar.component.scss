@@ -2,22 +2,13 @@
     margin: 0 1rem;
 }
 
-.fr-sidemenu-inner {
-    padding: 0;
-    margin: 0;
-}
-
 .fr-sidemenu {
     padding: 0;
 }
 
-.fr-sidemenu__link,
-.fr-sidemenu__btn {
+.sidemenu-link,
+.fr-sidemenu-btn {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.fr-sidemenu__text {
-    flex-grow: 1;
 }
