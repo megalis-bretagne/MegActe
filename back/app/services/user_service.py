@@ -14,10 +14,10 @@ from ..exceptions.custom_exceptions import (
     UserNotFoundException,
     DecryptionException,
     UserRegistrationException,
-    UserPasswordNullException,
 )
 from ..models.users import UserPastell
 from ..schemas.flux_schemas import Acte
+from ..utils.decorators import inject_user_and_config
 
 
 def generate_key(password: str) -> bytes:
@@ -167,12 +167,14 @@ def get_pastell_auth(user: UserPastell):
 
 
 # Get user context
-def get_user_context_service(current_user: dict, db: Session):
+@inject_user_and_config
+def get_user_context_service(user: UserPastell, config: dict, timeout: int):
     """Récupère le contexte du user à partir de Pastell en utilisant le jeton Keycloak réceptionner côté API
 
     Args:
-        current_user (dict): Le dictionnaire contenant les infos du user actuel, incluant son login.
-        db (Session): La session de BD
+        user (UserPastell): L'utilisateur récupéré depuis la BD.
+        config (dict): La configuration de l'app.
+        timeout (int): Le délai d'attente pour les requêtes.
 
     Raises:
         UserNotFoundException: Si le user n'est pas trouvé dans la BD.
@@ -181,17 +183,6 @@ def get_user_context_service(current_user: dict, db: Session):
     Returns:
        dict: Un dictionnaire contenant les infos du user et ses entités.
     """
-    login = current_user["login"]
-    user = db.query(UserPastell).filter(UserPastell.login == login).first()
-    if not user:
-        raise UserNotFoundException()
-
-    if not user.pwd_pastell:
-        raise UserPasswordNullException()
-
-    # Récupérer les infos du user depuis Pastell
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
 
     user_info_url = f"{config['PASTELL']['URL']}/utilisateur/{user.id_pastell}"
     user_info_response = requests.get(
@@ -239,7 +230,8 @@ def get_user_context_service(current_user: dict, db: Session):
 
 
 # Get liste des flux dispo pour l'utilisateur connecté
-def get_user_flux_service(current_user: dict, db: Session):
+@inject_user_and_config
+def get_user_flux_service(user: UserPastell, config: dict, timeout: int):
     """Récupère les flux disponibles pour l'utilisateur depuis Pastell
 
     Args:
@@ -247,23 +239,13 @@ def get_user_flux_service(current_user: dict, db: Session):
         db (Session): La session de BD
 
     Raises:
-        UserNotFoundException: Si le user n'est pas trouvé dans la BD.
-        PastellException: Si les flux ne peuvent pas être récupérés depuis Pastell.
+        user (UserPastell): L'utilisateur récupéré depuis la BD.
+        config (dict): La configuration de l'app.
+        timeout (int): Le délai d'attente pour les requêtes.
 
     Returns:
        list: Une liste contenant les flux disponibles pour l'utilisateur.
     """
-    login = current_user["login"]
-    user = db.query(UserPastell).filter(UserPastell.login == login).first()
-    if not user:
-        raise UserNotFoundException()
-
-    if not user.pwd_pastell:
-        raise UserPasswordNullException()
-
-    # Récupérer les flux depuis Pastell
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
 
     flux_url = f"{config['PASTELL']['URL']}/flux"
     flux_response = requests.get(

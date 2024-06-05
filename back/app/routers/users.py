@@ -66,3 +66,9 @@ def get_user_flux(
     current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     return get_user_flux_service(current_user, db)
+
+
+# @inject_user_and_config
+# @router.get("/flux", response_model=None, tags=["users"])
+# def get_user_flux(user: UserPastell, config: dict, timeout: int):
+#     return get_user_flux_service(user, config, timeout)
