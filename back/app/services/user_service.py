@@ -14,7 +14,6 @@ from ..exceptions.custom_exceptions import (
     UserNotFoundException,
     DecryptionException,
     UserRegistrationException,
-    UserPasswordNullException,
 )
 from ..models.users import UserPastell
 
@@ -166,27 +165,19 @@ def get_pastell_auth(user: UserPastell):
 
 
 # Get user context
-def get_user_context_service(current_user: dict, db: Session):
+def get_user_context_service(user):
     """Récupère le contexte du user à partir de Pastell en utilisant le jeton Keycloak réceptionner côté API
 
     Args:
-        current_user (dict): Le dictionnaire contenant les infos du user actuel, incluant son login.
-        db (Session): La session de BD
+        user : L'utilisateur récupéré depuis la BD
 
     Raises:
-        UserNotFoundException: Si le user n'est pas trouvé dans la BD.
         PastellException:  Si les infos du user ne peuvent pas être récupérées depuis Pastell.
         PastellException: Si les entités du user ne peuvent pas être récupérées depuis Pastell.
+
     Returns:
        dict: Un dictionnaire contenant les infos du user et ses entités.
     """
-    login = current_user["login"]
-    user = db.query(UserPastell).filter(UserPastell.login == login).first()
-    if not user:
-        raise UserNotFoundException()
-
-    if not user.pwd_pastell:
-        raise UserPasswordNullException()
 
     # Récupérer les infos du user depuis Pastell
     config = read_config("config/config.yml")
@@ -235,3 +226,37 @@ def get_user_context_service(current_user: dict, db: Session):
     user_entites = [EntiteInfo(**entite) for entite in entites_data]
 
     return {"user_info": user_info, "entites": user_entites}
+
+
+# Get liste des flux dispo pour l'utilisateur connecté
+def get_user_flux_service(user):
+    """Récupère les flux disponibles pour l'utilisateur depuis Pastell
+
+    Args:
+        user: L'utilisateur pour lequel les flux doivent être récupérés.
+
+    Raises:
+        PastellException:  Si les flux du user ne peuvent pas être récupérées depuis Pastell.
+
+    Returns:
+       list: Une liste contenant les flux disponibles pour l'utilisateur.
+    """
+
+    # Récupérer les infos du user depuis Pastell
+    config = read_config("config/config.yml")
+    timeout = config.get("TIMEOUT")
+
+    flux_url = f"{config['PASTELL']['URL']}/flux"
+    flux_response = requests.get(
+        flux_url,
+        auth=get_pastell_auth(user),
+        timeout=timeout,
+    )
+
+    if flux_response.status_code != 200:
+        raise PastellException(
+            status_code=flux_response.status_code,
+            detail="Failed to retrieve flux from Pastell",
+        )
+
+    return flux_response.json()

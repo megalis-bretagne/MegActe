@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { NGXLogger } from 'ngx-logger';
 import { UserContext } from 'src/app/model/user.model';
 import { UserService } from 'src/app/services/userServices/user.service';
 
@@ -16,20 +15,15 @@ export class UserProfileComponent implements OnInit {
   totalPages: number = 0;
   displayedPages: number[] = [];
 
-  constructor(private userService: UserService, private logger: NGXLogger
+  constructor(private userService: UserService
   ) { }
 
+
   ngOnInit(): void {
-    this.userService.getUserContext().subscribe({
+    this.userService.userContext$.subscribe({
       next: (data: UserContext) => {
         this.userContext = data;
         this.updatePagination();
-      },
-      error: (error) => {
-        this.logger.error('Error fetching user context', error);
-      },
-      complete: () => {
-        this.logger.info('User context fetching completed');
       }
     });
   }

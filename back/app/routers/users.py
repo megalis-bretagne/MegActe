@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from ..database import get_db
-from ..dependencies import get_current_user
+from ..database import get_user_from_db
 from ..schemas.user_schemas import UserCreate
 from ..services.user_service import (
     get_all_users_from_db,
@@ -10,7 +10,9 @@ from ..services.user_service import (
     update_user_in_db,
     delete_user_from_db,
     get_user_context_service,
+    get_user_flux_service,
 )
+from ..models.users import UserPastell
 
 router = APIRouter()
 
@@ -22,10 +24,8 @@ router = APIRouter()
     response_model=dict,
     description="Récupère les informations de l'utilisateur connecté",
 )
-def get_user(
-    current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
-):
-    return get_user_context_service(current_user, db)
+def get_user(user: UserPastell = Depends(get_user_from_db)):
+    return get_user_context_service(user)
 
 
 # Get liste de tous les users
@@ -56,3 +56,9 @@ def update_user(user_id: int, user_data: UserCreate, db: Session = Depends(get_d
 @router.delete("/user/{user_id}", tags=["users"])
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     return delete_user_from_db(user_id, db)
+
+
+# Get liste des flux dispo pour l'utilisateur connecté
+@router.get("/flux", tags=["users"])
+def get_user_flux(user: UserPastell = Depends(get_user_from_db)):
+    return get_user_flux_service(user)
