@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Acte, GroupedActes } from 'src/app/model/acte.model';
 import { UserService } from 'src/app/services/userServices/user.service';
-import { NGXLogger } from 'ngx-logger';
 
 @Component({
   selector: 'app-sidebar',
@@ -13,23 +12,16 @@ export class SidebarComponent implements OnInit {
   groupedActes: GroupedActes[];
   ordreAlphabetique: boolean = true;
 
-  constructor(private userService: UserService, private logger: NGXLogger) { }
+  constructor(private userService: UserService) { }
 
   ngOnInit(): void {
-    this.userService.getUserFlux().subscribe(
-      (data: Acte[]) => {
+    this.userService.userFlux$.subscribe({
+      next: (data: Acte[]) => {
         this.actes = Object.values(data);
-        console.log(this.actes)
         this.sortActes();
         this.groupActesByType();
-      },
-      (error) => {
-        this.logger.error('Error fetching user flux', error);
-      },
-      () => {
-        this.logger.info('User flux fetching completed');
       }
-    );
+    });
   }
 
   groupActesByType(): void {

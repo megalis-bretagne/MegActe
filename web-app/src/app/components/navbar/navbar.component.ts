@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { NGXLogger } from 'ngx-logger';
 import { UserContext } from 'src/app/model/user.model';
 import { AuthService } from 'src/app/services/keycloakServices/auth.service';
 import { UserService } from 'src/app/services/userServices/user.service';
@@ -12,25 +11,12 @@ import { UserService } from 'src/app/services/userServices/user.service';
 export class NavbarComponent implements OnInit {
   userContext: UserContext | undefined;
 
-  constructor(private userService: UserService, private authService: AuthService, private logger: NGXLogger) { }
+  constructor(private userService: UserService, private authService: AuthService) { }
 
-  // ngOnInit(): void {
-  //   if (this.userContext) {
-  //     this.logger.info('User context fetching completed');
-  //   } else {
-  //     this.logger.error('Error fetching user context');
-  //   }
-  // }
   ngOnInit(): void {
-    this.userService.getUserContext().subscribe({
+    this.userService.userContext$.subscribe({
       next: (data: UserContext) => {
         this.userContext = data;
-      },
-      error: (error) => {
-        this.logger.error('Error fetching user context', error);
-      },
-      complete: () => {
-        this.logger.info('User context fetching completed');
       }
     });
   }
