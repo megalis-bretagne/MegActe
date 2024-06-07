@@ -3,9 +3,10 @@ from app.configuration import read_config
 from ..exceptions.custom_exceptions import PastellException
 
 from .user_service import get_pastell_auth
+from ..models.users import UserPastell
 
 
-def get_acte_form_detail(flux_type: str, user):
+def get_flux_detail_service(flux_type: str, user: UserPastell):
     """Récupère le détail d'un flux (formulaire) depuis Pastell en utilisant le type de flux fourni.
 
     Args:
