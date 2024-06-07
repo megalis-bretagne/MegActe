@@ -105,3 +105,39 @@ def create_document_service(doc_data: DocCreateInfo, user: UserPastell):
     updated_document = update_document_service(document_id, doc_update_info, user)
 
     return updated_document
+
+
+def get_document_info_service(entite_id: int, document_id: str, user: UserPastell):
+    """Récupère les infos d'un document dans Pastell.
+
+    Args:
+        entite_id (int): L'ID de l'entité.
+        document_id (str): L'ID du document à récupérer.
+        user (UserPastell): L'utilisateur pour lequel le document doit être récupéré.
+
+    Raises:
+        PastellException: Si les informations du document ne peuvent pas être récupérées dans Pastell.
+
+    Returns:
+        dict: Les détails du document récupéré.
+    """
+    config = read_config("config/config.yml")
+    timeout = config.get("TIMEOUT")
+
+    get_document_url = (
+        f"{config['PASTELL']['URL']}/entite/{entite_id}/document/{document_id}"
+    )
+
+    response = requests.get(
+        get_document_url,
+        auth=get_pastell_auth(user),
+        timeout=timeout,
+    )
+
+    if response.status_code != 200:
+        raise PastellException(
+            status_code=response.status_code,
+            detail="Failed to retrieve document information from Pastell",
+        )
+
+    return response.json()

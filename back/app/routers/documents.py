@@ -1,6 +1,10 @@
 from fastapi import APIRouter, Depends
 
-from ..services.document_service import update_document_service, create_document_service
+from ..services.document_service import (
+    update_document_service,
+    create_document_service,
+    get_document_info_service,
+)
 
 from ..schemas.document_schemas import DocCreateInfo, DocUpdateInfo
 from ..database import get_user_from_db
@@ -24,3 +28,11 @@ def update_document(
     user: UserPastell = Depends(get_user_from_db),
 ):
     return update_document_service(document_id, request_data, user)
+
+
+# Get document info
+@router.get("/document/{document_id}", tags=["document"])
+def get_document(
+    document_id: str, entite_id: int, user: UserPastell = Depends(get_user_from_db)
+):
+    return get_document_info_service(entite_id, document_id, user)
