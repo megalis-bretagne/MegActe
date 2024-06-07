@@ -2,11 +2,12 @@ from pydantic import BaseModel
 from typing import Dict, Any
 
 
-class DocCreateEmpty(BaseModel):
-    entite_id: int
-    flux_type: str
-
-
 class DocUpdateInfo(BaseModel):
     entite_id: int
-    acte_info: Dict[str, Any]
+    doc_info: Dict[str, Any]
+
+
+class DocCreateInfo(BaseModel):
+    entite_id: int
+    flux_type: str
+    doc_info: Dict[str, Any]

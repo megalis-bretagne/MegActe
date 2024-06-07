@@ -4,10 +4,10 @@ from ..exceptions.custom_exceptions import PastellException
 
 from .user_service import get_pastell_auth
 from ..models.users import UserPastell
-from ..schemas.document_schemas import DocCreateEmpty, DocUpdateInfo
+from ..schemas.document_schemas import DocUpdateInfo, DocCreateInfo
 
 
-def create_empty_document(doc: DocCreateEmpty, user: UserPastell):
+def create_empty_document(entite_id: int, flux_type: str, user: UserPastell):
     """Crée un document vide dans Pastell pour un type de flux.
 
     Args:
@@ -23,11 +23,11 @@ def create_empty_document(doc: DocCreateEmpty, user: UserPastell):
     config = read_config("config/config.yml")
     timeout = config.get("TIMEOUT")
 
-    create_document_url = f"{config['PASTELL']['URL']}/entite/{doc.entite_id}/document"
+    create_document_url = f"{config['PASTELL']['URL']}/entite/{entite_id}/document"
 
     response = requests.post(
         create_document_url,
-        data={"type": doc.flux_type},
+        data={"type": flux_type},
         auth=get_pastell_auth(user),
         timeout=timeout,
     )
@@ -63,7 +63,7 @@ def update_document_service(
     update_document_url = f"{config['PASTELL']['URL']}/entite/{document_data.entite_id}/document/{document_id}"
     response = requests.patch(
         update_document_url,
-        data=document_data.acte_info,
+        data=document_data.doc_info,
         auth=get_pastell_auth(user),
         timeout=timeout,
     )
@@ -75,3 +75,33 @@ def update_document_service(
         )
 
     return response.json()
+
+
+def create_document_service(doc_data: DocCreateInfo, user: UserPastell):
+    """Crée un document vide et le met à jour avec les infos fournies.
+
+    Args:
+        doc_create (DocCreateInfo): Les informations nécessaires pour créer le document.
+        user (UserPastell): L'utilisateur pour lequel le document doit être créé et mis à jour.
+
+    Raises:
+        PastellException: Si le document ne peut pas être créé ou mis à jour dans Pastell.
+
+    Returns:
+        dict: Les détails du document créé et mis à jour.
+    """
+    # Création du doc vide
+    created_document = create_empty_document(
+        doc_data.entite_id, doc_data.flux_type, user
+    )
+
+    document_id = created_document.get("id_d")
+
+    doc_update_info = DocUpdateInfo(
+        entite_id=doc_data.entite_id, doc_info=doc_data.doc_info
+    )
+
+    # Mettre à jour le doc vc les infos fournies
+    updated_document = update_document_service(document_id, doc_update_info, user)
+
+    return updated_document
