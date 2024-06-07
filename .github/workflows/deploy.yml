@@ -1,0 +1,25 @@
+name: Deploy Megacte
+
+on:
+  workflow_call:
+    inputs:
+      version: # la version à déployer
+        required: true
+        type: string
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SERVEUR }}
+          username: ${{ secrets.USER_NAME }}
+          port: ${{ secrets.PORT }}
+          script: |
+            ls -al
+            echo ${{ inputs.version }}

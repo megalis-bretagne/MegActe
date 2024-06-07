@@ -7,12 +7,12 @@ name: Build app
 
 on:
   push:
-    branches: ["main","develop"]
+    branches: ["main"]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
       # The branches below must be a subset of the branches above
-      branches: [ "main", "develop" ]
+      branches: [ "main"]
 
 permissions:
   contents: read
@@ -98,3 +98,8 @@ jobs:
       context: back
       dockerfile: ./docker/back/Dockerfile
       image-name: ${{ github.repository_owner }}/megacte-back
+
+  deploy:
+    uses:   ./.github/workflows/deploy.yml
+    with:
+      version: ${GITHUB_SHA}
