@@ -92,14 +92,9 @@ jobs:
       artifact: web-app-dist
       path-artifact: web-app/dist
 
-  build-back:
+  build-docker-back:
     uses: ./.github/workflows/build-push-docker.yml
     with:
       context: back
       dockerfile: ./docker/back/Dockerfile
       image-name: ${{ github.repository_owner }}/megacte-back
-
-  deploy:
-    uses:   ./.github/workflows/deploy.yml
-    with:
-      version: ${GITHUB_SHA}
