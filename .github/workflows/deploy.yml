@@ -1,4 +1,4 @@
-name: Deploy Megacte
+name: Deploy-Megacte
 
 on:
   workflow_call:
