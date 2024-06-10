@@ -7,12 +7,12 @@ name: Build app
 
 on:
   push:
-    branches: ["main","develop"]
+    branches: ["main"]
     # Publish semver tags as releases.
     tags: [ 'v*.*.*' ]
   pull_request:
       # The branches below must be a subset of the branches above
-      branches: [ "main", "develop" ]
+      branches: [ "main"]
 
 permissions:
   contents: read
@@ -92,7 +92,7 @@ jobs:
       artifact: web-app-dist
       path-artifact: web-app/dist
 
-  build-back:
+  build-docker-back:
     uses: ./.github/workflows/build-push-docker.yml
     with:
       context: back
