@@ -16,46 +16,33 @@ from ..exceptions.custom_exceptions import (
     UserRegistrationException,
 )
 from ..models.users import UserPastell
-from ..logging_config import logger
+from ..decorators import log_exceptions
 
 
+@log_exceptions
 def generate_key(password: str) -> bytes:
-    try:
-        salt = os.urandom(16)
-        kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256(),
-            length=32,
-            salt=salt,
-            iterations=480000,  # Un nombre élevé d'itérations pour renforcer la sécurité
-        )
-        key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
-        logger.debug("Key generated successfully")
+    salt = os.urandom(16)
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=480000,  # Un nombre élevé d'itérations pour renforcer la sécurité
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
 
-        return key
-    except Exception as e:
-        logger.error(f"An error occurred while generating the key: {str(e)}")
-        raise
+    return key
 
 
 def encrypt_password(password: str, key: bytes) -> bytes:
-    try:
-        fernet = Fernet(key)
-        encrypted_password = fernet.encrypt(password.encode())
-        return encrypted_password.decode("utf-8")
-    except Exception as e:
-        logger.error(f"An error occurred while encrypting the password: {str(e)}")
-        raise
+    fernet = Fernet(key)
+    encrypted_password = fernet.encrypt(password.encode())
+    return encrypted_password.decode("utf-8")
 
 
 def decrypt_password(encrypted_password: str, key: bytes) -> str:
-    try:
-        fernet = Fernet(key)
-        decrypted_password = fernet.decrypt(encrypted_password.encode("utf-8")).decode()
-        return decrypted_password
-
-    except Exception as e:
-        logger.error(f"An error occurred while decrypting the password: {str(e)}")
-        raise
+    fernet = Fernet(key)
+    decrypted_password = fernet.decrypt(encrypted_password.encode("utf-8")).decode()
+    return decrypted_password
 
 
 def send_password_to_pastell(id_pastell: int, password: str):
@@ -74,25 +61,17 @@ def send_password_to_pastell(id_pastell: int, password: str):
 
 # Get liste de tous les users
 def get_all_users_from_db(db: Session):
-    try:
-        users = db.query(UserPastell).all()
-        return users
-    except Exception as e:
-        logger.error(f"An error occurred while fetching users: {str(e)}")
-        raise
+    users = db.query(UserPastell).all()
+    return users
 
 
 # Get user by id
+@log_exceptions
 def get_user_by_id_from_db(user_id: int, db: Session):
-    try:
-        db_user = db.query(UserPastell).filter(UserPastell.id == user_id).first()
-        if db_user is None:
-            raise UserNotFoundException()
-        return db_user
-
-    except Exception as e:
-        logger.error(f"An error occurred while fetching user by ID {user_id}: {str(e)}")
-        raise
+    db_user = db.query(UserPastell).filter(UserPastell.id == user_id).first()
+    if db_user is None:
+        raise UserNotFoundException()
+    return db_user
 
 
 # Add user
