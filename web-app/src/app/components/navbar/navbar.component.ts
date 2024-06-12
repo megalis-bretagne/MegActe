@@ -9,10 +9,7 @@ import { UserService } from 'src/app/services/userServices/user.service';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent implements OnInit {
-  userContext: UserContext = {
-    user_info: { id_u: 0, login: '', nom: '', prenom: '', email: '', certificat: [], id_e: 0 },
-    entites: []
-  };
+  userContext: UserContext;
 
   constructor(private userService: UserService, private authService: AuthService) { }
 

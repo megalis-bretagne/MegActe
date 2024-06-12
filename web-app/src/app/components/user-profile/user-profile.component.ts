@@ -9,10 +9,7 @@ import { UserContext } from 'src/app/model/user.model';
   styleUrls: ['./user-profile.component.scss']
 })
 export class UserProfileComponent implements OnInit {
-  userContext: UserContext = {
-    user_info: { id_u: 0, login: '', nom: '', prenom: '', email: '', certificat: [], id_e: 0 },
-    entites: []
-  };
+  userContext: UserContext;
   currentPage: number = 1;
   itemsPerPage: number = 15;
   paginatedEntities: any[] = [];
