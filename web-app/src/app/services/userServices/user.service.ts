@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
-import { BehaviorSubject, Observable, catchError, of, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, of, tap } from 'rxjs';
 import { Acte } from 'src/app/model/acte.model';
 import { UserContext } from 'src/app/model/user.model';
 import { SettingsService } from 'src/environments/settings.service';
@@ -20,12 +20,10 @@ export class UserService {
 
   constructor(private http: HttpClient, private logger: NGXLogger, private settingsService: SettingsService) {
     this.apiUrl = this.settingsService.apiUrl;
-    this.getUserContext();
-    this.getUserFlux();
   }
 
-  private getUserContext() {
-    this.http.get<UserContext>(this.apiUrl + '/user').pipe(
+  public getUserContext(): Observable<UserContext> {
+    return this.http.get<UserContext>(this.apiUrl + '/user').pipe(
       tap((data: UserContext) => {
         this.userContextSubject.next(data);
       }),
@@ -33,26 +31,23 @@ export class UserService {
         this.logger.error('Error fetching user context', error);
         return of(null);
       })
-    ).subscribe({
-      complete: () => {
-        this.logger.info('User context fetching completed');
-      }
-    });
+    );
   }
 
-  private getUserFlux() {
-    this.http.get<Acte[]>(this.apiUrl + '/flux').pipe(
+  public getUserFlux(): Observable<Acte[]> {
+    return this.http.get<{ [key: string]: Acte }>(this.apiUrl + '/flux').pipe(
+      map((data: { [key: string]: Acte }) => {
+        return Object.values(data);
+      }),
       tap((data: Acte[]) => {
+        this.logger.debug('Fetched user flux:', data);
         this.userFluxSubject.next(data);
       }),
       catchError((error) => {
         this.logger.error('Error fetching user flux', error);
         return of([]);
       })
-    ).subscribe({
-      complete: () => {
-        this.logger.info('User flux fetching completed');
-      }
-    });
+    );
   }
+
 }

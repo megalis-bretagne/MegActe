@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
 import { UserContext } from 'src/app/model/user.model';
-import { UserService } from 'src/app/services/userServices/user.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -8,22 +9,27 @@ import { UserService } from 'src/app/services/userServices/user.service';
   styleUrls: ['./user-profile.component.scss']
 })
 export class UserProfileComponent implements OnInit {
-  userContext: UserContext | undefined;
+  userContext: UserContext = {
+    user_info: { id_u: 0, login: '', nom: '', prenom: '', email: '', certificat: [], id_e: 0 },
+    entites: []
+  };
   currentPage: number = 1;
   itemsPerPage: number = 15;
   paginatedEntities: any[] = [];
   totalPages: number = 0;
   displayedPages: number[] = [];
 
-  constructor(private userService: UserService
-  ) { }
-
+  constructor(private route: ActivatedRoute, private logger: NGXLogger) { }
 
   ngOnInit(): void {
-    this.userService.userContext$.subscribe({
-      next: (data: UserContext) => {
-        this.userContext = data;
+    this.route.data.subscribe({
+      next: (data: { userContext: UserContext }) => {
+        this.logger.debug('User context loaded successfully', data.userContext);
+        this.userContext = data.userContext;
         this.updatePagination();
+      },
+      error: (error) => {
+        this.logger.error('Error loading user context', error);
       }
     });
   }

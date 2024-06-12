@@ -1,40 +1,51 @@
 <nav class="fr-sidemenu" role="navigation" aria-labelledby="fr-sidemenu-title">
     <div class="fr-sidemenu__inner">
         <div class="fr-collapse" id="fr-sidemenu-wrapper">
-            <div class="fr-toggle fr-toggle--label-left  toggle-container">
+            <div class="fr-toggle fr-toggle--label-left toggle-container">
                 <input type="checkbox" class="fr-toggle__input" aria-describedby="toggle-ordre-hint-text"
                     id="toggle-ordre" [(ngModel)]="ordreAlphabetique">
                 <label class="fr-toggle__label" for="toggle-ordre" data-fr-checked-label="Ordre alphabétique"
                     data-fr-unchecked-label="Regroupé">Ordre d'affichage</label>
                 <p class="fr-hint-text" id="toggle-ordre-hint-text">Choisissez l'ordre d'affichage des actes</p>
             </div>
-            <ul class="fr-sidemenu__list">
-                <ng-container *ngIf="ordreAlphabetique; else groupedView">
-                    <li class="fr-sidemenu__item" *ngFor="let acte of actes; let i = index">
-                        <a class="fr-sidemenu__link sidemenu-link" href="#">{{ acte.nom }}
-                            <span class="fr-icon-add-line" aria-hidden="true" style="margin-left: 0.5rem;"></span>
-                        </a>
-                    </li>
-                </ng-container>
-                <ng-template #groupedView>
-                    <li class="fr-sidemenu__item" *ngFor="let groupe of groupedActes; let i = index">
-                        <button class="fr-sidemenu__btn fr-sidemenu-btn" aria-expanded="false"
-                            [attr.aria-controls]="'fr-sidemenu-item-' + i">
-                            {{ groupe.type }}
-                        </button>
-                        <div class="fr-collapse" [id]="'fr-sidemenu-item-' + i">
-                            <ul class="fr-sidemenu__list">
-                                <li class="fr-sidemenu__item" *ngFor="let nom of groupe.nom">
-                                    <a class="fr-sidemenu__link sidemenu-link" href="#">{{ nom }}
-                                        <span class="fr-icon-add-line" aria-hidden="true"
-                                            style="margin-left: 0.5rem;"></span>
-                                    </a>
-                                </li>
-                            </ul>
+            <ng-container *ngIf="actes.length > 0; else loading">
+                <ul class="fr-sidemenu__list">
+                    <ng-container *ngIf="ordreAlphabetique; else groupedView">
+                        <li class="fr-sidemenu__item" *ngFor="let acte of actes; let i = index">
+                            <a class="fr-sidemenu__link sidemenu-link" href="#">{{ acte.nom }}
+                                <span class="fr-icon-add-line" aria-hidden="true" style="margin-left: 0.5rem;"></span>
+                            </a>
+                        </li>
+                    </ng-container>
+                    <ng-template #groupedView>
+                        <li class="fr-sidemenu__item" *ngFor="let groupe of groupedActes; let i = index">
+                            <button class="fr-sidemenu__btn fr-sidemenu-btn" aria-expanded="false"
+                                [attr.aria-controls]="'fr-sidemenu-item-' + i">
+                                {{ groupe.type }}
+                            </button>
+                            <div class="fr-collapse" [id]="'fr-sidemenu-item-' + i">
+                                <ul class="fr-sidemenu__list">
+                                    <li class="fr-sidemenu__item" *ngFor="let nom of groupe.nom">
+                                        <a class="fr-sidemenu__link sidemenu-link" href="#">{{ nom }}
+                                            <span class="fr-icon-add-line" aria-hidden="true"
+                                                style="margin-left: 0.5rem;"></span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ng-template>
+                </ul>
+            </ng-container>
+            <ng-template #loading>
+                <div class="fr-notice fr-notice--info">
+                    <div class="fr-container">
+                        <div class="fr-notice__body">
+                            <p class="fr-notice__title">Chargement en cours...</p>
                         </div>
-                    </li>
-                </ng-template>
-            </ul>
+                    </div>
+                </div>
+            </ng-template>
         </div>
     </div>
 </nav>
