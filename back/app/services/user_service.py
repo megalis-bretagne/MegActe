@@ -16,8 +16,10 @@ from ..exceptions.custom_exceptions import (
     UserRegistrationException,
 )
 from ..models.users import UserPastell
+from ..decorators import log_exceptions
 
 
+@log_exceptions
 def generate_key(password: str) -> bytes:
     salt = os.urandom(16)
     kdf = PBKDF2HMAC(
@@ -27,6 +29,7 @@ def generate_key(password: str) -> bytes:
         iterations=480000,  # Un nombre élevé d'itérations pour renforcer la sécurité
     )
     key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
+
     return key
 
 
@@ -63,6 +66,7 @@ def get_all_users_from_db(db: Session):
 
 
 # Get user by id
+@log_exceptions
 def get_user_by_id_from_db(user_id: int, db: Session):
     db_user = db.query(UserPastell).filter(UserPastell.id == user_id).first()
     if db_user is None:
