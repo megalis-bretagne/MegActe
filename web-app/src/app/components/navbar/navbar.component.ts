@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { UserContext } from 'src/app/model/user.model';
 import { AuthService } from 'src/app/services/keycloakServices/auth.service';
-import { AppInitService } from 'src/environments/app.init.service';
+import { SharedDataService } from 'src/app/services/sharedData.service';
 
 @Component({
   selector: 'app-navbar',
@@ -11,10 +11,10 @@ import { AppInitService } from 'src/environments/app.init.service';
 export class NavbarComponent implements OnInit {
   userContext: UserContext;
 
-  constructor(private appInitService: AppInitService, private authService: AuthService) { }
+  constructor(private sharedDataService: SharedDataService, private authService: AuthService) { }
 
   ngOnInit(): void {
-    this.userContext = this.appInitService.user;
+    this.userContext = this.sharedDataService.getUser();
   }
 
   logout(): void {

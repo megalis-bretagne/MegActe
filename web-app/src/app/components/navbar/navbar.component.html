@@ -18,13 +18,13 @@
                 <div class="fr-header__tools">
                     <div class="fr-header__tools-links">
                         <ul class="fr-btns-group">
-                            <li *ngIf="userContext">
+                            <li>
                                 <a class="fr-btn" routerLink="/user-profile" aria-label="Accéder au profil utilisateur">
                                     <span class="fr-icon-account-circle-fill" aria-hidden="true"></span>
                                     {{ userContext.user_info.prenom }} {{ userContext.user_info.nom }}
                                 </a>
                             </li>
-                            <li *ngIf="userContext">
+                            <li>
                                 <button class="fr-btn" (click)="logout()" aria-label="Déconnexion" type="button">
                                     <span class="fr-icon-logout-box-r-fill" aria-hidden="true"></span>
                                     Déconnexion

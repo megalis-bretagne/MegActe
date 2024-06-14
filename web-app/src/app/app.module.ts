@@ -20,6 +20,8 @@ import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
 import { UserService } from './services/userServices/user.service';
 import { AppInitService } from 'src/environments/app.init.service';
+import { SharedDataService } from './services/sharedData.service';
+import { LoadingTemplateComponent } from './components/loading-template/loading-template.component';
 
 
 @NgModule({
@@ -29,6 +31,7 @@ import { AppInitService } from 'src/environments/app.init.service';
         NavbarComponent,
         SidebarComponent,
         UserProfileComponent,
+        LoadingTemplateComponent
     ],
     imports: [
         BrowserModule,
@@ -44,7 +47,7 @@ import { AppInitService } from 'src/environments/app.init.service';
         {
             provide: APP_INITIALIZER,
             useFactory: app_Init,
-            deps: [AppInitService, KeycloakService, SettingsService, UserService],
+            deps: [AppInitService, KeycloakService, SettingsService, UserService, SharedDataService],
             multi: true
         },
         provideAnimationsAsync()

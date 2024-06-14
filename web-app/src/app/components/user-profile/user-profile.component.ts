@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { NGXLogger } from 'ngx-logger';
 import { UserContext } from 'src/app/model/user.model';
-import { AppInitService } from 'src/environments/app.init.service';
+import { SharedDataService } from 'src/app/services/sharedData.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -16,12 +15,11 @@ export class UserProfileComponent implements OnInit {
   totalPages: number = 0;
   displayedPages: number[] = [];
 
-  constructor(private appInitService: AppInitService, private logger: NGXLogger) { }
+  constructor(private sharedDataService: SharedDataService) { }
 
   ngOnInit(): void {
-    this.userContext = this.appInitService.user;
+    this.userContext = this.sharedDataService.getUser();
     this.updatePagination();
-   
   }
 
   updatePagination() {

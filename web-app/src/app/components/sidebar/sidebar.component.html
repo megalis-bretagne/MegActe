@@ -8,7 +8,7 @@
                     data-fr-unchecked-label="Regroupé">Ordre d'affichage</label>
                 <p class="fr-hint-text" id="toggle-ordre-hint-text">Choisissez l'ordre d'affichage des actes</p>
             </div>
-            <ng-container *ngIf="actes.length > 0; else loading">
+            <ng-container>
                 <ul class="fr-sidemenu__list">
                     <ng-container *ngIf="ordreAlphabetique; else groupedView">
                         <li class="fr-sidemenu__item" *ngFor="let acte of actes; let i = index">
@@ -37,15 +37,6 @@
                     </ng-template>
                 </ul>
             </ng-container>
-            <ng-template #loading>
-                <div class="fr-notice fr-notice--info">
-                    <div class="fr-container">
-                        <div class="fr-notice__body">
-                            <p class="fr-notice__title">Chargement en cours...</p>
-                        </div>
-                    </div>
-                </div>
-            </ng-template>
         </div>
     </div>
 </nav>
