@@ -5,11 +5,20 @@ import { firstValueFrom } from 'rxjs';
 import { NGXLogger, NgxLoggerLevel } from 'ngx-logger';
 import { SettingsService } from './settings.service';
 import { Settings } from './settings';
+import { UserService } from 'src/app/services/userServices/user.service';
+import { UserContext } from 'src/app/model/user.model';
+import { Acte } from 'src/app/model/acte.model';
 
 @Injectable({ providedIn: 'root' })
-export class SettingsHttpService {
+export class AppInitService {
 
-    constructor(private http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService, private _logger: NGXLogger) {
+    // @TODO : mettre ces singletons dans un autre service
+    user: UserContext;
+    flux : Acte[];
+
+    constructor(private http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService, 
+        private userService: UserService,
+        private _logger: NGXLogger) {
     }
 
     initializeApp(): Promise<any> {
@@ -52,8 +61,15 @@ export class SettingsHttpService {
             } catch (error) {
                 throw new Error("Une erreur s'est déroulée durant l'initialisation de keycloak");
             }
+        }).then(async() => { // chargement des infos de l'utilisateur et de son contexte
+            try {
+                const user: UserContext = await firstValueFrom(this.userService.getUser());
+                const flux  = await firstValueFrom(this.userService.getFlux());
+                this.user = user; // Assurez-vous d'avoir une méthode pour stocker l'utilisateur
+                this.flux = flux;
+              } catch (error) {
+                throw new Error("Une erreur s'est déroulée durant la récupération de l'utilisateur");
+              }
         });
-
-
     }
 }

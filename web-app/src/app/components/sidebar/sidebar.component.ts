@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Acte, GroupedActes } from 'src/app/model/acte.model';
 import { UserService } from 'src/app/services/userServices/user.service';
+import { AppInitService } from 'src/environments/app.init.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -12,16 +13,12 @@ export class SidebarComponent implements OnInit {
   groupedActes: GroupedActes[];
   ordreAlphabetique: boolean = true;
 
-  constructor(private userService: UserService) { }
+  constructor(private userService: UserService, private appInitService: AppInitService) { }
 
   ngOnInit(): void {
-    this.userService.userFlux$.subscribe({
-      next: (data: Acte[]) => {
-        this.actes = Object.values(data);
-        this.sortActes();
-        this.groupActesByType();
-      }
-    });
+    this.actes = Object.values(this.appInitService.flux);
+    this.sortActes();
+    this.groupActesByType();
   }
 
   groupActesByType(): void {

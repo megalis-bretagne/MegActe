@@ -9,7 +9,7 @@
                         </div>
                     </div>
                     <div class="fr-header__service">
-                        <a href="/" title="Accueil Megacte">
+                        <a routerLink="/" title="Accueil Megacte">
                             <p class="fr-header__service-title">Megacte</p>
                         </a>
                         <p class="fr-header__service-tagline">Gestion des actes administratifs</p>
@@ -18,7 +18,7 @@
                 <div class="fr-header__tools">
                     <div class="fr-header__tools-links">
                         <ul class="fr-btns-group">
-                            <li *ngIf="userContext; else loading">
+                            <li *ngIf="userContext">
                                 <a class="fr-btn" routerLink="/user-profile" aria-label="Accéder au profil utilisateur">
                                     <span class="fr-icon-account-circle-fill" aria-hidden="true"></span>
                                     {{ userContext.user_info.prenom }} {{ userContext.user_info.nom }}
@@ -37,13 +37,3 @@
         </div>
     </div>
 </header>
-
-<ng-template #loading>
-    <div class="fr-notice fr-notice--info">
-        <div class="fr-container">
-            <div class="fr-notice__body">
-                <p class="fr-notice__title">Chargement en cours...</p>
-            </div>
-        </div>
-    </div>
-</ng-template>
