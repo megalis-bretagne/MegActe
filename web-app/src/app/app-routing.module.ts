@@ -8,22 +8,20 @@ const routes: Routes = [
     {
         path: '',
         component: DashboardComponent,
-        canActivate: [AuthGuardService]
+        canActivate: [AuthGuardService],
     },
     {
         path: 'user-profile',
-        component: UserProfileComponent
+        component: UserProfileComponent,
     },
     {
         path: '**',
         redirectTo: ''
     }
-
 ];
 
 @NgModule({
     imports: [RouterModule.forRoot(routes)],
     exports: [RouterModule]
-
 })
 export class AppRoutingModule { }

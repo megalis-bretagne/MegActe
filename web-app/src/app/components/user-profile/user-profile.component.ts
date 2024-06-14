@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserContext } from 'src/app/model/user.model';
-import { UserService } from 'src/app/services/userServices/user.service';
+import { SharedDataService } from 'src/app/services/sharedData.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -8,24 +8,18 @@ import { UserService } from 'src/app/services/userServices/user.service';
   styleUrls: ['./user-profile.component.scss']
 })
 export class UserProfileComponent implements OnInit {
-  userContext: UserContext | undefined;
+  userContext: UserContext;
   currentPage: number = 1;
   itemsPerPage: number = 15;
   paginatedEntities: any[] = [];
   totalPages: number = 0;
   displayedPages: number[] = [];
 
-  constructor(private userService: UserService
-  ) { }
-
+  constructor(private sharedDataService: SharedDataService) { }
 
   ngOnInit(): void {
-    this.userService.userContext$.subscribe({
-      next: (data: UserContext) => {
-        this.userContext = data;
-        this.updatePagination();
-      }
-    });
+    this.userContext = this.sharedDataService.getUser();
+    this.updatePagination();
   }
 
   updatePagination() {

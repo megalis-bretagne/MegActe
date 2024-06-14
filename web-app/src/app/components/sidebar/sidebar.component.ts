@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Acte, GroupedActes } from 'src/app/model/acte.model';
-import { UserService } from 'src/app/services/userServices/user.service';
+import { SharedDataService } from 'src/app/services/sharedData.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -12,16 +12,12 @@ export class SidebarComponent implements OnInit {
   groupedActes: GroupedActes[];
   ordreAlphabetique: boolean = true;
 
-  constructor(private userService: UserService) { }
+  constructor(private sharedDataService: SharedDataService) { }
 
   ngOnInit(): void {
-    this.userService.userFlux$.subscribe({
-      next: (data: Acte[]) => {
-        this.actes = Object.values(data);
-        this.sortActes();
-        this.groupActesByType();
-      }
-    });
+    this.actes = Object.values(this.sharedDataService.getFlux());
+    this.sortActes();
+    this.groupActesByType();
   }
 
   groupActesByType(): void {

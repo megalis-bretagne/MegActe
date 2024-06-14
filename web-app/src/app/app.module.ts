@@ -7,7 +7,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
-import { SettingsHttpService } from 'src/environments/settings.http.service';
 import { HttpClientModule } from '@angular/common/http';
 
 import { SettingsService } from 'src/environments/settings.service';
@@ -19,6 +18,10 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
+import { UserService } from './services/userServices/user.service';
+import { AppInitService } from 'src/environments/app.init.service';
+import { SharedDataService } from './services/sharedData.service';
+import { LoadingTemplateComponent } from './components/loading-template/loading-template.component';
 
 
 @NgModule({
@@ -28,6 +31,7 @@ import { UserProfileComponent } from './components/user-profile/user-profile.com
         NavbarComponent,
         SidebarComponent,
         UserProfileComponent,
+        LoadingTemplateComponent
     ],
     imports: [
         BrowserModule,
@@ -43,7 +47,7 @@ import { UserProfileComponent } from './components/user-profile/user-profile.com
         {
             provide: APP_INITIALIZER,
             useFactory: app_Init,
-            deps: [SettingsHttpService, KeycloakService, SettingsService],
+            deps: [AppInitService, KeycloakService, SettingsService, UserService, SharedDataService],
             multi: true
         },
         provideAnimationsAsync()
@@ -52,6 +56,6 @@ import { UserProfileComponent } from './components/user-profile/user-profile.com
 })
 export class AppModule { }
 
-export function app_Init(settingsHttpService: SettingsHttpService): () => Promise<any> {
-    return () => settingsHttpService.initializeApp();
+export function app_Init(appInitService: AppInitService): () => Promise<any> {
+    return () => appInitService.initializeApp();
 }
