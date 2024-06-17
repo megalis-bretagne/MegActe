@@ -18,10 +18,12 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { UserProfileComponent } from './components/user-profile/user-profile.component';
-import { UserService } from './services/userServices/user.service';
+import { UserService } from './services/user.service';
 import { AppInitService } from 'src/environments/app.init.service';
 import { SharedDataService } from './services/sharedData.service';
 import { LoadingTemplateComponent } from './components/loading-template/loading-template.component';
+import { ActeFormComponent } from './components/acte-form/acte-form.component';
+import { TextInputComponent } from './components/fluxComponents/text-input/text-input.component';
 
 
 @NgModule({
@@ -31,7 +33,9 @@ import { LoadingTemplateComponent } from './components/loading-template/loading-
         NavbarComponent,
         SidebarComponent,
         UserProfileComponent,
-        LoadingTemplateComponent
+        LoadingTemplateComponent,
+        ActeFormComponent,
+        TextInputComponent
     ],
     imports: [
         BrowserModule,

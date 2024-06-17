@@ -12,7 +12,8 @@
                 <ul class="fr-sidemenu__list">
                     <ng-container *ngIf="ordreAlphabetique; else groupedView">
                         <li class="fr-sidemenu__item" *ngFor="let acte of actes; let i = index">
-                            <a class="fr-sidemenu__link sidemenu-link" href="#">{{ acte.nom }}
+                            <a class="fr-sidemenu__link sidemenu-link" [routerLink]="['/acte', acte.nom]">{{
+                                acte.nom }}
                                 <span class="fr-icon-add-line" aria-hidden="true" style="margin-left: 0.5rem;"></span>
                             </a>
                         </li>
@@ -26,7 +27,8 @@
                             <div class="fr-collapse" [id]="'fr-sidemenu-item-' + i">
                                 <ul class="fr-sidemenu__list">
                                     <li class="fr-sidemenu__item" *ngFor="let nom of groupe.nom">
-                                        <a class="fr-sidemenu__link sidemenu-link" href="#">{{ nom }}
+                                        <a class="fr-sidemenu__link sidemenu-link" [routerLink]="['/acte', nom]">{{ nom
+                                            }}
                                             <span class="fr-icon-add-line" aria-hidden="true"
                                                 style="margin-left: 0.5rem;"></span>
                                         </a>
