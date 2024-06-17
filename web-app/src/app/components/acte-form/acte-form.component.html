@@ -1,0 +1,16 @@
+<div>
+    <div class="header">
+        <div class="container">
+            <p class="display-4">Télétransmission des {{acteNom}} </p>
+        </div>
+    </div>
+    <div class="acte-form-content">
+        <div class="content-box">
+            <div *ngFor="let field of textFields" class="input-container">
+                <app-text-input [required]="field.requis" [pregMatch]="field.preg_match"
+                    [commentaire]="field.commentaire" [multiple]="field.multiple" [index]="field.index"
+                    [name]="field.name" [pregMatchError]="field.preg_match_error" />
+            </div>
+        </div>
+    </div>
+</div>
