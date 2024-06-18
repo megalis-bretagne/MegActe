@@ -13,16 +13,16 @@ import { SettingsService } from 'src/environments/settings.service';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
-import { UserProfileComponent } from './components/user-profile/user-profile.component';
+import { UserProfileComponent } from './pages/user-profile/user-profile.component';
 import { UserService } from './services/user.service';
 import { AppInitService } from 'src/environments/app.init.service';
 import { SharedDataService } from './services/sharedData.service';
 import { LoadingTemplateComponent } from './components/loading-template/loading-template.component';
-import { ActeFormComponent } from './components/acte-form/acte-form.component';
+import { ActeFormComponent } from './pages/acte-form/acte-form.component';
 import { TextInputComponent } from './components/flux/text-input/text-input.component';
 
 
