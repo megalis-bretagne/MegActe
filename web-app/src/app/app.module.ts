@@ -24,6 +24,7 @@ import { SharedDataService } from './services/sharedData.service';
 import { LoadingTemplateComponent } from './components/loading-template/loading-template.component';
 import { ActeFormComponent } from './pages/acte-form/acte-form.component';
 import { TextInputComponent } from './components/flux/text-input/text-input.component';
+import { CheckboxInputComponent } from './components/flux/checkbox-input/checkbox-input.component';
 
 
 @NgModule({
@@ -35,7 +36,8 @@ import { TextInputComponent } from './components/flux/text-input/text-input.comp
         UserProfileComponent,
         LoadingTemplateComponent,
         ActeFormComponent,
-        TextInputComponent
+        TextInputComponent,
+        CheckboxInputComponent
     ],
     imports: [
         BrowserModule,

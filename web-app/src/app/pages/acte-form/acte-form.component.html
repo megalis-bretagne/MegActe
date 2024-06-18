@@ -1,7 +1,7 @@
 <div>
     <div class="header">
         <div class="container">
-            <p class="display-4">Télétransmission des {{acteNom}} </p>
+            <p class="display-4">Télétransmission des {{acteName}} </p>
         </div>
     </div>
     <div class="acte-form-content">
@@ -10,6 +10,10 @@
                 <app-text-input [required]="field.requis" [pregMatch]="field.preg_match"
                     [commentaire]="field.commentaire" [multiple]="field.multiple" [index]="field.index"
                     [name]="field.name" [pregMatchError]="field.preg_match_error" />
+            </div>
+            <div *ngFor="let field of checkboxFields" class="input-container">
+                <meg-checkbox-input [name]="field.name" [required]="field.requis" [readOnly]="field['read-only']"
+                    [defaultChecked]="field.default === 'checked'" />
             </div>
         </div>
     </div>

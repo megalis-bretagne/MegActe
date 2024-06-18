@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
+import { FieldFluxService } from 'src/app/services/field-flux.service';
 
 @Component({
   selector: 'app-text-input',
@@ -18,6 +19,8 @@ export class TextInputComponent implements OnInit {
   inputControl: FormControl;
   inputId: string;
 
+  constructor(private fieldFluxService: FieldFluxService) { }
+
   ngOnInit() {
     const validators = [];
 
@@ -26,12 +29,11 @@ export class TextInputComponent implements OnInit {
     }
 
     if (this.pregMatch) {
-      console.log(this.pregMatch)
       validators.push(Validators.pattern(this.pregMatch));
     }
 
     this.inputControl = new FormControl('', validators);
-    this.inputId = this.generateUniqueId();
+    this.inputId = this.fieldFluxService.generateUniqueId('input');
   }
 
   getErrorMessage() {
@@ -42,10 +44,5 @@ export class TextInputComponent implements OnInit {
     }
     return '';
   }
-
-  generateUniqueId(): string {
-    return 'input-' + Math.random().toString(36).substr(2, 9);
-  }
-
 }
 

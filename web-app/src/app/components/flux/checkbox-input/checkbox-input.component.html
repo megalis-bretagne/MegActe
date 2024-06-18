@@ -1,0 +1,13 @@
+<div class="fr-fieldset__element">
+    <div class="fr-checkbox-group">
+        <input [name]="checkboxId" [id]="checkboxId" type="checkbox" [formControl]="checkboxControl"
+            [attr.aria-describedby]="checkboxId + '-messages'" [disabled]="readOnly ? true : null">
+
+        <label class="fr-label" [for]="checkboxId">
+            {{ name }}
+        </label>
+
+        <div class="fr-messages-group" [id]="checkboxId + '-messages'" aria-live="assertive">
+        </div>
+    </div>
+</div>
