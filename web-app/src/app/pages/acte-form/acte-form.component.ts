@@ -8,37 +8,42 @@ import { NGXLogger } from 'ngx-logger';
   styleUrls: ['./acte-form.component.scss']
 })
 export class ActeFormComponent implements OnInit {
-
-  acteNom: string;
+  //Text input
+  acteName: string;
   fluxDetail: any;
   textFields: any[];
+
+  //Checkbox
+  checkboxFields: any[];
 
   constructor(private route: ActivatedRoute, private logger: NGXLogger) { }
 
   ngOnInit(): void {
     this.route.data.subscribe(data => {
       this.fluxDetail = data['fluxDetail'];
-      this.acteNom = this.route.snapshot.paramMap.get('nom');
+      this.acteName = this.route.snapshot.paramMap.get('nom');
       if (this.fluxDetail) {
-        this.textFields = this.extractTextFields(this.fluxDetail);
+        this.textFields = this.extractFields(this.fluxDetail, 'text');
+        this.checkboxFields = this.extractFields(this.fluxDetail, 'checkbox');
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
     });
   }
 
-  //filtrer et de récupérer les champs de type "text"
-  extractTextFields(data: any): any[] {
-    const textFields = [];
+  //filtrer et de récupérer les champs selon le type 
+  extractFields(data: any, type: string): any[] {
+    const fields = [];
     for (const key in data) {
-      if (data[key].type === 'text') {
-        if (data[key].preg_match) {
+      if (data[key].type === type) {
+        // Si le type est 'text' et que 'preg_match' est présent, nettoyer l'expression régulière
+        if (type === 'text' && data[key].preg_match) {
           data[key].preg_match = this.cleanRegex(data[key].preg_match);
         }
-        textFields.push({ key: key, ...data[key] });
+        fields.push({ key: key, ...data[key] });
       }
     }
-    return textFields;
+    return fields;
   }
 
   // Nettoyer les délimiteurs de l'expression régulière
