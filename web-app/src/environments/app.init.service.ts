@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { NGXLogger, NgxLoggerLevel } from 'ngx-logger';
 import { SettingsService } from './settings.service';
 import { Settings } from './settings';
-import { UserService } from 'src/app/services/userServices/user.service';
+import { UserService } from 'src/app/services/user.service';
 import { UserContext } from 'src/app/model/user.model';
 import { Acte } from 'src/app/model/acte.model';
 import { SharedDataService } from 'src/app/services/sharedData.service';

@@ -24,4 +24,10 @@ export class SharedDataService {
     getFlux(): Acte[] {
         return this.flux;
     }
+
+    //Récupère l'ID d'un champ en fonction de son nom à partir du flux.
+    getFieldByName(acteNom: string): string | undefined {
+        const acte = this.flux.find(acte => acte.nom === acteNom);
+        return acte ? acte.id : undefined;
+    }
 }
