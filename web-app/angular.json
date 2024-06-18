@@ -14,7 +14,7 @@
       },
       "root": "",
       "sourceRoot": "src",
-      "prefix": "app",
+      "prefix": "meg",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",

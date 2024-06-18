@@ -23,7 +23,7 @@ import { AppInitService } from 'src/environments/app.init.service';
 import { SharedDataService } from './services/sharedData.service';
 import { LoadingTemplateComponent } from './components/loading-template/loading-template.component';
 import { ActeFormComponent } from './components/acte-form/acte-form.component';
-import { TextInputComponent } from './components/fluxComponents/text-input/text-input.component';
+import { TextInputComponent } from './components/flux/text-input/text-input.component';
 
 
 @NgModule({
