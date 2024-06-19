@@ -1,0 +1,12 @@
+<div class="fr-select-group" [class.fr-select-group--disabled]="selectControl.disabled">
+    <label class="fr-label" [for]="selectId">
+        {{ name }}
+        <span class="fr-hint-text" *ngIf="commentaire">{{ commentaire }}</span>
+    </label>
+    <select class="fr-select" [id]="selectId" [name]="selectId" [formControl]="selectControl" [multiple]="multiple">
+        <option *ngFor="let option of options | keyvalue" [value]="option.key"
+            [selected]="option.key === selectControl.value" [hidden]="option.key === '' ">
+            {{ option.value }}
+        </option>
+    </select>
+</div>

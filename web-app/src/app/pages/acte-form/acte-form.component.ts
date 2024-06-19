@@ -16,6 +16,9 @@ export class ActeFormComponent implements OnInit {
   //Checkbox
   checkboxFields: any[];
 
+  //Select
+  selectFields: any[];
+
   constructor(private route: ActivatedRoute, private logger: NGXLogger) { }
 
   ngOnInit(): void {
@@ -25,6 +28,7 @@ export class ActeFormComponent implements OnInit {
       if (this.fluxDetail) {
         this.textFields = this.extractFields(this.fluxDetail, 'text');
         this.checkboxFields = this.extractFields(this.fluxDetail, 'checkbox');
+        this.selectFields = this.extractFields(this.fluxDetail, 'select');
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
