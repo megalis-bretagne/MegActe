@@ -25,6 +25,7 @@ import { LoadingTemplateComponent } from './components/loading-template/loading-
 import { ActeFormComponent } from './pages/acte-form/acte-form.component';
 import { TextInputComponent } from './components/flux/text-input/text-input.component';
 import { CheckboxInputComponent } from './components/flux/checkbox-input/checkbox-input.component';
+import { SelectInputComponent } from './components/flux/select-input/select-input.component';
 
 
 @NgModule({
@@ -37,7 +38,8 @@ import { CheckboxInputComponent } from './components/flux/checkbox-input/checkbo
         LoadingTemplateComponent,
         ActeFormComponent,
         TextInputComponent,
-        CheckboxInputComponent
+        CheckboxInputComponent,
+        SelectInputComponent
     ],
     imports: [
         BrowserModule,
