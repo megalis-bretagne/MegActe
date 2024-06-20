@@ -3,7 +3,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
 
 @Component({
-  selector: 'app-text-input',
+  selector: 'meg-text-input',
   templateUrl: './text-input.component.html',
 })
 export class TextInputComponent implements OnInit {

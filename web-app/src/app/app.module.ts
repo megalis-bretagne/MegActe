@@ -26,6 +26,7 @@ import { ActeFormComponent } from './pages/acte-form/acte-form.component';
 import { TextInputComponent } from './components/flux/text-input/text-input.component';
 import { CheckboxInputComponent } from './components/flux/checkbox-input/checkbox-input.component';
 import { SelectInputComponent } from './components/flux/select-input/select-input.component';
+import { DateInputComponent } from './components/flux/date-input/date-input.component';
 
 
 @NgModule({
@@ -39,7 +40,8 @@ import { SelectInputComponent } from './components/flux/select-input/select-inpu
         ActeFormComponent,
         TextInputComponent,
         CheckboxInputComponent,
-        SelectInputComponent
+        SelectInputComponent,
+        DateInputComponent
     ],
     imports: [
         BrowserModule,
