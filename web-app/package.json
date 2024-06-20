@@ -27,6 +27,7 @@
     "@gouvfr/dsfr": "^1.11.2",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
+    "date-fns": "^3.6.0",
     "keycloak-angular": "^15.2.1",
     "keycloak-js": "^22.0.1",
     "moment": "^2.29.3",

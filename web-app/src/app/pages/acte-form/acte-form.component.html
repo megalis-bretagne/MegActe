@@ -7,7 +7,7 @@
     <div class="acte-form-content">
         <div class="content-box">
             <div *ngFor="let field of textFields" class="input-container">
-                <app-text-input [required]="field.requis" [pregMatch]="field.preg_match"
+                <meg-text-input [required]="field.requis" [pregMatch]="field.preg_match"
                     [commentaire]="field.commentaire" [multiple]="field.multiple" [index]="field.index"
                     [name]="field.name" [pregMatchError]="field.preg_match_error" />
             </div>
@@ -18,6 +18,10 @@
             <div *ngFor="let field of selectFields" class="input-container">
                 <meg-select-input [name]="field.name" [required]="field.requis" [multiple]="field.multiple"
                     [readOnly]="field['read-only']" [options]="field.value" [commentaire]="field.commentaire" />
+            </div>
+            <div *ngFor="let field of dateFields" class="input-container">
+                <meg-date-input [name]="field.name" [required]="field.requis" [default]="field.default"
+                    [commentaire]="field.commentaire" />
             </div>
         </div>
     </div>

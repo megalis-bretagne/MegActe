@@ -19,6 +19,10 @@ export class ActeFormComponent implements OnInit {
   //Select
   selectFields: any[];
 
+  //date
+  dateFields: any[];
+
+
   constructor(private route: ActivatedRoute, private logger: NGXLogger) { }
 
   ngOnInit(): void {
@@ -29,6 +33,7 @@ export class ActeFormComponent implements OnInit {
         this.textFields = this.extractFields(this.fluxDetail, 'text');
         this.checkboxFields = this.extractFields(this.fluxDetail, 'checkbox');
         this.selectFields = this.extractFields(this.fluxDetail, 'select');
+        this.dateFields = this.extractFields(this.fluxDetail, 'date');
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
