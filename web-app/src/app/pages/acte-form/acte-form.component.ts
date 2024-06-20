@@ -11,16 +11,16 @@ export class ActeFormComponent implements OnInit {
   //Text input
   acteName: string;
   fluxDetail: any;
-  textFields: any[];
+  textFields: any[] = [];
 
   //Checkbox
-  checkboxFields: any[];
+  checkboxFields: any[] = [];
 
   //Select
-  selectFields: any[];
+  selectFields: any[] = [];
 
   //date
-  dateFields: any[];
+  dateFields: any[] = [];
 
 
   constructor(private route: ActivatedRoute, private logger: NGXLogger) { }
@@ -30,10 +30,7 @@ export class ActeFormComponent implements OnInit {
       this.fluxDetail = data['fluxDetail'];
       this.acteName = this.route.snapshot.paramMap.get('nom');
       if (this.fluxDetail) {
-        this.textFields = this.extractFields(this.fluxDetail, 'text');
-        this.checkboxFields = this.extractFields(this.fluxDetail, 'checkbox');
-        this.selectFields = this.extractFields(this.fluxDetail, 'select');
-        this.dateFields = this.extractFields(this.fluxDetail, 'date');
+        this.extractFields(this.fluxDetail);
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
@@ -41,18 +38,27 @@ export class ActeFormComponent implements OnInit {
   }
 
   //filtrer et de récupérer les champs selon le type 
-  extractFields(data: any, type: string): any[] {
-    const fields = [];
+  extractFields(data: any): void {
     for (const key in data) {
-      if (data[key].type === type) {
-        // Si le type est 'text' et que 'preg_match' est présent, nettoyer l'expression régulière
-        if (type === 'text' && data[key].preg_match) {
-          data[key].preg_match = this.cleanRegex(data[key].preg_match);
-        }
-        fields.push({ key: key, ...data[key] });
+      const field = { key: key, ...data[key] };
+      switch (data[key].type) {
+        case 'text':
+          if (field.preg_match) {
+            field.preg_match = this.cleanRegex(field.preg_match);
+          }
+          this.textFields.push(field);
+          break;
+        case 'checkbox':
+          this.checkboxFields.push(field);
+          break;
+        case 'select':
+          this.selectFields.push(field);
+          break;
+        case 'date':
+          this.dateFields.push(field);
+          break;
       }
     }
-    return fields;
   }
 
   // Nettoyer les délimiteurs de l'expression régulière
