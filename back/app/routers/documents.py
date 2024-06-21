@@ -1,12 +1,20 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, UploadFile
+from typing import List
 
 from ..services.document_service import (
     update_document_service,
     create_document_service,
     get_document_info_service,
+    delete_file_from_document_service,
+    add_files_to_document_service,
 )
 
-from ..schemas.document_schemas import DocCreateInfo, DocUpdateInfo
+from ..schemas.document_schemas import (
+    DocCreateInfo,
+    DocUpdateInfo,
+    DeleteFileFromDoc,
+    AddFilesToDoc,
+)
 from ..database import get_user_from_db
 
 from ..models.users import UserPastell
@@ -36,3 +44,29 @@ def get_document(
     document_id: str, entite_id: int, user: UserPastell = Depends(get_user_from_db)
 ):
     return get_document_info_service(entite_id, document_id, user)
+
+
+# Ajouter des fichiers à un document
+@router.post("/document/{document_id}/file/{element_id}", tags=["document"])
+def add_files_to_document(
+    document_id: str,
+    element_id: str,
+    entite_id: int,
+    files: List[UploadFile] = File(...),
+    user: UserPastell = Depends(get_user_from_db),
+):
+    file_data = AddFilesToDoc(entite_id=entite_id, files=files)
+    return add_files_to_document_service(document_id, element_id, file_data, user)
+
+
+# Supprimer un fichier appartenant à un document
+@router.delete("/document/{document_id}/file/{element_id}", tags=["document"])
+def delete_file_from_document(
+    document_id: str,
+    element_id: str,
+    request_data: DeleteFileFromDoc,
+    user: UserPastell = Depends(get_user_from_db),
+):
+    return delete_file_from_document_service(
+        document_id, element_id, request_data, user
+    )
