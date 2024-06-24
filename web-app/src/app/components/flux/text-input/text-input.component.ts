@@ -28,6 +28,7 @@ export class TextInputComponent implements OnInit {
     }
 
     if (this.pregMatch) {
+      this.pregMatch = this.fieldFluxService.cleanRegex(this.pregMatch);
       validators.push(Validators.pattern(this.pregMatch));
     }
 
