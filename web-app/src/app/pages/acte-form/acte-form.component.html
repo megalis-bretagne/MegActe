@@ -9,20 +9,19 @@
             <div *ngFor="let field of textFields" class="input-container">
                 <meg-text-input [required]="field['requis']" [pregMatch]="field['preg_match']"
                     [commentaire]="field['commentaire']" [multiple]="field['multiple']" [index]="field['index']"
-                    [name]="field['name']" [pregMatchError]="field['preg_match_error']"></meg-text-input>
+                    [name]="field['name']" [pregMatchError]="field['preg_match_error']" />
             </div>
             <div *ngFor="let field of checkboxFields" class="input-container">
                 <meg-checkbox-input [name]="field['name']" [required]="field['requis']" [readOnly]="field['read-only']"
-                    [defaultChecked]="field['default'] === 'checked'"></meg-checkbox-input>
+                    [defaultChecked]="field['default'] === 'checked'" />
             </div>
             <div *ngFor="let field of selectFields" class="input-container">
                 <meg-select-input [name]="field['name']" [required]="field['requis']" [multiple]="field['multiple']"
-                    [readOnly]="field['read-only']" [options]="field['value']"
-                    [commentaire]="field['commentaire']"></meg-select-input>
+                    [readOnly]="field['read-only']" [options]="field['value']" [commentaire]="field['commentaire']" />
             </div>
             <div *ngFor="let field of dateFields" class="input-container">
                 <meg-date-input [name]="field['name']" [required]="field['requis']" [default]="field['default']"
-                    [commentaire]="field['commentaire']"></meg-date-input>
+                    [commentaire]="field['commentaire']" />
             </div>
         </div>
     </div>
