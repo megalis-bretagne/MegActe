@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
+import { Data, Field } from 'src/app/model/field-form.model';
+import { FieldFluxService } from 'src/app/services/field-flux.service';
 
 @Component({
   selector: 'app-acte-form',
@@ -8,72 +10,29 @@ import { NGXLogger } from 'ngx-logger';
   styleUrls: ['./acte-form.component.scss']
 })
 export class ActeFormComponent implements OnInit {
-  //Text input
   acteName: string;
-  fluxDetail: any;
-  textFields: any[] = [];
+  fluxDetail: Data;
+  textFields: Field[] = [];
+  checkboxFields: Field[] = [];
+  selectFields: Field[] = [];
+  dateFields: Field[] = [];
 
-  //Checkbox
-  checkboxFields: any[] = [];
-
-  //Select
-  selectFields: any[] = [];
-
-  //date
-  dateFields: any[] = [];
-
-
-  constructor(private route: ActivatedRoute, private logger: NGXLogger) { }
+  constructor(private route: ActivatedRoute, private logger: NGXLogger, private fieldFluxService: FieldFluxService
+  ) { }
 
   ngOnInit(): void {
     this.route.data.subscribe(data => {
       this.fluxDetail = data['fluxDetail'];
       this.acteName = this.route.snapshot.paramMap.get('nom');
       if (this.fluxDetail) {
-        this.extractFields(this.fluxDetail);
+        const { textFields, checkboxFields, selectFields, dateFields } = this.fieldFluxService.extractFields(this.fluxDetail);
+        this.textFields = textFields;
+        this.checkboxFields = checkboxFields;
+        this.selectFields = selectFields;
+        this.dateFields = dateFields;
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
     });
-  }
-
-  //filtrer et de récupérer les champs selon le type 
-  extractFields(data: any): void {
-    for (const key in data) {
-      const field = { key: key, ...data[key] };
-      switch (data[key].type) {
-        case 'text':
-          if (field.preg_match) {
-            field.preg_match = this.cleanRegex(field.preg_match);
-          }
-          this.textFields.push(field);
-          break;
-        case 'checkbox':
-          this.checkboxFields.push(field);
-          break;
-        case 'select':
-          this.selectFields.push(field);
-          break;
-        case 'date':
-          this.dateFields.push(field);
-          break;
-      }
-    }
-  }
-
-  // Nettoyer les délimiteurs de l'expression régulière
-  cleanRegex(regex: string): string {
-    const regexFlagsPattern = /[a-z]*$/;
-    regex = regex.replace(regexFlagsPattern, '');
-
-    const delimiters = ['/', '#', '~', '|', '!', '@', '%', ';', ':', '^'];
-    if (delimiters.includes(regex.charAt(0))) {
-      regex = regex.substring(1);
-    }
-    if (delimiters.includes(regex.charAt(regex.length - 1))) {
-      regex = regex.slice(0, -1);
-    }
-
-    return regex;
   }
 }
