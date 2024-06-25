@@ -1,0 +1,19 @@
+{
+  "name": "rgaa-megacte",
+  "version": "0.0.0",
+  "dependencies": {
+    "@lhci/cli": "^0.14.0",
+    "@lhci/server": "^0.14.0"
+  },
+  "main": "lighthouserc.js",
+  "devDependencies": {},
+  "scripts": {
+    "lhci": "lhci wizard",
+    "lhci:upload": "lhci upload",
+    "lhci:autorun": "lhci autorun"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
