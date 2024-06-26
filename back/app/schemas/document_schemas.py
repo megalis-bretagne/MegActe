@@ -17,7 +17,7 @@ class DocCreateInfo(BaseModel):
 
 class DeleteFileFromDoc(BaseModel):
     entite_id: int
-    num_fichier: int
+    file_name: str
 
 
 class AddFileToDoc(BaseModel):

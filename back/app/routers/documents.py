@@ -6,7 +6,7 @@ from ..services.document_service import (
     create_document_service,
     get_document_info_service,
     delete_file_from_document_service,
-    add_files_to_document_service,
+    add_multiple_files_to_document_service,
 )
 
 from ..schemas.document_schemas import (
@@ -56,7 +56,9 @@ def add_files_to_document(
     user: UserPastell = Depends(get_user_from_db),
 ):
     file_data = AddFilesToDoc(entite_id=entite_id, files=files)
-    return add_files_to_document_service(document_id, element_id, file_data, user)
+    return add_multiple_files_to_document_service(
+        document_id, element_id, file_data, user
+    )
 
 
 # Supprimer un fichier appartenant à un document

@@ -17,6 +17,9 @@ from ..exceptions.custom_exceptions import (
 )
 from ..models.users import UserPastell
 from ..decorators import log_exceptions
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @log_exceptions
@@ -99,6 +102,8 @@ def add_user_to_db(user_data: UserCreate, db: Session):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    logger.info(f"Creation suer : {new_user}")
 
     if new_user.id is None:
         raise UserRegistrationException("Failed to register the user in the database")

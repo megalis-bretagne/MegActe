@@ -27,6 +27,8 @@ import { TextInputComponent } from './components/flux/text-input/text-input.comp
 import { CheckboxInputComponent } from './components/flux/checkbox-input/checkbox-input.component';
 import { SelectInputComponent } from './components/flux/select-input/select-input.component';
 import { DateInputComponent } from './components/flux/date-input/date-input.component';
+import { FileUploadComponent } from './components/flux/file-upload/file-upload.component';
+import { DragAndDropDirective } from './shared/directives/drag-and-drop.directive';
 
 
 @NgModule({
@@ -41,7 +43,9 @@ import { DateInputComponent } from './components/flux/date-input/date-input.comp
         TextInputComponent,
         CheckboxInputComponent,
         SelectInputComponent,
-        DateInputComponent
+        DateInputComponent,
+        FileUploadComponent,
+        DragAndDropDirective
     ],
     imports: [
         BrowserModule,

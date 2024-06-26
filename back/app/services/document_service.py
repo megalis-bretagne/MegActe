@@ -149,7 +149,7 @@ def get_document_info_service(entite_id: int, document_id: str, user: UserPastel
     return response.json()
 
 
-def add_files_to_document_service(
+def add_multiple_files_to_document_service(
     document_id: str,
     element_id: str,
     files_data: AddFilesToDoc,
@@ -254,7 +254,21 @@ def delete_file_from_document_service(
     config = read_config("config/config.yml")
     timeout = config.get("TIMEOUT")
 
-    delete_file_url = f"{config['PASTELL']['URL']}/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{file_data.num_fichier}"
+    existing_files = get_existing_files(
+        file_data.entite_id, document_id, element_id, user
+    )
+
+    try:
+        file_index = existing_files.index(file_data.file_name)
+    except ValueError:
+        raise PastellException(
+            status_code=404,
+            detail="File not found",
+        )
+
+    file_index = existing_files.index(file_data.file_name)
+
+    delete_file_url = f"{config['PASTELL']['URL']}/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{file_index}"
 
     response = requests.delete(
         delete_file_url,

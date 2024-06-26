@@ -1,0 +1,29 @@
+<div class="file-upload">
+    <p class="para-name">{{name}}</p>
+    <div *ngIf="commentaire" class="fr-hint-text">{{commentaire}}</div>
+    <div class="file-upload-container">
+        <div class="upload-section" megDragAndDrop (filesDropped)="onFilesDropped($event)">
+            <p>Glissez/déposez le(s) fichier(s) ici ou cliquez sur "Parcourir les fichiers".</p>
+            <button mat-raised-button color="primary" (click)="fileInput.click()" class="custom-button">Parcourir les
+                fichiers</button>
+            <input type="file" (change)="onFileSelected($event)" [multiple]="multiple" hidden #fileInput>
+        </div>
+
+        <div class="uploaded-files" *ngIf="files.length > 0">
+            <h6>Fichiers téléchargés :</h6>
+            <ul>
+                <li *ngFor="let file of files" class="fr-hint-text">
+                    {{ file.name }}
+                    <button mat-button color="warn" (click)="removeFile(file)">
+                        <span class="fr-icon-delete-fill" aria-hidden="true">Supprimer</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div *ngIf="errorMessage" class="fr-alert fr-alert--error">
+        <h3 class="fr-alert__title">Erreur de téléchargement</h3>
+        <p>{{ errorMessage }}</p>
+    </div>
+</div>
