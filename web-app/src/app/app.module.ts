@@ -31,6 +31,7 @@ import { FileUploadComponent } from './components/flux/file-upload/file-upload.c
 import { DragAndDropDirective } from './shared/directives/drag-and-drop.directive';
 
 
+
 @NgModule({
     declarations: [
         AppComponent,
@@ -46,6 +47,7 @@ import { DragAndDropDirective } from './shared/directives/drag-and-drop.directiv
         DateInputComponent,
         FileUploadComponent,
         DragAndDropDirective
+
     ],
     imports: [
         BrowserModule,

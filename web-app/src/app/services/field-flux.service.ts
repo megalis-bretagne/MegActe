@@ -19,6 +19,7 @@ export class FieldFluxService {
         selectFields: Field[],
         dateFields: Field[],
         fileFields: Field[];
+
     } {
         const textFields: Field[] = [];
         const checkboxFields: Field[] = [];
@@ -27,12 +28,14 @@ export class FieldFluxService {
         const fileFields: Field[] = [];
 
 
+
         const typeToFieldArray: { [type: string]: Field[] } = {
             'text': textFields,
             'checkbox': checkboxFields,
             'select': selectFields,
             'date': dateFields,
             'file': fileFields,
+
         };
 
         for (const [key, value] of Object.entries(data)) {
@@ -44,6 +47,7 @@ export class FieldFluxService {
         }
 
         return { textFields, checkboxFields, selectFields, dateFields, fileFields };
+
     }
 
     // Nettoyer les délimiteurs de l'expression régulière

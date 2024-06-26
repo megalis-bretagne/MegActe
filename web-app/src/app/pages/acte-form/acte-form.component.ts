@@ -18,6 +18,7 @@ export class ActeFormComponent implements OnInit {
   dateFields: Field[] = [];
   fileFields: Field[] = [];
 
+
   constructor(private route: ActivatedRoute, private logger: NGXLogger, private fieldFluxService: FieldFluxService
   ) { }
 
@@ -27,11 +28,13 @@ export class ActeFormComponent implements OnInit {
       this.acteName = this.route.snapshot.paramMap.get('nom');
       if (this.fluxDetail) {
         const { textFields, checkboxFields, selectFields, dateFields, fileFields } = this.fieldFluxService.extractFields(this.fluxDetail);
+
         this.textFields = textFields;
         this.checkboxFields = checkboxFields;
         this.selectFields = selectFields;
         this.dateFields = dateFields;
         this.fileFields = fileFields;
+
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
