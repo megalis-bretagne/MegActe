@@ -241,7 +241,7 @@ def delete_file_from_document_service(
 
     Args:
         document_id (str): L'ID du document auquel le fichier est associé.
-        element (str): L'ID du champ auquel le fichier est associé.
+        element_id (str): L'ID du champ auquel le fichier est associé.
         file_data (DeleteFileFromDoc): Les informations nécessaires pour supprimer un fichier.
         user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
 
