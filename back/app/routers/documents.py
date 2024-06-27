@@ -7,6 +7,7 @@ from ..services.document_service import (
     get_document_info_service,
     delete_file_from_document_service,
     add_multiple_files_to_document_service,
+    get_external_data_service,
 )
 
 from ..schemas.document_schemas import (
@@ -72,3 +73,14 @@ def delete_file_from_document(
     return delete_file_from_document_service(
         document_id, element_id, request_data, user
     )
+
+
+# Récupérer les valeurs pour un champ externalData
+@router.get("/document/{document_id}/externalData/{element_id}", tags=["document"])
+def get_external_data(
+    entite_id: int,
+    document_id: str,
+    element_id: str,
+    user: UserPastell = Depends(get_user_from_db),
+):
+    return get_external_data_service(entite_id, document_id, element_id, user)
