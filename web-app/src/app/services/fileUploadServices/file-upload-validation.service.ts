@@ -1,10 +1,13 @@
 import { Injectable } from '@angular/core';
-import { ALLOWED_FILE_TYPE, MAX_SINGLE_FILE_SIZE, MAX_TOTAL_FILE_SIZE } from 'src/app/shared/constants/file-upload.constants';
+import { SettingsService } from 'src/environments/settings.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class FileUploadValidationService {
+
+    constructor(private settingsService: SettingsService) { }
+
     validateFiles(files: FileList, existingFiles: File[], multiple: boolean): string | null {
         if (!multiple) {
             return this.validateSingleFile(files, existingFiles);
@@ -44,7 +47,7 @@ export class FileUploadValidationService {
         }
 
         const totalSize = existingFiles.reduce((acc, file) => acc + file.size, 0) + Array.from(files).reduce((acc, file) => acc + file.size, 0);
-        if (totalSize > MAX_TOTAL_FILE_SIZE) {
+        if (totalSize > this.settingsService.getSetting().fileUpload.maxTotalFileSize) {
             return "La taille totale des fichiers ne doit pas dépasser 150 Mo.";
         }
 
@@ -52,11 +55,11 @@ export class FileUploadValidationService {
     }
 
     private isFileTypeAllowed(file: File): boolean {
-        return file.type === ALLOWED_FILE_TYPE;
+        return file.type === this.settingsService.getSetting().fileUpload.allowedFileType;
     }
 
     private isFileSizeAllowed(size: number): boolean {
-        return size <= MAX_SINGLE_FILE_SIZE;
+        return size <= this.settingsService.getSetting().fileUpload.maxSingleFileSize;
     }
 
     private isDuplicateFile(file: File, existingFiles: File[]): boolean {
