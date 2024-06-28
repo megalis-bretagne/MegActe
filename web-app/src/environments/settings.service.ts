@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Settings, Keycloak } from './settings';
+import { Settings, Keycloak, FileUpload } from './settings';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
@@ -8,6 +8,7 @@ export class SettingsService {
     constructor() {
         this.settings = new Settings();
         this.settings.keycloak = new Keycloak();
+        this.settings.fileUpload = new FileUpload();
     }
 
     setSettings(settings: Settings): void {
@@ -28,5 +29,17 @@ export class SettingsService {
 
     public get urlmarqueblanche(): string {
         return this.settings.urlmarqueblanche;
+    }
+
+    public get maxSingleFileSize(): number {
+        return this.settings.fileUpload.maxSingleFileSize;
+    }
+
+    public get maxTotalFileSize(): number {
+        return this.settings.fileUpload.maxTotalFileSize;
+    }
+
+    public get allowedFileType(): string {
+        return this.settings.fileUpload.allowedFileType;
     }
 }
