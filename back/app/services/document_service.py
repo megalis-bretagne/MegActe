@@ -1,7 +1,6 @@
 import requests
 from app.configuration import read_config
 from ..exceptions.custom_exceptions import PastellException
-import logging
 from .user_service import get_pastell_auth
 from ..models.users import UserPastell
 from ..schemas.document_schemas import (
@@ -11,8 +10,10 @@ from ..schemas.document_schemas import (
     AddFilesToDoc,
     AddFileToDoc,
 )
+from ..decorators import log_exceptions
 
 
+@log_exceptions
 def create_empty_document(entite_id: int, flux_type: str, user: UserPastell):
     """Crée un document vide dans Pastell pour un type de flux.
 
@@ -47,6 +48,7 @@ def create_empty_document(entite_id: int, flux_type: str, user: UserPastell):
     return response.json()
 
 
+@log_exceptions
 def update_document_service(
     document_id: int, document_data: DocUpdateInfo, user: UserPastell
 ):
@@ -83,6 +85,7 @@ def update_document_service(
     return response.json()
 
 
+@log_exceptions
 def create_document_service(doc_data: DocCreateInfo, user: UserPastell):
     """Crée un document vide et le met à jour avec les infos fournies.
 
@@ -113,6 +116,7 @@ def create_document_service(doc_data: DocCreateInfo, user: UserPastell):
     return updated_document
 
 
+@log_exceptions
 def get_document_info_service(entite_id: int, document_id: str, user: UserPastell):
     """Récupère les infos d'un document dans Pastell.
 
@@ -149,6 +153,7 @@ def get_document_info_service(entite_id: int, document_id: str, user: UserPastel
     return response.json()
 
 
+@log_exceptions
 def add_multiple_files_to_document_service(
     document_id: str,
     element_id: str,
@@ -179,6 +184,7 @@ def add_multiple_files_to_document_service(
     return results
 
 
+@log_exceptions
 def add_file_to_document_service(
     document_id: str,
     element_id: str,
@@ -207,7 +213,6 @@ def add_file_to_document_service(
         file_data.entite_id, document_id, element_id, user
     )
     next_file_number = len(existing_files)
-    logging.info(f"next_file_number: {next_file_number}")
 
     add_file_url = f"{config['PASTELL']['URL']}/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{next_file_number}"
 
@@ -234,6 +239,7 @@ def add_file_to_document_service(
     return response.json()
 
 
+@log_exceptions
 def delete_file_from_document_service(
     document_id: str, element_id: str, file_data: DeleteFileFromDoc, user: UserPastell
 ):
@@ -266,8 +272,6 @@ def delete_file_from_document_service(
             detail="File not found",
         )
 
-    file_index = existing_files.index(file_data.file_name)
-
     delete_file_url = f"{config['PASTELL']['URL']}/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{file_index}"
 
     response = requests.delete(
@@ -285,6 +289,7 @@ def delete_file_from_document_service(
     return response.json()
 
 
+@log_exceptions
 def get_existing_files(
     entite_id: int, document_id: str, element_id: str, user: UserPastell
 ) -> list:
