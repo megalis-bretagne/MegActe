@@ -27,11 +27,11 @@ export class FileUploadValidationService {
 
         const file = files[0];
         if (!this.isFileTypeAllowed(file)) {
-            return "Seuls les fichiers PDF sont autorisés.";
+            return `Seuls les fichiers ${this.getAllowedFileType()} sont autorisés.`;
         }
 
         if (!this.isFileSizeAllowed(file.size)) {
-            return "La taille du fichier ne doit pas dépasser 10 Mo.";
+            return `La taille du fichier ne doit pas dépasser ${this.getMaxSingleFileSizeMo()} Mo`;
         }
 
         return null;
@@ -39,7 +39,7 @@ export class FileUploadValidationService {
 
     private validateMultipleFiles(files: FileList, existingFiles: File[]): string | null {
         if (!Array.from(files).every(file => this.isFileTypeAllowed(file))) {
-            return "Seuls les fichiers PDF sont autorisés.";
+            return `Seuls les fichiers ${this.getAllowedFileType()} sont autorisés.`;
         }
 
         if (Array.from(files).some(file => this.isDuplicateFile(file, existingFiles))) {
@@ -48,7 +48,7 @@ export class FileUploadValidationService {
 
         const totalSize = existingFiles.reduce((acc, file) => acc + file.size, 0) + Array.from(files).reduce((acc, file) => acc + file.size, 0);
         if (totalSize > this.settingsService.getSetting().fileUpload.maxTotalFileSize) {
-            return "La taille totale des fichiers ne doit pas dépasser 150 Mo.";
+            return `La taille totale des fichiers ne doit pas dépasser ${this.getMaxTotalFileSizeMo()} Mo.`;
         }
 
         return null;
@@ -68,5 +68,19 @@ export class FileUploadValidationService {
             existingFile.size === file.size &&
             existingFile.lastModified === file.lastModified
         );
+    }
+
+    //Récupèrer la taille maximale d'un fichier unique en Mo
+    private getMaxSingleFileSizeMo(): number {
+        return this.settingsService.getSetting().fileUpload.maxSingleFileSize / (1024 * 1024);
+    }
+
+    //Récupèrer la taille totale maximale des fichiers en Mo
+    private getMaxTotalFileSizeMo(): number {
+        return this.settingsService.getSetting().fileUpload.maxTotalFileSize / (1024 * 1024);
+    }
+    //Récupèrer le type de fichier autorisé
+    private getAllowedFileType(): string {
+        return this.settingsService.getSetting().fileUpload.allowedFileType.split('/')[1];
     }
 }

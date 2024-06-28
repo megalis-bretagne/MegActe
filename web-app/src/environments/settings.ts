@@ -6,9 +6,9 @@ export class Keycloak {
 }
 
 export class FileUpload {
-    maxSingleFileSize = 0;
-    maxTotalFileSize = 0;
-    allowedFileType: ""
+    maxSingleFileSize = 1 * 1024 * 1024; // 1 Mo
+    maxTotalFileSize = 10 * 1024 * 1024; // 10 Mo
+    allowedFileType: "application/pdf"
 }
 
 export class Settings {
@@ -17,5 +17,5 @@ export class Settings {
     urlmarqueblanche = "";
     apiUrl = "";
     opendataToolUrl = "";
-    fileUpload: FileUpload | undefined;
+    fileUpload: FileUpload = new FileUpload();
 }
