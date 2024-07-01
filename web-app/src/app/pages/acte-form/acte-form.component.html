@@ -23,8 +23,8 @@
                 <meg-date-input [name]="field['name']" [required]="field['requis']" [default]="field['default']"
                     [commentaire]="field['commentaire']" />
             </div>
-            <div *ngFor="let field of dateFields" class="input-container">
-                <meg-date-input [name]="field['name']" [required]="field['requis']" [default]="field['default']"
+            <div *ngFor="let field of fileFields" class="input-container">
+                <meg-file-upload [name]="field['name']" [required]="field['requis']" [multiple]="field['multiple']"
                     [commentaire]="field['commentaire']" />
             </div>
         </div>
