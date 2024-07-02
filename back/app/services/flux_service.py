@@ -1,5 +1,6 @@
 import requests
-from app.configuration import read_config
+
+from ..dependencies import settings
 from ..exceptions.custom_exceptions import PastellException
 
 from .user_service import get_pastell_auth
@@ -19,14 +20,11 @@ def get_flux_detail_service(flux_type: str, user: UserPastell):
     Returns:
        dict: Un dictionnaire contenant les détails du flux.
     """
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
-
-    flux_detail_url = f"{config['PASTELL']['URL']}/flux/{flux_type}"
+    flux_detail_url = f"{settings.pastell.url}/flux/{flux_type}"
     response = requests.get(
         flux_detail_url,
         auth=get_pastell_auth(user),
-        timeout=timeout,
+        timeout=settings.request_timeout,
     )
 
     if response.status_code != 200:

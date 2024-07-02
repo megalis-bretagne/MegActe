@@ -1,18 +1,28 @@
+from functools import lru_cache
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
 import jwt
-from app.configuration import read_config
+from config import configuration as config
 
 
-config = read_config("config/config.yml")
+@lru_cache
+def get_settings():
+    return config.Settings()
+
+
+settings = get_settings()
+
 oauth_2_scheme = OAuth2AuthorizationCodeBearer(
-    tokenUrl=config["KEYCLOAK"]["token_url"],
-    authorizationUrl=config["KEYCLOAK"]["auth_url"],
-    refreshUrl=config["KEYCLOAK"]["refresh_url"],
+    tokenUrl=settings.keycloak.token_url,
+    authorizationUrl=settings.keycloak.auth_url,
+    refreshUrl=settings.keycloak.refresh_url,
 )
 
 
-def validate_token(token: str = Depends(oauth_2_scheme)):
+def validate_token(
+    token: str = Depends(oauth_2_scheme),
+    settings: config.Settings = Depends(get_settings),
+):
     """
         Valide un token JWT en utilisant les clés publiques de Keycloak et retourne le payload décodé.
 
@@ -25,14 +35,14 @@ def validate_token(token: str = Depends(oauth_2_scheme)):
         dict: La payload decodé
     """
 
-    jwks_client = jwt.PyJWKClient(config["KEYCLOAK"]["jwks_url"])
+    jwks_client = jwt.PyJWKClient(settings.keycloak.jwks_url)
     signing_key = jwks_client.get_signing_key_from_jwt(token)
     try:
         return jwt.decode(
             token,
             signing_key.key,
             algorithms=["RS256"],
-            audience=config["KEYCLOAK"]["client_id"],
+            audience=settings.keycloak.client_id,
         )
     except jwt.PyJWTError:
         raise HTTPException(

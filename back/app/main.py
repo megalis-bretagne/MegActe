@@ -29,6 +29,4 @@ add_exception_handlers(app)
 app.include_router(users.router, dependencies=[Depends(validate_token)])
 app.include_router(flux.router, dependencies=[Depends(validate_token)])
 app.include_router(documents.router, dependencies=[Depends(validate_token)])
-
-
 app.include_router(health.router)
