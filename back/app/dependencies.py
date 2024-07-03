@@ -34,7 +34,6 @@ def validate_token(
     Returns:
         dict: La payload decodé
     """
-
     jwks_client = jwt.PyJWKClient(settings.keycloak.jwks_url)
     signing_key = jwks_client.get_signing_key_from_jwt(token)
     try:

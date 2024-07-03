@@ -19,11 +19,11 @@ class ApiPastell:
         self._auth = auth
         return self
 
-    def perform_get(self, url):
+    def perform_get(self, url, auth: AuthUser = None):
 
         response = requests.get(
             url=f"{self._config.base_url}/{url}",
-            auth=self._auth.auth(),
+            auth=auth.do_auth() if auth is not None else self._auth.do_auth(),
             timeout=self._timeout_s,
         )
         return response

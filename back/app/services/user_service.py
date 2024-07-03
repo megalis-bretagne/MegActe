@@ -1,8 +1,13 @@
+from operator import ge
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.fernet import Fernet
 import base64, os
 import requests
+
+from ..clients.pastell.models.auth import AuthUser
+
+from ..clients import get_or_make_api_pastell
 
 from ..dependencies import settings
 from ..exceptions.custom_exceptions import PastellException
@@ -174,7 +179,7 @@ def get_pastell_auth(user: UserPastell):
 
 
 # Get user context
-def get_user_context_service(user):
+def get_user_context_service(user: UserPastell):
     """Récupère le contexte du user à partir de Pastell en utilisant le jeton Keycloak réceptionner côté API
 
     Args:
@@ -189,13 +194,10 @@ def get_user_context_service(user):
     """
 
     # Récupérer les infos du user depuis Pastell
-
-    user_info_url = f"{settings.pastell.url}/utilisateur/{user.id_pastell}"
-    user_info_response = requests.get(
-        user_info_url,
-        auth=get_pastell_auth(user),
-        timeout=settings.request_timeout,
+    user_info_response = get_or_make_api_pastell().perform_get(
+        f"utilisateur/{user.id_pastell}", auth=user.to_auth_api()
     )
+
     if user_info_response.status_code != 200:
         raise PastellException(
             status_code=user_info_response.status_code,
@@ -215,12 +217,10 @@ def get_user_context_service(user):
         return {"user_info": user_info}
 
     # Récupérer les entités du user depuis Pastell
-    entites_url = f"{settings.pastell.url}/entite/"
-    entites_response = requests.get(
-        entites_url,
-        auth=get_pastell_auth(user),
-        timeout=settings.request_timeout,
+    entites_response = get_or_make_api_pastell().perform_get(
+        "/entite/", auth=user.to_auth_api()
     )
+
     if entites_response.status_code != 200:
         raise PastellException(
             status_code=entites_response.status_code,

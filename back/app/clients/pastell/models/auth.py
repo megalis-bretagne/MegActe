@@ -11,5 +11,5 @@ class AuthUser:
     login: str
     pwd: str
 
-    def auth(self) -> Tuple:
+    def do_auth(self) -> Tuple:
         return (self.login, self.pwd)
