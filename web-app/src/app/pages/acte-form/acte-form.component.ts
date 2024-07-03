@@ -17,6 +17,7 @@ export class ActeFormComponent implements OnInit {
   selectFields: Field[] = [];
   dateFields: Field[] = [];
   fileFields: Field[] = [];
+  externalDataFields: Field[] = [];
 
   constructor(private route: ActivatedRoute, private logger: NGXLogger, private fieldFluxService: FieldFluxService
   ) { }

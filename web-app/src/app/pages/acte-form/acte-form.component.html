@@ -30,7 +30,10 @@
             <div *ngFor="let field of dateFields" class="input-container">
                 <meg-date-input [name]="field['name']" [required]="field['requis']" [default]="field['default']"
                     [commentaire]="field['commentaire']" />
+                <div *ngFor="let field of externalDataFields" class="input-container">
+                    <meg-external-data-input [name]="field['name']" [required]="field['requis']"
+                        [link_name]="field['link_name']" />
+                </div>
             </div>
         </div>
     </div>
-</div>
