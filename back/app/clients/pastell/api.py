@@ -18,6 +18,7 @@ class ApiPastell:
     def auth(self, auth: AuthUser):
         self._auth = auth
 
+    @call_handler
     def perform_get(self, url, auth: AuthUser = None):
         return self._perform_request("GET", url, auth=auth)
 

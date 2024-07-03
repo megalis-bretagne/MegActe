@@ -3,6 +3,8 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from cryptography.fernet import Fernet
 
+from ..exceptions.custom_exceptions import DecryptionException
+
 from ..clients.pastell.models.auth import AuthUser
 
 from ..utils import PasswordUtils
