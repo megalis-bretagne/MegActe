@@ -3,7 +3,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.fernet import Fernet
 import base64, os
 import requests
-from app.configuration import read_config
+
+from ..dependencies import settings
 from ..exceptions.custom_exceptions import PastellException
 from sqlalchemy.orm import Session
 
@@ -49,11 +50,10 @@ def decrypt_password(encrypted_password: str, key: bytes) -> str:
 
 
 def send_password_to_pastell(id_pastell: int, password: str):
-    config = read_config("config/config.yml")
-    url = f"{config['PASTELL']['URL']}/utilisateur/{id_pastell}"
+    url = f"{settings.pastell.url}/utilisateur/{id_pastell}"
     data = {"password": password}
     response = requests.patch(
-        url, data=data, auth=(config["PASTELL"]["USER"], config["PASTELL"]["PASSWORD"])
+        url, data=data, auth=(settings.pastell.user, settings.pastell.password)
     )
     if response.status_code != 200:
         raise PastellException(
@@ -189,14 +189,12 @@ def get_user_context_service(user):
     """
 
     # Récupérer les infos du user depuis Pastell
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
 
-    user_info_url = f"{config['PASTELL']['URL']}/utilisateur/{user.id_pastell}"
+    user_info_url = f"{settings.pastell.url}/utilisateur/{user.id_pastell}"
     user_info_response = requests.get(
         user_info_url,
         auth=get_pastell_auth(user),
-        timeout=timeout,
+        timeout=settings.request_timeout,
     )
     if user_info_response.status_code != 200:
         raise PastellException(
@@ -217,11 +215,11 @@ def get_user_context_service(user):
         return {"user_info": user_info}
 
     # Récupérer les entités du user depuis Pastell
-    entites_url = f"{config['PASTELL']['URL']}/entite/"
+    entites_url = f"{settings.pastell.url}/entite/"
     entites_response = requests.get(
         entites_url,
         auth=get_pastell_auth(user),
-        timeout=timeout,
+        timeout=settings.request_timeout,
     )
     if entites_response.status_code != 200:
         raise PastellException(
@@ -252,14 +250,12 @@ def get_user_flux_service(user):
     """
 
     # Récupérer les infos du user depuis Pastell
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
 
-    flux_url = f"{config['PASTELL']['URL']}/flux"
+    flux_url = f"{settings.pastell.url}/flux"
     flux_response = requests.get(
         flux_url,
         auth=get_pastell_auth(user),
-        timeout=timeout,
+        timeout=settings.request.timeout,
     )
 
     if flux_response.status_code != 200:

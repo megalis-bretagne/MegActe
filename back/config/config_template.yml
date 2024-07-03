@@ -1,14 +1,18 @@
-PASTELL:
-  URL : <URL>
-  USER : <USER>
-  PASSWORD : <PWD>
-  RESTRITED_ROLES : ['admin_default', 'user_default']
+pastell:
+  url : <url>
+  user : <user>
+  password : <mdp>
 
-KEYCLOAK:
-  token_url: <URL>
-  refresh_url: <URL>
-  auth_url: <URL>
-  jwks_url: <URL>/protocol/openid-connect/certs
-  client_id: <client_id>
+keycloak:
+  token_url: <token>
+  refresh_url: <refresh>
+  auth_url: <auth>
+  jwks_url: <jwks>
+  client_id: megacte
 
-  TIMEOUT: <TIME>
+Database:
+  pwd : <pwd>
+  user : <user>
+  host : <host>
+  port : <port>
+  database: <db name>

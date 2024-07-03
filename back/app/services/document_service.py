@@ -1,5 +1,6 @@
 import requests
-from app.configuration import read_config
+
+from ..dependencies import settings
 from ..exceptions.custom_exceptions import PastellException
 from .user_service import get_pastell_auth
 from ..models.users import UserPastell
@@ -27,16 +28,13 @@ def create_empty_document(entite_id: int, flux_type: str, user: UserPastell):
     Returns:
         dict: Les détails du document créé.
     """
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
-
-    create_document_url = f"{config['PASTELL']['URL']}/entite/{entite_id}/document"
+    create_document_url = f"{settings.pastell.url}/entite/{entite_id}/document"
 
     response = requests.post(
         create_document_url,
         data={"type": flux_type},
         auth=get_pastell_auth(user),
-        timeout=timeout,
+        timeout=settings.request_timeout,
     )
 
     if response.status_code != 201:
@@ -65,15 +63,12 @@ def update_document_service(
     Returns:
         dict: Les détails du document mis à jour.
     """
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
-
-    update_document_url = f"{config['PASTELL']['URL']}/entite/{document_data.entite_id}/document/{document_id}"
+    update_document_url = f"{settings.pastell.url}/entite/{document_data.entite_id}/document/{document_id}"
     response = requests.patch(
         update_document_url,
         data=document_data.doc_info,
         auth=get_pastell_auth(user),
-        timeout=timeout,
+        timeout=settings.request_timeout,
     )
 
     if response.status_code != 200:
@@ -131,17 +126,15 @@ def get_document_info_service(entite_id: int, document_id: str, user: UserPastel
     Returns:
         dict: Les détails du document récupéré.
     """
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
 
     get_document_url = (
-        f"{config['PASTELL']['URL']}/entite/{entite_id}/document/{document_id}"
+        f"{settings.pastell.url}/entite/{entite_id}/document/{document_id}"
     )
 
     response = requests.get(
         get_document_url,
         auth=get_pastell_auth(user),
-        timeout=timeout,
+        timeout=settings.request_timeout,
     )
 
     if response.status_code != 200:
@@ -205,16 +198,12 @@ def add_file_to_document_service(
     Returns:
         dict: Les détails de l'ajout du fichier.
     """
-
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
-
     existing_files = get_existing_files(
         file_data.entite_id, document_id, element_id, user
     )
     next_file_number = len(existing_files)
 
-    add_file_url = f"{config['PASTELL']['URL']}/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{next_file_number}"
+    add_file_url = f"{settings.pastell.url}/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{next_file_number}"
 
     file_content = file_data.file.file.read()
 
@@ -227,7 +216,7 @@ def add_file_to_document_service(
         add_file_url,
         auth=get_pastell_auth(user),
         files=files,
-        timeout=timeout,
+        timeout=settings.request_timeout,
     )
 
     if response.status_code != 201:
@@ -257,9 +246,6 @@ def delete_file_from_document_service(
     Returns:
         dict: Les détails de la suppression du fichier.
     """
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
-
     existing_files = get_existing_files(
         file_data.entite_id, document_id, element_id, user
     )
@@ -272,12 +258,12 @@ def delete_file_from_document_service(
             detail="File not found",
         )
 
-    delete_file_url = f"{config['PASTELL']['URL']}/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{file_index}"
+    delete_file_url = f"{settings.pastell.url}/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{file_index}"
 
     response = requests.delete(
         delete_file_url,
         auth=get_pastell_auth(user),
-        timeout=timeout,
+        timeout=settings.request_timeout,
     )
 
     if response.status_code != 200:
@@ -302,16 +288,11 @@ def get_existing_files(
     Returns:
         list: Une liste des fichiers existants.
     """
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
-
-    get_files_url = (
-        f"{config['PASTELL']['URL']}/entite/{entite_id}/document/{document_id}"
-    )
+    get_files_url = f"{settings.pastell.url}/entite/{entite_id}/document/{document_id}"
     response = requests.get(
         get_files_url,
         auth=get_pastell_auth(user),
-        timeout=timeout,
+        timeout=settings.request_timeout,
     )
 
     if response.status_code != 200:

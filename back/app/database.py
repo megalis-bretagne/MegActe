@@ -6,14 +6,10 @@ from .exceptions.custom_exceptions import (
     UserNotFoundException,
     UserPasswordNullException,
 )
-from .dependencies import config, get_current_user
+from .dependencies import get_settings, get_current_user
 from fastapi import Depends
 
-
-url = config["DB"]["user"]
-DATABASE_URL = f'postgresql://{config["DB"]["user"]}:{config["DB"]["pwd"]}@{config["DB"]["host"]}:{config["DB"]["port"]}/{config["DB"]["database"]}'
-
-engine = create_engine(DATABASE_URL)
+engine = create_engine(get_settings().database.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
