@@ -29,6 +29,7 @@ import { SelectInputComponent } from './components/flux/select-input/select-inpu
 import { DateInputComponent } from './components/flux/date-input/date-input.component';
 import { FileUploadComponent } from './components/flux/file-upload/file-upload.component';
 import { DragAndDropDirective } from './shared/directives/drag-and-drop.directive';
+import { ExternalDataInputComponent } from './components/flux/external-data-input/external-data-input.component';
 
 
 @NgModule({
@@ -56,6 +57,7 @@ import { DragAndDropDirective } from './shared/directives/drag-and-drop.directiv
         KeycloakAngularModule,
         HttpClientModule,
         LoggerModule.forRoot({ level: NgxLoggerLevel.WARN }),
+        ExternalDataInputComponent,
     ],
     providers: [
         {

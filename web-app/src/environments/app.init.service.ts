@@ -9,12 +9,13 @@ import { UserService } from 'src/app/services/user.service';
 import { UserContext } from 'src/app/model/user.model';
 import { Acte } from 'src/app/model/acte.model';
 import { SharedDataService } from 'src/app/services/sharedData.service';
+import { FluxService } from 'src/app/services/flux.service';
 
 @Injectable({ providedIn: 'root' })
 export class AppInitService {
 
     constructor(private http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService,
-        private userService: UserService, private _logger: NGXLogger, private sharedDataService: SharedDataService) {
+        private userService: UserService, private fluxService: FluxService, private _logger: NGXLogger, private sharedDataService: SharedDataService) {
     }
 
     initializeApp(): Promise<any> {
@@ -60,7 +61,7 @@ export class AppInitService {
         }).then(async () => { // chargement des infos de l'utilisateur et de son contexte
             try {
                 const user: UserContext = await firstValueFrom(this.userService.getUser());
-                const flux: Acte[] = await firstValueFrom(this.userService.getFlux());
+                const flux: Acte[] = await firstValueFrom(this.fluxService.getFlux());
                 this.sharedDataService.setUser(user);
                 this.sharedDataService.setFlux(flux);
             } catch (error) {
