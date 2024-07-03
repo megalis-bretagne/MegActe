@@ -27,12 +27,13 @@ export class ActeFormComponent implements OnInit {
       this.fluxDetail = data['fluxDetail'];
       this.acteName = this.route.snapshot.paramMap.get('nom');
       if (this.fluxDetail) {
-        const { textFields, checkboxFields, selectFields, dateFields, fileFields } = this.fieldFluxService.extractFields(this.fluxDetail);
+        const { textFields, checkboxFields, selectFields, dateFields, fileFields, externalDataFields } = this.fieldFluxService.extractFields(this.fluxDetail);
         this.textFields = textFields;
         this.checkboxFields = checkboxFields;
         this.selectFields = selectFields;
         this.dateFields = dateFields;
         this.fileFields = fileFields;
+        this.externalDataFields = externalDataFields;
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
