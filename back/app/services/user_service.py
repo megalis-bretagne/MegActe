@@ -255,7 +255,7 @@ def get_user_flux_service(user):
     flux_response = requests.get(
         flux_url,
         auth=get_pastell_auth(user),
-        timeout=settings.request.timeout,
+        timeout=settings.request_timeout,
     )
 
     if flux_response.status_code != 200:

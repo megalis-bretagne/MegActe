@@ -10,7 +10,7 @@ keycloak:
   jwks_url: <jwks>
   client_id: megacte
 
-Database:
+database:
   pwd : <pwd>
   user : <user>
   host : <host>
