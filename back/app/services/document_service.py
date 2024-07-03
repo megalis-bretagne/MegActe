@@ -13,8 +13,6 @@ from ..schemas.document_schemas import (
 )
 from ..decorators import log_exceptions
 
-logger = logging.getLogger(__name__)
-
 
 @log_exceptions
 def create_empty_document(entite_id: int, flux_type: str, user: UserPastell):
@@ -307,6 +305,7 @@ def get_existing_files(
     return document_data.get(element_id, [])
 
 
+@log_exceptions
 def get_external_data_service(
     entite_id: int, document_id: str, element_id: str, user: UserPastell
 ) -> dict:
@@ -323,21 +322,15 @@ def get_external_data_service(
     Returns:
         dict: Les valeurs possibles pour l'élément externalData.
     """
-    config = read_config("config/config.yml")
-    timeout = config.get("TIMEOUT")
 
-    external_data_url = f"{config['PASTELL']['URL']}/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
+    external_data_url = f"{settings.pastell.url}/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
     response = requests.get(
         external_data_url,
         auth=get_pastell_auth(user),
-        timeout=timeout,
+        timeout=settings.request_timeout,
     )
 
     if response.status_code != 200:
-        error_message = response.json().get(
-            "error-message", "No error message provided"
-        )
-        logger.error(f"Error {response.status_code}: {error_message}")
         raise PastellException(
             status_code=response.status_code,
             detail=f"Failed to retrieve external data for element {element_id} from Pastell",
