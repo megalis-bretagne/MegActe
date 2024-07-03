@@ -1,3 +1,4 @@
+import logging
 from typing import Tuple, Type
 from pydantic import BaseModel, computed_field
 from pydantic_settings import (
@@ -76,6 +77,7 @@ class Settings(BaseSettings):
     keycloak: Keycloak
     database: Database
     request_timeout: int = 5
+    log_level: str = "INFO"  # ["debug", "info", "warning", "error", "critical"],
 
     model_config = SettingsConfigDict(
         yaml_file="config/config.yml", case_sensitive=False

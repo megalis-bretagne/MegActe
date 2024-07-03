@@ -1,6 +1,19 @@
 from fastapi import HTTPException
 
 
+class MegActeException(HTTPException):
+    detail: str
+    status_code: int
+
+    def __init__(self, status_code: int, detail: str):
+        """Initialise une MegActeException.
+
+        Args:
+            detail (str, optional): Le message détaillé de l'erreur. Defaults to "Decryption failed".
+        """
+        super().__init__(status_code=status_code, detail=detail)
+
+
 class PastellException(HTTPException):
     """Exception pour les erreurs liées à Pastell.
 

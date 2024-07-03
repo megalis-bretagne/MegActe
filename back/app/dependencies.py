@@ -11,6 +11,15 @@ def get_settings():
 
 
 settings = get_settings()
+import logging
+
+logging.basicConfig(
+    level=settings.log_level,
+    format="%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    force=True,
+)
+
 
 oauth_2_scheme = OAuth2AuthorizationCodeBearer(
     tokenUrl=settings.keycloak.token_url,

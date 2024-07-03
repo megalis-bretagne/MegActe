@@ -5,8 +5,6 @@ from cryptography.fernet import Fernet
 import base64, os
 import requests
 
-from ..clients.pastell.models.auth import AuthUser
-
 from ..clients import get_or_make_api_pastell
 
 from ..dependencies import settings
@@ -120,19 +118,6 @@ def add_user_to_db(user_data: UserCreate, db: Session):
     return new_user
 
 
-# Récupérer un pwd chiffré et le déchiffrer
-def get_decrypted_password_from_db(user_id: int, db: Session):
-    user = db.query(UserPastell).filter(UserPastell.id == user_id).first()
-    if not user:
-        raise UserNotFoundException()
-    key = base64.urlsafe_b64decode(user.pwd_key.encode("utf-8"))
-    try:
-        decrypted_password = decrypt_password(user.pwd_pastell, key)
-        return {"decrypted_password": decrypted_password}
-    except Exception:
-        raise DecryptionException()
-
-
 # Update User
 def update_user_in_db(user_id: int, user_data: UserCreate, db: Session):
     db_user = db.query(UserPastell).filter(UserPastell.id == user_id).first()
@@ -194,17 +179,9 @@ def get_user_context_service(user: UserPastell):
     """
 
     # Récupérer les infos du user depuis Pastell
-    user_info_response = get_or_make_api_pastell().perform_get(
+    user_info_data = get_or_make_api_pastell().perform_get(
         f"utilisateur/{user.id_pastell}", auth=user.to_auth_api()
     )
-
-    if user_info_response.status_code != 200:
-        raise PastellException(
-            status_code=user_info_response.status_code,
-            detail="Failed to retrieve user info from Pastell",
-        )
-
-    user_info_data = user_info_response.json()
 
     if "certificat" not in user_info_data or not isinstance(
         user_info_data["certificat"], list
@@ -217,17 +194,9 @@ def get_user_context_service(user: UserPastell):
         return {"user_info": user_info}
 
     # Récupérer les entités du user depuis Pastell
-    entites_response = get_or_make_api_pastell().perform_get(
+    entites_data = get_or_make_api_pastell().perform_get(
         "/entite/", auth=user.to_auth_api()
     )
-
-    if entites_response.status_code != 200:
-        raise PastellException(
-            status_code=entites_response.status_code,
-            detail="Failed to retrieve user entities from Pastell",
-        )
-
-    entites_data = entites_response.json()
 
     # Convertir les données des entités en objets EntiteInfo
     user_entites = [EntiteInfo(**entite) for entite in entites_data]

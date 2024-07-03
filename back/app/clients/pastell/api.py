@@ -1,7 +1,7 @@
-from ast import Tuple
 import requests
 from .models.config import Config
 from .models.auth import AuthUser
+from .handlers import call_handler
 
 
 class ApiPastell:
@@ -19,6 +19,7 @@ class ApiPastell:
         self._auth = auth
         return self
 
+    @call_handler
     def perform_get(self, url, auth: AuthUser = None):
 
         response = requests.get(
@@ -26,17 +27,19 @@ class ApiPastell:
             auth=auth.do_auth() if auth is not None else self._auth.do_auth(),
             timeout=self._timeout_s,
         )
-        return response
+        response.raise_for_status()
+        json = response.json()
+        return json
 
-    def _perform_post(self, url):
+    # def _perform_post(self, url):
 
-        response = requests.post(
-            url=f"{self._config.base_url}/{url}",
-            auth=self._auth,
-            timeout=self._timeout_s,
-            params=self._query_params,
-        )
-        return response
+    #     response = requests.post(
+    #         url=f"{self._config.base_url}/{url}",
+    #         auth=self._auth,
+    #         timeout=self._timeout_s,
+    #         params=self._query_params,
+    #     )
+    #     return response
 
     def _perform_patch(self, url):
 

@@ -3,6 +3,8 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from cryptography.fernet import Fernet
 
+from ..exceptions.custom_exceptions import DecryptionException
+
 from ..clients.pastell.models.auth import AuthUser
 
 Base = declarative_base()
@@ -33,8 +35,11 @@ class UserPastell(Base):
 
     def _decrypt_password(self) -> str:
         if self._cached_password is None:
-            fernet = Fernet(base64.urlsafe_b64decode(self.pwd_key.encode("utf-8")))
-            self._cached_password = fernet.decrypt(
-                self.pwd_pastell.encode("utf-8")
-            ).decode()
+            try:
+                fernet = Fernet(base64.urlsafe_b64decode(self.pwd_key.encode("utf-8")))
+                self._cached_password = fernet.decrypt(
+                    self.pwd_pastell.encode("utf-8")
+                ).decode()
+            except Exception:
+                raise DecryptionException
         return self._cached_password
