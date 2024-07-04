@@ -1,14 +1,7 @@
-from requests import HTTPError
 from .models.errors import ApiErrorResponse
 
 
-class ApiPastellClientError(Exception):
-    """Exception de base pour le client API Pastell"""
-
-    pass
-
-
-class ApiError(ApiPastellClientError):
+class ApiError(Exception):
     """Erreur renvoyée par l'API Pastell.
     Elle porte la structure ApiErrorResponse
     """

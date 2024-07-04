@@ -20,12 +20,12 @@ def _handle_httperr_40X(f):
             data = e.response.json()
             api_error_response = ApiErrorResponse.from_json(data)
             logger.debug(
-                f"L'API pastell a retourne une erreur {e.response.status_code} avec le message {api_error_response.error_message} sur la request {e.request.url}"
+                f"L'API pastell retourne une erreur {e.response.status_code}, message {api_error_response.error_message}, request {e.request.url}"
             )
             if e.response.status_code == 404:
                 raise ApiHttp40XError(e.response.status_code, api_error_response)
             else:
-                raise
+                raise e
 
     return inner
 

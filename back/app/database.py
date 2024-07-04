@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm import Session
+
 from .models.users import UserPastell
 from .exceptions.custom_exceptions import (
     UserNotFoundException,
@@ -8,6 +9,7 @@ from .exceptions.custom_exceptions import (
 )
 from .dependencies import get_settings, get_current_user
 from fastapi import Depends
+import logging
 
 engine = create_engine(get_settings().database.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -23,8 +25,8 @@ def get_db():
 
 
 def get_user_from_db(
-    current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
-):
+    login_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
+) -> UserPastell:
     """Récupère l'utilisateur depuis la BD.
 
     Args:
@@ -37,8 +39,8 @@ def get_user_from_db(
     Returns:
         UserPastell: L'utilisateur récupéré depuis la BD.
     """
-    login = current_user["login"]
-    user = db.query(UserPastell).filter(UserPastell.login == login).first()
+    logging.debug(f"Retrieve User form DB : {login_user}")
+    user = db.query(UserPastell).filter(UserPastell.login == login_user).first()
     if not user:
         raise UserNotFoundException()
     if not user.pwd_pastell:

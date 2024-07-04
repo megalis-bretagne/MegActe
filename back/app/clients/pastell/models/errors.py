@@ -3,6 +3,13 @@ from dataclasses import dataclass
 
 @dataclass
 class ApiErrorResponse:
+    """
+    Objet permettant de mapper les erreurs d'api Pastell
+
+    Returns:
+        _type_: _description_
+    """
+
     status: str
     error_message: str
 

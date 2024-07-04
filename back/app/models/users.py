@@ -1,11 +1,7 @@
-import base64
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-from cryptography.fernet import Fernet
 
-from ..exceptions.custom_exceptions import DecryptionException
-
-from ..clients.pastell.models.auth import AuthUser
+from ..utils import PasswordUtils
 
 Base = declarative_base()
 
@@ -21,25 +17,26 @@ class UserPastell(Base):
 
     _cached_password = None
 
-    def to_auth_api(self) -> AuthUser:
-        """
-        Construit un objet permettant de se connecter aux API pastell avec le compte utilisateur
+    def get_decrypt_password(self) -> str:
+        """Retourne le mot de passe non crypté
 
         Returns:
-            AuthUser: _description_
+            str: le mot de passe
         """
-        return AuthUser(
-            login=self.login,
-            pwd=self._decrypt_password(),
+        if self._cached_password is None:
+            self._cached_password = PasswordUtils().decrypt_password(
+                self.pwd_pastell, self.pwd_key
+            )
+        return self._cached_password
+
+    def __eq__(self, other):
+        if not isinstance(other, UserPastell):
+            return NotImplemented
+        return (self.id, self.login, self.id_pastell) == (
+            other.id,
+            other.login,
+            other.id_pastell,
         )
 
-    def _decrypt_password(self) -> str:
-        if self._cached_password is None:
-            try:
-                fernet = Fernet(base64.urlsafe_b64decode(self.pwd_key.encode("utf-8")))
-                self._cached_password = fernet.decrypt(
-                    self.pwd_pastell.encode("utf-8")
-                ).decode()
-            except Exception:
-                raise DecryptionException
-        return self._cached_password
+    def __hash__(self):
+        return hash((self.id, self.login, self.id_pastell))

@@ -13,6 +13,7 @@ export class SettingsService {
 
     setSettings(settings: Settings): void {
         this.settings = settings;
+        console.log(settings);
     }
 
     getSetting(): Settings {

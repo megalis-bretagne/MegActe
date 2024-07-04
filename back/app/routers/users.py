@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
+from . import get_or_make_api_pastell, get_or_make_api_pastell_for_admin
+from ..clients.pastell.api import ApiPastell
 from ..database import get_db
 from ..database import get_user_from_db
 from ..schemas.user_schemas import UserCreate
@@ -24,8 +27,11 @@ router = APIRouter()
     response_model=dict,
     description="Récupère les informations de l'utilisateur connecté",
 )
-def get_user(user: UserPastell = Depends(get_user_from_db)):
-    return get_user_context_service(user)
+def get_user(
+    user: UserPastell = Depends(get_user_from_db),
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return get_user_context_service(client, user)
 
 
 # Get liste de tous les users
@@ -42,8 +48,12 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
 
 # Add user
 @router.post("/user/add", response_model=UserCreate, tags=["users"])
-def add_user(user_data: UserCreate, db: Session = Depends(get_db)):
-    return add_user_to_db(user_data, db)
+def add_user(
+    user_data: UserCreate,
+    db: Session = Depends(get_db),
+    client_admin: ApiPastell = Depends(get_or_make_api_pastell_for_admin),
+):
+    return add_user_to_db(user_data, client_admin, db)
 
 
 # Update User
@@ -60,5 +70,5 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 
 # Get liste des flux dispo pour l'utilisateur connecté
 @router.get("/flux", tags=["users"])
-def get_user_flux(user: UserPastell = Depends(get_user_from_db)):
-    return get_user_flux_service(user)
+def get_user_flux(client: ApiPastell = Depends(get_or_make_api_pastell)):
+    return get_user_flux_service(client)
