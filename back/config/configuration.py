@@ -1,4 +1,3 @@
-import logging
 from typing import Tuple, Type
 from pydantic import BaseModel, computed_field
 from pydantic_settings import (

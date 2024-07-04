@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Request, FastAPI
+from fastapi import Request, FastAPI
 from fastapi.responses import JSONResponse
 import logging
 from ..clients.pastell.exeptions import ApiHttp40XError
