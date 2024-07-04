@@ -8,6 +8,8 @@ from ..services.document_service import (
     delete_file_from_document_service,
     add_multiple_files_to_document_service,
     get_external_data_service,
+    get_documents_service,
+    check_acte_number_uniqueness_service,
 )
 
 from ..schemas.document_schemas import (
@@ -45,6 +47,25 @@ def get_document(
     document_id: str, entite_id: int, user: UserPastell = Depends(get_user_from_db)
 ):
     return get_document_info_service(entite_id, document_id, user)
+
+
+# Récupérer tous les documents d'une entité
+@router.get("/documents", tags=["document"])
+def get_documents(
+    entite_id: int,
+    user: UserPastell = Depends(get_user_from_db),
+):
+    return get_documents_service(entite_id, user)
+
+
+# Vérifier l'unicité du numéro d'acte
+@router.get("/document/check-acte-number/{acte_number}", tags=["document"])
+def check_acte_number(
+    entite_id: int,
+    acte_number: str,
+    user: UserPastell = Depends(get_user_from_db),
+):
+    return check_acte_number_uniqueness_service(entite_id, acte_number, user)
 
 
 # Ajouter des fichiers à un document

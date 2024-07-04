@@ -147,6 +147,74 @@ def get_document_info_service(entite_id: int, document_id: str, user: UserPastel
 
 
 @log_exceptions
+def get_documents_service(entite_id: int, user: UserPastell) -> list:
+    """Récupère tous les docs pour une entité spécifique.
+
+    Args:
+        entite_id (int): L'ID de l'entité.
+        user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
+
+    Raises:
+        PastellException: Si les documents ne peuvent pas être récupérés depuis Pastell.
+
+    Returns:
+        list: Une liste de documents pour l'entité.
+    """
+    get_documents_url = f"{settings.pastell.url}/entite/{entite_id}/document"
+    response = requests.get(
+        get_documents_url,
+        auth=get_pastell_auth(user),
+        timeout=settings.request_timeout,
+    )
+
+    if response.status_code != 200:
+        raise PastellException(
+            status_code=response.status_code,
+            detail="Failed to retrieve documents from Pastell",
+        )
+
+    return response.json()
+
+
+@log_exceptions
+def check_acte_number_uniqueness_service(
+    entite_id: int, acte_number: str, user: UserPastell
+) -> dict:
+    """Vérifie si un numéro d'acte est unique pour une entité donnée.
+
+    Args:
+        entite_id (int): L'ID de l'entité.
+        acte_number (str): Le numéro d'acte à vérifier.
+        user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
+
+    Returns:
+        dict: Si le numéro d'acte n'est pas unique, retourne False et l'ID du document, sinon True.
+    """
+    # Récupérer les docs de l'entité
+    documents = get_documents_service(entite_id, user)
+
+    # Récupérer le numéro d'acte pour chaque document
+    acte_numbers = {}
+    for document in documents:
+        document_details = get_document_info_service(entite_id, document["id_d"], user)
+
+        if isinstance(document_details, dict):
+            data = document_details.get("data")
+
+            if isinstance(data, dict):
+                acte_num = data.get("numero_de_lacte")
+
+                if acte_num:
+                    acte_numbers[acte_num] = document["id_d"]
+
+    # Vérifier si le numéro d'acte existe déjà
+    if acte_number in acte_numbers:
+        return {"is_unique": False, "document_id": acte_numbers[acte_number]}
+
+    return {"is_unique": True}
+
+
+@log_exceptions
 def add_multiple_files_to_document_service(
     document_id: str,
     element_id: str,
