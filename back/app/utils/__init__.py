@@ -1,8 +1,9 @@
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 import base64
 import os
+
 
 from ..exceptions.custom_exceptions import DecryptionException
 
@@ -15,7 +16,7 @@ class PasswordUtils:
         try:
             fernet = Fernet(base64.urlsafe_b64decode(key.encode("utf-8")))
             return fernet.decrypt(password.encode("utf-8")).decode()
-        except Exception:
+        except Exception as e:
             raise DecryptionException
 
     @staticmethod
@@ -39,4 +40,7 @@ class PasswordUtils:
 
         fernet = Fernet(key)
         encrypted_password = fernet.encrypt(password.encode())
-        return (key, encrypted_password.decode("utf-8"))
+        return (
+            base64.urlsafe_b64encode(key).decode("utf-8"),
+            encrypted_password.decode("utf-8"),
+        )

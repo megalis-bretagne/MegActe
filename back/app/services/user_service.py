@@ -58,7 +58,7 @@ def add_user_to_db(user_data: UserCreate, client_api: ApiPastell, db: Session):
         login=user_data.login,
         id_pastell=user_data.id_pastell,
         pwd_pastell=encrypted_pwd,
-        pwd_key=base64.urlsafe_b64encode(key).decode("utf-8"),
+        pwd_key=key,
     )
     db.add(new_user)
     db.commit()
