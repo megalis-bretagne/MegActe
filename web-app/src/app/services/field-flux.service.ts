@@ -12,42 +12,9 @@ export class FieldFluxService {
         return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
     }
 
-    // Extraire les champs selon leur type
-    extractFields(data: Data): {
-        textFields: Field[],
-        checkboxFields: Field[],
-        selectFields: Field[],
-        dateFields: Field[],
-        fileFields: Field[];
-        externalDataFields: Field[];
-
-    } {
-        const textFields: Field[] = [];
-        const checkboxFields: Field[] = [];
-        const selectFields: Field[] = [];
-        const dateFields: Field[] = [];
-        const fileFields: Field[] = [];
-        const externalDataFields: Field[] = [];
-
-        const typeToFieldArray: { [type: string]: Field[] } = {
-            'text': textFields,
-            'checkbox': checkboxFields,
-            'select': selectFields,
-            'date': dateFields,
-            'file': fileFields,
-            'externalData': externalDataFields,
-        };
-
-        for (const [key, value] of Object.entries(data)) {
-            const field: Field = { key, ...value };
-
-            if (typeToFieldArray[field.type]) {
-                typeToFieldArray[field.type].push(field);
-            }
-        }
-
-        return { textFields, checkboxFields, selectFields, dateFields, fileFields, externalDataFields };
-
+    // Extraire les champs selon leur type et dans l'ordre de réception
+    extractFields(data: Data): Field[] {
+        return Object.entries(data).map(([key, value]) => ({ key, ...value }));
     }
 
     // Nettoyer les délimiteurs de l'expression régulière

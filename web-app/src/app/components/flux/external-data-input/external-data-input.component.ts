@@ -19,6 +19,7 @@ import { map, startWith } from 'rxjs/operators';
 })
 
 export class ExternalDataInputComponent implements OnInit, AfterViewInit {
+  @Input() key: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
   @Input() link_name: string = '';
@@ -43,6 +44,14 @@ export class ExternalDataInputComponent implements OnInit, AfterViewInit {
     this.fetchExternalData();
   }
 
+  getValue(): any {
+    return this.externalDataControl.value;
+  }
+
+  getKey(): string {
+    return this.key;
+  }
+
   ngAfterViewInit(): void {
     window.addEventListener('scroll', this.scrollEvent, true);
   }
@@ -59,7 +68,7 @@ export class ExternalDataInputComponent implements OnInit, AfterViewInit {
 
   // Récupérer les données du champ
   private fetchExternalData(): void {
-    const idChamp = this.sharedDataService.getFieldIdFromFluxDetailByName(this.name);
+    const idChamp = this.key;
     const id_e = this.sharedDataService.getUser().user_info.id_e;
 
     // TODO: Récupérer le documentId dynamiquement plutôt que de le coder en dur

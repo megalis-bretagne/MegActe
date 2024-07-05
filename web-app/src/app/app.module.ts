@@ -30,6 +30,7 @@ import { DateInputComponent } from './components/flux/date-input/date-input.comp
 import { FileUploadComponent } from './components/flux/file-upload/file-upload.component';
 import { DragAndDropDirective } from './shared/directives/drag-and-drop.directive';
 import { ExternalDataInputComponent } from './components/flux/external-data-input/external-data-input.component';
+import { DocumentListComponent } from './pages/document-list/document-list.component';
 
 
 @NgModule({
@@ -58,6 +59,7 @@ import { ExternalDataInputComponent } from './components/flux/external-data-inpu
         HttpClientModule,
         LoggerModule.forRoot({ level: NgxLoggerLevel.WARN }),
         ExternalDataInputComponent,
+        DocumentListComponent,
     ],
     providers: [
         {

@@ -19,7 +19,17 @@ const routes: Routes = [
     {
         path: 'acte/:nom',
         component: ActeFormComponent,
-        resolve: { fluxDetail: FluxResolver }
+        resolve: { fluxDetail: FluxResolver },
+        children: [
+            {
+                path: ':documentId',
+                component: ActeFormComponent
+            }
+        ]
+    },
+    {
+        path: 'documents/:typeNom',
+        loadComponent: () => import('./pages/document-list/document-list.component').then(m => m.DocumentListComponent)
     },
     {
         path: '**',

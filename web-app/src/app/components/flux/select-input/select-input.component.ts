@@ -7,6 +7,7 @@ import { FieldFluxService } from 'src/app/services/field-flux.service';
   templateUrl: './select-input.component.html',
 })
 export class SelectInputComponent implements OnInit {
+  @Input() key: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
   @Input() multiple: boolean = false;
@@ -36,6 +37,13 @@ export class SelectInputComponent implements OnInit {
         this.selectControl.disable();
       }
     }
+  }
+
+  getValue(): any {
+    return this.selectControl.value;
+  }
+  getKey(): string {
+    return this.key;
   }
 
 }

@@ -8,6 +8,7 @@ import { FieldFluxService } from 'src/app/services/field-flux.service';
 })
 
 export class CheckboxInputComponent implements OnInit {
+  @Input() key: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
   @Input() readOnly: boolean = false;
@@ -21,6 +22,14 @@ export class CheckboxInputComponent implements OnInit {
   ngOnInit() {
     this.checkboxId = this.fieldFluxService.generateUniqueId('checkbox');
     this.checkboxControl = new FormControl({ value: this.defaultChecked, disabled: this.readOnly });
+  }
+
+  getValue(): any {
+    return this.checkboxControl.value;
+  }
+
+  getKey(): string {
+    return this.key;
   }
 
 }

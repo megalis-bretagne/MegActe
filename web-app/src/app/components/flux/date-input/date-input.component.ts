@@ -8,6 +8,7 @@ import { format, parse } from 'date-fns';
   templateUrl: './date-input.component.html',
 })
 export class DateInputComponent implements OnInit {
+  @Input() key: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
   @Input() default: string = '';
@@ -43,6 +44,14 @@ export class DateInputComponent implements OnInit {
 
     this.dateControl = new FormControl({ value: initialDate, disabled: false }, validators);
     this.dateId = this.fieldFluxService.generateUniqueId('date');
+  }
+
+  getValue(): any {
+    return this.dateControl.value;
+  }
+
+  getKey(): string {
+    return this.key;
   }
 
   formatDate(date: Date): string {
