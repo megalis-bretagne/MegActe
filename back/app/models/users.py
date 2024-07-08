@@ -1,7 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-
-from ..utils import PasswordUtils
+from sqlalchemy.orm import declarative_base
 
 from ..utils import PasswordUtils
 

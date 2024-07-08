@@ -55,6 +55,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 **/junit/**
+**/test.db
 
 # Translations
 *.mo

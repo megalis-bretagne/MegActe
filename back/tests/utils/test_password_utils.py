@@ -6,6 +6,8 @@ from app.exceptions.custom_exceptions import DecryptionException
 
 
 class TestPassword(unittest.TestCase):
+    """Test du password Utils"""
+
     def test_should_encrypt_and_decrypt_password(self):
         # GIVEN
         g_password = "Aeetrg0051.!!dzzd"

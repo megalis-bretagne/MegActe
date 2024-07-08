@@ -62,7 +62,7 @@ jobs:
       run: |
         cd back/
         pip install -r requirements_dev.txt
-        pytest --junitxml=junit/test-result.xml --cov=app --cov-report=xml --cov-report=html
+        pytest -Werror --junitxml=junit/test-result.xml --cov=app --cov-report=xml --cov-report=html
 
     - name: Report coverage to Codacy
       uses: codacy/codacy-coverage-reporter-action@v1.3.0
