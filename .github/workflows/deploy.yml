@@ -3,6 +3,7 @@ name: Deploy-Megacte
 on:
   workflow_run:
     workflows: [Build app]
+    branches: [main]
     types: [completed] # se lance uniquement sur la default branch
 
 jobs:
