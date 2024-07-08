@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends, File, UploadFile
 from typing import List
 
+from ..clients.pastell.api import ApiPastell
+from ..routers import get_or_make_api_pastell
+
 from ..services.document_service import (
     update_document_service,
     create_document_service,
@@ -25,8 +28,10 @@ router = APIRouter()
 
 # Create doc
 @router.post("/document", tags=["document"])
-def add_acte_doc(doc: DocCreateInfo, user: UserPastell = Depends(get_user_from_db)):
-    return create_document_service(doc, user)
+def add_acte_doc(
+    doc: DocCreateInfo, client: ApiPastell = Depends(get_or_make_api_pastell)
+):
+    return create_document_service(doc, client)
 
 
 # Update doc
@@ -34,17 +39,19 @@ def add_acte_doc(doc: DocCreateInfo, user: UserPastell = Depends(get_user_from_d
 def update_document(
     document_id: str,
     request_data: DocUpdateInfo,
-    user: UserPastell = Depends(get_user_from_db),
+    client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return update_document_service(document_id, request_data, user)
+    return update_document_service(document_id, request_data, client)
 
 
 # Get document info
 @router.get("/document/{document_id}", tags=["document"])
 def get_document(
-    document_id: str, entite_id: int, user: UserPastell = Depends(get_user_from_db)
+    document_id: str,
+    entite_id: int,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return get_document_info_service(entite_id, document_id, user)
+    return get_document_info_service(entite_id, document_id, client)
 
 
 # Ajouter des fichiers à un document
@@ -54,11 +61,11 @@ def add_files_to_document(
     element_id: str,
     entite_id: int,
     files: List[UploadFile] = File(...),
-    user: UserPastell = Depends(get_user_from_db),
+    client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     file_data = AddFilesToDoc(entite_id=entite_id, files=files)
     return add_multiple_files_to_document_service(
-        document_id, element_id, file_data, user
+        document_id, element_id, file_data, client
     )
 
 
@@ -68,10 +75,10 @@ def delete_file_from_document(
     document_id: str,
     element_id: str,
     request_data: DeleteFileFromDoc,
-    user: UserPastell = Depends(get_user_from_db),
+    client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     return delete_file_from_document_service(
-        document_id, element_id, request_data, user
+        document_id, element_id, request_data, client
     )
 
 
@@ -81,6 +88,6 @@ def get_external_data(
     entite_id: int,
     document_id: str,
     element_id: str,
-    user: UserPastell = Depends(get_user_from_db),
+    client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return get_external_data_service(entite_id, document_id, element_id, user)
+    return get_external_data_service(entite_id, document_id, element_id, client)

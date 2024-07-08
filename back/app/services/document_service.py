@@ -1,8 +1,6 @@
-import requests
+from ..clients.pastell.api import ApiPastell
 
-from ..dependencies import settings
 from ..exceptions.custom_exceptions import PastellException
-from .user_service import get_pastell_auth
 from ..models.users import UserPastell
 from ..schemas.document_schemas import (
     DocUpdateInfo,
@@ -11,51 +9,34 @@ from ..schemas.document_schemas import (
     AddFilesToDoc,
     AddFileToDoc,
 )
-from ..decorators import log_exceptions
 
 
-@log_exceptions
-def create_empty_document(entite_id: int, flux_type: str, user: UserPastell):
+def create_empty_document(entite_id: int, flux_type: str, client_api: ApiPastell):
     """Crée un document vide dans Pastell pour un type de flux.
 
     Args:
         doc (DocCreateEmpty):Les informations nécessaires pour créer le document.
-        user (UserPastell): L'utilisateur pour lequel le document doit être créé.
-
-    Raises:
-        PastellException: Si le document ne peut pas être créé dans Pastell.
+        client_api (ApiPastell): client api.
 
     Returns:
         dict: Les détails du document créé.
     """
-    create_document_url = f"{settings.pastell.url}/entite/{entite_id}/document"
-
-    response = requests.post(
-        create_document_url,
-        data={"type": flux_type},
-        auth=get_pastell_auth(user),
-        timeout=settings.request_timeout,
+    return client_api.perform_post(
+        f"/entite/{entite_id}/document", data={"type": flux_type}
     )
 
-    if response.status_code != 201:
-        raise PastellException(
-            status_code=response.status_code,
-            detail="Failed to create document in Pastell",
-        )
 
-    return response.json()
-
-
-@log_exceptions
 def update_document_service(
-    document_id: int, document_data: DocUpdateInfo, user: UserPastell
+    document_id: int,
+    document_data: DocUpdateInfo,
+    client_api: ApiPastell,
 ):
     """Met à jour un document dans Pastell avec les données fournies.
 
     Args:
         document_id (int): L'ID du document à mettre à jour.
         document_data (DocUpdateInfo): Les données à mettre à jour dans le document.
-        user (UserPastell): L'utilisateur pour lequel le document doit être mis à jour.
+        client_api (ApiPastell): client api
 
     Raises:
         PastellException: Si le document ne peut pas être mis à jour dans Pastell.
@@ -63,40 +44,28 @@ def update_document_service(
     Returns:
         dict: Les détails du document mis à jour.
     """
-    update_document_url = f"{settings.pastell.url}/entite/{document_data.entite_id}/document/{document_id}"
-    response = requests.patch(
-        update_document_url,
+    return client_api.perform_patch(
+        f"/entite/{document_data.entite_id}/document/{document_id}",
         data=document_data.doc_info,
-        auth=get_pastell_auth(user),
-        timeout=settings.request_timeout,
     )
 
-    if response.status_code != 200:
-        raise PastellException(
-            status_code=response.status_code,
-            detail="Failed to update document in Pastell",
-        )
 
-    return response.json()
-
-
-@log_exceptions
-def create_document_service(doc_data: DocCreateInfo, user: UserPastell):
+def create_document_service(
+    doc_data: DocCreateInfo,
+    client_api: ApiPastell,
+):
     """Crée un document vide et le met à jour avec les infos fournies.
 
     Args:
         doc_create (DocCreateInfo): Les informations nécessaires pour créer le document.
-        user (UserPastell): L'utilisateur pour lequel le document doit être créé et mis à jour.
-
-    Raises:
-        PastellException: Si le document ne peut pas être créé ou mis à jour dans Pastell.
+        client_api (ApiPastell): client api
 
     Returns:
         dict: Les détails du document créé et mis à jour.
     """
     # Création du doc vide
     created_document = create_empty_document(
-        doc_data.entite_id, doc_data.flux_type, user
+        doc_data.entite_id, doc_data.flux_type, client_api
     )
 
     document_id = created_document.get("id_d")
@@ -106,52 +75,33 @@ def create_document_service(doc_data: DocCreateInfo, user: UserPastell):
     )
 
     # Mettre à jour le doc vc les infos fournies
-    updated_document = update_document_service(document_id, doc_update_info, user)
-
-    return updated_document
+    return update_document_service(document_id, doc_update_info, client_api)
 
 
-@log_exceptions
-def get_document_info_service(entite_id: int, document_id: str, user: UserPastell):
+def get_document_info_service(
+    entite_id: int,
+    document_id: str,
+    client_api: ApiPastell,
+):
     """Récupère les infos d'un document dans Pastell.
 
     Args:
         entite_id (int): L'ID de l'entité.
         document_id (str): L'ID du document à récupérer.
         user (UserPastell): L'utilisateur pour lequel le document doit être récupéré.
-
-    Raises:
-        PastellException: Si les informations du document ne peuvent pas être récupérées dans Pastell.
+        client_api (ApiPastell): client api
 
     Returns:
         dict: Les détails du document récupéré.
     """
-
-    get_document_url = (
-        f"{settings.pastell.url}/entite/{entite_id}/document/{document_id}"
-    )
-
-    response = requests.get(
-        get_document_url,
-        auth=get_pastell_auth(user),
-        timeout=settings.request_timeout,
-    )
-
-    if response.status_code != 200:
-        raise PastellException(
-            status_code=response.status_code,
-            detail="Failed to retrieve document information from Pastell",
-        )
-
-    return response.json()
+    return client_api.perform_get(f"/entite/{entite_id}/document/{document_id}")
 
 
-@log_exceptions
 def add_multiple_files_to_document_service(
     document_id: str,
     element_id: str,
     files_data: AddFilesToDoc,
-    user: UserPastell,
+    client_api: ApiPastell,
 ):
     """Ajoute plusieurs fichiers à un document en appelant le service add_file_to_document_service.
 
@@ -161,9 +111,6 @@ def add_multiple_files_to_document_service(
         files_data (AddFilesToDoc): Les informations nécessaires pour ajouter les fichiers.
         user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
 
-    Raises:
-        PastellException: Si un fichier ne peut pas être ajouté à Pastell.
-
     Returns:
         dict: Les détails de l'ajout des fichiers.
     """
@@ -171,18 +118,19 @@ def add_multiple_files_to_document_service(
 
     for file in files_data.files:
         file_data = AddFileToDoc(entite_id=files_data.entite_id, file=file)
-        result = add_file_to_document_service(document_id, element_id, file_data, user)
+        result = add_file_to_document_service(
+            document_id, element_id, file_data, client_api
+        )
         results.append(result)
 
     return results
 
 
-@log_exceptions
 def add_file_to_document_service(
     document_id: str,
     element_id: str,
     file_data: AddFileToDoc,
-    user: UserPastell,
+    client_api: ApiPastell,
 ):
     """Ajoute un fichier à un document spécifique dans Pastell.
 
@@ -191,6 +139,7 @@ def add_file_to_document_service(
         element_id (str): L'ID de l'élément auquel le fichier est associé.
         file_data (AddFileToDoc): Les informations nécessaires pour ajouter un fichier.
         user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
+        client_api (ApiPastell): client api
 
     Raises:
         PastellException: Si le fichier ne peut pas être ajouté à Pastell.
@@ -199,11 +148,9 @@ def add_file_to_document_service(
         dict: Les détails de l'ajout du fichier.
     """
     existing_files = get_existing_files(
-        file_data.entite_id, document_id, element_id, user
+        file_data.entite_id, document_id, element_id, client_api
     )
     next_file_number = len(existing_files)
-
-    add_file_url = f"{settings.pastell.url}/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{next_file_number}"
 
     file_content = file_data.file.file.read()
 
@@ -212,25 +159,17 @@ def add_file_to_document_service(
         "file": (file_data.file.filename, file_content, file_data.file.content_type),
     }
 
-    response = requests.post(
-        add_file_url,
-        auth=get_pastell_auth(user),
+    return client_api.perform_post(
+        f"/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{next_file_number}",
         files=files,
-        timeout=settings.request_timeout,
     )
 
-    if response.status_code != 201:
-        raise PastellException(
-            status_code=response.status_code,
-            detail="Failed to add file to Pastell",
-        )
 
-    return response.json()
-
-
-@log_exceptions
 def delete_file_from_document_service(
-    document_id: str, element_id: str, file_data: DeleteFileFromDoc, user: UserPastell
+    document_id: str,
+    element_id: str,
+    file_data: DeleteFileFromDoc,
+    client_api: ApiPastell,
 ):
     """Supprime un fichier lié à un document spécifique dans Pastell.
 
@@ -238,8 +177,7 @@ def delete_file_from_document_service(
         document_id (str): L'ID du document auquel le fichier est associé.
         element_id (str): L'ID du champ auquel le fichier est associé.
         file_data (DeleteFileFromDoc): Les informations nécessaires pour supprimer un fichier.
-        user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
-
+        client_api (ApiPastell): client api
     Raises:
         PastellException: Si le fichier ne peut pas être supprimé de Pastell.
 
@@ -247,7 +185,7 @@ def delete_file_from_document_service(
         dict: Les détails de la suppression du fichier.
     """
     existing_files = get_existing_files(
-        file_data.entite_id, document_id, element_id, user
+        file_data.entite_id, document_id, element_id, client_api
     )
 
     try:
@@ -258,56 +196,37 @@ def delete_file_from_document_service(
             detail="File not found",
         )
 
-    delete_file_url = f"{settings.pastell.url}/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{file_index}"
-
-    response = requests.delete(
-        delete_file_url,
-        auth=get_pastell_auth(user),
-        timeout=settings.request_timeout,
+    return client_api.perform_delete(
+        f"/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{file_index}"
     )
 
-    if response.status_code != 200:
-        raise PastellException(
-            status_code=response.status_code,
-            detail="Failed to delete file from Pastell",
-        )
 
-    return response.json()
-
-
-@log_exceptions
 def get_existing_files(
-    entite_id: int, document_id: str, element_id: str, user: UserPastell
+    entite_id: int,
+    document_id: str,
+    element_id: str,
+    client_api: ApiPastell,
 ) -> list:
     """Récupère la liste des fichiers existants pour un document et un élément donnés.
 
     Args:
+        entite_id (int): id de l'entité
         document_id (str): L'ID du document.
         element_id (str): L'ID de l'élément.
-
+        client_api (ApiPastell): client api
     Returns:
         list: Une liste des fichiers existants.
     """
-    get_files_url = f"{settings.pastell.url}/entite/{entite_id}/document/{document_id}"
-    response = requests.get(
-        get_files_url,
-        auth=get_pastell_auth(user),
-        timeout=settings.request_timeout,
-    )
-
-    if response.status_code != 200:
-        raise PastellException(
-            status_code=response.status_code,
-            detail="Failed to retrieve existing files from Pastell",
-        )
-
-    document_data = response.json().get("data", {})
+    response = client_api.perform_get(f"/entite/{entite_id}/document/{document_id}")
+    document_data = response.get("data", {})
     return document_data.get(element_id, [])
 
 
-@log_exceptions
 def get_external_data_service(
-    entite_id: int, document_id: str, element_id: str, user: UserPastell
+    entite_id: int,
+    document_id: str,
+    element_id: str,
+    client_api: ApiPastell,
 ) -> dict:
     """Récupère les valeurs possibles pour un champ externalData dans Pastell.
 
@@ -315,25 +234,12 @@ def get_external_data_service(
         entite_id (int): L'ID de l'entité.
         document_id (str): L'ID du document.
         element_id (str): L'ID de l'élément externalData.
-
-    Raises:
-        PastellException: Si les données externalData ne peuvent pas être récupérées depuis Pastell.
+        client_api (ApiPastell): client api
 
     Returns:
         dict: Les valeurs possibles pour l'élément externalData.
     """
 
-    external_data_url = f"{settings.pastell.url}/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
-    response = requests.get(
-        external_data_url,
-        auth=get_pastell_auth(user),
-        timeout=settings.request_timeout,
+    return client_api.perform_get(
+        f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
     )
-
-    if response.status_code != 200:
-        raise PastellException(
-            status_code=response.status_code,
-            detail=f"Failed to retrieve external data for element {element_id} from Pastell",
-        )
-
-    return response.json()

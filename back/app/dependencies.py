@@ -11,6 +11,15 @@ def get_settings():
 
 
 settings = get_settings()
+import logging
+
+logging.basicConfig(
+    level=settings.log_level,
+    format="%(asctime)s.%(msecs)03d : %(levelname)s : %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    force=True,
+)
+
 
 oauth_2_scheme = OAuth2AuthorizationCodeBearer(
     tokenUrl=settings.keycloak.token_url,
@@ -34,7 +43,6 @@ def validate_token(
     Returns:
         dict: La payload decodé
     """
-
     jwks_client = jwt.PyJWKClient(settings.keycloak.jwks_url)
     signing_key = jwks_client.get_signing_key_from_jwt(token)
     try:
@@ -52,19 +60,14 @@ def validate_token(
 
 
 # Fonction pour obtenir les informations de l'utilisateur à partir du payload decodé
-def get_current_user(payload: dict = Depends(validate_token)):
+def get_current_user(payload: dict = Depends(validate_token)) -> str:
     """
-    Extrait les informations de l'utilisateur à partir du payload décodé du token JWT.
+    Extrait le login du token
 
     Args:
         payload (dict): Le payload décodé du token JWT, fourni automatiquement via la dépendance `validate_token`.
 
     Returns:
-        dict: Un dictionnaire contenant les informations de l'utilisateur, notamment l'email et le nom d'utilisateur.
+        str: le login
     """
-
-    user_info = {
-        "login": payload.get("preferred_username"),
-        "username": payload.get("preferred_username"),
-    }
-    return user_info
+    return payload.get("preferred_username")

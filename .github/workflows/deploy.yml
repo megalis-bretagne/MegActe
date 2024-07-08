@@ -3,30 +3,28 @@ name: Deploy-Megacte
 on:
   workflow_run:
     workflows: [Build app]
-    types: [completed]
+    types: [completed] # se lance uniquement sur la default branch
 
 jobs:
-  get-version:
-    name: Get Version
+  deploy-on-xp:
+    name: Deploiement XP
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.get-version.outputs.version }}
     steps:
       - name: get version
         id: get-version
-        run: echo "::set-output name=version::sha-${GITHUB_SHA::7}"
+        run: echo "VERSION=sha-${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [get-version]
-    steps:
-      - name: Deploy to Server
+      - name: Deploy version
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          VERSION: ${{env.VERSION}}
+         
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           host: ${{ secrets.SERVEUR }}
           username: ${{ secrets.USER_NAME }}
           port: ${{ secrets.PORT }}
+          envs: VERSION
           script: |
-            export version=${{ needs.get-version.outputs.version }} && export $(cat .env) && docker stack deploy -c stack/compose/megacte/megacte.yml megacte
-            
+            echo "Deploiement version $VERSION" 
+            export version=$VERSION && export $(cat .env) && docker stack deploy -c stack/compose/megacte/megacte.yml megacte

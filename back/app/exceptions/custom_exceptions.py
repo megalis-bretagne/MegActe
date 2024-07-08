@@ -1,6 +1,25 @@
 from fastapi import HTTPException
 
 
+class MegActeException(HTTPException):
+    """Exception pour les erreurs de l'application.
+
+    Args:
+        HTTPException (HTTPException):  Classe de base pour les exceptions HTTP
+    """
+
+    detail: str
+    status_code: int
+
+    def __init__(self, status_code: int, detail: str):
+        """Initialise une MegActeException.
+
+        Args:
+            detail (str, optional): Le message détaillé de l'erreur. Defaults to "Decryption failed".
+        """
+        super().__init__(status_code=status_code, detail=detail)
+
+
 class PastellException(HTTPException):
     """Exception pour les erreurs liées à Pastell.
 
@@ -34,7 +53,23 @@ class DecryptionException(HTTPException):
         super().__init__(status_code=400, detail=detail)
 
 
-class UserNotFoundException(HTTPException):
+class UserExistException(MegActeException):
+    """Exception pour les erreurs de d'utilisateur déjà existant.
+
+    Args:
+        HTTPException (HTTPException): Classe de base pour les exceptions HTTP.
+    """
+
+    def __init__(self, login: str):
+        """Initialise une UserExistException.
+
+        Args:
+            detail (str, optional): Le message détaillé de l'erreur. Defaults to "User already exist".
+        """
+        super().__init__(status_code=400, detail=f"User {login} already exist")
+
+
+class UserNotFoundException(MegActeException):
     """Exception pour les erreurs de non-trouvabilité du user dans la BD.
 
     Args:
@@ -50,7 +85,7 @@ class UserNotFoundException(HTTPException):
         super().__init__(status_code=404, detail=detail)
 
 
-class UserRegistrationException(HTTPException):
+class UserRegistrationException(MegActeException):
     """Exception pour les erreurs d'enregistrement du user dans la BD.
 
     Args:
@@ -66,7 +101,7 @@ class UserRegistrationException(HTTPException):
         super().__init__(status_code=500, detail=detail)
 
 
-class UserPasswordNullException(HTTPException):
+class UserPasswordNullException(MegActeException):
     """Exception pour les erreurs lorsque le mdp du user est null.
 
     Args:

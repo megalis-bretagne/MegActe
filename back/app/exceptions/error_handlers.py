@@ -1,51 +1,23 @@
 from fastapi import Request, FastAPI
 from fastapi.responses import JSONResponse
-from .custom_exceptions import (
-    PastellException,
-    DecryptionException,
-    UserNotFoundException,
-    UserRegistrationException,
-    UserPasswordNullException,
-)
+import logging
+from ..clients.pastell.exeptions import ApiHttp40XError
+
+from .custom_exceptions import MegActeException
 
 
 def add_exception_handlers(app: FastAPI):
-    @app.exception_handler(PastellException)
-    async def pastell_exception_handler(request: Request, exc: PastellException):
+
+    @app.exception_handler(ApiHttp40XError)
+    async def api_pastell_exception(request: Request, exc: ApiHttp40XError):
         return JSONResponse(
             status_code=exc.status_code,
-            content={"detail": exc.detail},
+            content={"detail": exc.errors},
         )
 
-    @app.exception_handler(DecryptionException)
-    async def decryption_exception_handler(request: Request, exc: DecryptionException):
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={"detail": exc.detail},
-        )
-
-    @app.exception_handler(UserNotFoundException)
-    async def user_not_found_exception_handler(
-        request: Request, exc: UserNotFoundException
-    ):
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={"detail": exc.detail},
-        )
-
-    @app.exception_handler(UserRegistrationException)
-    async def user_registration_exception_handler(
-        request: Request, exc: UserRegistrationException
-    ):
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={"detail": exc.detail},
-        )
-
-    @app.exception_handler(UserPasswordNullException)
-    async def user_password_null_exception_handler(
-        request: Request, exc: UserPasswordNullException
-    ):
+    @app.exception_handler(MegActeException)
+    async def megacte_exception_handler(request: Request, exc: MegActeException):
+        logging.error(exc)
         return JSONResponse(
             status_code=exc.status_code,
             content={"detail": exc.detail},
