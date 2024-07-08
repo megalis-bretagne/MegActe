@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 from ..utils import PasswordUtils
 
@@ -15,7 +15,7 @@ class UserPastell(Base):
     pwd_pastell = Column(String, unique=True)
     pwd_key = Column(String, unique=True)
 
-    _cached_password = None
+    _cached_password = None  # mot de passe non chiffré en cache
 
     def get_decrypt_password(self) -> str:
         """Retourne le mot de passe non crypté

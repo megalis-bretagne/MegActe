@@ -29,11 +29,47 @@ jobs:
         uses: actions/checkout@main
 
       - name: Run Codacy Analysis CLI
-        uses: codacy/codacy-analysis-cli-action@v4.3.0
+        uses: codacy/codacy-analysis-cli-action@v4.4.1
         with:
           project-token: ${{ secrets.CODACY_API }}
           upload: true
           max-allowed-issues: 1000
+  
+  unit-test-py:
+    name: Unit Test Python
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.11.2]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@main
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        cd back/
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run tests with coverage
+      run: |
+        cd back/
+        pip install -r requirements_dev.txt
+        pytest -Werror --junitxml=junit/test-result.xml --cov=app --cov-report=xml --cov-report=html
+
+    - name: Report coverage to Codacy
+      uses: codacy/codacy-coverage-reporter-action@v1.3.0
+      with:
+        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+        coverage-reports: back/coverage.xml
+
 
   build-angular :
     runs-on: ubuntu-latest
@@ -94,6 +130,7 @@ jobs:
 
   build-docker-back:
     uses: ./.github/workflows/build-push-docker.yml
+    needs: unit-test-py
     with:
       context: back
       dockerfile: ./docker/back/Dockerfile

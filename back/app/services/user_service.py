@@ -1,5 +1,4 @@
-import base64
-
+from sqlalchemy import or_
 from ..clients.pastell.api import ApiPastell
 from ..utils import PasswordUtils
 
@@ -47,7 +46,16 @@ def add_user_to_db(user_data: UserCreate, client_api: ApiPastell, db: Session):
     # Chiffrer le pwd
 
     # check user_existe
-    db_user = db.query(UserPastell).filter(UserPastell.login == user_data.login).first()
+    db_user = (
+        db.query(UserPastell)
+        .filter(
+            or_(
+                UserPastell.login == user_data.login,
+                UserPastell.id_pastell == user_data.id_pastell,
+            )
+        )
+        .first()
+    )
     if db_user:
         raise UserExistException(user_data.login)
 
@@ -58,7 +66,7 @@ def add_user_to_db(user_data: UserCreate, client_api: ApiPastell, db: Session):
         login=user_data.login,
         id_pastell=user_data.id_pastell,
         pwd_pastell=encrypted_pwd,
-        pwd_key=base64.urlsafe_b64encode(key).decode("utf-8"),
+        pwd_key=key,
     )
     db.add(new_user)
     db.commit()

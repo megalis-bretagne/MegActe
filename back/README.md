@@ -20,12 +20,20 @@ source .venv/bin/activate
 * installer les dépendances
 ```
 pip install -r requirements.txt
+pip install -r requirements_dev.txt
 ```
 
 ## Configuration
 
 * Dans le dossier config, dupliquer le fichier "config_template.yml" en "config.yml"
 * Editer le fichier avec les bonnes valeurs
+
+## Lancement des TU
+
+Commande pour lancer les TU
+```
+python -m pytest
+```
 
 ## Lancement du back
 
