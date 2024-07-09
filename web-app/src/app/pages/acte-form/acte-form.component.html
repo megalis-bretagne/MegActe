@@ -1,7 +1,7 @@
 <div>
     <div class="header">
         <div class="container">
-            <p class="display-4">Télétransmission des {{acteName}} </p>
+            <p class="display-4">Télétransmission des {{ acteName }}</p>
         </div>
     </div>
     <div class="acte-form-content">
@@ -27,8 +27,8 @@
                     [required]="field['requis']" [default]="field['default']" [commentaire]="field['commentaire']">
                 </meg-date-input>
 
-                <meg-file-upload *ngSwitchCase="'file'" [name]="field['name']" [required]="field['requis']"
-                    [multiple]="field['multiple']" [commentaire]="field['commentaire']">
+                <meg-file-upload *ngSwitchCase="'file'" [key]="field.key" [name]="field['name']"
+                    [required]="field['requis']" [multiple]="field['multiple']" [commentaire]="field['commentaire']">
                 </meg-file-upload>
 
                 <meg-external-data-input *ngSwitchCase="'externalData'" [key]="field.key" [name]="field['name']"
@@ -36,20 +36,38 @@
                 </meg-external-data-input>
             </div>
             <div class="fr-fieldset__element">
-                <ul
-                    class="fr-btns-group--right fr-btns-group fr-btns-group--inline fr-btns-group fr-btns-group--inline">
+                <ul class="fr-btns-group--right fr-btns-group fr-btns-group--inline">
                     <li>
-                        <button class="fr-mt-2v fr-btn fr-btn" type="button" (click)="enregistrer()">
-                            Enregistrer
-                        </button>
+                        <button class="fr-mt-2v fr-btn" type="button" (click)="enregistrer()" data-fr-opened="false"
+                            aria-controls="fr-modal">Enregistrer</button>
                     </li>
                     <li>
-                        <button class="fr-mt-2v fr-btn fr-btn" type="button" (click)="transmettre()">
-                            Transmettre
-                        </button>
+                        <button class="fr-mt-2v fr-btn" type="button" (click)="transmettre()" data-fr-opened="false"
+                            aria-controls="fr-modal">Transmettre</button>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
 </div>
+
+<dialog aria-labelledby="fr-modal-title" role="dialog" id="fr-modal" class="fr-modal">
+    <div class="fr-container fr-container--fluid fr-container-md">
+        <div class="fr-grid-row fr-grid-row--center">
+            <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
+                <div class="fr-modal__body">
+                    <div class="fr-modal__header">
+                        <button class="fr-btn--close fr-btn" title="Fermer la fenêtre modale" aria-controls="fr-modal"
+                            (click)="closeModal()">Fermer</button>
+                    </div>
+                    <div class="fr-modal__content">
+                        <p class="fr-badge" [class]=" isSuccess ? 'fr-badge--success' :'fr-badge--error'"> {{ isSuccess
+                            ? 'Succès' : 'Erreur' }}
+                        </p>
+                        <p>{{ modalMessage }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</dialog>

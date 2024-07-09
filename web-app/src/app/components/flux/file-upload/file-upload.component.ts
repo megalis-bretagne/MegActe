@@ -7,6 +7,7 @@ import { FileUploadValidationService } from 'src/app/services/fileUploadServices
   styleUrls: ['./file-upload.component.scss']
 })
 export class FileUploadComponent {
+  @Input() key: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
   @Input() multiple: boolean = false;
@@ -52,5 +53,13 @@ export class FileUploadComponent {
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
     }
+  }
+
+  getValue(): File[] {
+    return this.files;
+  }
+
+  getKey(): string {
+    return this.key;
   }
 }
