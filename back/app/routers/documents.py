@@ -11,6 +11,7 @@ from ..services.document_service import (
     delete_file_from_document_service,
     add_multiple_files_to_document_service,
     get_external_data_service,
+    delete_document_service,
 )
 
 from ..schemas.document_schemas import (
@@ -52,6 +53,14 @@ def get_document(
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     return get_document_info_service(entite_id, document_id, client)
+
+
+# Delete Document
+@router.delete("/document/{document_id}", tags=["document"])
+def delete_document(
+    document_id: str, entite_id: int, user: UserPastell = Depends(get_user_from_db)
+):
+    return delete_document_service(entite_id, document_id, user)
 
 
 # Ajouter des fichiers à un document

@@ -1,7 +1,7 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { DocCreateInfo, DocUpdateInfo } from "../model/document.model";
-import { Observable, catchError, of, tap } from "rxjs";
+import { Observable, catchError, of, tap, throwError } from "rxjs";
 import { NGXLogger } from "ngx-logger";
 import { SettingsService } from "src/environments/settings.service";
 
@@ -27,7 +27,17 @@ export class DocumentService {
         return this.http.patch<any>(`${this.settingsService.apiUrl}/document/${documentId}`, docUpdateInfo).pipe(
             catchError((error) => {
                 this.logger.error('Error updating document', error);
-                return of(null);
+                return throwError(() => error);
+            })
+        );
+    }
+
+    deleteDocument(documentId: string, entiteId: number): Observable<any> {
+        const params = new HttpParams().set('entite_id', entiteId);
+        return this.http.delete<any>(`${this.settingsService.apiUrl}/document/${documentId}`, { params }).pipe(
+            catchError((error) => {
+                this.logger.error('Error deleting document', error);
+                throw error;
             })
         );
     }

@@ -97,6 +97,40 @@ def get_document_info_service(
     return client_api.perform_get(f"/entite/{entite_id}/document/{document_id}")
 
 
+@log_exceptions
+def delete_document_service(entite_id: int, document_id: str, user: UserPastell):
+    """Supprime un document spécifique dans Pastell.
+
+    Args:
+        document_id (str): L'ID du document à supprimer.
+        user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
+
+    Raises:
+        PastellException: Si le document ne peut pas être supprimé dans Pastell.
+
+    Returns:
+        dict: Les détails de la suppression du document.
+    """
+    delete_document_url = (
+        f"{settings.pastell.url}/entite/{entite_id}/document/{document_id}"
+    )
+
+    response = requests.delete(
+        delete_document_url,
+        auth=get_pastell_auth(user),
+        timeout=settings.request_timeout,
+    )
+
+    if response.status_code == 204:
+        return f"Document {document_id} has been successfully deleted"
+    else:
+        raise PastellException(
+            status_code=response.status_code,
+            detail="Failed to delete document from Pastell",
+        )
+
+
+@log_exceptions
 def add_multiple_files_to_document_service(
     document_id: str,
     element_id: str,
