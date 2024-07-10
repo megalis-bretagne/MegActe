@@ -14,7 +14,6 @@ export class SharedDataService {
     private flux = inject(UserContextService).userFlux;
 
     private fluxDetail: { [key: string]: FluxDetailItem };
-    private acteID: string;
 
 
     getUser(): UserContext {
