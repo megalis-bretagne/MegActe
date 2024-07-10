@@ -82,7 +82,7 @@ export class ActeFormComponent implements OnInit {
   }
 
   transmettre(): void {
-    this.openModalAndRedirect();
+
   }
 
   collectFormData(): { [key: string]: any } {

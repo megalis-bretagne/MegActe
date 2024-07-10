@@ -41,4 +41,24 @@ export class DocumentService {
             })
         );
     }
+
+    transferTdtDocument(documentId: string, entiteId: number): Observable<any> {
+        const params = new HttpParams().set('entite_id', entiteId.toString());
+        return this.http.post<any>(`${this.settingsService.apiUrl}/document/${documentId}/transfer-tdt`, {}, { params }).pipe(
+            catchError((error) => {
+                this.logger.error('Error transferring document', error);
+                return of(null);
+            })
+        );
+    }
+
+    cancelTdtDocument(documentId: string, entiteId: number): Observable<any> {
+        const params = new HttpParams().set('entite_id', entiteId.toString());
+        return this.http.post<any>(`${this.settingsService.apiUrl}/document/${documentId}/cancel-tdt`, {}, { params }).pipe(
+            catchError((error) => {
+                this.logger.error('Error cancelling document transfer', error);
+                return of(null);
+            })
+        );
+    }
 }
