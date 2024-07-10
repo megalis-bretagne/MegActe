@@ -1,58 +1,60 @@
-import { Component, OnInit } from '@angular/core';
-import { UserContext } from 'src/app/model/user.model';
-import { SharedDataService } from 'src/app/services/sharedData.service';
+import { CommonModule } from '@angular/common';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { LoadingTemplateComponent } from 'src/app/components/loading-template/loading-template.component';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'app-user-profile',
+  standalone: true,
+  imports: [
+    LoadingTemplateComponent,
+    CommonModule
+  ],
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.scss']
 })
-export class UserProfileComponent implements OnInit {
-  userContext: UserContext;
-  currentPage: number = 1;
+export class UserProfileComponent {
+  currentUser = inject(UserService).userCurrent;
+
+  currentPage = signal(1);
+
+  //calculé en fonction du nombre d'entité de l'utilsateur
+  totalPages = computed(() => {
+    if (this.currentUser() != null) {
+      return Math.ceil(this.currentUser().entites.length / this.itemsPerPage);
+    }
+    return 0;
+  });
+
   itemsPerPage: number = 15;
   paginatedEntities: any[] = [];
-  totalPages: number = 0;
   displayedPages: number[] = [];
+  visiblePages = 5;
 
-  constructor(private sharedDataService: SharedDataService) { }
 
-  ngOnInit(): void {
-    this.userContext = this.sharedDataService.getUser();
-    this.updatePagination();
-  }
-
-  updatePagination() {
-    if (!this.userContext) return;
-    this.totalPages = Math.ceil(this.userContext.entites.length / this.itemsPerPage);
-    this.updateDisplayedPages();
-    this.paginate();
-  }
-
-  paginate() {
-    if (!this.userContext) return;
-    const start = (this.currentPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    this.paginatedEntities = this.userContext.entites.slice(start, end);
+  constructor() {
+    effect(() => {
+      const currentPage = this.currentPage();
+      const totalPage = this.totalPages();
+      if (totalPage > 0) {
+        this.updateDisplayedPages(currentPage, totalPage);
+      }
+    })
   }
 
   changePage(page: number, event: Event) {
     event.preventDefault();
-    if (page < 1 || page > this.totalPages) return;
-    this.currentPage = page;
-    this.updateDisplayedPages();
-    this.paginate();
+    if (page < 1 || page > this.totalPages()) return;
+    this.currentPage.set(page);
   }
 
-  updateDisplayedPages() {
-    const visiblePages = 5; // Nombre de pages à afficher
-    let startPage = Math.max(1, this.currentPage - Math.floor(visiblePages / 2));
-    const endPage = Math.min(this.totalPages, startPage + visiblePages - 1);
+  updateDisplayedPages(newPage: number, totalPage: number) {
+    const start = (newPage - 1) * this.itemsPerPage;
+    const end = start + this.itemsPerPage;
+    this.paginatedEntities = this.currentUser().entites.slice(start, end);
 
-    // Ajuste startPage si on est à la fin
-    if (endPage - startPage < visiblePages - 1) {
-      startPage = Math.max(1, endPage - visiblePages + 1);
-    }
+    let startPage = Math.max(1, newPage - Math.floor(this.visiblePages / 2));
+    const endPage = Math.min(totalPage, startPage + this.visiblePages - 1);
 
     this.displayedPages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
   }

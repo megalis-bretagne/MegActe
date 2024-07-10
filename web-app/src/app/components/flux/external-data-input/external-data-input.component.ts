@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, Input, OnInit, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { NGXLogger } from 'ngx-logger';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { FluxService } from 'src/app/services/flux.service';
-import { SharedDataService } from 'src/app/services/sharedData.service';
 import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { map, startWith } from 'rxjs/operators';
 import { BaseInputComponent } from '../BaseInput.component';
+import { UserService } from 'src/app/services/user.service';
 
 @Component({
   selector: 'meg-external-data-input',
@@ -21,6 +21,8 @@ import { BaseInputComponent } from '../BaseInput.component';
 export class ExternalDataInputComponent extends BaseInputComponent implements OnInit, AfterViewInit {
   @Input() link_name: string = '';
 
+  currentUser = inject(UserService).userCurrent
+
   externalDataOptions: string[] = [];
   filteredOptions: string[] = [];
 
@@ -29,7 +31,6 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
   constructor(
     protected override fieldFluxService: FieldFluxService,
     private fluxService: FluxService,
-    private sharedDataService: SharedDataService,
     private logger: NGXLogger
   ) {
     super(fieldFluxService);
@@ -59,13 +60,12 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
 
   // Récupérer les données du champ
   private fetchExternalData(): void {
-    const idField = this.idField;
-    const id_e = this.sharedDataService.getUser().user_info.id_e;
+    const id_e = this.currentUser().user_info.id_e;
 
     // TODO: Récupérer le documentId dynamiquement plutôt que de le coder en dur
 
     const documentId = 'chdhtrh';
-    this.fluxService.get_externalData(id_e, documentId, idField).subscribe({
+    this.fluxService.get_externalData(id_e, documentId, this.idField).subscribe({
       next: (data) => {
         const filteredData = this.filterExternalData(data);
         this.externalDataOptions = this.removeNumbering(filteredData);

@@ -1,31 +1,28 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { UserContext } from 'src/app/model/user.model';
 import { Acte } from 'src/app/model/acte.model';
 import { FluxDetailItem } from '../model/field-form.model';
+import { UserService } from 'src/app/services/user.service';
 
 @Injectable({
     providedIn: 'root'
 })
+/** @deprecated Prejer user Signals **/
 export class SharedDataService {
-    private user: UserContext;
-    private flux: Acte[];
+    private user = inject(UserService).userCurrent;
+
+    private flux = inject(UserService).userFlux;
+
     private fluxDetail: { [key: string]: FluxDetailItem };
     private acteID: string;
 
-    setUser(user: UserContext) {
-        this.user = user;
-    }
 
     getUser(): UserContext {
-        return this.user;
-    }
-
-    setFlux(flux: Acte[]) {
-        this.flux = flux;
+        return this.user();
     }
 
     getFlux(): Acte[] {
-        return this.flux;
+        return this.flux();
     }
 
     setFluxDetail(fluxDetail: { [idField: string]: FluxDetailItem }) {
@@ -38,7 +35,7 @@ export class SharedDataService {
 
     //Récupère l'ID d'un champ en fonction de son nom à partir du flux.
     getFieldByName(acteNom: string): string | undefined {
-        const acte = this.flux.find(acte => acte.nom === acteNom);
+        const acte = this.flux().find(acte => acte.nom === acteNom);
         return acte ? acte.id : undefined;
     }
 
@@ -48,5 +45,13 @@ export class SharedDataService {
 
     getActeID(): string {
         return this.acteID;
+    }
+    // Récupère l'ID d'un champ en fonction de son nom à partir des détails du flux.
+    getFieldIdFromFluxDetailByName(fieldName: string): string | undefined {
+        if (this.fluxDetail) {
+            const entry = Object.entries(this.fluxDetail).find(([key, value]) => value.name === fieldName);
+            return entry ? entry[0] : undefined;
+        }
+        return undefined;
     }
 }

@@ -7,7 +7,7 @@ import { ActeFormComponent } from './pages/acte-form/acte-form.component';
 const routes: Routes = [
     {
         path: '',
-        loadComponent: () => import('./pages/user-profile/user-profile.component').then(m => m.UserProfileComponent),
+        loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
         canActivate: [AuthGuardService],
     },
     {

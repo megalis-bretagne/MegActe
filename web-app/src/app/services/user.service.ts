@@ -1,25 +1,47 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
-import { Observable, catchError, of, tap } from 'rxjs';
+import { Observable, catchError, of, map } from 'rxjs';
 import { UserContext } from 'src/app/model/user.model';
 import { SettingsService } from 'src/environments/settings.service';
+import { Acte } from '../model/acte.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
+  userCurrent = signal<UserContext | null>(null);
+  userFlux = signal<Acte[]>([])
+
 
   constructor(private http: HttpClient, private logger: NGXLogger, private settingsService: SettingsService) {
   }
 
-  public getUser(): Observable<UserContext> {
+  public getUser(): Observable<void> {
     return this.http.get<UserContext>(this.settingsService.apiUrl + '/user').pipe(
-      tap(() => this.logger.info('Successfully fetched user context')),
+      map((res) => {
+        this.logger.info('Successfully fetched user context');
+        this.userCurrent.set(res);
+      }),
       catchError((error) => {
-        this.logger.error('Error fetching user context', error);
-        return of(null);
+        this.logger.error('Error fetching user context' + error);
+        return of(void 0);
+      })
+    )
+  }
+
+  public getUserFlux(): Observable<void> {
+    return this.http.get<{ [key: string]: Acte }>(this.settingsService.apiUrl + '/flux').pipe(
+      map((data: { [key: string]: Acte }) => {
+        const actes = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
+        this.userFlux.set(actes);
+      }
+      ),
+      catchError((error) => {
+        this.logger.error('Error fetching user flux', error);
+        return of(void 0);
       })
     );
   }
+
 }

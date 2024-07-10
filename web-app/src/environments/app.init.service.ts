@@ -5,17 +5,11 @@ import { firstValueFrom } from 'rxjs';
 import { NGXLogger, NgxLoggerLevel } from 'ngx-logger';
 import { SettingsService } from './settings.service';
 import { Settings } from './settings';
-import { UserService } from 'src/app/services/user.service';
-import { UserContext } from 'src/app/model/user.model';
-import { Acte } from 'src/app/model/acte.model';
-import { SharedDataService } from 'src/app/services/sharedData.service';
-import { FluxService } from 'src/app/services/flux.service';
 
 @Injectable({ providedIn: 'root' })
 export class AppInitService {
 
-    constructor(private http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService,
-        private userService: UserService, private fluxService: FluxService, private _logger: NGXLogger, private sharedDataService: SharedDataService) {
+    constructor(private http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService, private _logger: NGXLogger) {
     }
 
     initializeApp(): Promise<any> {
@@ -58,15 +52,6 @@ export class AppInitService {
             } catch (error) {
                 throw new Error("Une erreur s'est déroulée durant l'initialisation de keycloak");
             }
-        }).then(async () => { // chargement des infos de l'utilisateur et de son contexte
-            try {
-                const user: UserContext = await firstValueFrom(this.userService.getUser());
-                const flux: Acte[] = await firstValueFrom(this.fluxService.getFlux());
-                this.sharedDataService.setUser(user);
-                this.sharedDataService.setFlux(flux);
-            } catch (error) {
-                throw new Error("Une erreur s'est déroulée durant la récupération de l'utilisateur et des flux");
-            }
-        });
+        })
     }
 }
