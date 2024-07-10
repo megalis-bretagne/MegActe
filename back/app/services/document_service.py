@@ -1,7 +1,6 @@
 from ..clients.pastell.api import ApiPastell
 
 from ..exceptions.custom_exceptions import PastellException
-from ..models.users import UserPastell
 from ..schemas.document_schemas import (
     DocUpdateInfo,
     DocCreateInfo,
@@ -97,40 +96,19 @@ def get_document_info_service(
     return client_api.perform_get(f"/entite/{entite_id}/document/{document_id}")
 
 
-@log_exceptions
-def delete_document_service(entite_id: int, document_id: str, user: UserPastell):
+def delete_document_service(entite_id: int, document_id: str, client_api: ApiPastell):
     """Supprime un document spécifique dans Pastell.
 
     Args:
         document_id (str): L'ID du document à supprimer.
         user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
 
-    Raises:
-        PastellException: Si le document ne peut pas être supprimé dans Pastell.
-
     Returns:
         dict: Les détails de la suppression du document.
     """
-    delete_document_url = (
-        f"{settings.pastell.url}/entite/{entite_id}/document/{document_id}"
-    )
-
-    response = requests.delete(
-        delete_document_url,
-        auth=get_pastell_auth(user),
-        timeout=settings.request_timeout,
-    )
-
-    if response.status_code == 204:
-        return f"Document {document_id} has been successfully deleted"
-    else:
-        raise PastellException(
-            status_code=response.status_code,
-            detail="Failed to delete document from Pastell",
-        )
+    return client_api.perform_delete(f"/entite/{entite_id}/document/{document_id}")
 
 
-@log_exceptions
 def add_multiple_files_to_document_service(
     document_id: str,
     element_id: str,
@@ -277,3 +255,71 @@ def get_external_data_service(
     return client_api.perform_get(
         f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
     )
+
+
+def check_and_perform_action_service(
+    entite_id: int, document_id: str, action: str, client_api: ApiPastell
+) -> dict:
+    """Vérifie si une action est possible et l'exécute pour un document donné.
+
+    Args:
+        entite_id (int): L'ID de l'entité.
+        document_id (str): L'ID du document.
+        action (str): L'action à vérifier et à exécuter.
+        user (UserPastell): User pour lequel l'opération doit être effectuée.
+
+    Raises:
+        PastellException: Si l'action n'est pas possible ou ne peut pas être exécutée dans Pastell.
+
+    Returns:
+        dict: Les détails de l'action exécutée.
+    """
+
+    response = client_api.perform_get(
+        f"/entite/{entite_id}/document/{document_id}/action"
+    )
+
+    actions = response.get("action_possible", [])
+    if action not in actions:
+        raise PastellException(
+            status_code=400,
+            detail=f"Action '{action}' not possible for document {document_id}",
+        )
+
+    return client_api.perform_post(
+        f"/entite/{entite_id}/document/{document_id}/action/{action}"
+    )
+
+
+def cancel_transfer_tdt_document_service(
+    entite_id: int, document_id: str, client_api: ApiPastell
+) -> dict:
+    """Annule la transmission TDT d'un document.
+
+    Args:
+        entite_id (int): L'ID de l'entité.
+        document_id (str): L'ID du document.
+        user (UserPastell): User pour lequel l'opération doit être effectuée.
+
+    Returns:
+        dict: Les détails de l'annulation.
+    """
+    action = "annulation-tdt"
+    return check_and_perform_action_service(entite_id, document_id, action, client_api)
+
+
+def transfer_tdt_document_service(
+    entite_id: int, document_id: str, client_api: ApiPastell
+) -> dict:
+    """Transmet un document via TDT.
+
+    Args:
+        entite_id (int): L'ID de l'entité.
+        document_id (str): L'ID du document.
+        user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
+
+    Returns:
+        dict: Les détails de la transmission.
+    """
+    action = "orientation"
+    return check_and_perform_action_service(entite_id, document_id, action, client_api)
