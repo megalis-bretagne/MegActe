@@ -1,20 +1,18 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { AuthGuardService } from './services/keycloakServices/auth-guard.service';
-import { UserProfileComponent } from './pages/user-profile/user-profile.component';
-import { ActeFormComponent } from './pages/acte-form/acte-form.component';
 import { FluxResolver } from './resolvers/flux.resolver';
+import { ActeFormComponent } from './pages/acte-form/acte-form.component';
 
 const routes: Routes = [
     {
         path: '',
-        component: DashboardComponent,
+        loadComponent: () => import('./pages/user-profile/user-profile.component').then(m => m.UserProfileComponent),
         canActivate: [AuthGuardService],
     },
     {
         path: 'user-profile',
-        component: UserProfileComponent,
+        loadComponent: () => import('./pages/user-profile/user-profile.component').then(m => m.UserProfileComponent),
     },
     {
         path: 'acte/:documentId',
