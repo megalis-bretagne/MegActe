@@ -12,6 +12,8 @@ from ..services.document_service import (
     add_multiple_files_to_document_service,
     get_external_data_service,
     delete_document_service,
+    cancel_transfer_tdt_document_service,
+    transfer_tdt_document_service,
 )
 
 from ..schemas.document_schemas import (

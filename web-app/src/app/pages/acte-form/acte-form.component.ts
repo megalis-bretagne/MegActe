@@ -72,7 +72,6 @@ export class ActeFormComponent implements OnInit {
         this.openModalAndRedirect();
       },
       error: (error) => {
-        console.log('Erreur capturée dans enregistrer:', error);
         this.logger.error('Error updating document', error);
         this.isSuccess = false;
         this.modalMessage = error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.';
@@ -127,9 +126,8 @@ export class ActeFormComponent implements OnInit {
         modal.close();
       }
       modal.showModal();
-      console.log('Modal ouvert');
     }
-      this.scheduleRedirect();
+    this.scheduleRedirect();
   }
 
   closeModal(): void {
