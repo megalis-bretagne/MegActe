@@ -11,7 +11,7 @@ class MegActeException(HTTPException):
     detail: str
     status_code: int
 
-    def __init__(self, status_code: int, detail: str):
+    def __init__(self, status_code: int = 400, detail: str = "Megacte Exception"):
         """Initialise une MegActeException.
 
         Args:
@@ -51,6 +51,21 @@ class DecryptionException(HTTPException):
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "Decryption failed".
         """
         super().__init__(status_code=400, detail=detail)
+
+
+class EntiteIdException(MegActeException):
+    """Exception pour les identifiants id_e."""
+
+    def __init__(
+        self,
+        detail="L'identifiant de l'entite ne doit pas être Null ou inférieur à zéro",
+    ):
+        """Initialise une UserExistException.
+
+        Args:
+            detail (str, optional): Le message détaillé de l'erreur. Defaults to "User already exist".
+        """
+        super().__init__(detail)
 
 
 class UserExistException(MegActeException):

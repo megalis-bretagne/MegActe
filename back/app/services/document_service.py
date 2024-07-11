@@ -1,6 +1,6 @@
 from ..clients.pastell.api import ApiPastell
 
-from ..exceptions.custom_exceptions import PastellException
+from ..exceptions.custom_exceptions import EntiteIdException, PastellException
 from ..schemas.document_schemas import (
     DocUpdateInfo,
     DocCreateInfo,
@@ -366,3 +366,35 @@ def assign_file_type_service(
         f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}",
         data=data,
     )
+
+
+def list_documents_paginate(
+    client_api: ApiPastell, id_e: int, type=None, offset=0, limit=100, **kwargs
+) -> dict:
+    """Retourne la liste des documents paginer
+
+    Args:
+        client_api (ApiPastell): Client Pastell
+        id_e (int): l'id de l'entitite
+        type (str | None) : le type de flux
+        offset (int, optional): Décalage à partir duquel récupérer les documents (par défaut est 0).
+        limit (int, optional): Nombre maximum de documents à récupérer par page (par défaut est 100).
+        **kwargs: Autres paramètres de requête facultatifs à passer à l'API.
+
+    Returns:
+        dict: _description_
+    """
+
+    if id_e is None or id_e < 0:
+        raise EntiteIdException()
+
+    url = f"entite/{id_e}/document"
+    query_param = {"offset": offset, "limit": limit}
+    # Dictionnaire pour renommer les clés
+    if type:
+        query_param["type"] = type
+
+    query_param.update(kwargs)
+
+    response = client_api.perform_get(url, query_params=query_param)
+    return response

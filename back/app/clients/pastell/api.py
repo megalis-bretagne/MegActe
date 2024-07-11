@@ -18,8 +18,8 @@ class ApiPastell:
     def auth(self, auth: AuthUser):
         self._auth = auth
 
-    def perform_get(self, url, auth: AuthUser = None):
-        return self._perform_request("GET", url, auth=auth)
+    def perform_get(self, url, auth: AuthUser = None, **kwagrs):
+        return self._perform_request("GET", url, auth=auth, **kwagrs)
 
     def perform_patch(self, url, data, auth: AuthUser = None):
         return self._perform_request("PATCH", url, data=data, auth=auth)
