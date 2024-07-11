@@ -6,7 +6,10 @@
     </div>
     <div class="acte-form-content">
         <div class="content-box">
-            <div *ngFor="let field of fields" class="input-container" [ngSwitch]="field.type">
+            <div *ngIf="globalErrorMessage" class="fr-alert fr-alert--error" role="alert">
+                {{ globalErrorMessage }}
+            </div>
+            <div *ngFor="let field of filteredFields" class="input-container" [ngSwitch]="field.type">
                 <meg-text-input *ngSwitchCase="'text'" [key]="field.key" [required]="field['requis']"
                     [pregMatch]="field['preg_match']" [commentaire]="field['commentaire']"
                     [multiple]="field['multiple']" [index]="field['index']" [name]="field['name']"

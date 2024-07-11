@@ -17,6 +17,14 @@ export class FieldFluxService {
         return Object.entries(data).map(([key, value]) => ({ key, ...value }));
     }
 
+    // Exclure les champs qui sont en read-only, qui sont marqués comme "no-show" ou qui ont 2 attrs ou moins, 
+    filterFields(fields: Field[]): Field[] {
+        return fields.filter(field => {
+            const fieldKeys = Object.keys(field);
+            return !field['read-only'] && fieldKeys.length > 3 && !field['no-show'];
+        });
+    }
+
     // Nettoyer les délimiteurs de l'expression régulière
     cleanRegex(regex: string): string {
         const regexFlagsPattern = /[a-z]*$/;
@@ -32,4 +40,6 @@ export class FieldFluxService {
 
         return regex;
     }
+
+
 }
