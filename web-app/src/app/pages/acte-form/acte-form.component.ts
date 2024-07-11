@@ -22,9 +22,11 @@ export class ActeFormComponent implements OnInit {
   acteName: string;
   fluxDetail: Data;
   fields: Field[] = [];
+  filteredFields: Field[] = [];
   documentId: string;
   isSuccess: boolean;
   modalMessage: string;
+  globalErrorMessage: string;
 
   @ViewChildren(TextInputComponent) textInputs: QueryList<TextInputComponent>;
   @ViewChildren(CheckboxInputComponent) checkboxInputs: QueryList<CheckboxInputComponent>;
@@ -50,6 +52,7 @@ export class ActeFormComponent implements OnInit {
       this.documentId = this.route.snapshot.paramMap.get('documentId');
       if (this.fluxDetail) {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
+        this.filteredFields = this.fieldFluxService.filterFields(this.fields);
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
@@ -57,6 +60,12 @@ export class ActeFormComponent implements OnInit {
   }
 
   enregistrer(): void {
+    if (!this.validateForm()) {
+      this.isSuccess = false;
+      this.modalMessage = 'Veuillez remplir tous les champs requis correctement.';
+      return;
+    }
+
     const docInfo = this.collectFormData();
     const docUpdateInfo = {
       entite_id: this.sharedDataService.getUser().user_info.id_e,
@@ -142,4 +151,56 @@ export class ActeFormComponent implements OnInit {
       this.router.navigate(['/documents', this.acteName]);
     }, 3000);
   }
+
+  validateForm(): boolean {
+    let isValid = true;
+    this.globalErrorMessage = '';
+
+    this.textInputs.forEach(comp => {
+      if (!comp.inputControl.valid) {
+        isValid = false;
+        comp.inputControl.markAsTouched();
+      }
+    });
+
+    this.checkboxInputs.forEach(comp => {
+      if (!comp.checkboxControl.valid) {
+        isValid = false;
+        comp.checkboxControl.markAsTouched();
+      }
+    });
+
+    this.selectInputs.forEach(comp => {
+      if (!comp.selectControl.disabled && !comp.selectControl.valid) {
+        isValid = false;
+        comp.selectControl.markAsTouched();
+      }
+    });
+
+    this.dateInputs.forEach(comp => {
+      if (!comp.dateControl.valid) {
+        isValid = false;
+        comp.dateControl.markAsTouched();
+      }
+    });
+
+    /* 
+    * TO DO :
+    * Récuperer les valeurs de Typologie des pièces
+    */
+    // this.externalDataInputs.forEach(comp => {
+    //   // Exclude the input with the name "Typologie des pièces"
+    //   if (comp.name !== "Typologie des pièces" && !comp.externalDataControl.valid) {
+    //     isValid = false;
+    //     comp.externalDataControl.markAsTouched();
+    //   }
+    // });
+
+    if (!isValid) {
+      this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
+    }
+
+    return isValid;
+  }
+
 }
