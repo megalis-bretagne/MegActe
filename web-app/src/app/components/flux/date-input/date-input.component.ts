@@ -46,10 +46,6 @@ export class DateInputComponent implements OnInit {
     this.dateId = this.fieldFluxService.generateUniqueId('date');
   }
 
-  getValue(): any {
-    return this.dateControl.value;
-  }
-
   getKey(): string {
     return this.key;
   }

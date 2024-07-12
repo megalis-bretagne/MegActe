@@ -2,7 +2,7 @@
     [ngClass]="{'fr-select-group': true, 'fr-select-group--error': externalDataControl.invalid && (externalDataControl.dirty || externalDataControl.touched)}">
     <label class="fr-label" [for]="externalDataId">
         {{ name }}
-        <span *ngIf="required">*</span>
+        <span *ngIf="required" class="required-star">*</span>
         <span class="fr-hint-text" *ngIf="link_name">{{ link_name }}</span>
     </label>
     <input class="fr-input"

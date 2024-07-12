@@ -37,10 +37,6 @@ export class TextInputComponent implements OnInit {
     this.inputId = this.fieldFluxService.generateUniqueId('input');
   }
 
-  getValue(): any {
-    return this.inputControl.value;
-  }
-
   getKey(): string {
     return this.key;
   }

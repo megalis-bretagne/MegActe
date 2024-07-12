@@ -97,18 +97,19 @@ export class ActeFormComponent implements OnInit {
   collectFormData(): { [key: string]: any } {
     const formData: { [key: string]: any } = {};
 
-    this.textInputs.forEach(comp => formData[comp.getKey()] = comp.getValue());
-    this.checkboxInputs.forEach(comp => formData[comp.getKey()] = comp.getValue());
-    this.selectInputs.forEach(comp => formData[comp.getKey()] = comp.getValue());
-    this.dateInputs.forEach(comp => formData[comp.getKey()] = comp.getValue());
-    this.externalDataInputs.forEach(comp => formData[comp.getKey()] = comp.getValue());
+    this.textInputs.forEach(comp => formData[comp.getKey()] = comp.inputControl.value);
+    this.checkboxInputs.forEach(comp => formData[comp.getKey()] = comp.checkboxControl.value);
+    this.selectInputs.forEach(comp => formData[comp.getKey()] = comp.selectControl.value);
+    this.dateInputs.forEach(comp => formData[comp.getKey()] = comp.dateControl.value);
+    this.externalDataInputs.forEach(comp => formData[comp.getKey()] = comp.externalDataControl.value);
+    this.fileUploads.forEach(comp => formData[comp.getKey()] = comp.fileControl.value);
 
     return formData;
   }
 
   uploadFiles(): void {
     this.fileUploads.forEach(fileUpload => {
-      const files = fileUpload.getValue();
+      const files = fileUpload.fileControl.value;
       const elementId = fileUpload.getKey();
 
       if (files.length > 0) {
@@ -188,13 +189,21 @@ export class ActeFormComponent implements OnInit {
     * TO DO :
     * Récuperer les valeurs de Typologie des pièces
     */
-    // this.externalDataInputs.forEach(comp => {
-    //   // Exclude the input with the name "Typologie des pièces"
-    //   if (comp.name !== "Typologie des pièces" && !comp.externalDataControl.valid) {
-    //     isValid = false;
-    //     comp.externalDataControl.markAsTouched();
-    //   }
-    // });
+    this.externalDataInputs.forEach(comp => {
+      // Exclude the input with the name "Typologie des pièces"
+      if (comp.name !== "Typologie des pièces" && !comp.externalDataControl.valid) {
+        isValid = false;
+        comp.externalDataControl.markAsTouched();
+      }
+    });
+
+    this.fileUploads.forEach(comp => {
+      if (!comp.fileControl.valid) {
+        isValid = false;
+        comp.fileControl.markAsTouched();
+        console.log("Invalid file input: ", comp.getKey());
+      }
+    });
 
     if (!isValid) {
       this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';

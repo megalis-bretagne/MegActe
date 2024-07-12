@@ -24,10 +24,6 @@ export class CheckboxInputComponent implements OnInit {
     this.checkboxControl = new FormControl({ value: this.defaultChecked, disabled: this.readOnly });
   }
 
-  getValue(): any {
-    return this.checkboxControl.value;
-  }
-
   getKey(): string {
     return this.key;
   }

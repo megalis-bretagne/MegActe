@@ -44,10 +44,6 @@ export class ExternalDataInputComponent implements OnInit, AfterViewInit {
     this.fetchExternalData();
   }
 
-  getValue(): any {
-    return this.externalDataControl.value;
-  }
-
   getKey(): string {
     return this.key;
   }

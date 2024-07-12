@@ -38,10 +38,6 @@ export class SelectInputComponent implements OnInit {
       }
     }
   }
-
-  getValue(): any {
-    return this.selectControl.value;
-  }
   getKey(): string {
     return this.key;
   }

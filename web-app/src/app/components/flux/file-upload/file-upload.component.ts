@@ -1,4 +1,6 @@
-import { Component, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { FormControl, Validators } from '@angular/forms';
+import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { FileUploadValidationService } from 'src/app/services/fileUploadServices/file-upload-validation.service';
 
 @Component({
@@ -6,7 +8,7 @@ import { FileUploadValidationService } from 'src/app/services/fileUploadServices
   templateUrl: './file-upload.component.html',
   styleUrls: ['./file-upload.component.scss']
 })
-export class FileUploadComponent {
+export class FileUploadComponent implements OnInit {
   @Input() key: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
@@ -15,15 +17,26 @@ export class FileUploadComponent {
 
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef | undefined;
 
+  fileControl: FormControl;
   files: File[] = [];
   errorMessage: string = '';
+  fileInputId: string;
 
-  constructor(private validationService: FileUploadValidationService) { }
+
+  constructor(private validationService: FileUploadValidationService, private fieldFluxService: FieldFluxService) { }
+
+  ngOnInit() {
+    const validators = this.required ? [Validators.required] : [];
+    this.fileControl = new FormControl('', validators);
+    this.fileInputId = this.fieldFluxService.generateUniqueId('file');
+  }
 
   onFilesDropped(files: FileList): void {
     const error = this.validationService.validateFiles(files, this.files, this.multiple);
     if (error) {
       this.errorMessage = error;
+      this.fileControl.setErrors({ incorrect: true });
+      this.fileControl.markAsTouched();
     } else {
       if (this.multiple) {
         this.files.push(...Array.from(files));
@@ -31,6 +44,8 @@ export class FileUploadComponent {
         this.files = Array.from(files);
       }
       this.errorMessage = '';
+      this.fileControl.setValue(this.files);
+      this.fileControl.updateValueAndValidity();
       this.resetFileInput();
     }
   }
@@ -45,18 +60,21 @@ export class FileUploadComponent {
 
   removeFile(file: File): void {
     this.files = this.files.filter(f => f !== file);
-    this.errorMessage = '';
-    this.resetFileInput();
+    if (this.files.length === 0 && this.required) {
+      this.fileControl.setErrors({ required: true });
+      this.fileControl.markAsTouched();
+      this.errorMessage = 'Ce champ est requis.';
+    } else {
+      this.errorMessage = '';
+      this.fileControl.setValue(this.files);
+      this.fileControl.updateValueAndValidity();
+    }
   }
 
   private resetFileInput(): void {
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
     }
-  }
-
-  getValue(): File[] {
-    return this.files;
   }
 
   getKey(): string {
