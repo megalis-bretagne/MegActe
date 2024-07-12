@@ -15,9 +15,9 @@ export class FluxService {
     }
 
     public getFlux(): Observable<Acte[]> {
-        return this.http.get<{ [key: string]: Acte }>(this.settingsService.apiUrl + '/flux').pipe(
-            map((data: { [key: string]: Acte }) =>
-                Object.entries(data).map(([key, value]) => ({ id: key, ...value }))
+        return this.http.get<{ [idField: string]: Acte }>(this.settingsService.apiUrl + '/flux').pipe(
+            map((data: { [idField: string]: Acte }) =>
+                Object.entries(data).map(([idField, value]) => ({ id: idField, ...value }))
             ),
             catchError((error) => {
                 this.logger.error('Error fetching user flux', error);

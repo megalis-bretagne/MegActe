@@ -34,7 +34,8 @@ export class DocumentListComponent implements OnInit {
     this.documentService.createDocument(docCreateInfo).subscribe(
       (response) => {
         const documentId = response.content.info.id_d;
-        this.router.navigate(['/acte', this.typeNom, { documentId }]);
+        this.router.navigate(['/acte', documentId]);
+        this.sharedDataService.setActeID(this.typeNom);
       },
       (error) => {
         this.logger.error('Error creating document:', error);

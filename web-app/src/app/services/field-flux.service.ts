@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Data } from '@angular/router';
 import { Field } from '../model/field-form.model';
+import { SettingsService } from 'src/environments/settings.service';
+
 
 @Injectable({
     providedIn: 'root'
 })
 export class FieldFluxService {
+    constructor(private settingsService: SettingsService) { }
+
 
     // Générer un id unique pour chaque champs 
     generateUniqueId(prefix: string = 'id'): string {
@@ -14,15 +18,31 @@ export class FieldFluxService {
 
     // Extraire les champs selon leur type et dans l'ordre de réception
     extractFields(data: Data): Field[] {
-        return Object.entries(data).map(([key, value]) => ({ key, ...value }));
+        return Object.entries(data).map(([idField, value]) => ({ idField, ...value }));
     }
 
-    // Exclure les champs qui sont en read-only, qui sont marqués comme "no-show" ou qui ont 2 attrs ou moins, 
-    filterFields(fields: Field[]): Field[] {
-        return fields.filter(field => {
-            const fieldKeys = Object.keys(field);
-            return !field['read-only'] && fieldKeys.length > 3 && !field['no-show'];
+
+
+    filterFields(fields: Field[], flowId: string): Field[] {
+        let filteredFields = fields.filter(field => {
+            return !field['read-only'] && !field['no-show'] && field['requis']
         });
+
+        const additionalFields = this.settingsService.getFlowType(flowId) || [];
+
+        additionalFields.forEach(fieldId => {
+            const field = fields.find(f => f.idField === fieldId);
+            if (field) {
+                filteredFields.push(field);
+            }
+        });
+
+        // Organiser les filteredFields dans le même ordre que fields
+        const orderedFilteredFields = fields.filter(field =>
+            filteredFields.some(filteredField => filteredField.idField === field.idField)
+        );
+
+        return orderedFilteredFields;
     }
 
     // Nettoyer les délimiteurs de l'expression régulière
@@ -43,3 +63,4 @@ export class FieldFluxService {
 
 
 }
+

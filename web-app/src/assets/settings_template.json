@@ -13,5 +13,16 @@
     "maxSingleFileSize": "<maxSingleFileSize>",
     "maxTotalFileSize": "<maxTotalFileSize>",
     "allowedFileType": "<allowed file type, e.g., application/pdf>"
+  },
+  "flowType": {
+    "<flow_Id1>": [
+      "<fild_Id1>",
+      "<fild_Id2>"
+    ],
+    "<flow_Id2>": [
+      "<fild_Id1>",
+      "<fild_Id2>",
+      "<fild_Id3>"
+    ]
   }
 }

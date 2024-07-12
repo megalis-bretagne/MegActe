@@ -1,7 +1,7 @@
 <div
     [ngClass]="{ 'fr-input-group': true, 'fr-input-group--error': inputControl.invalid && (inputControl.dirty || inputControl.touched), 'fr-input-group--valid': inputControl.valid && (inputControl.dirty || inputControl.touched) }">
     <label class="fr-label" [for]="inputId">
-        {{name}} <span *ngIf="required">*</span>
+        {{name}} <span *ngIf="required" class="required-star">*</span>
         <span class="fr-hint-text" *ngIf="commentaire">{{ commentaire }}</span>
     </label>
     <input class="fr-input" [id]="inputId"

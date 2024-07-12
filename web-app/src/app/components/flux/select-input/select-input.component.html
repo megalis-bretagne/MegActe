@@ -1,6 +1,6 @@
 <div class="fr-select-group" [class.fr-select-group--disabled]="selectControl.disabled">
     <label class="fr-label" [for]="selectId">
-        {{ name }}
+        {{ name }} <span *ngIf="required && !selectControl.disable" class="required-star">*</span>
         <span class="fr-hint-text" *ngIf="commentaire">{{ commentaire }}</span>
     </label>
     <select class="fr-select" [id]="selectId" [name]="selectId" [formControl]="selectControl" [multiple]="multiple">

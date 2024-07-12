@@ -4,7 +4,7 @@
             [attr.aria-describedby]="checkboxId + '-messages'" [disabled]="readOnly ? true : null">
 
         <label class="fr-label" [for]="checkboxId">
-            {{ name }}
+            {{ name }} <span *ngIf="required" class="required-star">*</span>
         </label>
 
         <div class="fr-messages-group" [id]="checkboxId + '-messages'" aria-live="assertive">

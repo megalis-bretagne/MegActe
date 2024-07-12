@@ -10,7 +10,7 @@ export const FluxResolver: ResolveFn<any> = (
 ): Observable<any> => {
     const fluxService = inject(FluxService);
     const sharedDataService = inject(SharedDataService);
-    const acteNom = route.paramMap.get('nom');
+    const acteNom = sharedDataService.getActeID();
 
     if (acteNom) {
         const acteId = sharedDataService.getFieldByName(acteNom);

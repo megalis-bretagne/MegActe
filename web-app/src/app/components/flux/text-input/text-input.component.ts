@@ -7,7 +7,7 @@ import { FieldFluxService } from 'src/app/services/field-flux.service';
   templateUrl: './text-input.component.html',
 })
 export class TextInputComponent implements OnInit {
-  @Input() key: string = '';
+  @Input() idField: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
   @Input() multiple: boolean = false;
@@ -37,12 +37,8 @@ export class TextInputComponent implements OnInit {
     this.inputId = this.fieldFluxService.generateUniqueId('input');
   }
 
-  getValue(): any {
-    return this.inputControl.value;
-  }
-
-  getKey(): string {
-    return this.key;
+  getIdField(): string {
+    return this.idField;
   }
 
   getErrorMessage() {
