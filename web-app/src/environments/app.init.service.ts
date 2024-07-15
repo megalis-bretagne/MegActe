@@ -5,12 +5,16 @@ import { firstValueFrom } from 'rxjs';
 import { NGXLogger, NgxLoggerLevel } from 'ngx-logger';
 import { SettingsService } from './settings.service';
 import { Settings } from './settings';
+import { UserService } from 'src/app/services/user.service';
+import { FluxService } from 'src/app/services/flux.service';
 
 @Injectable({ providedIn: 'root' })
 export class AppInitService {
 
-    constructor(private http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService, private _logger: NGXLogger) {
+    constructor(private http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService,
+        private userService: UserService, private fluxService: FluxService, private _logger: NGXLogger) {
     }
+
 
     initializeApp(): Promise<any> {
         return new Promise((resolve, reject) => {
@@ -52,6 +56,13 @@ export class AppInitService {
             } catch (error) {
                 throw new Error("Une erreur s'est déroulée durant l'initialisation de keycloak");
             }
-        })
+        }).then(async () => { // chargement des infos de l'utilisateur et de son contexte
+            try {
+                await firstValueFrom(this.userService.getUser());
+                await firstValueFrom(this.userService.getUserFlux());
+            } catch (error) {
+                throw new Error("Une erreur s'est déroulée durant la récupération de l'utilisateur et des flux");
+            }
+        });
     }
 }

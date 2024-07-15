@@ -26,6 +26,8 @@ import { FileUploadComponent } from './components/flux/file-upload/file-upload.c
 import { DragAndDropDirective } from './shared/directives/drag-and-drop.directive';
 import { ExternalDataInputComponent } from './components/flux/external-data-input/external-data-input.component';
 import { DocumentListComponent } from './pages/document-list/document-list.component';
+import { UserService } from './services/user.service';
+import { FluxService } from './services/flux.service';
 
 
 @NgModule({
@@ -57,7 +59,7 @@ import { DocumentListComponent } from './pages/document-list/document-list.compo
         {
             provide: APP_INITIALIZER,
             useFactory: app_Init,
-            deps: [AppInitService, KeycloakService, SettingsService],
+            deps: [AppInitService, KeycloakService, SettingsService, UserService, FluxService],
             multi: true
         },
         provideAnimationsAsync()
