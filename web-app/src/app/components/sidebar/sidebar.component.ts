@@ -34,13 +34,13 @@ export class SidebarComponent implements OnInit {
     this.documentService.createDocument(docCreateInfo).subscribe(
       (response) => {
         const documentId = response.content.info.id_d;
-        this.router.navigate(['/acte', acteNom, { documentId }]);
+        this.router.navigate(['/acte', documentId]);
+        this.sharedDataService.setActeID(acteNom);
       },
       (error) => {
         this.logger.error('Error creating document:', error);
       }
     );
-
   }
 
   groupActesByType(): void {

@@ -11,6 +11,10 @@ export class FileUpload {
     allowedFileType: "application/pdf"
 }
 
+export class FlowType {
+    [flowType: string]: string[];
+}
+
 export class Settings {
     production = false;
     keycloak: Keycloak | undefined;
@@ -18,4 +22,5 @@ export class Settings {
     apiUrl = "";
     opendataToolUrl = "";
     fileUpload: FileUpload = new FileUpload();
+    flowType: FlowType = new FlowType();
 }

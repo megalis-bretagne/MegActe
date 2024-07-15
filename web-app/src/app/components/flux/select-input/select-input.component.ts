@@ -7,12 +7,12 @@ import { FieldFluxService } from 'src/app/services/field-flux.service';
   templateUrl: './select-input.component.html',
 })
 export class SelectInputComponent implements OnInit {
-  @Input() key: string = '';
+  @Input() idField: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
   @Input() multiple: boolean = false;
   @Input() readOnly: boolean = false;
-  @Input() options: { [key: string]: string } = {};
+  @Input() options: { [idField: string]: string } = {};
   @Input() commentaire: string = '';
 
 
@@ -31,15 +31,15 @@ export class SelectInputComponent implements OnInit {
 
     // Si le champ est requis et qu'il y a une seule option, cette option sera sélectionnée par défaut
     if (this.required && Object.keys(this.options).length === 2) {
-      const singleValue = Object.keys(this.options).find(key => key !== '');
+      const singleValue = Object.keys(this.options).find(idField => idField !== '');
       if (singleValue) {
         this.selectControl.setValue(singleValue);
         this.selectControl.disable();
       }
     }
   }
-  getKey(): string {
-    return this.key;
+  getIdField(): string {
+    return this.idField;
   }
 
 }

@@ -10,8 +10,9 @@ import { TextInputComponent } from 'src/app/components/flux/text-input/text-inpu
 import { Data, Field } from 'src/app/model/field-form.model';
 import { DocumentService } from 'src/app/services/document.service';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
-import { FileUploadService } from 'src/app/services/fileUploadServices/file-upload.service';
 import { SharedDataService } from 'src/app/services/sharedData.service';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-acte-form',
@@ -27,6 +28,7 @@ export class ActeFormComponent implements OnInit {
   isSuccess: boolean;
   modalMessage: string;
   globalErrorMessage: string;
+  isSaving: boolean = false;
 
   @ViewChildren(TextInputComponent) textInputs: QueryList<TextInputComponent>;
   @ViewChildren(CheckboxInputComponent) checkboxInputs: QueryList<CheckboxInputComponent>;
@@ -41,84 +43,109 @@ export class ActeFormComponent implements OnInit {
     private fieldFluxService: FieldFluxService,
     private sharedDataService: SharedDataService,
     private documentService: DocumentService,
-    private fileUploadService: FileUploadService,
     private router: Router,
   ) { }
+
 
   ngOnInit(): void {
     this.route.data.subscribe(data => {
       this.fluxDetail = data['fluxDetail'];
-      this.acteName = this.route.snapshot.paramMap.get('nom');
       this.documentId = this.route.snapshot.paramMap.get('documentId');
+      this.acteName = this.sharedDataService.getActeID();
+
       if (this.fluxDetail) {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
-        this.filteredFields = this.fieldFluxService.filterFields(this.fields);
+        this.filteredFields = this.fieldFluxService.filterFields(this.fields, this.sharedDataService.getFieldByName(this.acteName));
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
     });
   }
 
-  enregistrer(): void {
+  save(): void {
     if (!this.validateForm()) {
       this.isSuccess = false;
       this.modalMessage = 'Veuillez remplir tous les champs requis correctement.';
       return;
     }
 
+    this.isSaving = true;
     const docInfo = this.collectFormData();
     const docUpdateInfo = {
       entite_id: this.sharedDataService.getUser().user_info.id_e,
       doc_info: docInfo
     };
 
-    this.documentService.updateDocument(this.documentId, docUpdateInfo).subscribe({
-      next: (response) => {
-        this.logger.info('Document updated successfully', response);
-        this.uploadFiles();
-        this.isSuccess = true;
-        this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
-        this.openModalAndRedirect();
-      },
-      error: (error) => {
+    // Création d'un observable pour la mise à jour du document
+    const updateDocument$ = this.documentService.updateDocument(this.documentId, docUpdateInfo).pipe(
+      catchError(error => {
         this.logger.error('Error updating document', error);
         this.isSuccess = false;
         this.modalMessage = error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.';
         this.deleteDocument();
-        this.openModalAndRedirect();
+        return of(null);
+      })
+    );
+
+    // Téléchargement de fichiers
+    const fileUploadObservables = this.uploadFiles().filter(obs => obs !== null);
+
+    // Utilisation de forkJoin 
+    forkJoin([...fileUploadObservables, updateDocument$]).subscribe({
+      next: (responses) => {
+        const updateResponse = responses[0];
+        const uploadResponses = responses.slice(1);
+
+        if (updateResponse) {
+          this.logger.info('Document updated successfully', updateResponse);
+          this.logger.info('All files uploaded successfully', uploadResponses);
+          this.isSuccess = true;
+          this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
+          this.openModal();
+        } else {
+          this.isSuccess = false;
+          this.modalMessage = 'Une erreur est survenue lors de la mise à jour du document.';
+          this.openModal();
+        }
+      },
+      error: (error) => {
+        this.logger.error('Error in one of the file uploads', error);
+        this.isSuccess = false;
+        this.modalMessage = 'Une erreur est survenue lors du téléchargement des fichiers.';
+        this.openModal();
       }
     });
   }
 
-  transmettre(): void {
-
-  }
-
-  collectFormData(): { [key: string]: any } {
-    const formData: { [key: string]: any } = {};
-
-    this.textInputs.forEach(comp => formData[comp.getKey()] = comp.inputControl.value);
-    this.checkboxInputs.forEach(comp => formData[comp.getKey()] = comp.checkboxControl.value);
-    this.selectInputs.forEach(comp => formData[comp.getKey()] = comp.selectControl.value);
-    this.dateInputs.forEach(comp => formData[comp.getKey()] = comp.dateControl.value);
-    this.externalDataInputs.forEach(comp => formData[comp.getKey()] = comp.externalDataControl.value);
-    this.fileUploads.forEach(comp => formData[comp.getKey()] = comp.fileControl.value);
-
-    return formData;
-  }
-
-  uploadFiles(): void {
-    this.fileUploads.forEach(fileUpload => {
+  uploadFiles(): Observable<any>[] {
+    return this.fileUploads.map(fileUpload => {
       const files = fileUpload.fileControl.value;
-      const elementId = fileUpload.getKey();
+      const elementId = fileUpload.getIdField();
 
       if (files.length > 0) {
-        this.fileUploadService.uploadFiles(this.documentId, elementId, this.sharedDataService.getUser().user_info.id_e, files).subscribe({
-          next: (response) => this.logger.info('Files uploaded successfully', response),
-          error: (error) => this.logger.error('Error uploading files', error)
-        });
+        return this.documentService.uploadFiles(this.documentId, elementId, this.sharedDataService.getUser().user_info.id_e, files).pipe(
+          catchError(error => {
+            this.logger.error('Error uploading files', error);
+            return of(null);
+          })
+        );
+      } else {
+        return of(null);
       }
     });
+  }
+
+  collectFormData(): { [idField: string]: any } {
+    const formData: { [idField: string]: any } = {};
+
+    this.textInputs.forEach(comp => formData[comp.getIdField()] = comp.inputControl.value);
+    this.checkboxInputs.forEach(comp => formData[comp.getIdField()] = comp.checkboxControl.value);
+    this.selectInputs.forEach(comp => formData[comp.getIdField()] = comp.selectControl.value);
+    this.dateInputs.forEach(comp => formData[comp.getIdField()] = comp.dateControl.value);
+    this.externalDataInputs.forEach(comp => formData[comp.getIdField()] = comp.externalDataControl.value);
+    this.fileUploads.forEach(comp => formData[comp.getIdField()] = comp.fileControl.value);
+
+    return formData;
   }
 
   deleteDocument(): void {
@@ -129,7 +156,7 @@ export class ActeFormComponent implements OnInit {
     });
   }
 
-  openModalAndRedirect(): void {
+  openModal(): void {
     const modal = document.getElementById('fr-modal') as HTMLDialogElement;
     if (modal) {
       if (modal.open) {
@@ -137,6 +164,7 @@ export class ActeFormComponent implements OnInit {
       }
       modal.showModal();
     }
+    this.isSaving = false;
     this.scheduleRedirect();
   }
 
@@ -157,53 +185,35 @@ export class ActeFormComponent implements OnInit {
     let isValid = true;
     this.globalErrorMessage = '';
 
-    this.textInputs.forEach(comp => {
-      if (!comp.inputControl.valid) {
-        isValid = false;
-        comp.inputControl.markAsTouched();
-      }
-    });
+    const typeToFieldArray: { [key: string]: any[] } = {
+      'text': this.textInputs.toArray(),
+      'checkbox': this.checkboxInputs.toArray(),
+      'select': this.selectInputs.toArray(),
+      'date': this.dateInputs.toArray(),
+      'externalData': this.externalDataInputs.toArray().filter(comp => comp.name !== "Typologie des pièces"),
+      'file': this.fileUploads.toArray()
+    };
 
-    this.checkboxInputs.forEach(comp => {
-      if (!comp.checkboxControl.valid) {
-        isValid = false;
-        comp.checkboxControl.markAsTouched();
-      }
-    });
+    const controlMapping: { [key: string]: string } = {
+      'text': 'inputControl',
+      'checkbox': 'checkboxControl',
+      'select': 'selectControl',
+      'date': 'dateControl',
+      'externalData': 'externalDataControl',
+      'file': 'fileControl'
+    };
 
-    this.selectInputs.forEach(comp => {
-      if (!comp.selectControl.disabled && !comp.selectControl.valid) {
-        isValid = false;
-        comp.selectControl.markAsTouched();
-      }
-    });
-
-    this.dateInputs.forEach(comp => {
-      if (!comp.dateControl.valid) {
-        isValid = false;
-        comp.dateControl.markAsTouched();
-      }
-    });
-
-    /* 
-    * TO DO :
-    * Récuperer les valeurs de Typologie des pièces
-    */
-    this.externalDataInputs.forEach(comp => {
-      // Exclude the input with the name "Typologie des pièces"
-      if (comp.name !== "Typologie des pièces" && !comp.externalDataControl.valid) {
-        isValid = false;
-        comp.externalDataControl.markAsTouched();
-      }
-    });
-
-    this.fileUploads.forEach(comp => {
-      if (!comp.fileControl.valid) {
-        isValid = false;
-        comp.fileControl.markAsTouched();
-        console.log("Invalid file input: ", comp.getKey());
-      }
-    });
+    for (const [type, components] of Object.entries(typeToFieldArray)) {
+      components.forEach(comp => {
+        const control = comp[controlMapping[type]];
+        if (control) {
+          if (!control.valid) {
+            isValid = false;
+            control.markAsTouched();
+          }
+        }
+      });
+    }
 
     if (!isValid) {
       this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
@@ -211,5 +221,6 @@ export class ActeFormComponent implements OnInit {
 
     return isValid;
   }
-
 }
+
+

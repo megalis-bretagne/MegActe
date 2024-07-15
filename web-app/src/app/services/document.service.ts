@@ -61,4 +61,18 @@ export class DocumentService {
             })
         );
     }
+
+    uploadFiles(documentId: string, elementId: string, entiteId: number, files: File[]): Observable<any> {
+        const formData: FormData = new FormData();
+        files.forEach(file => {
+            formData.append('files', file, file.name);
+        });
+
+        return this.http.post<any>(`${this.settingsService.apiUrl}/document/${documentId}/file/${elementId}?entite_id=${entiteId}`, formData).pipe(
+            catchError((error) => {
+                this.logger.error('Error uploading files', error);
+                return of(null);
+            })
+        );
+    }
 }

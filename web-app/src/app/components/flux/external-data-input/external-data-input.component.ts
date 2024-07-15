@@ -19,7 +19,7 @@ import { map, startWith } from 'rxjs/operators';
 })
 
 export class ExternalDataInputComponent implements OnInit, AfterViewInit {
-  @Input() key: string = '';
+  @Input() idField: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
   @Input() link_name: string = '';
@@ -44,8 +44,8 @@ export class ExternalDataInputComponent implements OnInit, AfterViewInit {
     this.fetchExternalData();
   }
 
-  getKey(): string {
-    return this.key;
+  getIdField(): string {
+    return this.idField;
   }
 
   ngAfterViewInit(): void {
@@ -64,13 +64,13 @@ export class ExternalDataInputComponent implements OnInit, AfterViewInit {
 
   // Récupérer les données du champ
   private fetchExternalData(): void {
-    const idChamp = this.key;
+    const idField = this.idField;
     const id_e = this.sharedDataService.getUser().user_info.id_e;
 
     // TODO: Récupérer le documentId dynamiquement plutôt que de le coder en dur
 
     const documentId = 'chdhtrh';
-    this.fluxService.get_externalData(id_e, documentId, idChamp).subscribe({
+    this.fluxService.get_externalData(id_e, documentId, idField).subscribe({
       next: (data) => {
         const filteredData = this.filterExternalData(data);
         this.externalDataOptions = this.removeNumbering(filteredData);
@@ -84,7 +84,7 @@ export class ExternalDataInputComponent implements OnInit, AfterViewInit {
 
   // Filtrer les données en éliminant les titres du premier niveau
   private filterExternalData(data: any): string[] {
-    return Object.keys(data).filter(key => key.split('.').length > 1);
+    return Object.keys(data).filter(idField => idField.split('.').length > 1);
   }
 
   // Retirer la numérotation des titres

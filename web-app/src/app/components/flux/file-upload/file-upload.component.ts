@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
-import { FileUploadValidationService } from 'src/app/services/fileUploadServices/file-upload-validation.service';
+import { FileUploadValidationService } from 'src/app/services/file-upload-validation.service';
 
 @Component({
   selector: 'meg-file-upload',
@@ -9,7 +9,7 @@ import { FileUploadValidationService } from 'src/app/services/fileUploadServices
   styleUrls: ['./file-upload.component.scss']
 })
 export class FileUploadComponent implements OnInit {
-  @Input() key: string = '';
+  @Input() idField: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
   @Input() multiple: boolean = false;
@@ -77,7 +77,7 @@ export class FileUploadComponent implements OnInit {
     }
   }
 
-  getKey(): string {
-    return this.key;
+  getIdField(): string {
+    return this.idField;
   }
 }

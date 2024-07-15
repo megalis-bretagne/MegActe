@@ -8,7 +8,7 @@ import { format, parse } from 'date-fns';
   templateUrl: './date-input.component.html',
 })
 export class DateInputComponent implements OnInit {
-  @Input() key: string = '';
+  @Input() idField: string = '';
   @Input() name: string = '';
   @Input() required: boolean = false;
   @Input() default: string = '';
@@ -46,8 +46,8 @@ export class DateInputComponent implements OnInit {
     this.dateId = this.fieldFluxService.generateUniqueId('date');
   }
 
-  getKey(): string {
-    return this.key;
+  getIdField(): string {
+    return this.idField;
   }
 
   formatDate(date: Date): string {
@@ -61,7 +61,7 @@ export class DateInputComponent implements OnInit {
 
   // Interdire les dates passées
   noPastDateValidator(): ValidatorFn {
-    return (control: AbstractControl): { [key: string]: any } | null => {
+    return (control: AbstractControl): { [idField: string]: any } | null => {
       const currentDate = new Date();
       currentDate.setHours(0, 0, 0, 0);
       const selectedDate = new Date(control.value);

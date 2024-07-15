@@ -10,6 +10,7 @@ export class SharedDataService {
     private user: UserContext;
     private flux: Acte[];
     private fluxDetail: { [key: string]: FluxDetailItem };
+    private acteID: string;
 
     setUser(user: UserContext) {
         this.user = user;
@@ -27,11 +28,11 @@ export class SharedDataService {
         return this.flux;
     }
 
-    setFluxDetail(fluxDetail: { [key: string]: FluxDetailItem }) {
+    setFluxDetail(fluxDetail: { [idField: string]: FluxDetailItem }) {
         this.fluxDetail = fluxDetail;
     }
 
-    getFluxDetail(): { [key: string]: FluxDetailItem } {
+    getFluxDetail(): { [idField: string]: FluxDetailItem } {
         return this.fluxDetail;
     }
 
@@ -39,5 +40,13 @@ export class SharedDataService {
     getFieldByName(acteNom: string): string | undefined {
         const acte = this.flux.find(acte => acte.nom === acteNom);
         return acte ? acte.id : undefined;
+    }
+
+    setActeID(acteID: string) {
+        this.acteID = acteID;
+    }
+
+    getActeID(): string {
+        return this.acteID;
     }
 }

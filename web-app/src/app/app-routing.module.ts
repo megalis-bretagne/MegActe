@@ -17,15 +17,9 @@ const routes: Routes = [
         component: UserProfileComponent,
     },
     {
-        path: 'acte/:nom',
+        path: 'acte/:documentId',
         component: ActeFormComponent,
         resolve: { fluxDetail: FluxResolver },
-        children: [
-            {
-                path: ':documentId',
-                component: ActeFormComponent
-            }
-        ]
     },
     {
         path: 'documents/:typeNom',

@@ -1,12 +1,12 @@
 export interface Field {
-    key: string;
+    idField: string;
     type: string;
     preg_match?: string;
     [prop: string]: any;
 }
 
 export interface Data {
-    [key: string]: Field;
+    [idField: string]: Field;
 }
 
 export interface FluxDetailItem {
@@ -15,7 +15,7 @@ export interface FluxDetailItem {
     requis?: boolean;
     multiple?: boolean;
     commentaire?: string;
-    value?: { [key: string]: string };
+    value?: { [idField: string]: string };
     preg_match?: string;
     preg_match_error?: string;
     index?: boolean;
