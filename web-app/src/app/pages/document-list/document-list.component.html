@@ -1,15 +1,16 @@
-<div>
-    <div class="header">
-        <div class="container">
-            <p class="display-4">TITRE </p>
-            <button class="fr-btn">
+<div class="fr-container--fluid">
+
+    <div class="fr-grid-row">
+        <div class="fr-col-9 fr-col-md-9">
+            <h1>Liste des {{typeNom}}</h1>
+        </div>
+        <div class="fr-col-3 fr-col-md-3">
+            <button class="fr-btn" (click)="createDoc()">
                 Créer
                 <span class="fr-icon-add-line icone-add" aria-hidden="true"></span>
             </button>
         </div>
     </div>
-    <div class="acte-form-content">
-        <div class="content-box">
 
-        </div>
-    </div>
+
+</div>

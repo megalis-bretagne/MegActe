@@ -1,5 +1,4 @@
 /* You can add global styles to this file, and also import other style files */
-@import "~bootstrap/dist/css/bootstrap.min.css";
 @import "@gouvfr/dsfr/dist/dsfr.min.css";
 
 html,
@@ -10,6 +9,18 @@ body {
     overflow-y: auto;
     overflow-x: hidden;
 }
+
+.header {
+    background-color: rgb(240, 240, 240);
+    color: #414856;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: relative;
+    z-index: 0;
+}
+
 
 .container-fluid {
     padding: 0;
