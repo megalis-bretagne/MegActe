@@ -24,7 +24,7 @@ export class FieldFluxService {
 
 
     filterFields(fields: Field[], flowId: string): Field[] {
-        let filteredFields = fields.filter(field => {
+        const filteredFields = fields.filter(field => {
             return !field['read-only'] && !field['no-show'] && field['requis']
         });
 

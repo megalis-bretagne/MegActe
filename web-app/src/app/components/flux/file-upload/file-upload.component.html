@@ -1,34 +1,43 @@
-<div class="file-upload fr-input-group" [class.fr-input-group--error]="fileControl.invalid && fileControl.touched">
-    <label class="fr-label para-name" [class.fr-label--error]="fileControl.invalid && fileControl.touched"
-        [for]="fileInputId">
-        {{name}} <span *ngIf="required" class="required-star">*</span>
+<div class="file-upload fr-input-group" [class.fr-input-group--error]="formControl.invalid && formControl.touched">
+    <label class="fr-label para-name" [class.fr-label--error]="formControl.invalid && formControl.touched"
+        [for]="controlId">
+        {{ name }}
+        @if (required) {
+        <span class="required-star">*</span>
+        }
     </label>
-    <div *ngIf="commentaire" class="fr-hint-text">{{commentaire}}</div>
+    @if (comment) {
+    <div class="fr-hint-text">{{ comment }}</div>
+    }
     <div class="file-upload-container">
         <div class="upload-section" megDragAndDrop (filesDropped)="onFilesDropped($event)">
             <p>Glissez/déposez le(s) fichier(s) ici ou cliquez sur "Parcourir les fichiers".</p>
             <button mat-raised-button color="primary" (click)="fileInput.click()" class="custom-button">Parcourir les
                 fichiers</button>
             <input type="file" (change)="onFileSelected($event)" [multiple]="multiple" hidden #fileInput
-                [id]="fileInputId">
+                [id]="controlId">
         </div>
 
-        <div class="uploaded-files" *ngIf="files.length > 0">
+        @if (files.length > 0) {
+        <div class="uploaded-files">
             <h6>Fichiers téléchargés :</h6>
             <ul>
-                <li *ngFor="let file of files" class="fr-hint-text">
+                @for (file of files; track file.name) {
+                <li class="fr-hint-text">
                     {{ file.name }}
                     <button mat-button color="warn" (click)="removeFile(file)">
                         <span class="fr-icon-delete-fill" aria-hidden="true">Supprimer</span>
                     </button>
                 </li>
+                }
             </ul>
         </div>
+        }
     </div>
 
-    <div *ngIf="fileControl.invalid && fileControl.touched">
-        <p id="file-upload-with-error-desc-error" class="fr-error-text">
-            {{ errorMessage || (fileControl.hasError('required') ? 'Ce champ est requis.' : '') }}
-        </p>
-    </div>
+    @if (formControl.invalid && formControl.touched) {
+    <p id="file-upload-with-error-desc-error" class="fr-error-text">
+        {{ errorMessage || (formControl.hasError('required') ? 'Ce champ est requis.' : '') }}
+    </p>
+    }
 </div>

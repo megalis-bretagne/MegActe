@@ -1,27 +1,26 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
-import { FieldFluxService } from 'src/app/services/field-flux.service';
+import { Component, Input } from '@angular/core';
+import { ValidatorFn, Validators } from '@angular/forms';
+import { BaseInputComponent } from '../BaseInput.component';
 
 @Component({
   selector: 'meg-text-input',
   templateUrl: './text-input.component.html',
 })
-export class TextInputComponent implements OnInit {
-  @Input() idField: string = '';
-  @Input() name: string = '';
-  @Input() required: boolean = false;
+export class TextInputComponent extends BaseInputComponent {
   @Input() multiple: boolean = false;
   @Input() pregMatch: string = '';
   @Input() pregMatchError: string = '';
   @Input() index: boolean = false;
-  @Input() commentaire: string = '';
 
-  inputControl: FormControl;
-  inputId: string;
+  override getControlType(): string {
+    return 'text';
+  }
 
-  constructor(private fieldFluxService: FieldFluxService) { }
+  override getDefaultValue(): any {
+    return '';
+  }
 
-  ngOnInit() {
+  override getValidators(): ValidatorFn[] {
     const validators = [];
 
     if (this.required) {
@@ -33,18 +32,14 @@ export class TextInputComponent implements OnInit {
       validators.push(Validators.pattern(this.pregMatch));
     }
 
-    this.inputControl = new FormControl('', validators);
-    this.inputId = this.fieldFluxService.generateUniqueId('input');
+    return validators;
   }
 
-  getIdField(): string {
-    return this.idField;
-  }
 
   getErrorMessage() {
-    if (this.inputControl.hasError('required')) {
+    if (this.formControl.hasError('required')) {
       return 'Ce champ est requis';
-    } else if (this.inputControl.hasError('pattern')) {
+    } else if (this.formControl.hasError('pattern')) {
       return this.pregMatchError;
     }
     return '';

@@ -14,6 +14,7 @@ from ..services.document_service import (
     delete_document_service,
     cancel_transfer_tdt_document_service,
     transfer_tdt_document_service,
+    assign_file_type_service,
 )
 
 from ..schemas.document_schemas import (
@@ -89,6 +90,21 @@ def delete_file_from_document(
 ):
     return delete_file_from_document_service(
         document_id, element_id, request_data, client
+    )
+
+
+# Attribuer un type à un fichier
+@router.patch("/document/{document_id}/file/{element_id}/type", tags=["document"])
+def assign_file_type(
+    document_id: str,
+    entite_id: int,
+    element_id: str,
+    file_name: str,
+    file_type: str,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return assign_file_type_service(
+        entite_id, document_id, element_id, file_name, file_type, client
     )
 
 

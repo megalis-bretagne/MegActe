@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, Input, OnInit, ViewChild } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { NGXLogger } from 'ngx-logger';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { FluxService } from 'src/app/services/flux.service';
@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { BaseInputComponent } from '../BaseInput.component';
 
 @Component({
   selector: 'meg-external-data-input',
@@ -18,49 +19,44 @@ import { map, startWith } from 'rxjs/operators';
   templateUrl: './external-data-input.component.html'
 })
 
-export class ExternalDataInputComponent implements OnInit, AfterViewInit {
-  @Input() idField: string = '';
-  @Input() name: string = '';
-  @Input() required: boolean = false;
+export class ExternalDataInputComponent extends BaseInputComponent implements OnInit, AfterViewInit {
   @Input() link_name: string = '';
 
-  externalDataControl: FormControl;
-  externalDataId: string;
   externalDataOptions: string[] = [];
-  filteredOptions: Observable<string[]>;
+  filteredOptions: string[] = [];
 
   @ViewChild('autoCompleteInput', { read: MatAutocompleteTrigger }) autoComplete: MatAutocompleteTrigger;
 
   constructor(
-    private fieldFluxService: FieldFluxService,
+    protected override fieldFluxService: FieldFluxService,
     private fluxService: FluxService,
     private sharedDataService: SharedDataService,
     private logger: NGXLogger
-  ) { }
+  ) {
+    super(fieldFluxService);
+  }
 
-  ngOnInit(): void {
-    this.initializeFormControl();
-    this.setExternalDataId();
+  override ngOnInit(): void {
+    super.ngOnInit();
     this.fetchExternalData();
   }
 
-  getIdField(): string {
-    return this.idField;
+  override getControlType(): string {
+    return 'externalData';
+  }
+
+  override getDefaultValue(): any {
+    return '';
+  }
+
+  override getValidators(): ValidatorFn[] {
+    return this.required ? [Validators.required] : [];
   }
 
   ngAfterViewInit(): void {
     window.addEventListener('scroll', this.scrollEvent, true);
   }
 
-  // Initialiser le formulaire avec des validateurs
-  private initializeFormControl(): void {
-    const validators = this.required ? [Validators.required] : [];
-    this.externalDataControl = new FormControl('', validators);
-  }
-
-  private setExternalDataId(): void {
-    this.externalDataId = this.fieldFluxService.generateUniqueId('externalData');
-  }
 
   // Récupérer les données du champ
   private fetchExternalData(): void {
@@ -93,10 +89,10 @@ export class ExternalDataInputComponent implements OnInit, AfterViewInit {
   }
 
   private setupAutoComplete(): void {
-    this.filteredOptions = this.externalDataControl.valueChanges.pipe(
+    this.formControl.valueChanges.pipe(
       startWith(''),
       map(value => this._filter(value || ''))
-    );
+    ).subscribe(options => this.filteredOptions = options);
   }
 
   // Filtrer les options en fonction de la valeur saisie
@@ -105,7 +101,7 @@ export class ExternalDataInputComponent implements OnInit, AfterViewInit {
     return this.externalDataOptions.filter(option => option.toLowerCase().includes(filterValue));
   }
 
-  scrollEvent = (): void => {
+  private scrollEvent = (): void => {
     if (this.autoComplete.panelOpen) {
       this.autoComplete.updatePosition();
     }

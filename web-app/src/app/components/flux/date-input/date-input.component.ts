@@ -1,53 +1,40 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
-import { FieldFluxService } from 'src/app/services/field-flux.service';
+import { Component, Input } from '@angular/core';
+import { Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { format, parse } from 'date-fns';
+import { BaseInputComponent } from '../BaseInput.component';
 
 @Component({
   selector: 'meg-date-input',
   templateUrl: './date-input.component.html',
 })
-export class DateInputComponent implements OnInit {
-  @Input() idField: string = '';
-  @Input() name: string = '';
-  @Input() required: boolean = false;
+export class DateInputComponent extends BaseInputComponent {
   @Input() default: string = '';
   @Input() allowPast: boolean = true;
-  @Input() commentaire: string = '';
 
-  dateControl: FormControl;
-  dateId: string;
+  override getControlType(): string {
+    return 'date';
+  }
 
-  constructor(private fieldFluxService: FieldFluxService) { }
+  override getDefaultValue(): string {
+    if (this.default === 'now') {
+      return this.formatDate(new Date());
+    } else if (this.default.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      const parsedDate = parse(this.default, 'dd/MM/yyyy', new Date());
+      return this.formatDate(parsedDate);
+    } else {
+      return this.default; //Check it out
+    }
+  }
 
-  ngOnInit() {
+  override getValidators(): ValidatorFn[] {
     const validators = [Validators.pattern(/^\d{4}-\d{2}-\d{2}$/)];
     if (this.required) {
       validators.push(Validators.required);
     }
-
     if (!this.allowPast) {
       validators.push(this.noPastDateValidator());
     }
-
-    let initialDate = '';
-    if (this.default === 'now') {
-      initialDate = this.formatDate(new Date());
-    } else if (this.default) {
-      if (this.default.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-        const parsedDate = parse(this.default, 'dd/MM/yyyy', new Date());
-        initialDate = this.formatDate(parsedDate);
-      } else {
-        initialDate = this.formatDate(new Date(this.default));
-      }
-    }
-
-    this.dateControl = new FormControl({ value: initialDate, disabled: false }, validators);
-    this.dateId = this.fieldFluxService.generateUniqueId('date');
-  }
-
-  getIdField(): string {
-    return this.idField;
+    return validators;
   }
 
   formatDate(date: Date): string {
