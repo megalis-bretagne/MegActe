@@ -323,3 +323,46 @@ def transfer_tdt_document_service(
     """
     action = "orientation"
     return check_and_perform_action_service(entite_id, document_id, action, client_api)
+
+
+def assign_file_type_service(
+    entite_id: int,
+    document_id: str,
+    element_id: str,
+    file_name: str,
+    file_type: str,
+    client_api: ApiPastell,
+):
+    """Attribue un type à un fichier uploadé dans Pastell.
+
+    Args:
+        entite_id (int): L'ID de l'entité.
+        document_id (str): L'ID du document.
+        file_name (str): Le nom du fichier à typer.
+        file_type (str): Le type à attribuer au fichier.
+        client_api (ApiPastell): Client API Pastell.
+
+    Raises:
+        PastellException: Si le fichier ne peut pas être trouvé ou si l'attribution échoue.
+
+    Returns:
+        dict: Les détails de l'opération d'attribution de type.
+    """
+    # Récupérer la liste des fichiers existants
+    existing_files = get_existing_files(entite_id, document_id, element_id, client_api)
+
+    try:
+        # Trouver l'indice du fichier basé sur son nom
+        file_index = existing_files.index(file_name)
+    except ValueError:
+        raise PastellException(
+            status_code=404,
+            detail="File not found",
+        )
+
+    # Attribuer le type de fichier
+    data = {f"type_pj[{file_index}]": file_type}
+    return client_api.perform_patch(
+        f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}",
+        data=data,
+    )
