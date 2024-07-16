@@ -2,6 +2,7 @@ import { Directive, EventEmitter, HostBinding, HostListener, Output } from '@ang
 
 @Directive({
   selector: '[megDragAndDrop]',
+  standalone: true
 })
 export class DragAndDropDirective {
 

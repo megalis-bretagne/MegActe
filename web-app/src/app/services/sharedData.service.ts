@@ -39,13 +39,6 @@ export class SharedDataService {
         return acte ? acte.id : undefined;
     }
 
-    setActeID(acteID: string) {
-        this.acteID = acteID;
-    }
-
-    getActeID(): string {
-        return this.acteID;
-    }
     // Récupère l'ID d'un champ en fonction de son nom à partir des détails du flux.
     getFieldIdFromFluxDetailByName(fieldName: string): string | undefined {
         if (this.fluxDetail) {

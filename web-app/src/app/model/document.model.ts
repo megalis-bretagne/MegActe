@@ -25,3 +25,20 @@ export interface DocumentInfo {
     last_action_display: string;
     [key: string]: any;
 }
+
+export interface DocumentDetail {
+    info: {
+        id_d: string;
+        type: string;
+        titre: string;
+        creation: string;
+        modification: string;
+    };
+
+    last_action: {
+        action: string;
+        message: string;
+        date: string;
+    };
+    action_possible: string[];
+}

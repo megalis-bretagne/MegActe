@@ -21,7 +21,7 @@
                             <li class="fr-sidemenu__item">
                                 <div class="meg-link-row">
                                     <div><a class="fr-sidemenu__link" href="#" (click)="selectFlux(acte)"
-                                            [attr.aria-current]=" fluxSelected() != null && acte.id === fluxSelected().id ? 'page' : null"
+                                            [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null"
                                             target="_self">{{
                                             acte.nom }}</a></div>
                                     <div>
@@ -42,7 +42,7 @@
                 <li class="fr-sidemenu__item">
                     <div class="meg-link-row">
                         <div><a class="fr-sidemenu__link" href="#"
-                                [attr.aria-current]=" fluxSelected() != null && acte.id === fluxSelected().id ? 'page' : null"
+                                [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null"
                                 (click)="selectFlux(acte)" target="_self">{{
                                 acte.nom }}</a></div>
                         <div>

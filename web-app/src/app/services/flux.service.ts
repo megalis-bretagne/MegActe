@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { effect, Injectable, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Observable, catchError, of, tap } from 'rxjs';
 import { SettingsService } from 'src/environments/settings.service';
@@ -38,7 +38,7 @@ export class FluxService {
         );
     }
 
-    public selectFlux(acte: Acte) {
+    public selectCurrentFlux(acte: Acte) {
         this.fluxSelected.set(acte);
     }
 }

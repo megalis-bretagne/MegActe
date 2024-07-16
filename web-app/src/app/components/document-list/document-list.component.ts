@@ -1,10 +1,8 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
-import { DocCreateInfo, DocumentInfo } from 'src/app/model/document.model';
+import { DocumentInfo } from 'src/app/model/document.model';
 import { DocumentService } from 'src/app/services/document.service';
 import { FluxService } from 'src/app/services/flux.service';
-import { SharedDataService } from 'src/app/services/sharedData.service';
 import { UserContextService } from 'src/app/services/user-context.service';
 
 @Component({

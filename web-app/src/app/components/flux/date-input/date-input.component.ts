@@ -1,10 +1,13 @@
 import { Component, Input } from '@angular/core';
-import { Validators, ValidatorFn, AbstractControl } from '@angular/forms';
+import { Validators, ValidatorFn, AbstractControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { format, parse } from 'date-fns';
 import { BaseInputComponent } from '../BaseInput.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'meg-date-input',
+  standalone: true,
+  imports: [FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: './date-input.component.html',
 })
 export class DateInputComponent extends BaseInputComponent {

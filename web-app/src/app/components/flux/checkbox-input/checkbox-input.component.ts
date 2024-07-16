@@ -1,8 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { BaseInputComponent } from '../BaseInput.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'meg-checkbox-input',
+  standalone: true,
+  imports: [FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: './checkbox-input.component.html',
 })
 

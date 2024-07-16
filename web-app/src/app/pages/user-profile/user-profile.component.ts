@@ -53,7 +53,7 @@ export class UserProfileComponent {
     const end = start + this.itemsPerPage;
     this.paginatedEntities = this.currentUser().entites.slice(start, end);
 
-    let startPage = Math.max(1, newPage - Math.floor(this.visiblePages / 2));
+    const startPage = Math.max(1, newPage - Math.floor(this.visiblePages / 2));
     const endPage = Math.min(totalPage, startPage + this.visiblePages - 1);
 
     this.displayedPages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);

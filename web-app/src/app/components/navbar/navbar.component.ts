@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AuthService } from 'src/app/services/keycloakServices/auth.service';
 import { UserContextService } from 'src/app/services/user-context.service';
 

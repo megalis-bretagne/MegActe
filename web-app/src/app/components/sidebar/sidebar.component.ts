@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { Acte } from 'src/app/model/acte.model';
 import { DocCreateInfo } from 'src/app/model/document.model';
 import { DocumentService } from 'src/app/services/document.service';
@@ -35,14 +35,14 @@ export class SidebarComponent {
   createDoc(acte: Acte): void {
     const docCreateInfo: DocCreateInfo = {
       entite_id: this.sharedDataService.getUser().user_info.id_e,
-      flux_type: acte.type,
+      flux_type: acte.id,
       doc_info: {}
     };
 
     this.documentService.createDocument(docCreateInfo).subscribe(
       (response) => {
         const documentId = response.content.info.id_d;
-        this.router.navigate(['/acte', acte.nom, { documentId }]);
+        this.router.navigate(['/acte', documentId]);
       },
       (error) => {
         this.logger.error('Error creating document:', error);

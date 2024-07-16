@@ -1,9 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { ValidatorFn, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { BaseInputComponent } from '../BaseInput.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'meg-select-input',
+  standalone: true,
+  imports: [FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: './select-input.component.html',
 })
 export class SelectInputComponent extends BaseInputComponent implements OnInit {

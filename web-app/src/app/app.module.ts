@@ -17,13 +17,6 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { AppInitService } from 'src/environments/app.init.service';
-import { ActeFormComponent } from './pages/acte-form/acte-form.component';
-import { TextInputComponent } from './components/flux/text-input/text-input.component';
-import { CheckboxInputComponent } from './components/flux/checkbox-input/checkbox-input.component';
-import { SelectInputComponent } from './components/flux/select-input/select-input.component';
-import { DateInputComponent } from './components/flux/date-input/date-input.component';
-import { FileUploadComponent } from './components/flux/file-upload/file-upload.component';
-import { DragAndDropDirective } from './shared/directives/drag-and-drop.directive';
 import { ExternalDataInputComponent } from './components/flux/external-data-input/external-data-input.component';
 import { DocumentListComponent } from './components/document-list/document-list.component';
 import { UserContextService } from './services/user-context.service';
@@ -33,14 +26,7 @@ import { UserContextService } from './services/user-context.service';
     declarations: [
         AppComponent,
         NavbarComponent,
-        SidebarComponent,
-        ActeFormComponent,
-        TextInputComponent,
-        CheckboxInputComponent,
-        SelectInputComponent,
-        DateInputComponent,
-        FileUploadComponent,
-        DragAndDropDirective
+        SidebarComponent
     ],
     imports: [
         BrowserModule,
