@@ -1,4 +1,4 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { Acte } from 'src/app/model/acte.model';
 import { DocCreateInfo } from 'src/app/model/document.model';
 import { DocumentService } from 'src/app/services/document.service';
