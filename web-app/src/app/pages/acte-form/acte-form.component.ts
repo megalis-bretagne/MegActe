@@ -37,6 +37,12 @@ export class ActeFormComponent implements OnInit {
   modalMessage: string;
   globalErrorMessage: string;
   isSaving: boolean = false;
+  isCreationSuccess: boolean = false;
+  isValid: boolean = true;
+  fileTypes: { [key: string]: string } = {};
+  pieces: string[] = [];
+  selectedTypes: string[] = [];
+
 
   @ViewChildren(TextInputComponent) textInputs: QueryList<TextInputComponent>;
   @ViewChildren(CheckboxInputComponent) checkboxInputs: QueryList<CheckboxInputComponent>;
@@ -52,6 +58,7 @@ export class ActeFormComponent implements OnInit {
     private sharedDataService: SharedDataService,
     private documentService: DocumentService,
     private router: Router,
+    private fluxService: FluxService,
   ) {
     effect(() => {
       this.acteName = this.fluxSelected().nom;
@@ -110,9 +117,10 @@ export class ActeFormComponent implements OnInit {
 
         if (updateResponse) {
           this.logger.info('Document and all files are updated successfully', updateResponse, uploadResponses);
-          this.isSuccess = true;
-          this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
-          this.openModal();
+          // this.isSuccess = true;
+          this.isCreationSuccess = true;
+          // this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
+          this.fetchFileTypes();
         } else {
           this.isSuccess = false;
           this.modalMessage = 'Une erreur est survenue lors de la mise à jour du document.';
@@ -193,7 +201,7 @@ export class ActeFormComponent implements OnInit {
   }
 
   validateForm(): boolean {
-    let isValid = true;
+    this.isValid = true;
     this.globalErrorMessage = '';
 
     // Créer une collection unique de tous les composants de formulaire
@@ -216,16 +224,52 @@ export class ActeFormComponent implements OnInit {
       }
 
       if (!comp.formControl.valid) {
-        isValid = false;
+        this.isValid = false;
         comp.formControl.markAsTouched();
       }
     });
 
-    if (!isValid) {
+    if (!this.isValid) {
       this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
     }
 
-    return isValid;
+    return this.isValid;
+  }
+
+  fetchFileTypes(): void {
+    const entiteId = this.sharedDataService.getUser().user_info.id_e;
+    this.fluxService.get_externalData(entiteId, this.documentId, 'type_piece').subscribe({
+      next: (response) => {
+        this.fileTypes = response.actes_type_pj_list;
+        this.pieces = response.pieces;
+        this.selectedTypes = Array(this.pieces.length).fill('');
+        this.openModal();
+      },
+      error: (error) => {
+        this.logger.error('Error fetching file types and files', error);
+        this.isSuccess = false;
+        this.modalMessage = 'Une erreur est survenue lors de la récupération des types de fichiers.';
+        this.openModal();
+      }
+    });
+  }
+
+  assignFileTypes(): void {
+    const entiteId = this.sharedDataService.getUser().user_info.id_e;
+    this.documentService.assignFileTypes(entiteId, this.documentId, 'element_id', this.selectedTypes).subscribe({
+      next: (response) => {
+        this.logger.info('File types assigned successfully', response);
+        this.isSuccess = true;
+        this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
+        this.openModal();
+      },
+      error: (error) => {
+        this.logger.error('Error assigning file types', error);
+        this.isSuccess = false;
+        this.modalMessage = 'Une erreur est survenue lors de la création ou de la mise à jour du document.';
+        this.openModal();
+      }
+    });
   }
 
 }
