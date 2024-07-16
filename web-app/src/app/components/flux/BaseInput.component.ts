@@ -8,7 +8,7 @@ export abstract class BaseInputComponent implements OnInit {
     @Input() name: string = '';
     @Input() required: boolean = false;
     @Input() readOnly: boolean = false;
-    @Input() commentaire: string = '';
+    @Input() comment: string = '';
 
     formControl: FormControl;
     controlId: string;

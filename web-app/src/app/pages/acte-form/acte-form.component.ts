@@ -97,8 +97,7 @@ export class ActeFormComponent implements OnInit {
         const uploadResponses = responses.slice(1);
 
         if (updateResponse) {
-          this.logger.info('Document updated successfully', updateResponse);
-          this.logger.info('All files uploaded successfully', uploadResponses);
+          this.logger.info('Document and all files are updated successfully', updateResponse, uploadResponses);
           this.isSuccess = true;
           this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
           this.openModal();

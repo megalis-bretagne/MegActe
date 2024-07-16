@@ -8,7 +8,6 @@ import { SharedDataService } from 'src/app/services/sharedData.service';
 import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { BaseInputComponent } from '../BaseInput.component';
 
@@ -23,7 +22,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
   @Input() link_name: string = '';
 
   externalDataOptions: string[] = [];
-  filteredOptions: Observable<string[]>;
+  filteredOptions: string[] = [];
 
   @ViewChild('autoCompleteInput', { read: MatAutocompleteTrigger }) autoComplete: MatAutocompleteTrigger;
 
@@ -89,10 +88,10 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
   }
 
   private setupAutoComplete(): void {
-    this.filteredOptions = this.formControl.valueChanges.pipe(
+    this.formControl.valueChanges.pipe(
       startWith(''),
       map(value => this._filter(value || ''))
-    );
+    ).subscribe(options => this.filteredOptions = options);
   }
 
   // Filtrer les options en fonction de la valeur saisie

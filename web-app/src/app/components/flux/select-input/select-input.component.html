@@ -1,12 +1,18 @@
 <div class="fr-select-group" [class.fr-select-group--disabled]="formControl.disabled">
     <label class="fr-label" [for]="controlId">
-        {{ name }} <span *ngIf="required && !formControl.disable" class="required-star">*</span>
-        <span class="fr-hint-text" *ngIf="commentaire">{{ commentaire }}</span>
+        {{ name }}
+        @if (required && !formControl.disable) {
+        <span class="required-star">*</span>
+        }
+        @if (comment) {
+        <span class="fr-hint-text">{{ comment }}</span>
+        }
     </label>
     <select class="fr-select" [id]="controlId" [name]="controlId" [formControl]="formControl" [multiple]="multiple">
-        <option *ngFor="let option of options | keyvalue" [value]="option.key"
-            [selected]="option.key === formControl.value" [hidden]="option.key === '' ">
+        @for (option of options | keyvalue; track option.key) {
+        <option [value]="option.key" [selected]="option.key === formControl.value" [hidden]="option.key === '' ">
             {{ option.value }}
         </option>
+        }
     </select>
 </div>
