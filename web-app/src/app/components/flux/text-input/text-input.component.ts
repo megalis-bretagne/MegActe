@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ValidatorFn, Validators } from '@angular/forms';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { BaseInputComponent } from '../BaseInput.component';
@@ -7,19 +7,11 @@ import { BaseInputComponent } from '../BaseInput.component';
   selector: 'meg-text-input',
   templateUrl: './text-input.component.html',
 })
-export class TextInputComponent extends BaseInputComponent implements OnInit {
+export class TextInputComponent extends BaseInputComponent {
   @Input() multiple: boolean = false;
   @Input() pregMatch: string = '';
   @Input() pregMatchError: string = '';
   @Input() index: boolean = false;
-
-  constructor(protected override fieldFluxService: FieldFluxService) {
-    super(fieldFluxService);
-  }
-
-  override ngOnInit() {
-    super.ngOnInit();
-  }
 
   override getControlType(): string {
     return 'text';

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ValidatorFn, Validators } from '@angular/forms';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { BaseInputComponent } from '../BaseInput.component';
@@ -7,13 +7,10 @@ import { BaseInputComponent } from '../BaseInput.component';
   selector: 'meg-select-input',
   templateUrl: './select-input.component.html',
 })
-export class SelectInputComponent extends BaseInputComponent implements OnInit {
+export class SelectInputComponent extends BaseInputComponent {
   @Input() multiple: boolean = false;
   @Input() options: { [idField: string]: string } = {};
 
-  constructor(protected override fieldFluxService: FieldFluxService) {
-    super(fieldFluxService);
-  }
 
   override ngOnInit() {
     // Ajouter une option par défaut

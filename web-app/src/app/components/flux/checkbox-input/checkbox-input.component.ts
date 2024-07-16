@@ -7,16 +7,8 @@ import { BaseInputComponent } from '../BaseInput.component';
   templateUrl: './checkbox-input.component.html',
 })
 
-export class CheckboxInputComponent extends BaseInputComponent implements OnInit {
+export class CheckboxInputComponent extends BaseInputComponent {
   @Input() defaultChecked: boolean = false;
-
-  constructor(protected override fieldFluxService: FieldFluxService) {
-    super(fieldFluxService);
-  }
-
-  override ngOnInit() {
-    super.ngOnInit();
-  }
 
   override getControlType(): string {
     return 'checkbox';

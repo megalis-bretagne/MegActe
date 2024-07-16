@@ -9,7 +9,7 @@ import { BaseInputComponent } from '../BaseInput.component';
   templateUrl: './file-upload.component.html',
   styleUrls: ['./file-upload.component.scss']
 })
-export class FileUploadComponent extends BaseInputComponent implements OnInit {
+export class FileUploadComponent extends BaseInputComponent {
   @Input() multiple: boolean = false;
 
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef | undefined;
@@ -17,13 +17,8 @@ export class FileUploadComponent extends BaseInputComponent implements OnInit {
   files: File[] = [];
   errorMessage: string = '';
 
-
   constructor(private validationService: FileUploadValidationService, protected override fieldFluxService: FieldFluxService) {
     super(fieldFluxService);
-  }
-
-  override ngOnInit() {
-    super.ngOnInit();
   }
 
   override getControlType(): string {

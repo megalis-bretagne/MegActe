@@ -19,7 +19,7 @@ import { BaseInputComponent } from '../BaseInput.component';
   templateUrl: './external-data-input.component.html'
 })
 
-export class ExternalDataInputComponent extends BaseInputComponent implements OnInit, AfterViewInit {
+export class ExternalDataInputComponent extends BaseInputComponent implements AfterViewInit {
   @Input() link_name: string = '';
 
   externalDataOptions: string[] = [];
