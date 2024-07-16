@@ -1,5 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { FieldFluxService } from 'src/app/services/field-flux.service';
+import { Component, Input } from '@angular/core';
 import { BaseInputComponent } from '../BaseInput.component';
 
 @Component({

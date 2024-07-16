@@ -1,13 +1,12 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ValidatorFn, Validators } from '@angular/forms';
-import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { BaseInputComponent } from '../BaseInput.component';
 
 @Component({
   selector: 'meg-select-input',
   templateUrl: './select-input.component.html',
 })
-export class SelectInputComponent extends BaseInputComponent {
+export class SelectInputComponent extends BaseInputComponent implements OnInit {
   @Input() multiple: boolean = false;
   @Input() options: { [idField: string]: string } = {};
 

@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { Validators, ValidatorFn, AbstractControl } from '@angular/forms';
-import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { format, parse } from 'date-fns';
 import { BaseInputComponent } from '../BaseInput.component';
 
