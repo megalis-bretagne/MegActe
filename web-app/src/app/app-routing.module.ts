@@ -17,9 +17,13 @@ const routes: Routes = [
         component: UserProfileComponent,
     },
     {
-        path: 'acte/:nom',
+        path: 'acte/:documentId',
         component: ActeFormComponent,
-        resolve: { fluxDetail: FluxResolver }
+        resolve: { fluxDetail: FluxResolver },
+    },
+    {
+        path: 'documents/:typeNom',
+        loadComponent: () => import('./pages/document-list/document-list.component').then(m => m.DocumentListComponent)
     },
     {
         path: '**',

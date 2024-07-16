@@ -1,53 +1,48 @@
 import { Injectable } from '@angular/core';
 import { Data } from '@angular/router';
 import { Field } from '../model/field-form.model';
+import { SettingsService } from 'src/environments/settings.service';
+
 
 @Injectable({
     providedIn: 'root'
 })
 export class FieldFluxService {
+    constructor(private settingsService: SettingsService) { }
+
 
     // Générer un id unique pour chaque champs 
     generateUniqueId(prefix: string = 'id'): string {
         return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
     }
 
-    // Extraire les champs selon leur type
-    extractFields(data: Data): {
-        textFields: Field[],
-        checkboxFields: Field[],
-        selectFields: Field[],
-        dateFields: Field[],
-        fileFields: Field[];
-        externalDataFields: Field[];
+    // Extraire les champs selon leur type et dans l'ordre de réception
+    extractFields(data: Data): Field[] {
+        return Object.entries(data).map(([idField, value]) => ({ idField, ...value }));
+    }
 
-    } {
-        const textFields: Field[] = [];
-        const checkboxFields: Field[] = [];
-        const selectFields: Field[] = [];
-        const dateFields: Field[] = [];
-        const fileFields: Field[] = [];
-        const externalDataFields: Field[] = [];
 
-        const typeToFieldArray: { [type: string]: Field[] } = {
-            'text': textFields,
-            'checkbox': checkboxFields,
-            'select': selectFields,
-            'date': dateFields,
-            'file': fileFields,
-            'externalData': externalDataFields,
-        };
 
-        for (const [key, value] of Object.entries(data)) {
-            const field: Field = { key, ...value };
+    filterFields(fields: Field[], flowId: string): Field[] {
+        const filteredFields = fields.filter(field => {
+            return !field['read-only'] && !field['no-show'] && field['requis']
+        });
 
-            if (typeToFieldArray[field.type]) {
-                typeToFieldArray[field.type].push(field);
+        const additionalFields = this.settingsService.getFlowType(flowId) || [];
+
+        additionalFields.forEach(fieldId => {
+            const field = fields.find(f => f.idField === fieldId);
+            if (field) {
+                filteredFields.push(field);
             }
-        }
+        });
 
-        return { textFields, checkboxFields, selectFields, dateFields, fileFields, externalDataFields };
+        // Organiser les filteredFields dans le même ordre que fields
+        const orderedFilteredFields = fields.filter(field =>
+            filteredFields.some(filteredField => filteredField.idField === field.idField)
+        );
 
+        return orderedFilteredFields;
     }
 
     // Nettoyer les délimiteurs de l'expression régulière
@@ -65,4 +60,7 @@ export class FieldFluxService {
 
         return regex;
     }
+
+
 }
+

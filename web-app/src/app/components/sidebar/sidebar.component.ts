@@ -1,5 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
 import { Acte, GroupedActes } from 'src/app/model/acte.model';
+import { DocCreateInfo } from 'src/app/model/document.model';
+import { DocumentService } from 'src/app/services/document.service';
 import { SharedDataService } from 'src/app/services/sharedData.service';
 
 @Component({
@@ -12,12 +16,31 @@ export class SidebarComponent implements OnInit {
   groupedActes: GroupedActes[];
   ordreAlphabetique: boolean = true;
 
-  constructor(private sharedDataService: SharedDataService) { }
+  constructor(private sharedDataService: SharedDataService, private logger: NGXLogger, private documentService: DocumentService, private router: Router) { }
 
   ngOnInit(): void {
     this.actes = Object.values(this.sharedDataService.getFlux());
     this.sortActes();
     this.groupActesByType();
+  }
+
+  createDoc(acteNom: string): void {
+    const docCreateInfo: DocCreateInfo = {
+      entite_id: this.sharedDataService.getUser().user_info.id_e,
+      flux_type: this.sharedDataService.getFieldByName(acteNom),
+      doc_info: {}
+    };
+
+    this.documentService.createDocument(docCreateInfo).subscribe(
+      (response) => {
+        const documentId = response.content.info.id_d;
+        this.router.navigate(['/acte', documentId]);
+        this.sharedDataService.setActeID(acteNom);
+      },
+      (error) => {
+        this.logger.error('Error creating document:', error);
+      }
+    );
   }
 
   groupActesByType(): void {

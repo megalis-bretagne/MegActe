@@ -1,17 +1,29 @@
-<div
-    [ngClass]="{ 'fr-input-group': true, 'fr-input-group--error': inputControl.invalid && (inputControl.dirty || inputControl.touched), 'fr-input-group--valid': inputControl.valid && (inputControl.dirty || inputControl.touched) }">
-    <label class="fr-label" [for]="inputId">
-        {{name}} <span *ngIf="required">*</span>
-        <span class="fr-hint-text" *ngIf="commentaire">{{ commentaire }}</span>
+<div [ngClass]="{
+    'fr-input-group': true,
+    'fr-input-group--error': formControl.invalid && (formControl.dirty || formControl.touched),
+    'fr-input-group--valid': formControl.valid && (formControl.dirty || formControl.touched)
+  }">
+    <label class="fr-label" [for]="controlId">
+        {{ name }}
+        @if (required) {
+        <span class="required-star">*</span>
+        }
+        @if (comment) {
+        <span class="fr-hint-text">{{ comment }}</span>
+        }
     </label>
-    <input class="fr-input" [id]="inputId"
-        [ngClass]="{ 'fr-input--error': inputControl.invalid && (inputControl.dirty || inputControl.touched), 'fr-input--valid': inputControl.valid && (inputControl.dirty || inputControl.touched) }"
-        [formControl]="inputControl" type="text" />
-    <p *ngIf="inputControl.invalid && (inputControl.dirty || inputControl.touched)" class="fr-error-text">
+    <input class="fr-input" [id]="controlId" [ngClass]="{
+           'fr-input--error': formControl.invalid && (formControl.dirty || formControl.touched),
+           'fr-input--valid': formControl.valid && (formControl.dirty || formControl.touched)
+         }" [formControl]="formControl" type="text" />
+    @if (formControl.invalid && (formControl.dirty || formControl.touched)) {
+    <p class="fr-error-text">
         {{ getErrorMessage() }}
     </p>
-    <p *ngIf="inputControl.valid && (inputControl.dirty || inputControl.touched) && (inputControl.value || !required)"
-        class="fr-valid-text">
+    }
+    @if (formControl.valid && (formControl.dirty || formControl.touched) && (formControl.value || !required)) {
+    <p class="fr-valid-text">
         Champ valide
     </p>
+    }
 </div>

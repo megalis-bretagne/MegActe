@@ -1,26 +1,23 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { FieldFluxService } from 'src/app/services/field-flux.service';
+import { Component, Input } from '@angular/core';
+import { BaseInputComponent } from '../BaseInput.component';
 
 @Component({
   selector: 'meg-checkbox-input',
   templateUrl: './checkbox-input.component.html',
 })
 
-export class CheckboxInputComponent implements OnInit {
-  @Input() name: string = '';
-  @Input() required: boolean = false;
-  @Input() readOnly: boolean = false;
+export class CheckboxInputComponent extends BaseInputComponent {
   @Input() defaultChecked: boolean = false;
 
-  checkboxControl: FormControl;
-  checkboxId: string;
-
-  constructor(private fieldFluxService: FieldFluxService) { }
-
-  ngOnInit() {
-    this.checkboxId = this.fieldFluxService.generateUniqueId('checkbox');
-    this.checkboxControl = new FormControl({ value: this.defaultChecked, disabled: this.readOnly });
+  override getControlType(): string {
+    return 'checkbox';
   }
 
+  override getDefaultValue(): boolean {
+    return this.defaultChecked;
+  }
+
+  override getValidators(): any[] {
+    return [];
+  }
 }

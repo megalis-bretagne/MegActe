@@ -30,3 +30,7 @@ body {
 .mat-pseudo-checkbox-checked {
     display: none !important;
 }
+
+.required-star {
+    color: #CE0500;
+}

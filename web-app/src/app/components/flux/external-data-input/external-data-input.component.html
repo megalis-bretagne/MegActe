@@ -1,21 +1,27 @@
 <div
-    [ngClass]="{'fr-select-group': true, 'fr-select-group--error': externalDataControl.invalid && (externalDataControl.dirty || externalDataControl.touched)}">
-    <label class="fr-label" [for]="externalDataId">
+    [ngClass]="{'fr-select-group': true, 'fr-select-group--error': formControl.invalid && (formControl.dirty || formControl.touched)}">
+    <label class="fr-label" [for]="controlId">
         {{ name }}
-        <span *ngIf="required">*</span>
-        <span class="fr-hint-text" *ngIf="link_name">{{ link_name }}</span>
+        @if (required) {
+        <span class="required-star">*</span>
+        }
+        @if (link_name) {
+        <span class="fr-hint-text">{{ link_name }}</span>
+        }
     </label>
     <input class="fr-input"
-        [ngClass]="{'fr-select--error': externalDataControl.invalid && (externalDataControl.dirty || externalDataControl.touched)}"
-        [id]="externalDataId" type="text" [formControl]="externalDataControl" [matAutocomplete]="auto"
-        #autoCompleteInput />
+        [ngClass]="{'fr-select--error': formControl.invalid && (formControl.dirty || formControl.touched)}"
+        [id]="controlId" type="text" [formControl]="formControl" [matAutocomplete]="auto" #autoCompleteInput />
     <mat-autocomplete #auto="matAutocomplete" class="fr-select">
-        <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+        @for (option of filteredOptions; track $index) {
+        <mat-option [value]="option">
             {{ option }}
         </mat-option>
+        }
     </mat-autocomplete>
-    <p *ngIf="externalDataControl.invalid && (externalDataControl.dirty || externalDataControl.touched)"
-        class="fr-error-text">
+    @if (formControl.invalid && (formControl.dirty || formControl.touched)) {
+    <p class="fr-error-text">
         Ce champ est requis.
     </p>
+    }
 </div>

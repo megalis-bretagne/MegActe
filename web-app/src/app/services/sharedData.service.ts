@@ -10,6 +10,7 @@ export class SharedDataService {
     private user: UserContext;
     private flux: Acte[];
     private fluxDetail: { [key: string]: FluxDetailItem };
+    private acteID: string;
 
     setUser(user: UserContext) {
         this.user = user;
@@ -27,11 +28,11 @@ export class SharedDataService {
         return this.flux;
     }
 
-    setFluxDetail(fluxDetail: { [key: string]: FluxDetailItem }) {
+    setFluxDetail(fluxDetail: { [idField: string]: FluxDetailItem }) {
         this.fluxDetail = fluxDetail;
     }
 
-    getFluxDetail(): { [key: string]: FluxDetailItem } {
+    getFluxDetail(): { [idField: string]: FluxDetailItem } {
         return this.fluxDetail;
     }
 
@@ -41,12 +42,11 @@ export class SharedDataService {
         return acte ? acte.id : undefined;
     }
 
-    // Récupère l'ID d'un champ en fonction de son nom à partir des détails du flux.
-    getFieldIdFromFluxDetailByName(fieldName: string): string | undefined {
-        if (this.fluxDetail) {
-            const entry = Object.entries(this.fluxDetail).find(([key, value]) => value.name === fieldName);
-            return entry ? entry[0] : undefined;
-        }
-        return undefined;
+    setActeID(acteID: string) {
+        this.acteID = acteID;
+    }
+
+    getActeID(): string {
+        return this.acteID;
     }
 }

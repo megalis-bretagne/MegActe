@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Settings, Keycloak, FileUpload } from './settings';
+import { Settings, Keycloak, FileUpload, FlowType } from './settings';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsService {
@@ -9,11 +9,11 @@ export class SettingsService {
         this.settings = new Settings();
         this.settings.keycloak = new Keycloak();
         this.settings.fileUpload = new FileUpload();
+        this.settings.flowType = new FlowType();
     }
 
     setSettings(settings: Settings): void {
         this.settings = settings;
-        console.log(settings);
     }
 
     getSetting(): Settings {
@@ -43,4 +43,9 @@ export class SettingsService {
     public get allowedFileType(): string {
         return this.settings.fileUpload.allowedFileType;
     }
+
+    public getFlowType(flowId: string): string[] | undefined {
+        return this.settings.flowType[flowId];
+    }
+
 }

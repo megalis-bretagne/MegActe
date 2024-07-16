@@ -6,9 +6,31 @@
     padding: 0;
 }
 
+.link-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .sidemenu-link,
 .fr-sidemenu-btn {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.icon-link {
+    margin-left: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.no-bg-change {
+    background-color: transparent !important;
+}
+
+.icone-add {
+    margin-left: 0.5rem;
+    color: #000091;
+    cursor: pointer;
 }

@@ -11,6 +11,10 @@ from ..services.document_service import (
     delete_file_from_document_service,
     add_multiple_files_to_document_service,
     get_external_data_service,
+    delete_document_service,
+    cancel_transfer_tdt_document_service,
+    transfer_tdt_document_service,
+    assign_file_type_service,
 )
 
 from ..schemas.document_schemas import (
@@ -19,9 +23,6 @@ from ..schemas.document_schemas import (
     DeleteFileFromDoc,
     AddFilesToDoc,
 )
-from ..database import get_user_from_db
-
-from ..models.users import UserPastell
 
 router = APIRouter()
 
@@ -54,6 +55,16 @@ def get_document(
     return get_document_info_service(entite_id, document_id, client)
 
 
+# Delete Document
+@router.delete("/document/{document_id}", tags=["document"])
+def delete_document(
+    document_id: str,
+    entite_id: int,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return delete_document_service(entite_id, document_id, client)
+
+
 # Ajouter des fichiers à un document
 @router.post("/document/{document_id}/file/{element_id}", tags=["document"])
 def add_files_to_document(
@@ -82,6 +93,21 @@ def delete_file_from_document(
     )
 
 
+# Attribuer un type à un fichier
+@router.patch("/document/{document_id}/file/{element_id}/type", tags=["document"])
+def assign_file_type(
+    document_id: str,
+    entite_id: int,
+    element_id: str,
+    file_name: str,
+    file_type: str,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return assign_file_type_service(
+        entite_id, document_id, element_id, file_name, file_type, client
+    )
+
+
 # Récupérer les valeurs pour un champ externalData
 @router.get("/document/{document_id}/externalData/{element_id}", tags=["document"])
 def get_external_data(
@@ -91,3 +117,23 @@ def get_external_data(
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     return get_external_data_service(entite_id, document_id, element_id, client)
+
+
+# Transmettre un doc via TDT
+@router.post("/document/{document_id}/transfer-tdt", tags=["document"])
+def transfer_tdt_document(
+    document_id: str,
+    entite_id: int,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return transfer_tdt_document_service(entite_id, document_id, client)
+
+
+# Annuler la transmission TDT d'un doc
+@router.post("/document/{document_id}/cancel-tdt", tags=["document"])
+def cancel_document_transfer_tdt(
+    document_id: str,
+    entite_id: int,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return cancel_transfer_tdt_document_service(entite_id, document_id, client)

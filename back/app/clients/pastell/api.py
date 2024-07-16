@@ -27,7 +27,7 @@ class ApiPastell:
     def perform_delete(self, url, auth: AuthUser = None):
         return self._perform_request("DELETE", url, auth=auth)
 
-    def perform_post(self, url, data, files=None, auth: AuthUser = None):
+    def perform_post(self, url, data=None, files=None, auth: AuthUser = None):
         return self._perform_request("POST", url, data=data, files=files, auth=auth)
 
     @call_handler
@@ -55,4 +55,8 @@ class ApiPastell:
             params=query_params,
         )
         response.raise_for_status()
+
+        if not response.content:
+            return None
+
         return response.json()
