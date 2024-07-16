@@ -84,4 +84,7 @@ export class DocumentService {
             })
         );
     }
+    assignFileTypes(entiteId: number, documentId: string, elementId: string, fileTypes: string[]): Observable<any> {
+        return;
+    }
 }
