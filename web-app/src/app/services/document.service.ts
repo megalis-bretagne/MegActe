@@ -76,8 +76,8 @@ export class DocumentService {
         );
     }
 
-    getDocumentById(documentId: string, entitedId: number): Observable<DocumentDetail> {
-        return this.http.get<any>(`${this.settingsService.apiUrl}/document/${documentId}?entite_id=${entitedId}`).pipe(
+    getDocumentById(documentId: string, entiteId: number): Observable<DocumentDetail> {
+        return this.http.get<any>(`${this.settingsService.apiUrl}/document/${documentId}?entite_id=${entiteId}`).pipe(
             catchError((error) => {
                 this.logger.error('Error get document', error);
                 return of(null);
@@ -89,6 +89,21 @@ export class DocumentService {
             catchError((error) => {
                 this.logger.error('Error assigning file types', error);
                 return throwError(() => error);
+            })
+        );
+    }
+
+
+    getDocuments(entiteId: number, idFlux: string = null, offset: number = 0, limit: number = 10): Observable<any> {
+        let queryParams = `offset=${offset}&limit=${limit}`;
+        if (idFlux) {
+            queryParams += `&type_flux=${idFlux}`;
+        }
+
+        return this.http.get<any>(`${this.settingsService.apiUrl}/entite/${entiteId}/documents?${queryParams}`).pipe(
+            catchError((error) => {
+                this.logger.error('Error get documents', error);
+                return of(null);
             })
         );
     }

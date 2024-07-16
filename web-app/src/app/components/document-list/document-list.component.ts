@@ -4,11 +4,15 @@ import { DocumentInfo } from 'src/app/model/document.model';
 import { DocumentService } from 'src/app/services/document.service';
 import { FluxService } from 'src/app/services/flux.service';
 import { UserContextService } from 'src/app/services/user-context.service';
+import { StateDocumentPipe } from './state-document/state-document.pipe';
+import { LoadingTemplateComponent } from '../loading-template/loading-template.component';
+import { DatePipe } from '@angular/common';
+
 
 @Component({
   selector: 'meg-document-list',
   standalone: true,
-  imports: [],
+  imports: [StateDocumentPipe, LoadingTemplateComponent, DatePipe],
   templateUrl: './document-list.component.html',
 })
 export class DocumentListComponent {
@@ -27,11 +31,18 @@ export class DocumentListComponent {
   /**
    * Liste des documents
    */
-  documentList = signal<DocumentInfo[]>([]);
+  documents = signal<DocumentInfo[]>([]);
+
+  is_loading = true;
 
   constructor(private logger: NGXLogger, private documentService: DocumentService) {
     effect(() => {
-      // TODO select API document
+      this.is_loading = true;
+      const idFlux = this.fluxSelected() !== null ? this.fluxSelected().id : null;
+      this.documentService.getDocuments(this.userCurrent().user_info.id_e, idFlux).subscribe({
+        next: (docs) => this.documents.set(docs),
+        complete: () => this.is_loading = false
+      })
     })
 
   }
