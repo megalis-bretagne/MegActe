@@ -20,8 +20,10 @@
                             @for (acte of groupedActes[type]; track acte.id ) {
                             <li class="fr-sidemenu__item">
                                 <div class="meg-link-row">
-                                    <div><a class="fr-sidemenu__link" href="#" (click)="selectFlux(acte)"
-                                            [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null"
+                                    <div><a class="fr-sidemenu__link" href="#" (click)="selectFlux(acte)" <<<<<<< HEAD
+                                            [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null"=======[attr.aria-current]=" fluxSelected() != null && acte.id === fluxSelected().id ? 'page' : null">>>>>>>
+                                            fa02acb (refacto du component document list + refacto html sidebar + gestion
+                                            de la sélection du flux sélectionné dans un signal dans le fluxService)
                                             target="_self">{{
                                             acte.nom }}</a></div>
                                     <div>
