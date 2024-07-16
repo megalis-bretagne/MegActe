@@ -1,11 +1,11 @@
-<div class="fr-select-group" [class.fr-select-group--disabled]="selectControl.disabled">
-    <label class="fr-label" [for]="selectId">
-        {{ name }} <span *ngIf="required && !selectControl.disable" class="required-star">*</span>
+<div class="fr-select-group" [class.fr-select-group--disabled]="formControl.disabled">
+    <label class="fr-label" [for]="controlId">
+        {{ name }} <span *ngIf="required && !formControl.disable" class="required-star">*</span>
         <span class="fr-hint-text" *ngIf="commentaire">{{ commentaire }}</span>
     </label>
-    <select class="fr-select" [id]="selectId" [name]="selectId" [formControl]="selectControl" [multiple]="multiple">
+    <select class="fr-select" [id]="controlId" [name]="controlId" [formControl]="formControl" [multiple]="multiple">
         <option *ngFor="let option of options | keyvalue" [value]="option.key"
-            [selected]="option.key === selectControl.value" [hidden]="option.key === '' ">
+            [selected]="option.key === formControl.value" [hidden]="option.key === '' ">
             {{ option.value }}
         </option>
     </select>

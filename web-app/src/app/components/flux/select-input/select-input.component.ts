@@ -1,45 +1,46 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { ValidatorFn, Validators } from '@angular/forms';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
+import { BaseInputComponent } from '../BaseInput.component';
 
 @Component({
   selector: 'meg-select-input',
   templateUrl: './select-input.component.html',
 })
-export class SelectInputComponent implements OnInit {
-  @Input() idField: string = '';
-  @Input() name: string = '';
-  @Input() required: boolean = false;
+export class SelectInputComponent extends BaseInputComponent implements OnInit {
   @Input() multiple: boolean = false;
-  @Input() readOnly: boolean = false;
   @Input() options: { [idField: string]: string } = {};
-  @Input() commentaire: string = '';
 
+  constructor(protected override fieldFluxService: FieldFluxService) {
+    super(fieldFluxService);
+  }
 
-  selectControl: FormControl;
-  selectId: string;
-
-  constructor(private fieldFluxService: FieldFluxService) { }
-
-  ngOnInit() {
+  override ngOnInit() {
     // Ajouter une option par défaut
     this.options = { '': 'Sélectionner une option', ...this.options };
-
-    const validators = this.required ? [Validators.required] : [];
-    this.selectControl = new FormControl({ value: '', disabled: this.readOnly }, validators);
-    this.selectId = this.fieldFluxService.generateUniqueId('select');
+    super.ngOnInit();
 
     // Si le champ est requis et qu'il y a une seule option, cette option sera sélectionnée par défaut
     if (this.required && Object.keys(this.options).length === 2) {
       const singleValue = Object.keys(this.options).find(idField => idField !== '');
       if (singleValue) {
-        this.selectControl.setValue(singleValue);
-        this.selectControl.disable();
+        this.formControl.setValue(singleValue);
+        this.formControl.disable();
       }
     }
   }
-  getIdField(): string {
-    return this.idField;
+
+  override getControlType(): string {
+    return 'select';
   }
+
+  override getDefaultValue(): any {
+    return '';
+  }
+
+  override getValidators(): ValidatorFn[] {
+    return this.required ? [Validators.required] : [];
+  }
+
 
 }

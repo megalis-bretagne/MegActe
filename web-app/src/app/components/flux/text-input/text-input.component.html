@@ -1,16 +1,20 @@
-<div
-    [ngClass]="{ 'fr-input-group': true, 'fr-input-group--error': inputControl.invalid && (inputControl.dirty || inputControl.touched), 'fr-input-group--valid': inputControl.valid && (inputControl.dirty || inputControl.touched) }">
-    <label class="fr-label" [for]="inputId">
-        {{name}} <span *ngIf="required" class="required-star">*</span>
+<div [ngClass]="{
+    'fr-input-group': true,
+    'fr-input-group--error': formControl.invalid && (formControl.dirty || formControl.touched),
+    'fr-input-group--valid': formControl.valid && (formControl.dirty || formControl.touched)
+  }">
+    <label class="fr-label" [for]="controlId">
+        {{ name }} <span *ngIf="required" class="required-star">*</span>
         <span class="fr-hint-text" *ngIf="commentaire">{{ commentaire }}</span>
     </label>
-    <input class="fr-input" [id]="inputId"
-        [ngClass]="{ 'fr-input--error': inputControl.invalid && (inputControl.dirty || inputControl.touched), 'fr-input--valid': inputControl.valid && (inputControl.dirty || inputControl.touched) }"
-        [formControl]="inputControl" type="text" />
-    <p *ngIf="inputControl.invalid && (inputControl.dirty || inputControl.touched)" class="fr-error-text">
+    <input class="fr-input" [id]="controlId" [ngClass]="{
+           'fr-input--error': formControl.invalid && (formControl.dirty || formControl.touched),
+           'fr-input--valid': formControl.valid && (formControl.dirty || formControl.touched)
+         }" [formControl]="formControl" type="text" />
+    <p *ngIf="formControl.invalid && (formControl.dirty || formControl.touched)" class="fr-error-text">
         {{ getErrorMessage() }}
     </p>
-    <p *ngIf="inputControl.valid && (inputControl.dirty || inputControl.touched) && (inputControl.value || !required)"
+    <p *ngIf="formControl.valid && (formControl.dirty || formControl.touched) && (formControl.value || !required)"
         class="fr-valid-text">
         Champ valide
     </p>

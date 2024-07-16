@@ -119,7 +119,7 @@ export class ActeFormComponent implements OnInit {
 
   uploadFiles(): Observable<any>[] {
     return this.fileUploads.map(fileUpload => {
-      const files = fileUpload.fileControl.value;
+      const files = fileUpload.formControl.value;
       const elementId = fileUpload.getIdField();
 
       if (files.length > 0) {
@@ -138,12 +138,12 @@ export class ActeFormComponent implements OnInit {
   collectFormData(): { [idField: string]: any } {
     const formData: { [idField: string]: any } = {};
 
-    this.textInputs.forEach(comp => formData[comp.getIdField()] = comp.inputControl.value);
-    this.checkboxInputs.forEach(comp => formData[comp.getIdField()] = comp.checkboxControl.value);
-    this.selectInputs.forEach(comp => formData[comp.getIdField()] = comp.selectControl.value);
-    this.dateInputs.forEach(comp => formData[comp.getIdField()] = comp.dateControl.value);
-    this.externalDataInputs.forEach(comp => formData[comp.getIdField()] = comp.externalDataControl.value);
-    this.fileUploads.forEach(comp => formData[comp.getIdField()] = comp.fileControl.value);
+    this.textInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
+    this.checkboxInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
+    this.selectInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
+    this.dateInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
+    this.externalDataInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
+    this.fileUploads.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
 
     return formData;
   }
@@ -185,35 +185,30 @@ export class ActeFormComponent implements OnInit {
     let isValid = true;
     this.globalErrorMessage = '';
 
-    const typeToFieldArray: { [key: string]: any[] } = {
-      'text': this.textInputs.toArray(),
-      'checkbox': this.checkboxInputs.toArray(),
-      'select': this.selectInputs.toArray(),
-      'date': this.dateInputs.toArray(),
-      'externalData': this.externalDataInputs.toArray().filter(comp => comp.name !== "Typologie des pièces"),
-      'file': this.fileUploads.toArray()
-    };
+    // Créer une collection unique de tous les composants de formulaire
+    const allInputs = [
+      ...this.textInputs.toArray(),
+      ...this.checkboxInputs.toArray(),
+      ...this.selectInputs.toArray(),
+      ...this.dateInputs.toArray(),
+      ...this.externalDataInputs.toArray(),
+      ...this.fileUploads.toArray()
+    ];
 
-    const controlMapping: { [key: string]: string } = {
-      'text': 'inputControl',
-      'checkbox': 'checkboxControl',
-      'select': 'selectControl',
-      'date': 'dateControl',
-      'externalData': 'externalDataControl',
-      'file': 'fileControl'
-    };
+    allInputs.forEach(comp => {
+      if (comp instanceof SelectInputComponent && comp.formControl.disabled) {
+        return; // Skip validation for this specific component
+      }
 
-    for (const [type, components] of Object.entries(typeToFieldArray)) {
-      components.forEach(comp => {
-        const control = comp[controlMapping[type]];
-        if (control) {
-          if (!control.valid) {
-            isValid = false;
-            control.markAsTouched();
-          }
-        }
-      });
-    }
+      if (comp instanceof ExternalDataInputComponent && comp.name === "Typologie des pièces") {
+        return; // Skip validation for this specific component
+      }
+
+      if (!comp.formControl.valid) {
+        isValid = false;
+        comp.formControl.markAsTouched();
+      }
+    });
 
     if (!isValid) {
       this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
@@ -221,6 +216,5 @@ export class ActeFormComponent implements OnInit {
 
     return isValid;
   }
+
 }
-
-
