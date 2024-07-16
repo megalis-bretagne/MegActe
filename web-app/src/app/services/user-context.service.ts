@@ -6,11 +6,26 @@ import { UserContext } from 'src/app/model/user.model';
 import { SettingsService } from 'src/environments/settings.service';
 import { Acte } from '../model/acte.model';
 
+/**
+ * 
+ * Service contenant les informations de l'utilisateur connecté.
+ * Ce service présent :
+ * - l'utilisateur connecté
+ * - les flux disponibles de l'utilisateur
+ * - le flux sélectionné
+ * 
+ */
 @Injectable({
   providedIn: 'root'
 })
-export class UserService {
+export class UserContextService {
+  /**
+   * L'utilisateur connecté
+   */
   userCurrent = signal<UserContext | null>(null);
+  /**
+   * Les flux de l'utilsiateur
+   */
   userFlux = signal<Acte[]>([])
 
 

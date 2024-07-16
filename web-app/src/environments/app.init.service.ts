@@ -5,14 +5,13 @@ import { firstValueFrom } from 'rxjs';
 import { NGXLogger, NgxLoggerLevel } from 'ngx-logger';
 import { SettingsService } from './settings.service';
 import { Settings } from './settings';
-import { UserService } from 'src/app/services/user.service';
-import { FluxService } from 'src/app/services/flux.service';
+import { UserContextService } from 'src/app/services/user-context.service';
 
 @Injectable({ providedIn: 'root' })
 export class AppInitService {
 
     constructor(private http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService,
-        private userService: UserService, private fluxService: FluxService, private _logger: NGXLogger) {
+        private userService: UserContextService, private _logger: NGXLogger) {
     }
 
 

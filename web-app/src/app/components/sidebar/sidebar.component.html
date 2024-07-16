@@ -7,37 +7,57 @@
                 <label class="fr-toggle__label" for="toggle-ordre" data-fr-checked-label="Grouper par Type"
                     data-fr-unchecked-label="Regroupé">Grouper par type</label>
             </div>
-                <ul class="fr-sidemenu__list">
-                    @if (groupByType) {
-                        <li class="fr-sidemenu__item" *ngFor="let type of getKeys(groupedActes);">
-                            <button class="fr-sidemenu__btn fr-sidemenu-btn" aria-expanded="false"
-                                [attr.aria-controls]="'fr-sidemenu-item-' + type">
-                                {{ type }}
-                            </button>
-                            <div class="fr-collapse" [id]="'fr-sidemenu-item-' + type">
-                                <ul class="fr-sidemenu__list">
-                                    <li class="fr-sidemenu__item" *ngFor="let acte of groupedActes[type]">
-                                        <a class="fr-sidemenu__link sidemenu-link" [routerLink]="['/documents', acte.id]">{{ acte.nom
-                                            }}
-                                            <a class="icon-link no-bg-change" (click)="createDoc(acte.nom)">
-                                                <span class="fr-icon-add-circle-fill  icone-add" aria-hidden="true"></span>
-                                            </a>
+            <ul class="fr-sidemenu__list">
+                @if (groupByType) {
+                @for(type of listType; track type) {
+                <li class="fr-sidemenu__item">
+                    <button class="fr-sidemenu__btn fr-sidemenu-btn" aria-expanded="false"
+                        [attr.aria-controls]="'fr-sidemenu-item-' + type">
+                        {{ type }}
+                    </button>
+                    <div class="fr-collapse" [id]="'fr-sidemenu-item-' + type">
+                        <ul class="fr-sidemenu__list">
+                            @for (acte of groupedActes[type]; track acte.id ) {
+                            <li class="fr-sidemenu__item">
+                                <div class="meg-link-row">
+                                    <div><a class="fr-sidemenu__link" href="#" (click)="selectFlux(acte)"
+                                            [attr.aria-current]=" fluxSelected() != null && acte.id === fluxSelected().id ? 'page' : null"
+                                            target="_self">{{
+                                            acte.nom }}</a></div>
+                                    <div>
+                                        <a href="#" target="_self" (click)="createDoc(acte)"
+                                            title="Créer document de type {{acte.nom}}">
+                                            <span class="fr-icon-add-circle-fill  icon-add" aria-hidden="true"></span>
                                         </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    } @else {
-                        <li class="fr-sidemenu__item" *ngFor="let acte of actes; let i = index">
-                            <a class="fr-sidemenu__link sidemenu-link" [routerLink]="['/documents', acte.id]">{{
-                                acte.nom }}
-                                <a class="icon-link no-bg-change" (click)="createDoc(acte.nom)">
-                                    <span class="fr-icon-add-circle-fill  icone-add" aria-hidden="true"></span>
-                                </a>
+                                    </div>
+                                </div>
+                            </li>
+                            }
+                        </ul>
+                    </div>
+                </li>
+                }
+                } @else {
+                @for (acte of actes; track acte.id ) {
+                <li class="fr-sidemenu__item">
+                    <div class="meg-link-row">
+                        <div><a class="fr-sidemenu__link" href="#"
+                                [attr.aria-current]=" fluxSelected() != null && acte.id === fluxSelected().id ? 'page' : null"
+                                (click)="selectFlux(acte)" target="_self">{{
+                                acte.nom }}</a></div>
+                        <div>
+                            <a href="#" target="_self" (click)="createDoc(acte)"
+                                title="Créer document de type {{acte.nom}}">
+                                <span class="fr-icon-add-circle-fill  icon-add" aria-hidden="true"></span>
                             </a>
-                        </li>
-                    }
-                </ul>
+                        </div>
+
+                    </div>
+                </li>
+                }
+
+                }
+            </ul>
         </div>
     </div>
 </nav>

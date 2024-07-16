@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/services/keycloakServices/auth.service';
-import { UserService } from 'src/app/services/user.service';
+import { UserContextService } from 'src/app/services/user-context.service';
 
 @Component({
   selector: 'app-navbar',
@@ -8,7 +8,7 @@ import { UserService } from 'src/app/services/user.service';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent {
-  currentUser = inject(UserService).userCurrent;
+  currentUser = inject(UserContextService).userCurrent;
 
   constructor(private authService: AuthService) { }
 

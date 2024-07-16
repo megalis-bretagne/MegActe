@@ -1,14 +1,18 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { effect, Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Observable, catchError, of, tap } from 'rxjs';
 import { SettingsService } from 'src/environments/settings.service';
+import { Acte } from '../model/acte.model';
 
 
 @Injectable({
     providedIn: 'root'
 })
 export class FluxService {
+
+    fluxSelected = signal<Acte | null>(null)
+
 
     constructor(private http: HttpClient, private logger: NGXLogger, private settingsService: SettingsService) {
     }
@@ -32,5 +36,9 @@ export class FluxService {
                 return of({});
             })
         );
+    }
+
+    public selectFlux(acte: Acte) {
+        this.fluxSelected.set(acte);
     }
 }

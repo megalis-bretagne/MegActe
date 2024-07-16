@@ -2,16 +2,16 @@ import { Injectable, inject } from '@angular/core';
 import { UserContext } from 'src/app/model/user.model';
 import { Acte } from 'src/app/model/acte.model';
 import { FluxDetailItem } from '../model/field-form.model';
-import { UserService } from 'src/app/services/user.service';
+import { UserContextService } from 'src/app/services/user-context.service';
 
 @Injectable({
     providedIn: 'root'
 })
 /** @deprecated Prejer user Signals **/
 export class SharedDataService {
-    private user = inject(UserService).userCurrent;
+    private user = inject(UserContextService).userCurrent;
 
-    private flux = inject(UserService).userFlux;
+    private flux = inject(UserContextService).userFlux;
 
     private fluxDetail: { [key: string]: FluxDetailItem };
     private acteID: string;

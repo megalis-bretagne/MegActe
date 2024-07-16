@@ -1,36 +1,24 @@
-.toggle-container {
-    margin: 0 1rem;
-}
-
 .fr-sidemenu {
     padding: 0;
 }
 
-.link-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.meg-link-row {
+    display: flex;                  /* Active Flexbox sur la div */
+    justify-content: space-between; /* Aligne les éléments avec de l'espace entre eux */
+    align-items: center;            /* Centre verticalement les éléments */
 }
 
-.sidemenu-link,
-.fr-sidemenu-btn {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.meg-link-row > div {
+    flex-grow: 1;                   /* Fait en sorte que les div enfants prennent tout l'espace disponible */
 }
-
-.icon-link {
-    margin-left: 0.5rem;
-    display: flex;
-    align-items: center;
+  
+.meg-link-row> div:last-child {
+    flex-grow: 0;                   /* Le dernier enfant ne grandit pas */
 }
+  
 
-.no-bg-change {
-    background-color: transparent !important;
-}
-
-.icone-add {
-    margin-left: 0.5rem;
+.icon-add {
+    padding: 10px; 
     color: #000091;
     cursor: pointer;
 }

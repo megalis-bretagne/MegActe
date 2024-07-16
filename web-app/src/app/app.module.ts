@@ -25,9 +25,8 @@ import { DateInputComponent } from './components/flux/date-input/date-input.comp
 import { FileUploadComponent } from './components/flux/file-upload/file-upload.component';
 import { DragAndDropDirective } from './shared/directives/drag-and-drop.directive';
 import { ExternalDataInputComponent } from './components/flux/external-data-input/external-data-input.component';
-import { DocumentListComponent } from './pages/document-list/document-list.component';
-import { UserService } from './services/user.service';
-import { FluxService } from './services/flux.service';
+import { DocumentListComponent } from './components/document-list/document-list.component';
+import { UserContextService } from './services/user-context.service';
 
 
 @NgModule({
@@ -59,7 +58,7 @@ import { FluxService } from './services/flux.service';
         {
             provide: APP_INITIALIZER,
             useFactory: app_Init,
-            deps: [AppInitService, KeycloakService, SettingsService, UserService, FluxService],
+            deps: [AppInitService, KeycloakService, SettingsService, UserContextService],
             multi: true
         },
         provideAnimationsAsync()

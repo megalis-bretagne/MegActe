@@ -19,10 +19,6 @@ const routes: Routes = [
         component: ActeFormComponent,
         resolve: { fluxDetail: FluxResolver },
     },
-    // {
-    //     path: 'documents/:typeNom',
-    //     loadComponent: () => import('./pages/document-list/document-list.component').then(m => m.DocumentListComponent)
-    // },
     {
         path: '**',
         redirectTo: ''

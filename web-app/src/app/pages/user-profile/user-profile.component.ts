@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { LoadingTemplateComponent } from 'src/app/components/loading-template/loading-template.component';
-import { UserService } from 'src/app/services/user.service';
+import { UserContextService } from 'src/app/services/user-context.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -14,7 +14,7 @@ import { UserService } from 'src/app/services/user.service';
   styleUrls: ['./user-profile.component.scss']
 })
 export class UserProfileComponent {
-  currentUser = inject(UserService).userCurrent;
+  currentUser = inject(UserContextService).userCurrent;
 
   currentPage = signal(1);
 

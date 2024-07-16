@@ -9,7 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { map, startWith } from 'rxjs/operators';
 import { BaseInputComponent } from '../BaseInput.component';
-import { UserService } from 'src/app/services/user.service';
+import { UserContextService } from 'src/app/services/user-context.service';
 
 @Component({
   selector: 'meg-external-data-input',
@@ -21,7 +21,7 @@ import { UserService } from 'src/app/services/user.service';
 export class ExternalDataInputComponent extends BaseInputComponent implements OnInit, AfterViewInit {
   @Input() link_name: string = '';
 
-  currentUser = inject(UserService).userCurrent
+  currentUser = inject(UserContextService).userCurrent
 
   externalDataOptions: string[] = [];
   filteredOptions: string[] = [];
