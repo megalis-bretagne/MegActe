@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, effect, inject, OnInit, QueryList, ViewChildren, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { CheckboxInputComponent } from 'src/app/components/flux/checkbox-input/checkbox-input.component';
@@ -33,15 +33,18 @@ export class ActeFormComponent implements OnInit {
   fields: Field[] = [];
   filteredFields: Field[] = [];
   documentId: string;
-  isSuccess: boolean;
   modalMessage: string;
   globalErrorMessage: string;
   isSaving: boolean = false;
   isCreationSuccess: boolean = false;
   isValid: boolean = true;
+  isSuccess: boolean;
+  isSend: boolean = false;
   fileTypes: { [key: string]: string } = {};
-  pieces: string[] = [];
+  pieces = signal<string[]>([])
   selectedTypes: string[] = [];
+  file_type_field: Field;
+  fetchedFileType: boolean = false;
 
 
   @ViewChildren(TextInputComponent) textInputs: QueryList<TextInputComponent>;
@@ -50,6 +53,7 @@ export class ActeFormComponent implements OnInit {
   @ViewChildren(DateInputComponent) dateInputs: QueryList<DateInputComponent>;
   @ViewChildren(ExternalDataInputComponent) externalDataInputs: QueryList<ExternalDataInputComponent>;
   @ViewChildren(FileUploadComponent) fileUploads: QueryList<FileUploadComponent>;
+
 
   constructor(
     private route: ActivatedRoute,
@@ -75,6 +79,9 @@ export class ActeFormComponent implements OnInit {
       if (this.fluxDetail) {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
         this.filteredFields = this.fieldFluxService.filterFields(this.fields, this.sharedDataService.getFieldByName(this.acteName));
+
+        this.file_type_field = this.fields.find(field => field.idField === 'type_piece');
+        console.log(" this.file_type_field" + JSON.stringify({ data: this.file_type_field }, null, 4));
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
@@ -100,6 +107,7 @@ export class ActeFormComponent implements OnInit {
       catchError(error => {
         this.logger.error('Error updating document', error);
         this.isSuccess = false;
+        this.isSaving = false;
         this.modalMessage = error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.';
         this.deleteDocument();
         return of(null);
@@ -119,10 +127,12 @@ export class ActeFormComponent implements OnInit {
           this.logger.info('Document and all files are updated successfully', updateResponse, uploadResponses);
           // this.isSuccess = true;
           this.isCreationSuccess = true;
+          this.isSaving = false;
           // this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
           this.fetchFileTypes();
         } else {
           this.isSuccess = false;
+          this.isSaving = false;
           this.modalMessage = 'Une erreur est survenue lors de la mise à jour du document.';
           this.openModal();
         }
@@ -130,6 +140,7 @@ export class ActeFormComponent implements OnInit {
       error: (error) => {
         this.logger.error('Error in one of the file uploads', error);
         this.isSuccess = false;
+        this.isSaving = false;
         this.modalMessage = 'Une erreur est survenue lors du téléchargement des fichiers.';
         this.openModal();
       }
@@ -154,6 +165,14 @@ export class ActeFormComponent implements OnInit {
     });
   }
 
+  deleteDocument(): void {
+    const entiteId = this.sharedDataService.getUser().user_info.id_e;
+    this.documentService.deleteDocument(this.documentId, entiteId).subscribe({
+      next: (response) => this.logger.info('Document deleted successfully', response),
+      error: (error) => this.logger.error('Error deleting document', error)
+    });
+  }
+
   collectFormData(): { [idField: string]: any } {
     const formData: { [idField: string]: any } = {};
 
@@ -165,39 +184,6 @@ export class ActeFormComponent implements OnInit {
     this.fileUploads.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
 
     return formData;
-  }
-
-  deleteDocument(): void {
-    const entiteId = this.sharedDataService.getUser().user_info.id_e;
-    this.documentService.deleteDocument(this.documentId, entiteId).subscribe({
-      next: (response) => this.logger.info('Document deleted successfully', response),
-      error: (error) => this.logger.error('Error deleting document', error)
-    });
-  }
-
-  openModal(): void {
-    const modal = document.getElementById('fr-modal') as HTMLDialogElement;
-    if (modal) {
-      if (modal.open) {
-        modal.close();
-      }
-      modal.showModal();
-    }
-    this.isSaving = false;
-    this.scheduleRedirect();
-  }
-
-  closeModal(): void {
-    const modal = document.getElementById('fr-modal') as HTMLDialogElement;
-    if (modal && modal.open) {
-      modal.close();
-    }
-  }
-
-  scheduleRedirect(): void {
-    setTimeout(() => {
-      this.router.navigate(['/documents', this.acteName]);
-    }, 3000);
   }
 
   validateForm(): boolean {
@@ -241,9 +227,10 @@ export class ActeFormComponent implements OnInit {
     this.fluxService.get_externalData(entiteId, this.documentId, 'type_piece').subscribe({
       next: (response) => {
         this.fileTypes = response.actes_type_pj_list;
-        this.pieces = response.pieces;
+        this.pieces.set(response.pieces)
         this.selectedTypes = Array(this.pieces.length).fill('');
-        this.openModal();
+        this.fetchedFileType = true;
+        // this.openModal();
       },
       error: (error) => {
         this.logger.error('Error fetching file types and files', error);
@@ -256,20 +243,60 @@ export class ActeFormComponent implements OnInit {
 
   assignFileTypes(): void {
     const entiteId = this.sharedDataService.getUser().user_info.id_e;
-    this.documentService.assignFileTypes(entiteId, this.documentId, 'element_id', this.selectedTypes).subscribe({
+    console.log("this.selectedTypes-------" + this.selectedTypes);
+    this.documentService.assignFileTypes(entiteId, this.documentId, 'type_piece', this.selectedTypes).subscribe({
       next: (response) => {
         this.logger.info('File types assigned successfully', response);
         this.isSuccess = true;
+        this.isSend = true;
         this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
         this.openModal();
+        this.scheduleRedirect()
       },
       error: (error) => {
         this.logger.error('Error assigning file types', error);
         this.isSuccess = false;
+        this.isSend = false;
         this.modalMessage = 'Une erreur est survenue lors de la création ou de la mise à jour du document.';
         this.openModal();
+        this.scheduleRedirect()
       }
     });
+  }
+
+  isFormFileTypesValid(): boolean {
+    return this.selectedTypes.every(type => type !== '');
+  }
+  isTypeSelected(index: number): boolean {
+    return this.selectedTypes[index] !== '';
+  }
+
+
+  openModal(): void {
+    const modal = document.getElementById('fr-modal') as HTMLDialogElement;
+    if (modal) {
+      if (modal.open) {
+        modal.close();
+      }
+      modal.showModal();
+    }
+    this.isSaving = false;
+  }
+  closeModal(): void {
+    const modal = document.getElementById('fr-modal') as HTMLDialogElement;
+    if (modal && modal.open) {
+      modal.close();
+    }
+  }
+
+  scheduleRedirect(): void {
+    setTimeout(() => {
+      this.router.navigate(['/documents', this.acteName]);
+    }, 3000);
+  }
+
+  objectKeys(obj: any): string[] {
+    return Object.keys(obj);
   }
 
 }

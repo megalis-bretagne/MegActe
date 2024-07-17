@@ -8,6 +8,7 @@ from ..schemas.document_schemas import (
     AddFilesToDoc,
     AddFileToDoc,
 )
+from fastapi import HTTPException
 
 
 def create_empty_document(entite_id: int, flux_type: str, client_api: ApiPastell):
@@ -325,43 +326,42 @@ def transfer_tdt_document_service(
     return check_and_perform_action_service(entite_id, document_id, action, client_api)
 
 
-def assign_file_type_service(
+def assign_file_types_service(
     entite_id: int,
     document_id: str,
     element_id: str,
-    file_name: str,
-    file_type: str,
+    file_types: list[str],
     client_api: ApiPastell,
 ):
-    """Attribue un type à un fichier uploadé dans Pastell.
+    """Attribue des types à plusieurs fichiers uploadés dans Pastell.
 
     Args:
         entite_id (int): L'ID de l'entité.
         document_id (str): L'ID du document.
-        file_name (str): Le nom du fichier à typer.
-        file_type (str): Le type à attribuer au fichier.
+        element_id (str): L'ID de l'élément.
+        file_types (List[str]): Les types à attribuer aux fichiers.
         client_api (ApiPastell): Client API Pastell.
 
     Raises:
-        PastellException: Si le fichier ne peut pas être trouvé ou si l'attribution échoue.
+        PastellException: Si les fichiers ne peuvent pas être trouvés ou si l'attribution échoue.
 
     Returns:
         dict: Les détails de l'opération d'attribution de type.
     """
-    # Récupérer la liste des fichiers existants
-    existing_files = get_existing_files(entite_id, document_id, element_id, client_api)
 
-    try:
-        # Trouver l'indice du fichier basé sur son nom
-        file_index = existing_files.index(file_name)
-    except ValueError:
-        raise PastellException(
-            status_code=404,
-            detail="File not found",
+    response = get_external_data_service(entite_id, document_id, element_id, client_api)
+
+    existing_files = response["pieces"]
+
+    # Vérifier que le nombre de types de fichiers correspond au nombre de fichiers existants
+    if len(file_types) != len(existing_files):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Le nombre de type_pj fourni «{len(file_types)}» ne correspond pas au nombre de documents (acte et annexes) «{len(existing_files)}»",
         )
 
-    # Attribuer le type de fichier
-    data = {f"type_pj[{file_index}]": file_type}
+    data = {f"type_pj[{i}]": file_type for i, file_type in enumerate(file_types)}
+
     return client_api.perform_patch(
         f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}",
         data=data,
