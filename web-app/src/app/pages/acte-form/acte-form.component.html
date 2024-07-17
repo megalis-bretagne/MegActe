@@ -86,20 +86,21 @@
                         }
                         @if (isCreationSuccess && fetchedFileType && !isSuccess) {
                         <h3>{{file_type_field['name']}}</h3>
-                        @for (piece of pieces(); track $index) {
-                        <div class="fr-select-group" [class.fr-select-group--error]="!isTypeSelected($index)">
-                            <label class="fr-label" for="select-error-{{ $index }}"> {{ piece }} <span
+                        <!--- TODO ne pas afficher si pas de type_piece -->
+                        @for (piece of pieces(); track piece; let idx = $index) {
+                        <div class="fr-select-group" [class.fr-select-group--error]="!isTypeSelected(idx)">
+                            <label class="fr-label" for="select-error-{{ idx }}"> {{ piece }} <span
                                     class="required-star">*</span>
                             </label>
-                            <select class="fr-select" [class.fr-select--error]="!isTypeSelected($index)"
-                                aria-describedby="select-error-desc-error" id="select-error-{{ $index }}"
-                                name="select-error" [(ngModel)]="selectedTypes[$index]" required>
+                            <select class="fr-select" [class.fr-select--error]="!isTypeSelected(idx)"
+                                aria-describedby="select-error-desc-error" id="select-error-{{ idx }}"
+                                name="select-error" [(ngModel)]="selectedTypes[idx]" required>
                                 <option value="" selected disabled hidden>Sélectionner un type</option>
                                 @for (key of objectKeys(fileTypes); track key) {
                                 <option [value]="key">{{ fileTypes[key] }}</option>
                                 }
                             </select>
-                            @if (!isTypeSelected($index) ) {
+                            @if (!isTypeSelected(idx) ) {
                             <p id="select-error-desc-error" class="fr-error-text">
                                 Ce champ est requis
                             </p> }
@@ -108,27 +109,6 @@
                         <button class="fr-btn" (click)="assignFileTypes()"
                             [disabled]="!isFormFileTypesValid()">Envoyer</button>
 
-                        <!-- <h3>{{file_type_field['name']}}</h3>
-                        @for (piece of pieces; track $index) {
-                        <div class="fr-select-group fr-select-group--error">
-                            <label class="fr-label" for="select-error-{{ $index }}"> {{ piece}} <span
-                                    class="required-star">*</span>
-                            </label>
-                            <select class=" fr-select fr-select--error" aria-describedby="select-error-desc-error"
-                                id="select-error-{{ $index }}" name="select-error" [(ngModel)]="selectedTypes[$index]"
-                                required>
-                                <option value="" selected disabled hidden>Sélectionner un type</option>
-                                @for (key of objectKeys(fileTypes); track key) {
-                                <option [value]="key">{{ fileTypes[key] }}</option>
-                                }
-                            </select>
-                            <p id="select-error-desc-error" class="fr-error-text">
-                                Ce champ est requis
-                            </p>
-                        </div>
-                        }
-                        <button class="fr-btn" (click)="assignFileTypes()"
-                            [disabled]="!isFormFileTypesValid()">Envoyer</button> -->
                         }
 
                         @if (isCreationSuccess && isSuccess) {

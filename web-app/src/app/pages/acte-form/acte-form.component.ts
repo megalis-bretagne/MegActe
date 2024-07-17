@@ -78,7 +78,10 @@ export class ActeFormComponent implements OnInit {
 
       if (this.fluxDetail) {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
-        this.filteredFields = this.fieldFluxService.filterFields(this.fields, this.sharedDataService.getFieldByName(this.acteName));
+        // @TODO check type_piece existe
+        this.filteredFields =
+          this.fieldFluxService.filterFields(this.fields, this.sharedDataService.getFieldByName(this.acteName))
+            .filter(field => field.idField !== 'type_piece');
 
         this.file_type_field = this.fields.find(field => field.idField === 'type_piece');
         console.log(" this.file_type_field" + JSON.stringify({ data: this.file_type_field }, null, 4));
@@ -96,6 +99,7 @@ export class ActeFormComponent implements OnInit {
     }
 
     this.isSaving = true;
+    this.pieces.set([]);
     const docInfo = this.collectFormData();
     const docUpdateInfo = {
       entite_id: this.sharedDataService.getUser().user_info.id_e,
@@ -117,25 +121,15 @@ export class ActeFormComponent implements OnInit {
     // Téléchargement de fichiers
     const fileUploadObservables = this.uploadFiles().filter(obs => obs !== null);
 
+    // @TODO, check avant si les fichiers sont déjà présent dans pastell.
+
     // Utilisation de forkJoin 
     forkJoin([...fileUploadObservables, updateDocument$]).subscribe({
-      next: (responses) => {
-        const updateResponse = responses[0];
-        const uploadResponses = responses.slice(1);
-
-        if (updateResponse) {
-          this.logger.info('Document and all files are updated successfully', updateResponse, uploadResponses);
-          // this.isSuccess = true;
-          this.isCreationSuccess = true;
-          this.isSaving = false;
-          // this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
-          this.fetchFileTypes();
-        } else {
-          this.isSuccess = false;
-          this.isSaving = false;
-          this.modalMessage = 'Une erreur est survenue lors de la mise à jour du document.';
-          this.openModal();
-        }
+      next: () => {
+        this.isCreationSuccess = true;
+        this.isSaving = false;
+        // @TODO check type_piece existe. Si non, pas besoin de faire de modal
+        this.fetchFileTypes();
       },
       error: (error) => {
         this.logger.error('Error in one of the file uploads', error);
@@ -223,6 +217,7 @@ export class ActeFormComponent implements OnInit {
   }
 
   fetchFileTypes(): void {
+    //TODO changer pour la sélection d'entite
     const entiteId = this.sharedDataService.getUser().user_info.id_e;
     this.fluxService.get_externalData(entiteId, this.documentId, 'type_piece').subscribe({
       next: (response) => {
@@ -230,7 +225,6 @@ export class ActeFormComponent implements OnInit {
         this.pieces.set(response.pieces)
         this.selectedTypes = Array(this.pieces.length).fill('');
         this.fetchedFileType = true;
-        // this.openModal();
       },
       error: (error) => {
         this.logger.error('Error fetching file types and files', error);
