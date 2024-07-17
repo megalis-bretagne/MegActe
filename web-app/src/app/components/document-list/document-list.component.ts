@@ -1,6 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { NGXLogger } from 'ngx-logger';
-import { DocumentInfo, DocumentPaginate } from 'src/app/model/document.model';
+import { DocumentPaginate } from 'src/app/model/document.model';
 import { DocumentService } from 'src/app/services/document.service';
 import { FluxService } from 'src/app/services/flux.service';
 import { UserContextService } from 'src/app/services/user-context.service';
@@ -16,6 +15,8 @@ import { DatePipe } from '@angular/common';
   templateUrl: './document-list.component.html',
 })
 export class DocumentListComponent {
+  itemPerPage = 10;
+  pagesToShow = 7;
   fluxSelected = inject(FluxService).fluxSelected
 
   //TODO a modifier quand le changement d'id_e sera possible
@@ -28,33 +29,82 @@ export class DocumentListComponent {
     return null;
   })
 
+
+  documentsPaginate = signal<DocumentPaginate | null>(null);
+
   /**
    * Liste des documents
    */
-  documentsPaginate = signal<DocumentPaginate | null>(null);
-
   documents = computed(() => {
     if (this.documentsPaginate() != null)
       return this.documentsPaginate().documents;
     return []
   });
 
-
+  totalPages = computed(() => {
+    if (this.documentsPaginate() != null)
+      return Math.ceil(this.documentsPaginate().pagination.total / this.itemPerPage);
+    return 0;
+  })
 
   is_loading = true;
 
-  constructor(private logger: NGXLogger, private documentService: DocumentService) {
+  currentPage = signal(1);
+
+  pagesToDisplay = computed(() => {
+    const pages: number[] = [];
+
+    let startPage = Math.max(2, this.currentPage() - 3);
+    let endPage = Math.min(this.totalPages() - 1, this.currentPage() + 3);
+
+    if (this.currentPage() <= 4) {
+      endPage = Math.min(this.pagesToShow, this.totalPages());
+    }
+
+    if (this.currentPage() > this.totalPages() - 4) {
+      startPage = Math.max(2, this.totalPages() - this.pagesToShow + 1);
+    }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  })
+
+
+  constructor(private documentService: DocumentService) {
+    // effect sur le changement de flux
     effect(() => {
-      this.is_loading = true;
-      const idFlux = this.fluxSelected() !== null ? this.fluxSelected().id : null;
-      this.documentService.getDocuments(this.userCurrent().user_info.id_e, idFlux).subscribe({
-        next: (documentPaginate: DocumentPaginate) => this.documentsPaginate.set(documentPaginate),
-        complete: () => this.is_loading = false
-      })
-    })
+      this.currentPage.set(1);
+      this._loadDataPage(this.fluxSelected() !== null ? this.fluxSelected().id : null);
+    }, { allowSignalWrites: true })
+  }
+
+  /**
+   * Controle le changement de page de la pagination
+   * @param page 
+   * @param event 
+   */
+  changePage(page: number, event: any = null) {
+    if (event != null)
+      event.preventDefault();
+
+    if (page < 1 || page > this.totalPages()) this.currentPage.set(1);
+    this.currentPage.set(page);
+    const idFlux = this.fluxSelected() !== null ? this.fluxSelected().id : null
+    this._loadDataPage(idFlux, page)
 
   }
 
+  private _loadDataPage(idflux: string, page: number = 1) {
+    this.is_loading = true;
+    if (page < 1) page = 1
+
+    this.documentService.getDocuments(this.userCurrent().user_info.id_e, idflux, (page - 1) * this.itemPerPage, this.itemPerPage).subscribe({
+      next: (documentPaginate: DocumentPaginate) => this.documentsPaginate.set(documentPaginate),
+      complete: () => this.is_loading = false
+    })
+  }
 
   createDoc(): void {
     // const docCreateInfo: DocCreateInfo = {
