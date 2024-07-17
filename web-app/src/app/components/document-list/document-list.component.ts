@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
-import { DocumentInfo } from 'src/app/model/document.model';
+import { DocumentInfo, DocumentPaginate } from 'src/app/model/document.model';
 import { DocumentService } from 'src/app/services/document.service';
 import { FluxService } from 'src/app/services/flux.service';
 import { UserContextService } from 'src/app/services/user-context.service';
@@ -31,7 +31,15 @@ export class DocumentListComponent {
   /**
    * Liste des documents
    */
-  documents = signal<DocumentInfo[]>([]);
+  documentsPaginate = signal<DocumentPaginate | null>(null);
+
+  documents = computed(() => {
+    if (this.documentsPaginate() != null)
+      return this.documentsPaginate().documents;
+    return []
+  });
+
+
 
   is_loading = true;
 
@@ -40,7 +48,7 @@ export class DocumentListComponent {
       this.is_loading = true;
       const idFlux = this.fluxSelected() !== null ? this.fluxSelected().id : null;
       this.documentService.getDocuments(this.userCurrent().user_info.id_e, idFlux).subscribe({
-        next: (docs) => this.documents.set(docs),
+        next: (documentPaginate: DocumentPaginate) => this.documentsPaginate.set(documentPaginate),
         complete: () => this.is_loading = false
       })
     })

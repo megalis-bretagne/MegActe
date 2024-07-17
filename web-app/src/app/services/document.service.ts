@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { DocCreateInfo, DocumentDetail, DocUpdateInfo } from "../model/document.model";
+import { DocCreateInfo, DocumentDetail, DocumentPaginate, DocUpdateInfo } from "../model/document.model";
 import { Observable, catchError, of, tap, throwError } from "rxjs";
 import { NGXLogger } from "ngx-logger";
 import { SettingsService } from "src/environments/settings.service";
@@ -94,7 +94,7 @@ export class DocumentService {
     }
 
 
-    getDocuments(entiteId: number, idFlux: string = null, offset: number = 0, limit: number = 10): Observable<any> {
+    getDocuments(entiteId: number, idFlux: string = null, offset: number = 0, limit: number = 10): Observable<DocumentPaginate> {
         let queryParams = `offset=${offset}&limit=${limit}`;
         if (idFlux) {
             queryParams += `&type_flux=${idFlux}`;
