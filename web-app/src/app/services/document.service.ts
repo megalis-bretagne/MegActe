@@ -85,6 +85,11 @@ export class DocumentService {
         );
     }
     assignFileTypes(entiteId: number, documentId: string, elementId: string, fileTypes: string[]): Observable<any> {
-        return;
+        return this.http.patch<any>(`${this.settingsService.apiUrl}/document/${documentId}/file/${elementId}/types?entite_id=${entiteId}`, fileTypes).pipe(
+            catchError((error) => {
+                this.logger.error('Error assigning file types', error);
+                return throwError(() => error);
+            })
+        );
     }
 }

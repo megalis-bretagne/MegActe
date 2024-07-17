@@ -20,6 +20,7 @@ import { UserContextService } from 'src/app/services/user-context.service';
 
 export class ExternalDataInputComponent extends BaseInputComponent implements OnInit, AfterViewInit {
   @Input() link_name: string = '';
+  @Input() documentId: string = '';
 
   currentUser = inject(UserContextService).userCurrent
 
@@ -64,8 +65,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
 
     // TODO: Récupérer le documentId dynamiquement plutôt que de le coder en dur
 
-    const documentId = 'chdhtrh';
-    this.fluxService.get_externalData(id_e, documentId, this.idField).subscribe({
+    this.fluxService.get_externalData(id_e, this.documentId, this.idField).subscribe({
       next: (data) => {
         const filteredData = this.filterExternalData(data);
         this.externalDataOptions = this.removeNumbering(filteredData);

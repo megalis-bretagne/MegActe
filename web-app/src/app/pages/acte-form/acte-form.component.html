@@ -42,7 +42,7 @@
                 }
                 @case ('externalData') {
                 <meg-external-data-input [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
-                    [link_name]="field['link_name']" />
+                    [link_name]="field['link_name']" [documentId]="documentId" />
                 }
                 }
             </div>
@@ -75,28 +75,65 @@
                         }
                     </div>
                     <div class="fr-modal__content">
+                        @if (!isValid && !isCreationSuccess) {
+                        <p class="fr-badge" [class]="isSuccess ? 'fr-badge--success' : 'fr-badge--error'">
+                            {{ isSuccess ? 'Succès' : 'Erreur' }}
+                        </p>
+                        <p>{{ modalMessage }}</p>
+                        }
                         @if (isSaving) {
                         <app-loading-template />
                         }
-                        @if (isCreationSuccess) {
-                        <h3>Assigner un type aux fichiers</h3>
-                        @for (let piece of pieces; let i = index) {
-                        <div>
-                            <label>{{ piece }}</label>
-                            <select [(ngModel)]="selectedTypes[i]" required>
-                                <option value="" disabled selected>Sélectionner un type</option>
-                                @for (let key of objectKeys(fileTypes)) {
+                        @if (isCreationSuccess && fetchedFileType && !isSuccess) {
+                        <h3>{{file_type_field['name']}}</h3>
+                        @for (piece of pieces(); track $index) {
+                        <div class="fr-select-group" [class.fr-select-group--error]="!isTypeSelected($index)">
+                            <label class="fr-label" for="select-error-{{ $index }}"> {{ piece }} <span
+                                    class="required-star">*</span>
+                            </label>
+                            <select class="fr-select" [class.fr-select--error]="!isTypeSelected($index)"
+                                aria-describedby="select-error-desc-error" id="select-error-{{ $index }}"
+                                name="select-error" [(ngModel)]="selectedTypes[$index]" required>
+                                <option value="" selected disabled hidden>Sélectionner un type</option>
+                                @for (key of objectKeys(fileTypes); track key) {
                                 <option [value]="key">{{ fileTypes[key] }}</option>
                                 }
                             </select>
+                            @if (!isTypeSelected($index) ) {
+                            <p id="select-error-desc-error" class="fr-error-text">
+                                Ce champ est requis
+                            </p> }
                         </div>
                         }
-                        <button (click)="assignFileTypes()">Assigner les types</button>
+                        <button class="fr-btn" (click)="assignFileTypes()"
+                            [disabled]="!isFormFileTypesValid()">Envoyer</button>
+
+                        <!-- <h3>{{file_type_field['name']}}</h3>
+                        @for (piece of pieces; track $index) {
+                        <div class="fr-select-group fr-select-group--error">
+                            <label class="fr-label" for="select-error-{{ $index }}"> {{ piece}} <span
+                                    class="required-star">*</span>
+                            </label>
+                            <select class=" fr-select fr-select--error" aria-describedby="select-error-desc-error"
+                                id="select-error-{{ $index }}" name="select-error" [(ngModel)]="selectedTypes[$index]"
+                                required>
+                                <option value="" selected disabled hidden>Sélectionner un type</option>
+                                @for (key of objectKeys(fileTypes); track key) {
+                                <option [value]="key">{{ fileTypes[key] }}</option>
+                                }
+                            </select>
+                            <p id="select-error-desc-error" class="fr-error-text">
+                                Ce champ est requis
+                            </p>
+                        </div>
+                        }
+                        <button class="fr-btn" (click)="assignFileTypes()"
+                            [disabled]="!isFormFileTypesValid()">Envoyer</button> -->
                         }
 
-                        @if (isSaving) {
+                        @if (isCreationSuccess && isSuccess) {
                         <p class="fr-badge" [class]="isSuccess ? 'fr-badge--success' : 'fr-badge--error'">
-                            {{ isSuccess ? 'Succès' : 'Erreur' }}
+                            {{ isSend ? 'Succès' : 'Erreur' }}
                         </p>
                         <p>{{ modalMessage }}</p>
                         }
