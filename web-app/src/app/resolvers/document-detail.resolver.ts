@@ -16,7 +16,6 @@ export const DocumentDetailResolver: ResolveFn<any> = (
     const userCurrent = inject(UserContextService).userCurrent();
     const userFlux = inject(UserContextService).userFlux();
     const docId = route.paramMap.get('documentId');
-    console.log(docId);
     if (docId) {
         // TODO modifier quand l'entité courrant change
 
