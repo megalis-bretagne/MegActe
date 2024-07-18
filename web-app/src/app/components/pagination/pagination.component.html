@@ -1,0 +1,72 @@
+<nav role="navigation" class="fr-pagination" aria-label="Pagination">
+    <ul class="fr-pagination__list">
+        <li>
+            <a class="fr-pagination__link fr-pagination__link--first" [attr.href]="currentPage() === 1 ? null : '#'"
+                [attr.aria-disabled]="currentPage() === 1" role="link" (click)="changePage(1)" title="Première page">
+                Première page
+            </a>
+        </li>
+        <li>
+            <a class="fr-pagination__link fr-pagination__link--prev" [attr.href]="currentPage() === 1 ? null : '#'"
+                [attr.aria-disabled]="currentPage() === 1" role="link" title="Page précédente">
+                Page précédente
+            </a>
+        </li>
+        <li>
+            <a class="fr-pagination__link" [attr.href]="currentPage() === 1 ? null : '#'"
+                [attr.aria-current]="1 === currentPage() ? 'page' : null" title="Page une" (click)="changePage(1)">
+                1
+            </a>
+        </li>
+        @if(currentPage() > (pagesToShow/2) + 2 ) { <li>
+            <a class="fr-pagination__link fr-displayed-lg" aria-disabled="true">
+                …
+            </a>
+        </li>
+        }
+
+        @for(page of pagesToDisplay(); track page) {
+        <li>
+            <a class="fr-pagination__link" href="#" [attr.href]="currentPage() === page ? null : '#'"
+                [attr.aria-current]="page === currentPage() ? 'page' : null" title="Page {{page}}"
+                (click)="changePage(page)">
+                {{page}}
+            </a>
+        </li>
+        }
+
+        @if( totalPages() > (currentPage() +(pagesToShow/2) + 2) ) { <li>
+            <a class="fr-pagination__link fr-displayed-lg" aria-disabled="true">
+                …
+            </a>
+        </li>
+        }
+
+
+        <li>
+            <a class="fr-pagination__link" [attr.href]="currentPage() === totalPages() ? null : '#'"
+                [attr.aria-current]="totalPages() === currentPage() ? 'page' : null" title="Page {{totalPages()}}"
+                (click)="changePage(totalPages())">
+                {{totalPages()}}
+            </a>
+        </li>
+
+
+        <li>
+            <a class="fr-pagination__link fr-pagination__link--next"
+                [attr.href]="currentPage() >= totalPages() ? null : '#'"
+                [attr.aria-disabled]="currentPage() >= totalPages()" title="Page suivante"
+                (click)="changePage(currentPage() +1)" role="link">
+                Page suivante
+            </a>
+        </li>
+        <li>
+            <a class="fr-pagination__link fr-pagination__link--last"
+                [attr.href]="currentPage() >= totalPages() ? null : '#'"
+                [attr.aria-disabled]="currentPage() >= totalPages()" title="Dernière page"
+                (click)="changePage(totalPages())" role="link">
+                Dernière page
+            </a>
+        </li>
+    </ul>
+</nav>

@@ -25,48 +25,7 @@
                 </tr>
             </tbody>
         </table>
-
-        <nav role="navigation" class="fr-pagination" aria-label="Pagination">
-            <ul class="fr-pagination__list">
-                <li>
-                    <a class="fr-pagination__link fr-pagination__link--first" [attr.aria-disabled]="currentPage() === 1"
-                        [attr.href]="currentPage() === 1 ? null : '#'" role="link" (click)="changePage(1, $event)">
-                        Première page
-                    </a>
-                </li>
-                <li>
-                    <a class="fr-pagination__link fr-pagination__link--prev" [attr.aria-disabled]="currentPage() === 1"
-                        [attr.href]="currentPage() === 1 ? null : '#'" (click)="changePage(currentPage()-1, $event)"
-                        role="link">
-                        Page précédente
-                    </a>
-                </li>
-                <li *ngFor="let page of displayedPages" [class.active]="page === currentPage()">
-                    <a class="fr-pagination__link" href="#" [attr.aria-current]="page === currentPage() ? 'page' : null"
-                        title="Page {{page}}" (click)="changePage(page, $event)">
-                        {{ page }}
-                    </a>
-                </li>
-                <li>
-                    <a class="fr-pagination__link fr-pagination__link--next"
-                        [attr.aria-disabled]="currentPage() >= totalPages()"
-                        [attr.href]="currentPage() >= totalPages() ? null : '#'"
-                        (click)="changePage(currentPage()+1, $event)" role="link">
-                        Page suivante
-                    </a>
-                </li>
-                <li>
-                    <a class="fr-pagination__link fr-pagination__link--last"
-                        [attr.aria-disabled]="currentPage() >= totalPages()"
-                        [attr.href]="currentPage() >= totalPages() ? null : '#'"
-                        (click)="changePage(totalPages(), $event)" role="link">
-                        Dernière page
-                    </a>
-                </li>
-            </ul>
-        </nav>
-
-
+        <meg-pagination [totalPages]="totalPages()" (onChangePage)="updateDisplayedPages($event)" />
     </div>
 </div>
 } @else{

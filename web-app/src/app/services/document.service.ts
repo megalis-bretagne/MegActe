@@ -4,7 +4,6 @@ import { DocCreateInfo, DocumentDetail, DocumentPaginate, DocUpdateInfo } from "
 import { Observable, catchError, of, tap, throwError } from "rxjs";
 import { NGXLogger } from "ngx-logger";
 import { SettingsService } from "src/environments/settings.service";
-import { Pagination } from "../model/pagination.model";
 
 @Injectable({
     providedIn: 'root'
