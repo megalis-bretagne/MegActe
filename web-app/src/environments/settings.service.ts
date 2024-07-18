@@ -14,6 +14,15 @@ export class SettingsService {
 
     setSettings(settings: Settings): void {
         this.settings = settings;
+        if (!this.settings.fileUpload) {
+            this.settings.fileUpload = new FileUpload();
+        }
+
+        if (!this.settings.flowType) {
+            this.settings.flowType = {
+                ...new Settings().flowType
+            };
+        }
     }
 
     getSetting(): Settings {
