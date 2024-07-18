@@ -238,7 +238,6 @@ export class ActeFormComponent implements OnInit {
 
   assignFileTypes(): void {
     const entiteId = this.sharedDataService.getUser().user_info.id_e;
-    console.log("this.selectedTypes-------" + this.selectedTypes);
     this.documentService.assignFileTypes(entiteId, this.documentId, 'type_piece', this.selectedTypes).subscribe({
       next: (response) => {
         this.logger.info('File types assigned successfully', response);
