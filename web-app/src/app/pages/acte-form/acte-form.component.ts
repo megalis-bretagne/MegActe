@@ -1,4 +1,4 @@
-import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, effect, inject, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { CheckboxInputComponent } from 'src/app/components/flux/checkbox-input/checkbox-input.component';
@@ -13,13 +13,21 @@ import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { SharedDataService } from 'src/app/services/sharedData.service';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { LoadingTemplateComponent } from 'src/app/components/loading-template/loading-template.component';
+import { FluxService } from 'src/app/services/flux.service';
 
 @Component({
   selector: 'app-acte-form',
+  standalone: true,
+  imports: [
+    LoadingTemplateComponent, ExternalDataInputComponent, FileUploadComponent,
+    DateInputComponent, SelectInputComponent, CheckboxInputComponent, TextInputComponent
+  ],
   templateUrl: './acte-form.component.html',
   styleUrls: ['./acte-form.component.scss']
 })
 export class ActeFormComponent implements OnInit {
+  fluxSelected = inject(FluxService).fluxSelected;
   acteName: string;
   fluxDetail: Data;
   fields: Field[] = [];
@@ -44,14 +52,18 @@ export class ActeFormComponent implements OnInit {
     private sharedDataService: SharedDataService,
     private documentService: DocumentService,
     private router: Router,
-  ) { }
+  ) {
+    effect(() => {
+      this.acteName = this.fluxSelected().nom;
+    })
+  }
 
 
   ngOnInit(): void {
     this.route.data.subscribe(data => {
-      this.fluxDetail = data['fluxDetail'];
+      this.fluxDetail = data['docDetail'].flux;
+      // TODO récupérer les info du document dans data['docDetail'].document
       this.documentId = this.route.snapshot.paramMap.get('documentId');
-      this.acteName = this.sharedDataService.getActeID();
 
       if (this.fluxDetail) {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);

@@ -1,21 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { UserContext } from 'src/app/model/user.model';
+import { Component, inject } from '@angular/core';
 import { AuthService } from 'src/app/services/keycloakServices/auth.service';
-import { SharedDataService } from 'src/app/services/sharedData.service';
+import { UserContextService } from 'src/app/services/user-context.service';
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss']
 })
-export class NavbarComponent implements OnInit {
-  userContext: UserContext;
+export class NavbarComponent {
+  currentUser = inject(UserContextService).userCurrent;
 
-  constructor(private sharedDataService: SharedDataService, private authService: AuthService) { }
+  constructor(private authService: AuthService) { }
 
-  ngOnInit(): void {
-    this.userContext = this.sharedDataService.getUser();
-  }
 
   logout(): void {
     this.authService.logout();

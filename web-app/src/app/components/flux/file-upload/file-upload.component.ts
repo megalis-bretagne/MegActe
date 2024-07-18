@@ -1,11 +1,15 @@
 import { Component, Input, ViewChild, ElementRef } from '@angular/core';
-import { ValidatorFn, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { FileUploadValidationService } from 'src/app/services/file-upload-validation.service';
 import { BaseInputComponent } from '../BaseInput.component';
+import { CommonModule } from '@angular/common';
+import { DragAndDropDirective } from 'src/app/shared/directives/drag-and-drop.directive';
 
 @Component({
   selector: 'meg-file-upload',
+  standalone: true,
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, DragAndDropDirective],
   templateUrl: './file-upload.component.html',
   styleUrls: ['./file-upload.component.scss']
 })

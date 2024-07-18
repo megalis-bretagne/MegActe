@@ -1,0 +1,25 @@
+<div class="fr-container--fluid">
+    @if (fluxSelected(); as fluxSelected) {
+    <div class="fr-grid-row">
+        <div class="fr-col-9 fr-col-md-9">
+
+            <h1>Liste des documents {{fluxSelected.nom}}</h1>
+
+        </div>
+        <div class="fr-col-3 fr-col-md-3">
+            <button class="fr-btn" (click)="createDoc()">
+                Créer
+                <span class="fr-icon-add-line icone-add" aria-hidden="true"></span>
+            </button>
+        </div>
+    </div>
+    }
+    @else {
+    <div class="fr-grid-row">
+        <div class="fr-col-9 fr-col-md-9">
+
+            <h1>Liste des documents</h1>
+        </div>
+    </div>
+    }
+</div>

@@ -1,33 +1,41 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { NGXLogger } from 'ngx-logger';
-import { Acte, GroupedActes } from 'src/app/model/acte.model';
+import { Component, effect, inject } from '@angular/core';
+import { Acte } from 'src/app/model/acte.model';
 import { DocCreateInfo } from 'src/app/model/document.model';
 import { DocumentService } from 'src/app/services/document.service';
 import { SharedDataService } from 'src/app/services/sharedData.service';
+import { UserContextService } from 'src/app/services/user-context.service';
+import { Router } from '@angular/router';
+import { NGXLogger } from 'ngx-logger';
+import { FluxService } from 'src/app/services/flux.service';
 
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent {
+  userFlux = inject(UserContextService).userFlux
+
+  fluxSelected = inject(FluxService).fluxSelected /** contient le flux sélectionné */
+
   actes: Acte[] = [];
-  groupedActes: GroupedActes[];
-  ordreAlphabetique: boolean = true;
 
-  constructor(private sharedDataService: SharedDataService, private logger: NGXLogger, private documentService: DocumentService, private router: Router) { }
+  groupedActes: { [key: string]: Acte[]; };
+  listType: string[];
+  groupByType: boolean = false;
+  constructor(private sharedDataService: SharedDataService, private logger: NGXLogger, private documentService: DocumentService, private router: Router) {
+    effect(() => {
+      this.actes = Object.values(this.userFlux());
+      this.sortActes();
+      this.groupActesByType();
+    })
 
-  ngOnInit(): void {
-    this.actes = Object.values(this.sharedDataService.getFlux());
-    this.sortActes();
-    this.groupActesByType();
   }
 
-  createDoc(acteNom: string): void {
+  createDoc(acte: Acte): void {
     const docCreateInfo: DocCreateInfo = {
       entite_id: this.sharedDataService.getUser().user_info.id_e,
-      flux_type: this.sharedDataService.getFieldByName(acteNom),
+      flux_type: acte.id,
       doc_info: {}
     };
 
@@ -35,7 +43,6 @@ export class SidebarComponent implements OnInit {
       (response) => {
         const documentId = response.content.info.id_d;
         this.router.navigate(['/acte', documentId]);
-        this.sharedDataService.setActeID(acteNom);
       },
       (error) => {
         this.logger.error('Error creating document:', error);
@@ -43,20 +50,23 @@ export class SidebarComponent implements OnInit {
     );
   }
 
+  selectFlux(acte: Acte) {
+    this.fluxSelected.set(acte);
+  }
+
   groupActesByType(): void {
-    const grouped = this.actes.reduce((acc: { [type: string]: string[] }, acte: Acte) => {
+    this.groupedActes = this.actes.reduce((acc, acte) => {
       if (!acc[acte.type]) {
         acc[acte.type] = [];
       }
-      acc[acte.type].push(acte.nom);
+      acc[acte.type].push(acte);
       return acc;
-    }, {});
+    }, {} as { [key: string]: Acte[] });
 
-    this.groupedActes = Object.keys(grouped).map(type => ({
-      type,
-      nom: grouped[type]
-    }));
+    this.listType = Object.keys(this.groupedActes);
+
   }
+
 
   sortActes(): void {
     this.actes.sort((a, b) => a.nom.localeCompare(b.nom));

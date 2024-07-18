@@ -3,51 +3,61 @@
         <div class="fr-collapse" id="fr-sidemenu-wrapper">
             <div class="fr-toggle fr-toggle--label-left toggle-container">
                 <input type="checkbox" class="fr-toggle__input" aria-describedby="toggle-ordre-hint-text"
-                    id="toggle-ordre" [(ngModel)]="ordreAlphabetique">
-                <label class="fr-toggle__label" for="toggle-ordre" data-fr-checked-label="Ordre alphabétique"
-                    data-fr-unchecked-label="Regroupé">Ordre d'affichage</label>
-                <p class="fr-hint-text" id="toggle-ordre-hint-text">Choisissez l'ordre d'affichage des actes</p>
+                    id="toggle-ordre" [(ngModel)]="groupByType">
+                <label class="fr-toggle__label" for="toggle-ordre" data-fr-checked-label="Grouper par Type"
+                    data-fr-unchecked-label="Regroupé">Grouper par type</label>
             </div>
-            <ng-container>
-                <ul class="fr-sidemenu__list">
-                    <ng-container *ngIf="ordreAlphabetique; else groupedView">
-                        <li class="fr-sidemenu__item" *ngFor="let acte of actes; let i = index">
-                            <div class="link-container">
-                                <a class="fr-sidemenu__link sidemenu-link" [routerLink]="['/documents', acte.nom]">
-                                    {{ acte.nom }}
-                                </a>
-                                <a class="icon-link no-bg-change" (click)="createDoc(acte.nom)">
-                                    <span class="fr-icon-add-circle-fill  icone-add" aria-hidden="true"></span>
-                                </a>
-                            </div>
-                        </li>
-                    </ng-container>
-                    <ng-template #groupedView>
-                        <li class="fr-sidemenu__item" *ngFor="let groupe of groupedActes; let i = index">
-                            <button class="fr-sidemenu__btn fr-sidemenu-btn" aria-expanded="false"
-                                [attr.aria-controls]="'fr-sidemenu-item-' + i">
-                                {{ groupe.type }}
-                            </button>
-                            <div class="fr-collapse" [id]="'fr-sidemenu-item-' + i">
-                                <ul class="fr-sidemenu__list">
-                                    <li class="fr-sidemenu__item" *ngFor="let nom of groupe.nom">
-                                        <div class="link-container">
-                                            <a class="fr-sidemenu__link sidemenu-link"
-                                                [routerLink]="['/documents', nom]">
-                                                {{ nom }}
-                                            </a>
-                                            <a class="icon-link no-bg-change" (click)="createDoc(nom)">
-                                                <span class="fr-icon-add-circle-fill icone-add"
-                                                    aria-hidden="true"></span>
-                                            </a>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </li>
-                    </ng-template>
-                </ul>
-            </ng-container>
+            <ul class="fr-sidemenu__list">
+                @if (groupByType) {
+                @for(type of listType; track type) {
+                <li class="fr-sidemenu__item">
+                    <button class="fr-sidemenu__btn fr-sidemenu-btn" aria-expanded="false"
+                        [attr.aria-controls]="'fr-sidemenu-item-' + type">
+                        {{ type }}
+                    </button>
+                    <div class="fr-collapse" [id]="'fr-sidemenu-item-' + type">
+                        <ul class="fr-sidemenu__list">
+                            @for (acte of groupedActes[type]; track acte.id ) {
+                            <li class="fr-sidemenu__item">
+                                <div class="meg-link-row">
+                                    <div><a class="fr-sidemenu__link" href="#" (click)="selectFlux(acte)"
+                                            [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null"
+                                            target="_self">{{
+                                            acte.nom }}</a></div>
+                                    <div>
+                                        <a href="#" target="_self" (click)="createDoc(acte)"
+                                            title="Créer document de type {{acte.nom}}">
+                                            <span class="fr-icon-add-circle-fill  icon-add" aria-hidden="true"></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                            }
+                        </ul>
+                    </div>
+                </li>
+                }
+                } @else {
+                @for (acte of actes; track acte.id ) {
+                <li class="fr-sidemenu__item">
+                    <div class="meg-link-row">
+                        <div><a class="fr-sidemenu__link" href="#"
+                                [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null"
+                                (click)="selectFlux(acte)" target="_self">{{
+                                acte.nom }}</a></div>
+                        <div>
+                            <a href="#" target="_self" (click)="createDoc(acte)"
+                                title="Créer document de type {{acte.nom}}">
+                                <span class="fr-icon-add-circle-fill  icon-add" aria-hidden="true"></span>
+                            </a>
+                        </div>
+
+                    </div>
+                </li>
+                }
+
+                }
+            </ul>
         </div>
     </div>
 </nav>

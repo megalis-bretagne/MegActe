@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
-import { Observable, catchError, of, tap, map } from 'rxjs';
+import { Observable, catchError, of, tap } from 'rxjs';
 import { SettingsService } from 'src/environments/settings.service';
-import { Acte } from 'src/app/model/acte.model';
+import { Acte } from '../model/acte.model';
 
 
 @Injectable({
@@ -11,23 +11,14 @@ import { Acte } from 'src/app/model/acte.model';
 })
 export class FluxService {
 
+    fluxSelected = signal<Acte | null>(null)
+
+
     constructor(private http: HttpClient, private logger: NGXLogger, private settingsService: SettingsService) {
     }
 
-    public getFlux(): Observable<Acte[]> {
-        return this.http.get<{ [idField: string]: Acte }>(this.settingsService.apiUrl + '/flux').pipe(
-            map((data: { [idField: string]: Acte }) =>
-                Object.entries(data).map(([idField, value]) => ({ id: idField, ...value }))
-            ),
-            catchError((error) => {
-                this.logger.error('Error fetching user flux', error);
-                return of([]);
-            })
-        );
-    }
-
-    public get_flux_detail(acteNom: string): Observable<any> {
-        return this.http.get<any>(`${this.settingsService.apiUrl}/flux/${acteNom}`).pipe(
+    public get_flux_detail(fluxId: string): Observable<any> {
+        return this.http.get<any>(`${this.settingsService.apiUrl}/flux/${fluxId}`).pipe(
             tap(() => this.logger.info('Successfully fetched flux detail')),
             catchError((error) => {
                 this.logger.error('Failed to retrieve flux detail', error);
@@ -45,5 +36,9 @@ export class FluxService {
                 return of({});
             })
         );
+    }
+
+    public selectCurrentFlux(acte: Acte) {
+        this.fluxSelected.set(acte);
     }
 }

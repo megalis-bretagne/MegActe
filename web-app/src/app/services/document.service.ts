@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { DocCreateInfo, DocUpdateInfo } from "../model/document.model";
+import { DocCreateInfo, DocumentDetail, DocUpdateInfo } from "../model/document.model";
 import { Observable, catchError, of, tap, throwError } from "rxjs";
 import { NGXLogger } from "ngx-logger";
 import { SettingsService } from "src/environments/settings.service";
@@ -71,6 +71,15 @@ export class DocumentService {
         return this.http.post<any>(`${this.settingsService.apiUrl}/document/${documentId}/file/${elementId}?entite_id=${entiteId}`, formData).pipe(
             catchError((error) => {
                 this.logger.error('Error uploading files', error);
+                return of(null);
+            })
+        );
+    }
+
+    getDocumentById(documentId: string, entitedId: number): Observable<DocumentDetail> {
+        return this.http.get<any>(`${this.settingsService.apiUrl}/document/${documentId}?entite_id=${entitedId}`).pipe(
+            catchError((error) => {
+                this.logger.error('Error get document', error);
                 return of(null);
             })
         );

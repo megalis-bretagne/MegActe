@@ -17,11 +17,13 @@
                 </div>
                 <div class="fr-header__tools">
                     <div class="fr-header__tools-links">
+                        @if (currentUser(); as currentUser) {
+
                         <ul class="fr-btns-group">
                             <li>
                                 <a class="fr-btn" routerLink="/user-profile" aria-label="Accéder au profil utilisateur">
                                     <span class="fr-icon-account-circle-fill" aria-hidden="true"></span>
-                                    {{ userContext.user_info.prenom }} {{ userContext.user_info.nom }}
+                                    {{ currentUser.user_info.prenom }} {{ currentUser.user_info.nom }}
                                 </a>
                             </li>
                             <li>
@@ -31,6 +33,7 @@
                                 </button>
                             </li>
                         </ul>
+                    }
                     </div>
                 </div>
             </div>

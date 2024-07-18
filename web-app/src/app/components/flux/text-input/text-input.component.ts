@@ -1,9 +1,12 @@
 import { Component, Input } from '@angular/core';
-import { ValidatorFn, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { BaseInputComponent } from '../BaseInput.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'meg-text-input',
+  standalone: true,
+  imports: [FormsModule, ReactiveFormsModule, CommonModule],
   templateUrl: './text-input.component.html',
 })
 export class TextInputComponent extends BaseInputComponent {

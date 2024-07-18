@@ -1,29 +1,24 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { AuthGuardService } from './services/keycloakServices/auth-guard.service';
-import { UserProfileComponent } from './pages/user-profile/user-profile.component';
+import { DocumentDetailResolver } from './resolvers/document-detail.resolver';
 import { ActeFormComponent } from './pages/acte-form/acte-form.component';
-import { FluxResolver } from './resolvers/flux.resolver';
 
 const routes: Routes = [
     {
         path: '',
-        component: DashboardComponent,
+        loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
         canActivate: [AuthGuardService],
     },
     {
         path: 'user-profile',
-        component: UserProfileComponent,
+        loadComponent: () => import('./pages/user-profile/user-profile.component').then(m => m.UserProfileComponent),
     },
     {
+        // TODO ajouter l'id de l'entité quand la sélection des entités sera à faire
         path: 'acte/:documentId',
         component: ActeFormComponent,
-        resolve: { fluxDetail: FluxResolver },
-    },
-    {
-        path: 'documents/:typeNom',
-        loadComponent: () => import('./pages/document-list/document-list.component').then(m => m.DocumentListComponent)
+        resolve: { docDetail: DocumentDetailResolver },
     },
     {
         path: '**',
