@@ -43,7 +43,7 @@
             <tbody>
                 @for (doc of documents(); track doc.id_d) {
                 <tr>
-                    <td>{{doc.titre}}</td>
+                    <td>{{doc.titre || doc.id_d}}</td>
                     <td>{{doc.type}}</td>
                     <td>{{doc.last_action_display | stateDocument}}</td>
                     <td>{{doc.last_action_date | date:'dd/MM/yyyy HH:mm'}}</td>
