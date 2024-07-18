@@ -15,13 +15,14 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LoadingTemplateComponent } from 'src/app/components/loading-template/loading-template.component';
 import { FluxService } from 'src/app/services/flux.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-acte-form',
   standalone: true,
   imports: [
     LoadingTemplateComponent, ExternalDataInputComponent, FileUploadComponent,
-    DateInputComponent, SelectInputComponent, CheckboxInputComponent, TextInputComponent
+    DateInputComponent, SelectInputComponent, CheckboxInputComponent, TextInputComponent, FormsModule
   ],
   templateUrl: './acte-form.component.html',
   styleUrls: ['./acte-form.component.scss']
@@ -73,6 +74,7 @@ export class ActeFormComponent implements OnInit {
   ngOnInit(): void {
     this.route.data.subscribe(data => {
       this.fluxDetail = data['docDetail'].flux;
+      const flowId = data['docDetail'].document.info.type;
       // TODO récupérer les info du document dans data['docDetail'].document
       this.documentId = this.route.snapshot.paramMap.get('documentId');
 
@@ -80,11 +82,10 @@ export class ActeFormComponent implements OnInit {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
         // @TODO check type_piece existe
         this.filteredFields =
-          this.fieldFluxService.filterFields(this.fields, this.sharedDataService.getFieldByName(this.acteName))
+          this.fieldFluxService.filterFields(this.fields, flowId)
             .filter(field => field.idField !== 'type_piece');
 
         this.file_type_field = this.fields.find(field => field.idField === 'type_piece');
-        console.log(" this.file_type_field" + JSON.stringify({ data: this.file_type_field }, null, 4));
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
