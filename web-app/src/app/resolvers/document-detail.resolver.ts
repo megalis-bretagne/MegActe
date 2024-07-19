@@ -1,10 +1,11 @@
-import { forkJoin, Observable, of, switchMap } from 'rxjs';
+import { forkJoin, Observable, of, switchMap, tap } from 'rxjs';
 import { FluxService } from '../services/flux.service';
 import { ResolveFn } from '@angular/router';
 import { inject } from '@angular/core';
 import { DocumentService } from '../services/document.service';
 import { UserContextService } from '../services/user-context.service';
 import { DocumentDetail } from '../model/document.model';
+import { LoadingService } from '../services/loading.service';
 
 
 
@@ -16,6 +17,7 @@ export const DocumentDetailResolver: ResolveFn<any> = (
     const userCurrent = inject(UserContextService).userCurrent();
     const userFlux = inject(UserContextService).userFlux();
     const docId = route.paramMap.get('documentId');
+    const loadingService = inject(LoadingService);
     if (docId) {
         // TODO modifier quand l'entité courrant change
 
@@ -28,7 +30,9 @@ export const DocumentDetailResolver: ResolveFn<any> = (
                     return forkJoin({
                         document: of(docDetail),
                         flux: fluxService.get_flux_detail(idFlux)
-                    });
+                    }).pipe(
+                        tap(() => loadingService.hideLoading())
+                    );
                 }
                 return of(null);
             })

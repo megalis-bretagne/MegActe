@@ -1,0 +1,24 @@
+<mat-dialog-content>
+
+    @if (error) {
+    <div class="fr-alert fr-alert--error">
+        <h3 class="fr-alert__title">{{error}}</h3>
+    </div>
+    } @else {
+    <meg-loading [message]="message" />
+
+    }
+</mat-dialog-content>
+@if(error) {
+<mat-dialog-actions>
+    <div class="dialog-close">
+        <div>
+            <button class="fr-btn fr-btn--sm fr-icon-close-circle-line fr-btn--icon-right fr-btn--secondary"
+                (click)="onClose()">
+                Fermer
+            </button>
+        </div>
+    </div>
+
+</mat-dialog-actions>
+}

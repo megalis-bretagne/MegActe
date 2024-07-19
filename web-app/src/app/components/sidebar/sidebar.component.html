@@ -20,13 +20,11 @@
                             @for (acte of groupedActes[type]; track acte.id ) {
                             <li class="fr-sidemenu__item">
                                 <div class="meg-link-row">
-                                    <div><a class="fr-sidemenu__link" href="#" (click)="selectFlux(acte)"
-                                            [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null"
-                                            target="_self">{{
+                                    <div><a class="fr-sidemenu__link" [routerLink]="['/']" (click)="selectFlux(acte)"
+                                            [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null">{{
                                             acte.nom }}</a></div>
                                     <div>
-                                        <a href="#" target="_self" (click)="createDoc(acte)"
-                                            title="Créer document de type {{acte.nom}}">
+                                        <a (click)="createDoc(acte)" title="Créer document de type {{acte.nom}}">
                                             <span class="fr-icon-add-circle-fill  icon-add" aria-hidden="true"></span>
                                         </a>
                                     </div>
@@ -41,13 +39,12 @@
                 @for (acte of actes; track acte.id ) {
                 <li class="fr-sidemenu__item">
                     <div class="meg-link-row">
-                        <div><a class="fr-sidemenu__link" href="#"
+                        <div><a class="fr-sidemenu__link" [routerLink]="['/']"
                                 [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null"
-                                (click)="selectFlux(acte)" target="_self">{{
+                                (click)="selectFlux(acte)">{{
                                 acte.nom }}</a></div>
                         <div>
-                            <a href="#" target="_self" (click)="createDoc(acte)"
-                                title="Créer document de type {{acte.nom}}">
+                            <a (click)="createDoc(acte)" title="Créer document de type {{acte.nom}}">
                                 <span class="fr-icon-add-circle-fill  icon-add" aria-hidden="true"></span>
                             </a>
                         </div>

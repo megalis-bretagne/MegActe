@@ -4,21 +4,23 @@ import { DocumentService } from 'src/app/services/document.service';
 import { FluxService } from 'src/app/services/flux.service';
 import { UserContextService } from 'src/app/services/user-context.service';
 import { StateDocumentPipe } from './state-document/state-document.pipe';
-import { LoadingTemplateComponent } from '../loading-template/loading-template.component';
+import { LoadingComponent } from '../loading-component/loading.component';
 import { DatePipe } from '@angular/common';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { Router } from '@angular/router';
+import { LoadingService } from 'src/app/services/loading.service';
 
 
 @Component({
   selector: 'meg-document-list',
   standalone: true,
-  imports: [StateDocumentPipe, PaginationComponent, LoadingTemplateComponent, DatePipe],
+  imports: [StateDocumentPipe, PaginationComponent, LoadingComponent, DatePipe],
   templateUrl: './document-list.component.html',
 })
 export class DocumentListComponent {
   itemPerPage = 10;
   fluxSelected = inject(FluxService).fluxSelected
+  loadingService = inject(LoadingService);
 
   //TODO a modifier quand le changement d'id_e sera possible
   userCurrent = inject(UserContextService).userCurrent;
@@ -81,7 +83,7 @@ export class DocumentListComponent {
 
   createDoc(): void {
     if (this.fluxSelected() != null) {
-
+      this.loadingService.showLoading("Création du document en cours ...");
 
       const docCreateInfo: DocCreateInfo = {
         entite_id: this.userCurrent().user_info.id_e,
