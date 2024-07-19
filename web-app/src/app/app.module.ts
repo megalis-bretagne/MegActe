@@ -7,7 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { KeycloakAngularModule, KeycloakService } from 'keycloak-angular';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 import { SettingsService } from 'src/environments/settings.service';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
@@ -22,35 +22,29 @@ import { DocumentListComponent } from './components/document-list/document-list.
 import { UserContextService } from './services/user-context.service';
 
 
-@NgModule({
-    declarations: [
+@NgModule({ declarations: [
         AppComponent,
         NavbarComponent,
         SidebarComponent
     ],
-    imports: [
-        BrowserModule,
+    bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
         BrowserAnimationsModule,
         FormsModule,
         ReactiveFormsModule,
         KeycloakAngularModule,
-        HttpClientModule,
         LoggerModule.forRoot({ level: NgxLoggerLevel.WARN }),
         ExternalDataInputComponent,
-        DocumentListComponent,
-    ],
-    providers: [
+        DocumentListComponent], providers: [
         {
             provide: APP_INITIALIZER,
             useFactory: app_Init,
             deps: [AppInitService, KeycloakService, SettingsService, UserContextService],
             multi: true
         },
-        provideAnimationsAsync()
-    ],
-    bootstrap: [AppComponent]
-})
+        provideAnimationsAsync(),
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class AppModule { }
 
 export function app_Init(appInitService: AppInitService): () => Promise<any> {
