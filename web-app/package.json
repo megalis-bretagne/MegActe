@@ -35,14 +35,7 @@
     "zone.js": "~0.14.7"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^17.3.7",
-    "@angular-eslint/builder": "16.2.0",
-    "@angular-eslint/eslint-plugin": "^17.4.1",
-    "@angular-eslint/eslint-plugin-template": "^17.4.1",
-    "@angular-eslint/schematics": "^17.4.1",
-    "@angular-eslint/template-parser": "^17.4.1",
-    "@angular/cli": "^17.3.7",
-    "@angular/compiler-cli": "^17.3.8",
+    "@angular/cli": "^18.1.0",
     "@typescript-eslint/eslint-plugin": "^6.10.0",
     "@typescript-eslint/parser": "^6.10.0",
     "eslint": "^8.57.0",
