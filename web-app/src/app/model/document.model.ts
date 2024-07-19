@@ -1,3 +1,5 @@
+import { Pagination } from "./pagination.model";
+
 export interface DocCreateInfo {
     entite_id: number;
     flux_type: string;
@@ -24,6 +26,11 @@ export interface DocumentInfo {
     entite_base: string;
     last_action_display: string;
     [key: string]: any;
+}
+
+export interface DocumentPaginate {
+    pagination: Pagination,
+    documents: DocumentInfo[]
 }
 
 export interface DocumentDetail {

@@ -1,12 +1,3 @@
 th.meg {
     color: #525F7F;
 }
-/* Appliquer une couleur de fond aux lignes paires */
-table tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-
-/* Appliquer une couleur de fond aux lignes impaires */
-table tbody tr:nth-child(odd) {
-    background-color: #ffffff;
-}

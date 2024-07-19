@@ -10,12 +10,12 @@ import { TextInputComponent } from 'src/app/components/flux/text-input/text-inpu
 import { Data, Field } from 'src/app/model/field-form.model';
 import { DocumentService } from 'src/app/services/document.service';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
-import { SharedDataService } from 'src/app/services/sharedData.service';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LoadingTemplateComponent } from 'src/app/components/loading-template/loading-template.component';
 import { FluxService } from 'src/app/services/flux.service';
 import { FormsModule } from '@angular/forms';
+import { UserContextService } from 'src/app/services/user-context.service';
 
 @Component({
   selector: 'app-acte-form',
@@ -29,6 +29,8 @@ import { FormsModule } from '@angular/forms';
 })
 export class ActeFormComponent implements OnInit {
   fluxSelected = inject(FluxService).fluxSelected;
+  userCurrent = inject(UserContextService).userCurrent;
+
   acteName: string;
   fluxDetail: Data;
   fields: Field[] = [];
@@ -60,7 +62,6 @@ export class ActeFormComponent implements OnInit {
     private route: ActivatedRoute,
     private logger: NGXLogger,
     private fieldFluxService: FieldFluxService,
-    private sharedDataService: SharedDataService,
     private documentService: DocumentService,
     private router: Router,
     private fluxService: FluxService,
@@ -103,7 +104,7 @@ export class ActeFormComponent implements OnInit {
     this.pieces.set([]);
     const docInfo = this.collectFormData();
     const docUpdateInfo = {
-      entite_id: this.sharedDataService.getUser().user_info.id_e,
+      entite_id: this.userCurrent().user_info.id_e,
       doc_info: docInfo
     };
 
@@ -148,7 +149,7 @@ export class ActeFormComponent implements OnInit {
       const elementId = fileUpload.getIdField();
 
       if (files.length > 0) {
-        return this.documentService.uploadFiles(this.documentId, elementId, this.sharedDataService.getUser().user_info.id_e, files).pipe(
+        return this.documentService.uploadFiles(this.documentId, elementId, this.userCurrent().user_info.id_e, files).pipe(
           catchError(error => {
             this.logger.error('Error uploading files', error);
             return of(null);
@@ -161,7 +162,7 @@ export class ActeFormComponent implements OnInit {
   }
 
   deleteDocument(): void {
-    const entiteId = this.sharedDataService.getUser().user_info.id_e;
+    const entiteId = this.userCurrent().user_info.id_e;
     this.documentService.deleteDocument(this.documentId, entiteId).subscribe({
       next: (response) => this.logger.info('Document deleted successfully', response),
       error: (error) => this.logger.error('Error deleting document', error)
@@ -219,7 +220,7 @@ export class ActeFormComponent implements OnInit {
 
   fetchFileTypes(): void {
     //TODO changer pour la sélection d'entite
-    const entiteId = this.sharedDataService.getUser().user_info.id_e;
+    const entiteId = this.userCurrent().user_info.id_e;
     this.fluxService.get_externalData(entiteId, this.documentId, 'type_piece').subscribe({
       next: (response) => {
         this.fileTypes = response.actes_type_pj_list;
@@ -237,7 +238,7 @@ export class ActeFormComponent implements OnInit {
   }
 
   assignFileTypes(): void {
-    const entiteId = this.sharedDataService.getUser().user_info.id_e;
+    const entiteId = this.userCurrent().user_info.id_e;
     this.documentService.assignFileTypes(entiteId, this.documentId, 'type_piece', this.selectedTypes).subscribe({
       next: (response) => {
         this.logger.info('File types assigned successfully', response);

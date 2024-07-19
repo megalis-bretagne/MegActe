@@ -17,9 +17,49 @@
     @else {
     <div class="fr-grid-row">
         <div class="fr-col-9 fr-col-md-9">
-
             <h1>Liste des documents</h1>
         </div>
     </div>
     }
+
+    <div class="fr-table  fr-table--bordered fr-table--no-caption">
+        @if(is_loading) {
+        <app-loading-template />
+        } @else {
+        <table id="table-md" class="fr-text--sm">
+            @if (fluxSelected(); as fluxSelected) {
+            <caption> Documents {{fluxSelected.nom}} </caption>
+            } @else {
+            <caption>Documents</caption>
+            }
+            <thead>
+                <tr>
+                    <th scope="col" class="meg fr-col-xl-4  fr-col-lg-4 fr-col-md-4"> Titre </th>
+                    <th scope="col" class="meg fr-col-xl-2 fr-col-lg-2 fr-col-md-2"> Type </th>
+                    <th scope="col" class="meg fr-col-xl-2 fr-col-lg-2 fr-col-md-2"> Etat </th>
+                    <th scope="col" class="meg fr-col-xl-2 fr-col-lg-2 fr-col-md-2"> Date de modification </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (doc of documents(); track doc.id_d) {
+                <tr>
+                    <td>{{doc.titre || doc.id_d}}</td>
+                    <td>{{doc.type}}</td>
+                    <td>{{doc.last_action_display | stateDocument}}</td>
+                    <td>{{doc.last_action_date | date:'dd/MM/yyyy HH:mm'}}</td>
+                </tr>
+                }
+                @empty {
+                <tr>
+                    <td colspan="5">Aucun documents</td>
+                </tr>
+                }
+
+            </tbody>
+        </table>
+        }
+        @if (totalPages() > 1) {
+        <meg-pagination [pageActive]="pageActive()" [totalPages]="totalPages()" (onChangePage)="changePage($event)" />
+        }
+    </div>
 </div>

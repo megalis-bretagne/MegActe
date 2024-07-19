@@ -3,6 +3,8 @@ from typing import Dict, Any
 from fastapi import UploadFile
 from typing import List
 
+from .pagination import ResponsePagination
+
 
 class DocUpdateInfo(BaseModel):
     """
@@ -69,3 +71,15 @@ class AddFilesToDoc(BaseModel):
 
     entite_id: int
     files: List[UploadFile]
+
+
+class DocumentPaginate(BaseModel):
+    """
+    Modèle contenant la liste des documents, ainsi que les informations de pagination
+
+    Args:
+        BaseModel (_type_): _description_
+    """
+
+    documents: dict | list
+    pagination: ResponsePagination

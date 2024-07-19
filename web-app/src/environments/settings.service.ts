@@ -57,4 +57,8 @@ export class SettingsService {
         return this.settings.flowType[flowId];
     }
 
+    public getMappingStatusDocument() {
+        return this.settings.mappingStatusDocument;
+    }
+
 }

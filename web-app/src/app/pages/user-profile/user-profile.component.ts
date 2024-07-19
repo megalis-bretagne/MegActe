@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { LoadingTemplateComponent } from 'src/app/components/loading-template/loading-template.component';
+import { PaginationComponent } from 'src/app/components/pagination/pagination.component';
 import { UserContextService } from 'src/app/services/user-context.service';
 
 @Component({
@@ -8,15 +9,14 @@ import { UserContextService } from 'src/app/services/user-context.service';
   standalone: true,
   imports: [
     LoadingTemplateComponent,
-    CommonModule
+    CommonModule,
+    PaginationComponent
   ],
   templateUrl: './user-profile.component.html',
   styleUrls: ['./user-profile.component.scss']
 })
 export class UserProfileComponent {
   currentUser = inject(UserContextService).userCurrent;
-
-  currentPage = signal(1);
 
   //calculé en fonction du nombre d'entité de l'utilsateur
   totalPages = computed(() => {
@@ -26,36 +26,18 @@ export class UserProfileComponent {
     return 0;
   });
 
-  itemsPerPage: number = 15;
+  itemsPerPage: number = 5;
   paginatedEntities: any[] = [];
-  displayedPages: number[] = [];
-  visiblePages = 5;
 
 
   constructor() {
-    effect(() => {
-      const currentPage = this.currentPage();
-      const totalPage = this.totalPages();
-      if (totalPage > 0) {
-        this.updateDisplayedPages(currentPage, totalPage);
-      }
-    })
+    this.paginatedEntities = this.currentUser().entites.slice(1, this.itemsPerPage);
   }
 
-  changePage(page: number, event: Event) {
-    event.preventDefault();
-    if (page < 1 || page > this.totalPages()) return;
-    this.currentPage.set(page);
-  }
 
-  updateDisplayedPages(newPage: number, totalPage: number) {
+  updateDisplayedPages(newPage: number) {
     const start = (newPage - 1) * this.itemsPerPage;
     const end = start + this.itemsPerPage;
     this.paginatedEntities = this.currentUser().entites.slice(start, end);
-
-    const startPage = Math.max(1, newPage - Math.floor(this.visiblePages / 2));
-    const endPage = Math.min(totalPage, startPage + this.visiblePages - 1);
-
-    this.displayedPages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
   }
 }
