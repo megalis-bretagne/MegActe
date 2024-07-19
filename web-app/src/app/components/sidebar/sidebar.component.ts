@@ -6,6 +6,7 @@ import { UserContextService } from 'src/app/services/user-context.service';
 import { Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { FluxService } from 'src/app/services/flux.service';
+import { LoadingService } from 'src/app/services/loading.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -15,6 +16,7 @@ import { FluxService } from 'src/app/services/flux.service';
 export class SidebarComponent {
   userFlux = inject(UserContextService).userFlux
   userCurrent = inject(UserContextService).userCurrent;
+  loadingService = inject(LoadingService);
 
   fluxSelected = inject(FluxService).fluxSelected /** contient le flux sélectionné */
 
@@ -33,21 +35,20 @@ export class SidebarComponent {
   }
 
   createDoc(acte: Acte): void {
+    this.loadingService.showLoading("Création du document en cours ...");
     const docCreateInfo: DocCreateInfo = {
       entite_id: this.userCurrent().user_info.id_e,
       flux_type: acte.id,
       doc_info: {}
     };
 
-    this.documentService.createDocument(docCreateInfo).subscribe(
-      (response) => {
+    this.documentService.createDocument(docCreateInfo).subscribe({
+      next: (response) => {
         const documentId = response.content.info.id_d;
         this.router.navigate(['/acte', documentId]);
       },
-      (error) => {
-        this.logger.error('Error creating document:', error);
-      }
-    );
+      error: (error) => { this.logger.error('Error creating document:', error); },
+    })
   }
 
   selectFlux(acte: Acte) {

@@ -82,7 +82,7 @@
                         <p>{{ modalMessage }}</p>
                         }
                         @if (isSaving) {
-                        <app-loading-template />
+                        <meg-loading />
                         }
                         @if (isCreationSuccess && fetchedFileType && !isSuccess) {
                         <h3>{{file_type_field['name']}}</h3>

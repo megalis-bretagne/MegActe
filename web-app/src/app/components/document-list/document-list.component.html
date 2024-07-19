@@ -2,9 +2,7 @@
     @if (fluxSelected(); as fluxSelected) {
     <div class="fr-grid-row">
         <div class="fr-col-9 fr-col-md-9">
-
             <h1>Liste des documents {{fluxSelected.nom}}</h1>
-
         </div>
         <div class="fr-col-3 fr-col-md-3">
             <button class="fr-btn" (click)="createDoc()">
@@ -24,7 +22,7 @@
 
     <div class="fr-table  fr-table--bordered fr-table--no-caption">
         @if(is_loading) {
-        <app-loading-template />
+        <meg-loading [message]="'Chargement des documents en cours...'" />
         } @else {
         <table id="table-md" class="fr-text--sm">
             @if (fluxSelected(); as fluxSelected) {

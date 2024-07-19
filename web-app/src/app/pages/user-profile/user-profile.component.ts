@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { LoadingTemplateComponent } from 'src/app/components/loading-template/loading-template.component';
+import { LoadingComponent } from 'src/app/components/loading-component/loading.component';
 import { PaginationComponent } from 'src/app/components/pagination/pagination.component';
 import { UserContextService } from 'src/app/services/user-context.service';
 
@@ -8,7 +8,7 @@ import { UserContextService } from 'src/app/services/user-context.service';
   selector: 'app-user-profile',
   standalone: true,
   imports: [
-    LoadingTemplateComponent,
+    LoadingComponent,
     CommonModule,
     PaginationComponent
   ],

@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, QueryList, ViewChildren, signal } from '@angular/core';
+import { Component, effect, inject, QueryList, ViewChildren, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { CheckboxInputComponent } from 'src/app/components/flux/checkbox-input/checkbox-input.component';
@@ -12,7 +12,7 @@ import { DocumentService } from 'src/app/services/document.service';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { LoadingTemplateComponent } from 'src/app/components/loading-template/loading-template.component';
+import { LoadingComponent } from 'src/app/components/loading-component/loading.component';
 import { FluxService } from 'src/app/services/flux.service';
 import { FormsModule } from '@angular/forms';
 import { UserContextService } from 'src/app/services/user-context.service';
@@ -21,13 +21,13 @@ import { UserContextService } from 'src/app/services/user-context.service';
   selector: 'app-acte-form',
   standalone: true,
   imports: [
-    LoadingTemplateComponent, ExternalDataInputComponent, FileUploadComponent,
+    LoadingComponent, ExternalDataInputComponent, FileUploadComponent,
     DateInputComponent, SelectInputComponent, CheckboxInputComponent, TextInputComponent, FormsModule
   ],
   templateUrl: './acte-form.component.html',
   styleUrls: ['./acte-form.component.scss']
 })
-export class ActeFormComponent implements OnInit {
+export class ActeFormComponent {
   fluxSelected = inject(FluxService).fluxSelected;
   userCurrent = inject(UserContextService).userCurrent;
 
@@ -69,10 +69,7 @@ export class ActeFormComponent implements OnInit {
     effect(() => {
       this.acteName = this.fluxSelected().nom;
     })
-  }
 
-
-  ngOnInit(): void {
     this.route.data.subscribe(data => {
       this.fluxDetail = data['docDetail'].flux;
       const flowId = data['docDetail'].document.info.type;
@@ -92,6 +89,7 @@ export class ActeFormComponent implements OnInit {
       }
     });
   }
+
 
   save(): void {
     if (!this.validateForm()) {
