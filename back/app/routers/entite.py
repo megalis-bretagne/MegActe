@@ -1,8 +1,5 @@
 from fastapi import APIRouter, Depends, Query
 from typing import Annotated
-from typing import Dict
-
-from pydantic import BaseModel
 
 from ..schemas.pagination import ResponsePagination
 from ..schemas.document_schemas import DocumentPaginate

@@ -1,4 +1,5 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { inject, Pipe, PipeTransform } from '@angular/core';
+import { SettingsService } from 'src/environments/settings.service';
 
 @Pipe({
   name: 'stateDocument',
@@ -6,12 +7,21 @@ import { Pipe, PipeTransform } from '@angular/core';
 })
 export class StateDocumentPipe implements PipeTransform {
 
+  /**
+   * Surcharge du mapping
+   */
+  mapStatusDocument = inject(SettingsService).getMappingStatusDocument();
+
   transform(state: string): unknown {
-    return this.displayMapping[state] || state;
+    if (this.mapStatusDocument) { // si le mapping est surchargé en settings, il est prioritaire
+      return this.mapStatusDocument[state] || this.defaultMapping[state] || state
+    }
+    return this.defaultMapping[state] || state;
   }
 
-  private displayMapping: { [key: string]: string } = {
+  private defaultMapping: { [key: string]: string } = {
     'termine': 'Traitement terminé',
+    'error-ged': 'Erreur lors du dépôt à la GED',
     'accepter-sae': 'Archiver SAE',
     'tdt-error': 'Erreur transmission tdt',
     'recu-iparapheur': 'Transmis au parapheur',

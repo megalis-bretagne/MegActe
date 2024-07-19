@@ -26,4 +26,5 @@ export class Settings {
         'deliberations-studio': ['document_papier', 'autre_document_attache', 'publication_open_data'],
         'acte-generique': ['document_papier']
     };
+    mappingStatusDocument: { [key: string]: string } = {}
 }
