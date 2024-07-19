@@ -19,8 +19,12 @@ source .venv/bin/activate
 
 * installer les dépendances
 ```
-pip install -r requirements.txt
-pip install -r requirements_dev.txt
+pip install pip-tools
+
+
+# Pour mettre à jour les dépendances épinglées
+pip-compile --resolver=backtracking && pip-compile --resolver=backtracking requirements_dev.in
+pip install -r requirements.txt -r requirements_dev.txt
 ```
 
 ## Configuration
