@@ -1,63 +1,102 @@
 <div class="fr-container--fluid">
     <div class="fr-grid-row">
         <div class="fr-col-9 fr-col-md-9">
-
             <h1>Télétransmission des {{ acteName }}</h1>
-
         </div>
-
     </div>
 
     <div class="fr-grid-row">
-        <div class="content-box">
-            @if (globalErrorMessage) {
-            <div class="fr-alert fr-alert--error" role="alert">
-                {{ globalErrorMessage }}
-            </div>
-            }
-            @for (field of filteredFields; track field.idField) {
-            <div class="input-container">
-                @switch (field.type) {
-                @case ('text') {
-                <meg-text-input [idField]="field.idField" [required]="field['requis']" [pregMatch]="field['preg_match']"
-                    [comment]="field['commentaire']" [multiple]="field['multiple']" [index]="field['index']"
-                    [name]="field['name']" [pregMatchError]="field['preg_match_error']" />
+        <div class="content-box fr-col-12 fr-col-md-12">
+            <div class="fr-stepper">
+                <h2 class="fr-stepper__title">
+                    <span class="fr-stepper__state">Étape {{ currentStep }} sur 2</span>
+                </h2>
+                <div class="fr-stepper__steps" [attr.data-fr-current-step]="currentStep" data-fr-steps="2"></div>
+                @if (currentStep === 1) {
+                <div>
+                    @for (field of filteredFields; track field.idField) {
+                    <div class="input-container">
+                        @switch (field.type) {
+                        @case ('text') {
+                        <meg-text-input [idField]="field.idField" [required]="field['requis']"
+                            [pregMatch]="field['preg_match']" [comment]="field['commentaire']"
+                            [multiple]="field['multiple']" [index]="field['index']" [name]="field['name']"
+                            [pregMatchError]="field['preg_match_error']" />
+                        }
+                        @case ('checkbox') {
+                        <meg-checkbox-input [idField]="field.idField" [name]="field['name']"
+                            [required]="field['requis']" [readOnly]="field['read-only']"
+                            [defaultChecked]="field['default'] === 'checked'" />
+                        }
+                        @case ('select') {
+                        <meg-select-input [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
+                            [multiple]="field['multiple']" [readOnly]="field['read-only']" [options]="field['value']"
+                            [comment]="field['commentaire']" />
+                        }
+                        @case ('date') {
+                        <meg-date-input [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
+                            [default]="field['default']" [comment]="field['commentaire']" />
+                        }
+                        @case ('file') {
+                        <meg-file-upload [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
+                            [multiple]="field['multiple']" [comment]="field['commentaire']" />
+                        }
+                        @case ('externalData') {
+                        <meg-external-data-input [idField]="field.idField" [name]="field['name']"
+                            [required]="field['requis']" [link_name]="field['link_name']" [documentId]="documentId" />
+                        }
+                        }
+                    </div>
+                    }
+
+                    <div class="fr-fieldset__element">
+                        <ul class="fr-btns-group--right fr-btns-group fr-btns-group--inline">
+                            <li>
+                                <button class="fr-mt-2v fr-btn" type="button" (click)="save()" data-fr-opened="false"
+                                    aria-controls="fr-modal">Suivant</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
                 }
-                @case ('checkbox') {
-                <meg-checkbox-input [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
-                    [readOnly]="field['read-only']" [defaultChecked]="field['default'] === 'checked'" />
+                @if (currentStep === 2) {
+                <div>
+                    <h3>{{file_type_field['name']}}</h3>
+                    @for (piece of pieces(); track piece; let idx = $index) {
+                    <div class="fr-select-group" [class.fr-select-group--error]="!isTypeSelected(idx)">
+                        <label class="fr-label" for="select-error-{{ idx }}"> {{ piece }} <span
+                                class="required-star">*</span>
+                        </label>
+                        <select class="fr-select" [class.fr-select--error]="!isTypeSelected(idx)"
+                            aria-describedby="select-error-desc-error" id="select-error-{{ idx }}" name="select-error"
+                            [(ngModel)]="selectedTypes[idx]" required>
+                            <option value="" selected disabled hidden>Sélectionner un type</option>
+                            @for (key of objectKeys(fileTypes); track key) {
+                            <option [value]="key">{{ fileTypes[key] }}</option>
+                            }
+                        </select>
+                        @if (!isTypeSelected(idx)) {
+                        <p id="select-error-desc-error" class="fr-error-text">
+                            Ce champ est requis
+                        </p>
+                        }
+                    </div>
+                    }
+                    <div class="fr-fieldset__element">
+                        <ul class="fr-btns-group--right fr-btns-group fr-btns-group--inline">
+                            <li>
+                                <button class="fr-mt-2v fr-btn" type="button" (click)="assignFileTypes()"
+                                    data-fr-opened="false" aria-controls="fr-modal"
+                                    [disabled]="!isFormFileTypesValid()">Enregistrer</button>
+                            </li>
+                            <li>
+                                <button class="fr-mt-2v fr-btn" type="button" data-fr-opened="false"
+                                    aria-controls="fr-modal" [disabled]="!isFormFileTypesValid()">Transmettre</button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
                 }
-                @case ('select') {
-                <meg-select-input [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
-                    [multiple]="field['multiple']" [readOnly]="field['read-only']" [options]="field['value']"
-                    [comment]="field['commentaire']" />
-                }
-                @case ('date') {
-                <meg-date-input [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
-                    [default]="field['default']" [comment]="field['commentaire']" />
-                }
-                @case ('file') {
-                <meg-file-upload [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
-                    [multiple]="field['multiple']" [comment]="field['commentaire']" />
-                }
-                @case ('externalData') {
-                <meg-external-data-input [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
-                    [link_name]="field['link_name']" [documentId]="documentId" />
-                }
-                }
-            </div>
-            }
-            <div class="fr-fieldset__element">
-                <ul class="fr-btns-group--right fr-btns-group fr-btns-group--inline">
-                    <li>
-                        <button class="fr-mt-2v fr-btn" type="button" (click)="save()" data-fr-opened="false"
-                            aria-controls="fr-modal">Enregistrer</button>
-                    </li>
-                    <li>
-                        <button class="fr-mt-2v fr-btn" type="button" data-fr-opened="false"
-                            aria-controls="fr-modal">Transmettre</button>
-                    </li>
-                </ul>
             </div>
         </div>
     </div>
@@ -69,51 +108,17 @@
             <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
                 <div class="fr-modal__body">
                     <div class="fr-modal__header">
-                        @if (!isValid) {
+                        @if (!isValid || !isValidTypeForm) {
                         <button class="fr-btn--close fr-btn" title="Fermer la fenêtre modale" aria-controls="fr-modal"
                             (click)="closeModal()">Fermer</button>
                         }
                     </div>
                     <div class="fr-modal__content">
-                        @if (!isValid && !isCreationSuccess) {
+                        @if (isSaving && !isCreationSuccess) {
+                        <meg-loading /> }
+                        @if(!isSaving && !isCreationSuccess && !isSuccess) {
                         <p class="fr-badge" [class]="isSuccess ? 'fr-badge--success' : 'fr-badge--error'">
                             {{ isSuccess ? 'Succès' : 'Erreur' }}
-                        </p>
-                        <p>{{ modalMessage }}</p>
-                        }
-                        @if (isSaving) {
-                        <meg-loading />
-                        }
-                        @if (isCreationSuccess && fetchedFileType && !isSuccess) {
-                        <h3>{{file_type_field['name']}}</h3>
-                        <!--- TODO ne pas afficher si pas de type_piece -->
-                        @for (piece of pieces(); track piece; let idx = $index) {
-                        <div class="fr-select-group" [class.fr-select-group--error]="!isTypeSelected(idx)">
-                            <label class="fr-label" for="select-error-{{ idx }}"> {{ piece }} <span
-                                    class="required-star">*</span>
-                            </label>
-                            <select class="fr-select" [class.fr-select--error]="!isTypeSelected(idx)"
-                                aria-describedby="select-error-desc-error" id="select-error-{{ idx }}"
-                                name="select-error" [(ngModel)]="selectedTypes[idx]" required>
-                                <option value="" selected disabled hidden>Sélectionner un type</option>
-                                @for (key of objectKeys(fileTypes); track key) {
-                                <option [value]="key">{{ fileTypes[key] }}</option>
-                                }
-                            </select>
-                            @if (!isTypeSelected(idx) ) {
-                            <p id="select-error-desc-error" class="fr-error-text">
-                                Ce champ est requis
-                            </p> }
-                        </div>
-                        }
-                        <button class="fr-btn" (click)="assignFileTypes()"
-                            [disabled]="!isFormFileTypesValid()">Envoyer</button>
-
-                        }
-
-                        @if (isCreationSuccess && isSuccess) {
-                        <p class="fr-badge" [class]="isSuccess ? 'fr-badge--success' : 'fr-badge--error'">
-                            {{ isSend ? 'Succès' : 'Erreur' }}
                         </p>
                         <p>{{ modalMessage }}</p>
                         }
