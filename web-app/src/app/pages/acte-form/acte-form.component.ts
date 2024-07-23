@@ -76,10 +76,11 @@ export class ActeFormComponent {
     this.route.data.subscribe(data => {
       this.fluxDetail = data['docDetail'].flux;
       const flowId = data['docDetail'].document.info.type;
+      // TODO récupérer les info du document dans data['docDetail'].document
       this.documentId = this.route.snapshot.paramMap.get('documentId');
-
       if (this.fluxDetail) {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
+        // @TODO check type_piece existe
         this.filteredFields =
           this.fieldFluxService.filterFields(this.fields, flowId)
             .filter(field => field.idField !== 'type_piece');
@@ -110,6 +111,7 @@ export class ActeFormComponent {
       doc_info: docInfo
     };
 
+    // Création d'un observable pour la mise à jour du document
     const updateDocument$ = this.documentService.updateDocument(this.documentId, docUpdateInfo).pipe(
       catchError(error => {
         this.logger.error('Error updating document', error);
@@ -117,8 +119,12 @@ export class ActeFormComponent {
       })
     );
 
+    // Téléchargement de fichiers
     const fileUploadObservables = this.uploadFiles().filter(obs => obs !== null);
 
+    // @TODO, check avant si les fichiers sont déjà présent dans pastell.
+
+    // Utilisation de forkJoin 
     forkJoin([...fileUploadObservables, updateDocument$]).subscribe({
       next: () => {
         this.fetchFileTypes();
@@ -130,6 +136,7 @@ export class ActeFormComponent {
   }
 
   fetchFileTypes(): void {
+    //TODO changer pour la sélection d'entite
     const entiteId = this.userCurrent().user_info.id_e;
     this.fluxService.get_externalData(entiteId, this.documentId, 'type_piece').subscribe({
       next: (response) => {
