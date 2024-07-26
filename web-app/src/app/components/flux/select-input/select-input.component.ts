@@ -15,17 +15,13 @@ export class SelectInputComponent extends BaseInputComponent implements OnInit {
 
 
   override ngOnInit() {
-    // Ajouter une option par défaut
-    this.options = { '': 'Sélectionner une option', ...this.options };
     super.ngOnInit();
 
     // Si le champ est requis et qu'il y a une seule option, cette option sera sélectionnée par défaut
-    if (this.required && Object.keys(this.options).length === 2) {
-      const singleValue = Object.keys(this.options).find(idField => idField !== '');
-      if (singleValue) {
-        this.formControl.setValue(singleValue);
-        this.formControl.disable();
-      }
+    const optionKeys = Object.keys(this.options);
+    if (this.required && optionKeys.length === 1) {
+      this.formControl.setValue(optionKeys[0]);
+      this.formControl.disable();
     }
   }
 
@@ -40,6 +36,4 @@ export class SelectInputComponent extends BaseInputComponent implements OnInit {
   override getValidators(): ValidatorFn[] {
     return this.required ? [Validators.required] : [];
   }
-
-
 }

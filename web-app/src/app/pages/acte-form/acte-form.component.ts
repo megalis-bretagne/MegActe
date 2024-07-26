@@ -17,6 +17,7 @@ import { FluxService } from 'src/app/services/flux.service';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserContextService } from 'src/app/services/user-context.service';
 import { CommonModule } from '@angular/common';
+import { DocumentInfo } from 'src/app/model/document.model';
 
 @Component({
   selector: 'app-acte-form',
@@ -34,6 +35,7 @@ export class ActeFormComponent {
 
   acteName: string;
   fluxDetail: Data;
+  documentInfo: DocumentInfo;
   fields: Field[] = [];
   filteredFields: Field[] = [];
   documentId: string;
@@ -51,6 +53,7 @@ export class ActeFormComponent {
   isSaving = false;
   modalMessage: string;
 
+  formValues: { [idField: string]: any } = {};
 
   @ViewChildren(TextInputComponent) textInputs: QueryList<TextInputComponent>;
   @ViewChildren(CheckboxInputComponent) checkboxInputs: QueryList<CheckboxInputComponent>;
@@ -75,17 +78,25 @@ export class ActeFormComponent {
 
     this.route.data.subscribe(data => {
       this.fluxDetail = data['docDetail'].flux;
+      this.documentInfo = data['docDetail'].document;
       const flowId = data['docDetail'].document.info.type;
-      // TODO récupérer les info du document dans data['docDetail'].document
-      this.documentId = this.route.snapshot.paramMap.get('documentId');
+      this.documentId = this.documentInfo['info'].id_d;
+
+      console.log("this.documentInfo['data']" + JSON.stringify(this.documentInfo['data'], null, 10))
+      console.log("this.documentInfo" + JSON.stringify(this.documentInfo, null, 4))
+
+
       if (this.fluxDetail) {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
         // @TODO check type_piece existe
         this.filteredFields =
           this.fieldFluxService.filterFields(this.fields, flowId)
             .filter(field => field.idField !== 'type_piece');
+        console.log("this.filteredFields" + JSON.stringify(this.filteredFields, null, 4))
+
 
         this.file_type_field = this.fields.find(field => field.idField === 'type_piece');
+        this.populateFormFields(this.documentInfo['data']);
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
@@ -96,7 +107,6 @@ export class ActeFormComponent {
     if (this.validateForm()) {
       this.globalErrorMessage = '';
       this.isLoading = true;
-      this.openModal();
       this.save();
     } else {
       this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
@@ -175,13 +185,16 @@ export class ActeFormComponent {
     if (this.isFormFileTypesValid()) {
       this.isSaving = true;
       this.assignFileTypes();
+      console.log("this.isFormFileTypesValid() | True : " + this.isFormFileTypesValid())
     } else {
+      console.log("this.isFormFileTypesValid() | False : " + this.isFormFileTypesValid())
+      this.formSubmitted = false;
       this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
     }
   }
 
   isFormFileTypesValid(): boolean {
-    return this.selectedTypes.every((type) => type !== '');
+    return this.selectedTypes.every((type) => type !== '' && type !== undefined);
   }
 
   assignFileTypes(): void {
@@ -206,6 +219,23 @@ export class ActeFormComponent {
   onSelectChange(event: Event, index: number): void {
     const value = (event.target as HTMLSelectElement).value;
     this.selectedTypes[index] = value;
+  }
+  onPreviousStepClick() {
+    this.currentStep = 1;
+    this.isLoading = false;
+    this.loadDocumentData();
+    console.log("this.formValues: " + JSON.stringify(this.formValues, null, 4));
+  }
+
+  loadDocumentData(): void {
+    this.documentService.getDocumentById(this.documentId, this.userCurrent().user_info.id_e).subscribe({
+      next: (document) => {
+        this.populateFormFields(document.data);
+      },
+      error: (error) => {
+        this.logger.error('Error fetching document details', error);
+      }
+    });
   }
 
   collectFormData(): { [idField: string]: any } {
@@ -257,6 +287,109 @@ export class ActeFormComponent {
   }
 
 
+  // Vérification pour chaque champ afin de voir s'il a une valeur dj définie 
+  populateFormFields(data: { [key: string]: any }): void {
+    this.textInputs.forEach(comp => {
+      const idField = comp.getIdField();
+      if (data.hasOwnProperty(idField)) {
+        const value = data[idField];
+        console.log(`TextInput ${idField}: ${value}`);
+        if (this.hasValidValue(value)) {
+          comp.formControl.setValue(value);
+        }
+      }
+    });
+
+    this.checkboxInputs.forEach(comp => {
+      const idField = comp.getIdField();
+      if (data.hasOwnProperty(idField)) {
+        const value = data[idField];
+        console.log(`CheckboxInput ${idField}: ${value}`);
+        if (this.hasValidValue(value)) {
+          comp.formControl.setValue(value);
+        }
+      }
+    });
+
+    this.selectInputs.forEach(comp => {
+      const idField = comp.getIdField();
+      const optionKeys = Object.keys(comp.options)
+      console.log("optionKeys: " + idField + "|" + optionKeys)
+      if (comp.required && optionKeys.length === 1) {
+        comp.formControl.setValue(optionKeys);
+        console.log(`SelectInput ${idField}: set default single value ${optionKeys}`);
+      } else if (data.hasOwnProperty(idField)) {
+        const value = data[idField];
+        console.log(`SelectInput ${idField}: ${value}`);
+        if (this.hasValidValue(value)) {
+          comp.formControl.setValue(value);
+        }
+      }
+    });
+
+    this.dateInputs.forEach(comp => {
+      const idField = comp.getIdField();
+      if (data.hasOwnProperty(idField)) {
+        const value = data[idField];
+        console.log(`DateInput ${idField}: ${value}`);
+        if (this.hasValidValue(value)) {
+          comp.formControl.setValue(value);
+        }
+      }
+    });
+
+    this.externalDataInputs.forEach(comp => {
+      const idField = comp.getIdField();
+      if (data.hasOwnProperty(idField)) {
+        const value = data[idField];
+        console.log(`ExternalDataInput ${idField}: ${value}`);
+        if (this.hasValidValue(value)) {
+          comp.formControl.setValue(value);
+        }
+      }
+    });
+
+    this.fileUploads.forEach(comp => {
+      const idField = comp.getIdField();
+      console.log("id FILED fILE:", idField)
+      const existingFiles = data[idField];
+      console.log("existingFiles", existingFiles)
+      if (existingFiles && existingFiles.length) {
+        existingFiles.forEach((fileName: string) => {
+          this.documentService.downloadFileByName(this.userCurrent().user_info.id_e, this.documentId, idField, fileName).subscribe({
+            next: (blob) => {
+              if (blob) {
+                const file = new File([blob], fileName, { type: blob.type });
+                comp.formControl.setValue(file);
+                console.log("file.name", file.name)
+                console.log("file.type", file.type)
+                console.log("file.size", file.size)
+                console.log("File uploaded ", file)
+              }
+            },
+            error: (error) => {
+              this.logger.error('Error downloading file', error);
+            }
+          });
+        });
+      }
+    });
+  }
+
+  // Helper method to check if a value is valid (not null, not empty string, not empty array)
+  hasValidValue(value: any): boolean {
+    if (value === null || value === undefined) {
+      return false;
+    }
+    if (typeof value === 'string' && value.trim() === '') {
+      return false;
+    }
+    if (Array.isArray(value) && value.length === 0) {
+      return false;
+    }
+    return true;
+  }
+
   isTypeSelected(index: number): boolean {
     return this.selectedTypes[index] !== '' && this.selectedTypes[index] !== undefined;
   }
@@ -264,7 +397,7 @@ export class ActeFormComponent {
   scheduleRedirect(): void {
     setTimeout(() => {
       this.router.navigate(['/documents', this.acteName]);
-    }, 3000);
+    }, 4000);
   }
 
   objectKeys(obj: any): string[] {

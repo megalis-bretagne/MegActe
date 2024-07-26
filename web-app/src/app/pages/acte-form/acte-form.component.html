@@ -95,8 +95,14 @@
                         }
                     </div>
                     }
-                    <div class="fr-fieldset__element">
-                        <ul class="fr-btns-group--right fr-btns-group fr-btns-group--inline">
+                    <div class="fr-fieldset__element clearfix">
+                        <ul class="fr-btns-group--left fr-btns-group fr-btns-group--inline btn-left">
+                            <li>
+                                <button class="fr-mt-2v fr-btn fr-btn--secondary" type="button"
+                                    (click)="onPreviousStepClick()">Précédent</button>
+                            </li>
+                        </ul>
+                        <ul class="fr-btns-group--right fr-btns-group fr-btns-group--inline btn-right">
                             <li>
                                 <button class="fr-mt-2v fr-btn" type="button" (click)="onAssignFileTypesClick()"
                                     data-fr-opened="false" aria-controls="fr-modal">Enregistrer</button>
@@ -114,7 +120,7 @@
     </div>
 </div>
 
-@if(formSubmitted && isFormFileTypesValid()) {
+@if(formSubmitted && isSaving) {
 <dialog aria-labelledby="fr-modal-title" id="fr-modal" class="fr-modal">
     <div class="fr-container fr-container--fluid fr-container-md">
         <div class="fr-grid-row fr-grid-row--center">

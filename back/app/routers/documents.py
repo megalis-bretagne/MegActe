@@ -3,6 +3,7 @@ from typing import List
 
 from ..clients.pastell.api import ApiPastell
 from ..routers import get_or_make_api_pastell
+from fastapi.responses import StreamingResponse
 
 from ..services.document_service import (
     update_document_service,
@@ -15,6 +16,7 @@ from ..services.document_service import (
     cancel_transfer_tdt_document_service,
     transfer_tdt_document_service,
     assign_file_types_service,
+    get_file_by_name_service,
 )
 
 from ..schemas.document_schemas import (
@@ -90,6 +92,20 @@ def delete_file_from_document(
 ):
     return delete_file_from_document_service(
         document_id, element_id, request_data, client
+    )
+
+
+# Récupérer les fichiers liés à un document
+@router.get("/document/{document_id}/file/{element_id}/{file_name}", tags=["document"])
+def get_file_for_document(
+    document_id: str,
+    entite_id: int,
+    element_id: str,
+    file_name: str,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return get_file_by_name_service(
+        entite_id, document_id, element_id, file_name, client
     )
 
 

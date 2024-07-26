@@ -107,4 +107,14 @@ export class DocumentService {
             })
         );
     }
+
+    downloadFileByName(entiteId: number, documentId: string, elementId: string, fileName: string): Observable<Blob> {
+        return this.http.get(`${this.settingsService.apiUrl}/document/${documentId}/file/${elementId}/${fileName}?entite_id=${entiteId}`, { responseType: 'blob' }).pipe(
+            catchError((error) => {
+                this.logger.error('Error downloading file', error);
+                return of(null);
+            })
+        );
+    }
+
 }

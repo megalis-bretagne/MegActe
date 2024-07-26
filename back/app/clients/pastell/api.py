@@ -81,6 +81,10 @@ class ApiPastell:
         )
         response.raise_for_status()
 
+        # Retourner l'objet de réponse brut pour les requêtes GET de fichiers
+        if method == "GET" and "file" in url:
+            return response
+
         if not response.content:
             return None
 

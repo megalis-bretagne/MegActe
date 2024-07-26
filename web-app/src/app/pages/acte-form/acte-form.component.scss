@@ -18,3 +18,17 @@
 .input-container {
     margin-bottom: 1rem;
 }
+
+.btn-left {
+    float: left;
+}
+
+.btn-right {
+    float: right;
+}
+
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}

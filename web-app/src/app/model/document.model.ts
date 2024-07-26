@@ -42,6 +42,25 @@ export interface DocumentDetail {
         modification: string;
     };
 
+    data: {
+        envoi_tdt_actes?: string;
+        envoi_depot?: string;
+        envoi_sae?: string;
+        numero_de_lacte?: string;
+        objet?: string;
+        document_papier?: string;
+        acte_nature?: string;
+        publication_open_data?: string;
+        date_de_lacte?: string;
+        classification?: string;
+        arrete?: string[];
+        autre_document_attache?: string[];
+        type_piece?: string;
+        type_acte?: string;
+        type_pj?: string;
+        type_piece_fichier?: string[];
+    };
+
     last_action: {
         action: string;
         message: string;

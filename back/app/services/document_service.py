@@ -9,6 +9,12 @@ from ..schemas.document_schemas import (
     AddFileToDoc,
 )
 from fastapi import HTTPException
+from io import BytesIO
+from fastapi.responses import StreamingResponse
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def create_empty_document(entite_id: int, flux_type: str, client_api: ApiPastell):
@@ -398,3 +404,48 @@ def list_documents_paginate(
 
     response = client_api.perform_get(url, query_params=query_param)
     return response
+
+
+def get_file_by_name_service(
+    entite_id: int,
+    document_id: str,
+    element_id: str,
+    file_name: str,
+    client_api: ApiPastell,
+):
+    """Récupère un fichier spécifique par son nom depuis Pastell.
+
+    Args:
+        entite_id (int): L'ID de l'entité.
+        document_id (str): L'ID du document.
+        element_id (str): L'ID de l'élément auquel le fichier est associé.
+        file_name (str): Le nom du fichier à récupérer.
+        client_api (ApiPastell): client api
+
+    Returns:
+        Response: La réponse de l'API Pastell contenant le fichier.
+    """
+    existing_files = get_existing_files(entite_id, document_id, element_id, client_api)
+    logger.info(f"----Found existing files: {existing_files}")
+
+    try:
+        file_index = existing_files.index(file_name)
+        logger.info(f"----Found file index: {file_index}")
+    except ValueError:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    response = client_api.perform_get(
+        f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_index}"
+    )
+
+    if response is None or response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Error retrieving file")
+
+    file_content = BytesIO(response.content)
+    logger.info(f"---- file_size: { file_content.getbuffer().nbytes}")
+
+    return StreamingResponse(
+        file_content,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f"attachment; filename={file_name}"},
+    )
