@@ -14,7 +14,7 @@
                 <div class="fr-stepper__steps" [attr.data-fr-current-step]="currentStep" data-fr-steps="2"></div>
                 @if (currentStep === 1) {
                 <div class="step-container">
-                    @if (globalErrorMessage) {
+                    @if (globalErrorMessage && !validateForm()) {
                     <div class="fr-alert fr-alert--error" role="alert">
                         {{ globalErrorMessage }}
                     </div>
@@ -57,8 +57,8 @@
                     <div class="fr-fieldset__element">
                         <ul class="fr-btns-group--right fr-btns-group fr-btns-group--inline">
                             <li>
-                                <button class="fr-mt-2v fr-btn" type="button" (click)="onNextStepClick()"
-                                    data-fr-opened="false" aria-controls="fr-modal">Suivant</button>
+                                <button class="fr-mt-2v fr-btn" type="button"
+                                    (click)="onNextStepClick()">Suivant</button>
                             </li>
                         </ul>
                     </div>
@@ -70,17 +70,18 @@
                 @if (currentStep === 2) {
                 <div class="step-container">
                     <h3 class="step-title">{{file_type_field['name']}}</h3>
-                    @if (globalErrorMessage) {
+                    @if (globalErrorMessage && !isFormFileTypesValid()) {
                     <div class="fr-alert fr-alert--error" role="alert">
                         {{ globalErrorMessage }}
                     </div>
                     }
                     @for (piece of pieces(); track piece; let idx = $index) {
-                    <div class="fr-select-group" [class.fr-select-group--error]="!isTypeSelected(idx) && formSubmitted">
+                    <div class="fr-select-group"
+                        [class.fr-select-group--error]="!isTypeSelected(idx) && isformSubmitted">
                         <label class="fr-label" for="select-error-{{ idx }}"> {{ piece }} <span
                                 class="required-star">*</span>
                         </label>
-                        <select class="fr-select" [class.fr-select--error]="!isTypeSelected(idx) && formSubmitted"
+                        <select class="fr-select" [class.fr-select--error]="!isTypeSelected(idx) && isformSubmitted"
                             aria-describedby="select-error-desc-error" id="select-error-{{ idx }}" name="select-error"
                             (change)="onSelectChange($event, idx)" required>
                             <option value="" selected disabled hidden>Sélectionner un type</option>
@@ -88,7 +89,7 @@
                             <option [value]=" key">{{ fileTypes[key] }}</option>
                             }
                         </select>
-                        @if (!isTypeSelected(idx) && formSubmitted) {
+                        @if (!isTypeSelected(idx) && isformSubmitted) {
                         <p id="select-error-desc-error" class="fr-error-text">
                             Ce champ est requis
                         </p>
@@ -120,13 +121,16 @@
     </div>
 </div>
 
-@if(formSubmitted && isSaving) {
 <dialog aria-labelledby="fr-modal-title" id="fr-modal" class="fr-modal">
     <div class="fr-container fr-container--fluid fr-container-md">
         <div class="fr-grid-row fr-grid-row--center">
             <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
                 <div class="fr-modal__body">
                     <div class="fr-modal__header">
+                        @if(!isFormFileTypesValid()){
+                        <button class="fr-btn--close fr-btn" title="Fermer la fenêtre modale"
+                            aria-controls="fr-modal">Fermer</button>
+                        }
                     </div>
                     <div class="fr-modal__content">
                         @if (isSaving ) {
@@ -137,10 +141,15 @@
                         </p>
                         <p>{{ modalMessage }}</p>
                         }
+                        @if(!isFormFileTypesValid()){
+                        <p class="fr-badge fr-badge--error">
+                            Erreur
+                        </p>
+                        <p>{{ modalMessage }}</p>
+                        }
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </dialog>
-}

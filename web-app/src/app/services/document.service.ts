@@ -117,4 +117,13 @@ export class DocumentService {
         );
     }
 
+    deleteFileFromDocument(documentId: string, elementId: string, entiteId: number, fileName: string): Observable<any> {
+        const body = { entite_id: entiteId, file_name: fileName };
+        return this.http.request<any>('delete', `${this.settingsService.apiUrl}/document/${documentId}/file/${elementId}`, { body }).pipe(
+            catchError((error) => {
+                this.logger.error('Error deleting file from document', error);
+                return throwError(() => error);
+            })
+        );
+    }
 }

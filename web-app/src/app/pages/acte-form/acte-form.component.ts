@@ -47,7 +47,7 @@ export class ActeFormComponent {
   currentStep = 1;
   globalErrorMessage: string;
   isFormValid = true;
-  formSubmitted = false;
+  isformSubmitted: boolean = false;
   isTypoSuccess: boolean = null;
   isLoading = false;
   isSaving = false;
@@ -82,18 +82,12 @@ export class ActeFormComponent {
       const flowId = data['docDetail'].document.info.type;
       this.documentId = this.documentInfo['info'].id_d;
 
-      console.log("this.documentInfo['data']" + JSON.stringify(this.documentInfo['data'], null, 10))
-      console.log("this.documentInfo" + JSON.stringify(this.documentInfo, null, 4))
-
-
       if (this.fluxDetail) {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
         // @TODO check type_piece existe
         this.filteredFields =
           this.fieldFluxService.filterFields(this.fields, flowId)
             .filter(field => field.idField !== 'type_piece');
-        console.log("this.filteredFields" + JSON.stringify(this.filteredFields, null, 4))
-
 
         this.file_type_field = this.fields.find(field => field.idField === 'type_piece');
         this.populateFormFields(this.documentInfo['data']);
@@ -129,20 +123,66 @@ export class ActeFormComponent {
       })
     );
 
-    // Téléchargement de fichiers
-    const fileUploadObservables = this.uploadFiles().filter(obs => obs !== null);
+    updateDocument$.subscribe({
+      next: (updateResult) => {
+        if (updateResult && updateResult.content) {
+          const updatedData = updateResult.content.data;
 
-    // @TODO, check avant si les fichiers sont déjà présent dans pastell.
+          // Gestion des fichiers
+          const fileObservables = this.manageFiles(updatedData);
 
-    // Utilisation de forkJoin 
-    forkJoin([...fileUploadObservables, updateDocument$]).subscribe({
-      next: () => {
-        this.fetchFileTypes();
+          // Utilisation de forkJoin 
+          forkJoin([...fileObservables, updateDocument$]).subscribe({
+            next: () => {
+              this.fetchFileTypes();
+            },
+            error: (error) => {
+              this.logger.error('Error in one of the file operations', error);
+            }
+          });
+        }
       },
       error: (error) => {
-        this.logger.error('Error in one of the file uploads', error);
+        this.logger.error('Error updating document', error);
       }
     });
+  }
+
+  manageFiles(data: { [key: string]: any }): Observable<any>[] {
+    const observables: Observable<any>[] = [];
+    this.fileUploads.forEach(fileUpload => {
+      const idField = fileUpload.getIdField();
+      const currentFiles = fileUpload.formControl.value;
+      const existingFiles = data[idField] || [];
+
+      const filesToAdd = currentFiles.filter((file: File) => !existingFiles.includes(file.name));
+
+      const filesToRemove = existingFiles.filter((fileName: string) => !currentFiles.some((file: File) => file.name === fileName));
+
+      if (filesToAdd.length > 0) {
+        const addFiles$ = this.documentService.uploadFiles(this.documentId, idField, this.userCurrent().user_info.id_e, filesToAdd).pipe(
+          catchError(error => {
+            this.logger.error('Error uploading files', error);
+            return of(null);
+          })
+        );
+        observables.push(addFiles$);
+      }
+
+      if (filesToRemove.length > 0) {
+        const removeFiles$ = forkJoin(filesToRemove.map((fileName: string) =>
+          this.documentService.deleteFileFromDocument(this.documentId, idField, this.userCurrent().user_info.id_e, fileName).pipe(
+            catchError(error => {
+              this.logger.error('Error deleting file', error);
+              return of(null);
+            })
+          )
+        ));
+        observables.push(removeFiles$);
+      }
+    });
+
+    return observables;
   }
 
   fetchFileTypes(): void {
@@ -152,7 +192,6 @@ export class ActeFormComponent {
       next: (response) => {
         this.fileTypes = response.actes_type_pj_list;
         this.pieces.set(response.pieces);
-        console.log("this.pieces.length" + this.pieces().length)
         this.selectedTypes = Array(this.pieces().length).fill('');
         this.currentStep = 2;
       },
@@ -181,15 +220,13 @@ export class ActeFormComponent {
   }
 
   onAssignFileTypesClick(): void {
-    this.formSubmitted = true;
+    this.isformSubmitted = true;
     if (this.isFormFileTypesValid()) {
       this.isSaving = true;
       this.assignFileTypes();
-      console.log("this.isFormFileTypesValid() | True : " + this.isFormFileTypesValid())
     } else {
-      console.log("this.isFormFileTypesValid() | False : " + this.isFormFileTypesValid())
-      this.formSubmitted = false;
       this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
+      this.modalMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
     }
   }
 
@@ -204,7 +241,6 @@ export class ActeFormComponent {
         this.isSaving = false;
         this.isTypoSuccess = true;
         this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
-        this.openModal();
         this.scheduleRedirect();
         this.logger.info('File types assigned successfully', response);
       },
@@ -224,7 +260,6 @@ export class ActeFormComponent {
     this.currentStep = 1;
     this.isLoading = false;
     this.loadDocumentData();
-    console.log("this.formValues: " + JSON.stringify(this.formValues, null, 4));
   }
 
   loadDocumentData(): void {
@@ -291,9 +326,8 @@ export class ActeFormComponent {
   populateFormFields(data: { [key: string]: any }): void {
     this.textInputs.forEach(comp => {
       const idField = comp.getIdField();
-      if (data.hasOwnProperty(idField)) {
+      if (Object.prototype.hasOwnProperty.call(data, idField)) {
         const value = data[idField];
-        console.log(`TextInput ${idField}: ${value}`);
         if (this.hasValidValue(value)) {
           comp.formControl.setValue(value);
         }
@@ -302,9 +336,8 @@ export class ActeFormComponent {
 
     this.checkboxInputs.forEach(comp => {
       const idField = comp.getIdField();
-      if (data.hasOwnProperty(idField)) {
+      if (Object.prototype.hasOwnProperty.call(data, idField)) {
         const value = data[idField];
-        console.log(`CheckboxInput ${idField}: ${value}`);
         if (this.hasValidValue(value)) {
           comp.formControl.setValue(value);
         }
@@ -314,13 +347,10 @@ export class ActeFormComponent {
     this.selectInputs.forEach(comp => {
       const idField = comp.getIdField();
       const optionKeys = Object.keys(comp.options)
-      console.log("optionKeys: " + idField + "|" + optionKeys)
       if (comp.required && optionKeys.length === 1) {
         comp.formControl.setValue(optionKeys);
-        console.log(`SelectInput ${idField}: set default single value ${optionKeys}`);
-      } else if (data.hasOwnProperty(idField)) {
+      } else if (Object.prototype.hasOwnProperty.call(data, idField)) {
         const value = data[idField];
-        console.log(`SelectInput ${idField}: ${value}`);
         if (this.hasValidValue(value)) {
           comp.formControl.setValue(value);
         }
@@ -329,9 +359,8 @@ export class ActeFormComponent {
 
     this.dateInputs.forEach(comp => {
       const idField = comp.getIdField();
-      if (data.hasOwnProperty(idField)) {
+      if (Object.prototype.hasOwnProperty.call(data, idField)) {
         const value = data[idField];
-        console.log(`DateInput ${idField}: ${value}`);
         if (this.hasValidValue(value)) {
           comp.formControl.setValue(value);
         }
@@ -340,9 +369,8 @@ export class ActeFormComponent {
 
     this.externalDataInputs.forEach(comp => {
       const idField = comp.getIdField();
-      if (data.hasOwnProperty(idField)) {
+      if (Object.prototype.hasOwnProperty.call(data, idField)) {
         const value = data[idField];
-        console.log(`ExternalDataInput ${idField}: ${value}`);
         if (this.hasValidValue(value)) {
           comp.formControl.setValue(value);
         }
@@ -351,26 +379,20 @@ export class ActeFormComponent {
 
     this.fileUploads.forEach(comp => {
       const idField = comp.getIdField();
-      console.log("id FILED fILE:", idField)
       const existingFiles = data[idField];
-      console.log("existingFiles", existingFiles)
       if (existingFiles && existingFiles.length) {
-        existingFiles.forEach((fileName: string) => {
-          this.documentService.downloadFileByName(this.userCurrent().user_info.id_e, this.documentId, idField, fileName).subscribe({
-            next: (blob) => {
-              if (blob) {
-                const file = new File([blob], fileName, { type: blob.type });
-                comp.formControl.setValue(file);
-                console.log("file.name", file.name)
-                console.log("file.type", file.type)
-                console.log("file.size", file.size)
-                console.log("File uploaded ", file)
-              }
-            },
-            error: (error) => {
-              this.logger.error('Error downloading file', error);
-            }
-          });
+        const fileObservables = existingFiles.map((fileName: string) =>
+          this.documentService.downloadFileByName(this.userCurrent().user_info.id_e, this.documentId, idField, fileName)
+        );
+
+        forkJoin(fileObservables).subscribe({
+          next: (blobs: Blob[]) => {
+            const files = blobs.map((blob: Blob, index: number) => new File([blob], existingFiles[index], { type: blob.type }));
+            comp.setFiles(files);
+          },
+          error: (error) => {
+            this.logger.error('Error downloading files', error);
+          }
         });
       }
     });
@@ -391,33 +413,16 @@ export class ActeFormComponent {
   }
 
   isTypeSelected(index: number): boolean {
-    return this.selectedTypes[index] !== '' && this.selectedTypes[index] !== undefined;
+    return this.selectedTypes[index] !== '';
   }
 
   scheduleRedirect(): void {
     setTimeout(() => {
       this.router.navigate(['/documents', this.acteName]);
-    }, 4000);
+    }, 3000);
   }
 
   objectKeys(obj: any): string[] {
     return Object.keys(obj);
-  }
-
-  openModal(): void {
-    const modal = document.getElementById('fr-modal') as HTMLDialogElement;
-    if (modal) {
-      if (modal.open) {
-        modal.close();
-      }
-      modal.showModal();
-    }
-  }
-
-  closeModal(): void {
-    const modal = document.getElementById('fr-modal') as HTMLDialogElement;
-    if (modal && modal.open) {
-      modal.close();
-    }
   }
 }

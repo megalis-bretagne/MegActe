@@ -30,7 +30,7 @@ export class FileUploadComponent extends BaseInputComponent {
   }
 
   override getDefaultValue(): any {
-    return '';
+    return [];
   }
 
   override getValidators(): ValidatorFn[] {
@@ -44,11 +44,7 @@ export class FileUploadComponent extends BaseInputComponent {
       this.formControl.setErrors({ incorrect: true });
       this.formControl.markAsTouched();
     } else {
-      if (this.multiple) {
-        this.files.push(...Array.from(files));
-      } else {
-        this.files = Array.from(files);
-      }
+      this.addFiles(Array.from(files));
       this.errorMessage = '';
       this.formControl.setValue(this.files);
       this.formControl.updateValueAndValidity();
@@ -62,6 +58,16 @@ export class FileUploadComponent extends BaseInputComponent {
       this.onFilesDropped(input.files);
     }
     this.resetFileInput();
+  }
+
+  addFiles(files: File[]): void {
+    if (this.multiple) {
+      this.files.push(...files);
+    } else {
+      this.files = files;
+    }
+    this.formControl.setValue(this.files);
+    this.formControl.updateValueAndValidity();
   }
 
   removeFile(file: File): void {
@@ -83,4 +89,9 @@ export class FileUploadComponent extends BaseInputComponent {
     }
   }
 
+  setFiles(files: File[]): void {
+    this.files = files;
+    this.formControl.setValue(files);
+    this.formControl.updateValueAndValidity();
+  }
 }
