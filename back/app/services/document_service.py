@@ -12,10 +12,6 @@ from fastapi import HTTPException
 from io import BytesIO
 from fastapi.responses import StreamingResponse
 
-import logging
-
-logger = logging.getLogger(__name__)
-
 
 def create_empty_document(entite_id: int, flux_type: str, client_api: ApiPastell):
     """Crée un document vide dans Pastell pour un type de flux.
@@ -175,7 +171,11 @@ def add_file_to_document_service(
 
     files = {
         "file_name": (None, file_data.file.filename),
-        "file": (file_data.file.filename, file_content, file_data.file.content_type),
+        "file_content": (
+            file_data.file.filename,
+            file_content,
+            file_data.file.content_type,
+        ),
     }
 
     return client_api.perform_post(
@@ -426,11 +426,9 @@ def get_file_by_name_service(
         Response: La réponse de l'API Pastell contenant le fichier.
     """
     existing_files = get_existing_files(entite_id, document_id, element_id, client_api)
-    logger.info(f"----Found existing files: {existing_files}")
 
     try:
         file_index = existing_files.index(file_name)
-        logger.info(f"----Found file index: {file_index}")
     except ValueError:
         raise HTTPException(status_code=404, detail="File not found")
 
@@ -442,7 +440,6 @@ def get_file_by_name_service(
         raise HTTPException(status_code=500, detail="Error retrieving file")
 
     file_content = BytesIO(response.content)
-    logger.info(f"---- file_size: { file_content.getbuffer().nbytes}")
 
     return StreamingResponse(
         file_content,
