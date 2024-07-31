@@ -8,12 +8,13 @@
         </li>
         <li>
             <a class="fr-pagination__link fr-pagination__link--prev" [attr.href]="currentPage() === 1 ? null : '#'"
-                [attr.aria-disabled]="currentPage() === 1" role="link" title="Page précédente">
+                [attr.aria-disabled]="currentPage() === 1" role="link" title="Page précédente"
+                (click)="changePage(currentPage() - 1)">
                 Page précédente
             </a>
         </li>
         <li>
-            <a class="fr-pagination__link" [attr.href]="currentPage() === 1 ? null : '#'"
+            <a class=" fr-pagination__link" [attr.href]="currentPage() === 1 ? null : '#'"
                 [attr.aria-current]="1 === currentPage() ? 'page' : null" title="Page une" (click)="changePage(1)">
                 1
             </a>
