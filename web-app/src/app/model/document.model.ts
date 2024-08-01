@@ -15,7 +15,6 @@ export interface DocumentInfo {
     id_d: string;
     id_e: string;
     role: string;
-    last_action: string;
     last_action_date: string;
     last_type: string;
     type: string;

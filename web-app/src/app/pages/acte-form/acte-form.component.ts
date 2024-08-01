@@ -52,6 +52,7 @@ export class ActeFormComponent {
   isLoading = false;
   isSaving = false;
   modalMessage: string;
+  isReadOnly: boolean = false;
 
   formValues: { [idField: string]: any } = {};
 
@@ -90,7 +91,10 @@ export class ActeFormComponent {
             .filter(field => field.idField !== 'type_piece');
 
         this.file_type_field = this.fields.find(field => field.idField === 'type_piece');
-        this.populateFormFields(this.documentInfo['data']);
+        if (this.documentInfo['last_action'].action !== 'modification' && this.documentInfo['last_action'].action !== 'creation') {
+          this.isReadOnly = true;
+        }
+        this.loadDocumentData();
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
@@ -265,6 +269,7 @@ export class ActeFormComponent {
   loadDocumentData(): void {
     this.documentService.getDocumentById(this.documentId, this.userCurrent().user_info.id_e).subscribe({
       next: (document) => {
+        this.formValues = { ...document.data };
         this.populateFormFields(document.data);
       },
       error: (error) => {
@@ -404,4 +409,9 @@ export class ActeFormComponent {
   objectKeys(obj: any): string[] {
     return Object.keys(obj);
   }
+
+  goBack(): void {
+    this.router.navigate(['/']);
+  }
+
 }

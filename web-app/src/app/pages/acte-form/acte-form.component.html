@@ -7,6 +7,7 @@
 
     <div class="fr-grid-row">
         <div class="content-box fr-col-12 fr-col-md-12">
+            @if(!isReadOnly){
             <div class="fr-stepper">
                 <h2 class="fr-stepper__title">
                     <span class="fr-stepper__state">Étape {{ currentStep }} sur 2</span>
@@ -117,6 +118,49 @@
                 </div>
                 }
             </div>
+            }@else{
+            <div class="fr-table fr-table--bordered fr-table--no-caption">
+                <table id="table-md" class="fr-text--sm">
+                    <caption>Informations du document</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col" class="meg fr-col-xl-4 fr-col-lg-4 fr-col-md-4">Champ</th>
+                            <th scope="col" class="meg fr-col-xl-8 fr-col-lg-8 fr-col-md-8">Valeur</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (field of filteredFields; track field.idField) {
+                        <tr>
+                            <td>{{ field['name'] }}</td>
+                            <td>
+                                @switch (field.type) {
+                                @case ('text') {
+                                {{ formValues[field.idField] }}
+                                }
+                                @case ('checkbox') {
+                                {{ formValues[field.idField] ? 'Oui' : 'Non' }}
+                                }
+                                @case ('select') {
+                                {{ field['value'][formValues[field.idField]] }}
+                                }
+                                @case ('date') {
+                                {{ formValues[field.idField] | date:'dd/MM/yyyy' }}
+                                }
+                                @case ('file') {
+                                {{ formValues[field.idField]}}
+                                }
+                                @case ('externalData') {
+                                {{ formValues[field.idField] }}
+                                }
+                                }
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <button class="fr-btn  btn-right" (click)="goBack()">Retourner dans la liste des documents</button>
+            }
         </div>
     </div>
 </div>
