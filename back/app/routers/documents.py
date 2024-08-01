@@ -3,7 +3,6 @@ from typing import List
 
 from ..clients.pastell.api import ApiPastell
 from ..routers import get_or_make_api_pastell
-from fastapi.responses import StreamingResponse
 
 from ..services.document_service import (
     update_document_service,

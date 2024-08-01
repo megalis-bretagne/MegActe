@@ -90,7 +90,7 @@ export class ActeFormComponent {
             .filter(field => field.idField !== 'type_piece');
 
         this.file_type_field = this.fields.find(field => field.idField === 'type_piece');
-        this.populateFormFields(this.documentInfo['data']);
+        this.loadDocumentData()
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
@@ -324,7 +324,16 @@ export class ActeFormComponent {
 
   // Vérification pour chaque champ afin de voir s'il a une valeur dj définie 
   populateFormFields(data: { [key: string]: any }): void {
-    this.textInputs.forEach(comp => {
+    const allInputs = [
+      ...this.textInputs.toArray(),
+      ...this.checkboxInputs.toArray(),
+      ...this.selectInputs.toArray(),
+      ...this.dateInputs.toArray(),
+      ...this.externalDataInputs.toArray(),
+      ...this.fileUploads.toArray()
+    ];
+
+    allInputs.forEach(comp => {
       const idField = comp.getIdField();
       if (Object.prototype.hasOwnProperty.call(data, idField)) {
         const value = data[idField];
@@ -332,70 +341,40 @@ export class ActeFormComponent {
           comp.formControl.setValue(value);
         }
       }
-    });
 
-    this.checkboxInputs.forEach(comp => {
-      const idField = comp.getIdField();
-      if (Object.prototype.hasOwnProperty.call(data, idField)) {
-        const value = data[idField];
-        if (this.hasValidValue(value)) {
-          comp.formControl.setValue(value);
+      if (comp instanceof FileUploadComponent) {
+        this.handleFileUpload(comp, data[idField]);
+      } else if (comp instanceof SelectInputComponent) {
+        this.handleSelectInput(comp, data[idField]);
+      }
+    });
+  }
+
+  handleFileUpload(comp: FileUploadComponent, existingFiles: string[]): void {
+    if (existingFiles && existingFiles.length) {
+      const fileObservables = existingFiles.map((fileName: string) =>
+        this.documentService.downloadFileByName(this.userCurrent().user_info.id_e, this.documentId, comp.getIdField(), fileName)
+      );
+
+      forkJoin(fileObservables).subscribe({
+        next: (blobs: Blob[]) => {
+          const files = blobs.map((blob: Blob, index: number) => new File([blob], existingFiles[index], { type: blob.type }));
+          comp.setFiles(files);
+        },
+        error: (error) => {
+          this.logger.error('Error downloading files', error);
         }
-      }
-    });
+      });
+    }
+  }
 
-    this.selectInputs.forEach(comp => {
-      const idField = comp.getIdField();
-      const optionKeys = Object.keys(comp.options)
-      if (comp.required && optionKeys.length === 1) {
-        comp.formControl.setValue(optionKeys);
-      } else if (Object.prototype.hasOwnProperty.call(data, idField)) {
-        const value = data[idField];
-        if (this.hasValidValue(value)) {
-          comp.formControl.setValue(value);
-        }
-      }
-    });
-
-    this.dateInputs.forEach(comp => {
-      const idField = comp.getIdField();
-      if (Object.prototype.hasOwnProperty.call(data, idField)) {
-        const value = data[idField];
-        if (this.hasValidValue(value)) {
-          comp.formControl.setValue(value);
-        }
-      }
-    });
-
-    this.externalDataInputs.forEach(comp => {
-      const idField = comp.getIdField();
-      if (Object.prototype.hasOwnProperty.call(data, idField)) {
-        const value = data[idField];
-        if (this.hasValidValue(value)) {
-          comp.formControl.setValue(value);
-        }
-      }
-    });
-
-    this.fileUploads.forEach(comp => {
-      const idField = comp.getIdField();
-      const existingFiles = data[idField];
-      if (existingFiles && existingFiles.length) {
-        const fileObservables = existingFiles.map((fileName: string) =>
-          this.documentService.downloadFileByName(this.userCurrent().user_info.id_e, this.documentId, idField, fileName)
-        );
-
-        forkJoin(fileObservables).subscribe({
-          next: (blobs: Blob[]) => {
-            const files = blobs.map((blob: Blob, index: number) => new File([blob], existingFiles[index], { type: blob.type }));
-            comp.setFiles(files);
-          },
-          error: (error) => {
-            this.logger.error('Error downloading files', error);
-          }
-        });
-      }
-    });
+  handleSelectInput(comp: SelectInputComponent, value: any): void {
+    const optionKeys = Object.keys(comp.options);
+    if (comp.required && optionKeys.length === 1) {
+      comp.formControl.setValue(optionKeys);
+    } else if (this.hasValidValue(value)) {
+      comp.formControl.setValue(value);
+    }
   }
 
   // Helper method to check if a value is valid (not null, not empty string, not empty array)
