@@ -21,10 +21,11 @@
     "resolveJsonModule": true,
     "importHelpers": true,
     "allowSyntheticDefaultImports": true,
+    "useDefineForClassFields": false,
     "target": "ES2022",
     "module": "ES2022",
     "lib": [
-      "es2020",
+      "ES2022",
       "dom"
     ],
   },
