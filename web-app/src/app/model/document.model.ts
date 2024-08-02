@@ -15,7 +15,6 @@ export interface DocumentInfo {
     id_d: string;
     id_e: string;
     role: string;
-    last_action: string;
     last_action_date: string;
     last_type: string;
     type: string;
@@ -40,6 +39,25 @@ export interface DocumentDetail {
         titre: string;
         creation: string;
         modification: string;
+    };
+
+    data: {
+        envoi_tdt_actes?: string;
+        envoi_depot?: string;
+        envoi_sae?: string;
+        numero_de_lacte?: string;
+        objet?: string;
+        document_papier?: string;
+        acte_nature?: string;
+        publication_open_data?: string;
+        date_de_lacte?: string;
+        classification?: string;
+        arrete?: string[];
+        autre_document_attache?: string[];
+        type_piece?: string;
+        type_acte?: string;
+        type_pj?: string;
+        type_piece_fichier?: string[];
     };
 
     last_action: {

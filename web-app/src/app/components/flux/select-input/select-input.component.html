@@ -10,7 +10,7 @@
     </label>
     <select class="fr-select" [id]="controlId" [name]="controlId" [formControl]="formControl" [multiple]="multiple">
         @for (option of options | keyvalue; track option.key) {
-        <option [value]="option.key" [selected]="option.key === formControl.value" [hidden]="option.key === '' ">
+        <option [value]="option.key" [selected]="option.key === formControl.value">
             {{ option.value }}
         </option>
         }
