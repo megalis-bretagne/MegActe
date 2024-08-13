@@ -58,6 +58,7 @@ export interface DocumentDetail {
         type_acte?: string;
         type_pj?: string;
         type_piece_fichier?: string[];
+        [key: string]: any;
     };
 
     last_action: {

@@ -101,7 +101,7 @@ export class DocumentListComponent {
     }
   }
 
-  UpdateDoc(documentId: string): void {
+  goUpdateDoc(documentId: string): void {
     this.router.navigate(['/acte', documentId]);
   }
 }

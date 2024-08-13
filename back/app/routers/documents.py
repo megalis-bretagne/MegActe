@@ -47,7 +47,7 @@ def update_document(
 
 
 # Get document info
-@router.get("/document/{document_id}", tags=["document"])
+@router.get("/entite/{entite_id}/document/{document_id}", tags=["document"])
 def get_document(
     document_id: str,
     entite_id: int,
@@ -57,7 +57,7 @@ def get_document(
 
 
 # Delete Document
-@router.delete("/document/{document_id}", tags=["document"])
+@router.delete("/entite/{entite_id}/document/{document_id}", tags=["document"])
 def delete_document(
     document_id: str,
     entite_id: int,
@@ -67,7 +67,9 @@ def delete_document(
 
 
 # Ajouter des fichiers à un document
-@router.post("/document/{document_id}/file/{element_id}", tags=["document"])
+@router.post(
+    "/entite/{entite_id}/document/{document_id}/file/{element_id}", tags=["document"]
+)
 def add_files_to_document(
     document_id: str,
     element_id: str,
@@ -82,20 +84,26 @@ def add_files_to_document(
 
 
 # Supprimer un fichier appartenant à un document
-@router.delete("/document/{document_id}/file/{element_id}", tags=["document"])
+@router.delete(
+    "/entite/{entite_id}/document/{document_id}/file/{element_id}", tags=["document"]
+)
 def delete_file_from_document(
+    entite_id: int,
     document_id: str,
     element_id: str,
     request_data: DeleteFileFromDoc,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     return delete_file_from_document_service(
-        document_id, element_id, request_data, client
+        entite_id, document_id, element_id, request_data, client
     )
 
 
 # Récupérer les fichiers liés à un document
-@router.get("/document/{document_id}/file/{element_id}/{file_name}", tags=["document"])
+@router.get(
+    "/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_name}",
+    tags=["document"],
+)
 def get_file_for_document(
     document_id: str,
     entite_id: int,
@@ -109,7 +117,10 @@ def get_file_for_document(
 
 
 # Attribuer un type à un fichier
-@router.patch("/document/{document_id}/file/{element_id}/types", tags=["document"])
+@router.patch(
+    "/entite/{entite_id}/document/{document_id}/file/{element_id}/types",
+    tags=["document"],
+)
 def assign_file_types(
     document_id: str,
     entite_id: int,

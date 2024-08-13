@@ -10,18 +10,31 @@ export abstract class BaseInputComponent implements OnInit {
     @Input() readOnly: boolean = false;
     @Input() comment: string = '';
 
-    formControl: FormControl;
+    @Input() control: FormControl;
     controlId: string;
 
-    constructor(protected fieldFluxService: FieldFluxService) { }
+    constructor(protected fieldFluxService: FieldFluxService) {
+        this.controlId = this.fieldFluxService.generateUniqueId(this.getControlType());
+    }
 
     ngOnInit() {
-        this.controlId = this.fieldFluxService.generateUniqueId(this.getControlType());
-        this.formControl = new FormControl({ value: this.getDefaultValue(), disabled: this.readOnly }, this.getValidators());
+        this.initInput()
+    }
+
+    initInput(): void {
+        this.formControl.setValidators(this.getValidators());
+        if (!this.formControl.value)
+            this.formControl.setValue(this.getDefaultValue());
+        if (this.readOnly)
+            this.formControl.disable();
     }
 
     getIdField(): string {
         return this.idField;
+    }
+
+    get formControl(): FormControl {
+        return this.control;
     }
 
     abstract getControlType(): string;

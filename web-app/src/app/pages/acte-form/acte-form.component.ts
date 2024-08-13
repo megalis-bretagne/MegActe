@@ -1,4 +1,4 @@
-import { Component, effect, inject, QueryList, ViewChildren, signal } from '@angular/core';
+import { Component, effect, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { CheckboxInputComponent } from 'src/app/components/flux/checkbox-input/checkbox-input.component';
@@ -10,14 +10,15 @@ import { TextInputComponent } from 'src/app/components/flux/text-input/text-inpu
 import { Data, Field } from 'src/app/model/field-form.model';
 import { DocumentService } from 'src/app/services/document.service';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
-import { Observable, forkJoin, of } from 'rxjs';
+import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LoadingComponent } from 'src/app/components/loading-component/loading.component';
 import { FluxService } from 'src/app/services/flux.service';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserContextService } from 'src/app/services/user-context.service';
 import { CommonModule } from '@angular/common';
-import { DocumentInfo } from 'src/app/model/document.model';
+import { DocumentDetail } from 'src/app/model/document.model';
+import { LoadingService } from 'src/app/services/loading.service';
 
 @Component({
   selector: 'app-acte-form',
@@ -29,20 +30,20 @@ import { DocumentInfo } from 'src/app/model/document.model';
   templateUrl: './acte-form.component.html',
   styleUrls: ['./acte-form.component.scss']
 })
-export class ActeFormComponent {
+export class ActeFormComponent implements OnInit {
   fluxSelected = inject(FluxService).fluxSelected;
   userCurrent = inject(UserContextService).userCurrent;
 
   acteName: string;
   fluxDetail: Data;
-  documentInfo: DocumentInfo;
+  // Le document à créer éditer
+  documentInfo: DocumentDetail;
   fields: Field[] = [];
   filteredFields: Field[] = [];
-  documentId: string;
   fileTypes: { [key: string]: string } = {};
   pieces = signal<string[]>([]);
   selectedTypes: string[] = [];
-  file_type_field: Field;
+  fileTypeField: Field;
 
   currentStep = 1;
   globalErrorMessage: string;
@@ -53,21 +54,18 @@ export class ActeFormComponent {
   isSaving = false;
   modalMessage: string;
   isReadOnly: boolean = false;
+  fileFields: Field[] = [];
 
   formValues: { [idField: string]: any } = {};
 
-  @ViewChildren(TextInputComponent) textInputs: QueryList<TextInputComponent>;
-  @ViewChildren(CheckboxInputComponent) checkboxInputs: QueryList<CheckboxInputComponent>;
-  @ViewChildren(SelectInputComponent) selectInputs: QueryList<SelectInputComponent>;
-  @ViewChildren(DateInputComponent) dateInputs: QueryList<DateInputComponent>;
-  @ViewChildren(ExternalDataInputComponent) externalDataInputs: QueryList<ExternalDataInputComponent>;
-  @ViewChildren(FileUploadComponent) fileUploads: QueryList<FileUploadComponent>;
+  form: FormGroup = new FormGroup({});
 
   constructor(
     private route: ActivatedRoute,
     private logger: NGXLogger,
     private fieldFluxService: FieldFluxService,
     private documentService: DocumentService,
+    private loadingservice: LoadingService,
     private router: Router,
     private fluxService: FluxService,
   ) {
@@ -79,48 +77,72 @@ export class ActeFormComponent {
 
     this.route.data.subscribe(data => {
       this.fluxDetail = data['docDetail'].flux;
-      this.documentInfo = data['docDetail'].document;
-      const flowId = data['docDetail'].document.info.type;
-      this.documentId = this.documentInfo['info'].id_d;
+      this.documentInfo = data['docDetail'].document as DocumentDetail;
+      const flowId = this.documentInfo.info.type;
 
       if (this.fluxDetail) {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
-        // @TODO check type_piece existe
         this.filteredFields =
           this.fieldFluxService.filterFields(this.fields, flowId)
             .filter(field => field.idField !== 'type_piece');
+        this.fileFields = this.filteredFields.filter(field => field.type === 'file');
 
-        this.file_type_field = this.fields.find(field => field.idField === 'type_piece');
+        this.fileTypeField = this.fields.find(field => field.idField === 'type_piece');
         if (this.documentInfo['last_action'].action !== 'modification' && this.documentInfo['last_action'].action !== 'creation') {
           this.isReadOnly = true;
         }
-        this.loadDocumentData();
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
     });
   }
 
+
+  ngOnInit(): void {
+    this.filteredFields.forEach(field => {
+      const value = this.documentInfo.data[field.idField] ?? null;
+      this.form.addControl(field.idField, new FormControl(value));
+    })
+  }
+
+  getFormControl(name: string): FormControl {
+    return this.form.get(name) as FormControl;
+  }
+
+
   onNextStepClick(): void {
     if (this.validateForm()) {
       this.globalErrorMessage = '';
       this.isLoading = true;
-      this.save();
+      this._save();
     } else {
       this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
     }
   }
 
-  save(): void {
+  private _retrieveInfo(): void {
+    const docInfo = this.form.getRawValue();
+    Object.keys(docInfo).forEach(key => {
+      // Conditions pour supprimer une clé :
+      // Ici on supprime les champs qui sont de type file
+      if (this.fileFields.find(field => field.idField === key)) {
+        delete docInfo[key];
+      }
+    });
+    return docInfo;
+  }
+
+  private _save(): void {
+    this.loadingservice.showLoading();
     this.pieces.set([]);
-    const docInfo = this.collectFormData();
+    const docInfo = this._retrieveInfo();
     const docUpdateInfo = {
       entite_id: this.userCurrent().user_info.id_e,
       doc_info: docInfo
     };
 
     // Création d'un observable pour la mise à jour du document
-    const updateDocument$ = this.documentService.updateDocument(this.documentId, docUpdateInfo).pipe(
+    const updateDocument$ = this.documentService.updateDocument(this.documentInfo.info.id_d, docUpdateInfo).pipe(
       catchError(error => {
         this.logger.error('Error updating document', error);
         return of(null);
@@ -128,23 +150,8 @@ export class ActeFormComponent {
     );
 
     updateDocument$.subscribe({
-      next: (updateResult) => {
-        if (updateResult && updateResult.content) {
-          const updatedData = updateResult.content.data;
-
-          // Gestion des fichiers
-          const fileObservables = this.manageFiles(updatedData);
-
-          // Utilisation de forkJoin 
-          forkJoin([...fileObservables, updateDocument$]).subscribe({
-            next: () => {
-              this.fetchFileTypes();
-            },
-            error: (error) => {
-              this.logger.error('Error in one of the file operations', error);
-            }
-          });
-        }
+      next: () => {
+        this._fetchExternalDataByFile();
       },
       error: (error) => {
         this.logger.error('Error updating document', error);
@@ -152,52 +159,17 @@ export class ActeFormComponent {
     });
   }
 
-  manageFiles(data: { [key: string]: any }): Observable<any>[] {
-    const observables: Observable<any>[] = [];
-    this.fileUploads.forEach(fileUpload => {
-      const idField = fileUpload.getIdField();
-      const currentFiles = fileUpload.formControl.value;
-      const existingFiles = data[idField] || [];
 
-      const filesToAdd = currentFiles.filter((file: File) => !existingFiles.includes(file.name));
-
-      const filesToRemove = existingFiles.filter((fileName: string) => !currentFiles.some((file: File) => file.name === fileName));
-
-      if (filesToAdd.length > 0) {
-        const addFiles$ = this.documentService.uploadFiles(this.documentId, idField, this.userCurrent().user_info.id_e, filesToAdd).pipe(
-          catchError(error => {
-            this.logger.error('Error uploading files', error);
-            return of(null);
-          })
-        );
-        observables.push(addFiles$);
-      }
-
-      if (filesToRemove.length > 0) {
-        const removeFiles$ = forkJoin(filesToRemove.map((fileName: string) =>
-          this.documentService.deleteFileFromDocument(this.documentId, idField, this.userCurrent().user_info.id_e, fileName).pipe(
-            catchError(error => {
-              this.logger.error('Error deleting file', error);
-              return of(null);
-            })
-          )
-        ));
-        observables.push(removeFiles$);
-      }
-    });
-
-    return observables;
-  }
-
-  fetchFileTypes(): void {
+  private _fetchExternalDataByFile(): void {
     //TODO changer pour la sélection d'entite
     const entiteId = this.userCurrent().user_info.id_e;
-    this.fluxService.get_externalData(entiteId, this.documentId, 'type_piece').subscribe({
+    this.fluxService.get_externalData(entiteId, this.documentInfo.info.id_d, 'type_piece').subscribe({
       next: (response) => {
         this.fileTypes = response.actes_type_pj_list;
         this.pieces.set(response.pieces);
         this.selectedTypes = Array(this.pieces().length).fill('');
         this.currentStep = 2;
+        this.loadingservice.hideLoading();
       },
       error: (error) => {
         this.logger.error('Error fetching file types and files', error);
@@ -205,23 +177,6 @@ export class ActeFormComponent {
     });
   }
 
-  uploadFiles(): Observable<any>[] {
-    return this.fileUploads.map(fileUpload => {
-      const files = fileUpload.formControl.value;
-      const elementId = fileUpload.getIdField();
-
-      if (files.length > 0) {
-        return this.documentService.uploadFiles(this.documentId, elementId, this.userCurrent().user_info.id_e, files).pipe(
-          catchError(error => {
-            this.logger.error('Error uploading files', error);
-            return of(null);
-          })
-        );
-      } else {
-        return of(null);
-      }
-    });
-  }
 
   onAssignFileTypesClick(): void {
     this.isformSubmitted = true;
@@ -240,7 +195,7 @@ export class ActeFormComponent {
 
   assignFileTypes(): void {
     const entiteId = this.userCurrent().user_info.id_e;
-    this.documentService.assignFileTypes(entiteId, this.documentId, 'type_piece', this.selectedTypes).subscribe({
+    this.documentService.assignFileTypes(entiteId, this.documentInfo.info.id_d, 'type_piece', this.selectedTypes).subscribe({
       next: (response) => {
         this.isSaving = false;
         this.isTypoSuccess = true;
@@ -260,64 +215,18 @@ export class ActeFormComponent {
     const value = (event.target as HTMLSelectElement).value;
     this.selectedTypes[index] = value;
   }
+
   onPreviousStepClick() {
     this.currentStep = 1;
     this.isLoading = false;
-    this.loadDocumentData();
   }
 
-  loadDocumentData(): void {
-    this.documentService.getDocumentById(this.documentId, this.userCurrent().user_info.id_e).subscribe({
-      next: (document) => {
-        this.formValues = { ...document.data };
-        this.populateFormFields(document.data);
-      },
-      error: (error) => {
-        this.logger.error('Error fetching document details', error);
-      }
-    });
-  }
-
-  collectFormData(): { [idField: string]: any } {
-    const formData: { [idField: string]: any } = {};
-
-    this.textInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-    this.checkboxInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-    this.selectInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-    this.dateInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-    this.externalDataInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-    this.fileUploads.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-
-    return formData;
-  }
 
   validateForm(): boolean {
     this.isFormValid = true;
     this.globalErrorMessage = '';
-
-    const allInputs = [
-      ...this.textInputs.toArray(),
-      ...this.checkboxInputs.toArray(),
-      ...this.selectInputs.toArray(),
-      ...this.dateInputs.toArray(),
-      ...this.externalDataInputs.toArray(),
-      ...this.fileUploads.toArray()
-    ];
-
-    allInputs.forEach(comp => {
-      if (comp instanceof SelectInputComponent && comp.formControl.disabled) {
-        return;
-      }
-
-      if (comp instanceof ExternalDataInputComponent && comp.name === "Typologie des pièces") {
-        return;
-      }
-
-      if (!comp.formControl.valid) {
-        this.isFormValid = false;
-        comp.formControl.markAsTouched();
-      }
-    });
+    this.form.markAllAsTouched();
+    this.isFormValid = this.form.valid;
 
     if (!this.isFormValid) {
       this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
@@ -327,74 +236,6 @@ export class ActeFormComponent {
   }
 
 
-  // Vérification pour chaque champ afin de voir s'il a une valeur dj définie 
-  populateFormFields(data: { [key: string]: any }): void {
-    const allInputs = [
-      ...this.textInputs.toArray(),
-      ...this.checkboxInputs.toArray(),
-      ...this.selectInputs.toArray(),
-      ...this.dateInputs.toArray(),
-      ...this.externalDataInputs.toArray(),
-      ...this.fileUploads.toArray()
-    ];
-
-    allInputs.forEach(comp => {
-      const idField = comp.getIdField();
-      if (Object.prototype.hasOwnProperty.call(data, idField)) {
-        const value = data[idField];
-        if (this.hasValidValue(value)) {
-          comp.formControl.setValue(value);
-        }
-      }
-
-      if (comp instanceof FileUploadComponent) {
-        this.handleFileUpload(comp, data[idField]);
-      } else if (comp instanceof SelectInputComponent) {
-        this.handleSelectInput(comp, data[idField]);
-      }
-    });
-  }
-
-  handleFileUpload(comp: FileUploadComponent, existingFiles: string[]): void {
-    if (existingFiles && existingFiles.length) {
-      const fileObservables = existingFiles.map((fileName: string) =>
-        this.documentService.downloadFileByName(this.userCurrent().user_info.id_e, this.documentId, comp.getIdField(), fileName)
-      );
-
-      forkJoin(fileObservables).subscribe({
-        next: (blobs: Blob[]) => {
-          const files = blobs.map((blob: Blob, index: number) => new File([blob], existingFiles[index], { type: blob.type }));
-          comp.setFiles(files);
-        },
-        error: (error) => {
-          this.logger.error('Error downloading files', error);
-        }
-      });
-    }
-  }
-
-  handleSelectInput(comp: SelectInputComponent, value: any): void {
-    const optionKeys = Object.keys(comp.options);
-    if (comp.required && optionKeys.length === 1) {
-      comp.formControl.setValue(optionKeys);
-    } else if (this.hasValidValue(value)) {
-      comp.formControl.setValue(value);
-    }
-  }
-
-  // Helper method to check if a value is valid (not null, not empty string, not empty array)
-  hasValidValue(value: any): boolean {
-    if (value === null || value === undefined) {
-      return false;
-    }
-    if (typeof value === 'string' && value.trim() === '') {
-      return false;
-    }
-    if (Array.isArray(value) && value.length === 0) {
-      return false;
-    }
-    return true;
-  }
 
   isTypeSelected(index: number): boolean {
     return this.selectedTypes[index] !== '';

@@ -185,6 +185,7 @@ def add_file_to_document_service(
 
 
 def delete_file_from_document_service(
+    entite_id: int,
     document_id: str,
     element_id: str,
     file_data: DeleteFileFromDoc,
@@ -193,6 +194,7 @@ def delete_file_from_document_service(
     """Supprime un fichier lié à un document spécifique dans Pastell.
 
     Args:
+        entite_id (int) : L'id de l'entite
         document_id (str): L'ID du document auquel le fichier est associé.
         element_id (str): L'ID du champ auquel le fichier est associé.
         file_data (DeleteFileFromDoc): Les informations nécessaires pour supprimer un fichier.
@@ -203,9 +205,7 @@ def delete_file_from_document_service(
     Returns:
         dict: Les détails de la suppression du fichier.
     """
-    existing_files = get_existing_files(
-        file_data.entite_id, document_id, element_id, client_api
-    )
+    existing_files = get_existing_files(entite_id, document_id, element_id, client_api)
 
     try:
         file_index = existing_files.index(file_data.file_name)
@@ -216,7 +216,7 @@ def delete_file_from_document_service(
         )
 
     return client_api.perform_delete(
-        f"/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{file_index}"
+        f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_index}"
     )
 
 

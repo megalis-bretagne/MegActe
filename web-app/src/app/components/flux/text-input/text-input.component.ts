@@ -40,9 +40,9 @@ export class TextInputComponent extends BaseInputComponent {
 
 
   getErrorMessage() {
-    if (this.formControl.hasError('required')) {
+    if (this.control.hasError('required')) {
       return 'Ce champ est requis';
-    } else if (this.formControl.hasError('pattern')) {
+    } else if (this.control.hasError('pattern')) {
       return this.pregMatchError;
     }
     return '';

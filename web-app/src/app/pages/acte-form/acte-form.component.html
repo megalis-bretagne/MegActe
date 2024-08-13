@@ -15,45 +15,54 @@
                 <div class="fr-stepper__steps" [attr.data-fr-current-step]="currentStep" data-fr-steps="2"></div>
                 @if (currentStep === 1) {
                 <div class="step-container">
-                    @if (globalErrorMessage && !validateForm()) {
+                    @if (globalErrorMessage && !form.valid) {
                     <div class="fr-alert fr-alert--error" role="alert">
                         {{ globalErrorMessage }}
                     </div>
                     }
-                    @for (field of filteredFields; track field.idField) {
-                    <div class="input-container">
-                        @switch (field.type) {
-                        @case ('text') {
-                        <meg-text-input [idField]="field.idField" [required]="field['requis']"
-                            [pregMatch]="field['preg_match']" [comment]="field['commentaire']"
-                            [multiple]="field['multiple']" [index]="field['index']" [name]="field['name']"
-                            [pregMatchError]="field['preg_match_error']" />
+                    <form [formGroup]="form">
+                        @for (field of filteredFields; track field.idField) {
+                        <div class="input-container">
+                            @switch (field.type) {
+                            @case ('text') {
+                            <meg-text-input [idField]="field.idField" [required]="field['requis']"
+                                [pregMatch]="field['preg_match']" [comment]="field['commentaire']"
+                                [multiple]="field['multiple']" [index]="field['index']" [name]="field['name']"
+                                [pregMatchError]="field['preg_match_error']"
+                                [control]="getFormControl(field.idField)" />
+                            }
+                            @case ('checkbox') {
+                            <meg-checkbox-input [idField]="field.idField" [name]="field['name']"
+                                [required]="field['requis']" [readOnly]="field['read-only']"
+                                [defaultChecked]="field['default'] === 'checked'"
+                                [control]="getFormControl(field.idField)" />
+                            }
+                            @case ('select') {
+                            <meg-select-input [idField]="field.idField" [name]="field['name']"
+                                [required]="field['requis']" [multiple]="field['multiple']"
+                                [readOnly]="field['read-only']" [options]="field['value']"
+                                [comment]="field['commentaire']" [control]="getFormControl(field.idField)" />
+                            }
+                            @case ('date') {
+                            <meg-date-input [idField]="field.idField" [name]="field['name']"
+                                [required]="field['requis']" [default]="field['default']"
+                                [comment]="field['commentaire']" [control]="getFormControl(field.idField)" />
+                            }
+                            @case ('file') {
+                            <meg-file-upload [idField]="field.idField" [name]="field['name']"
+                                [id_d]="documentInfo.info.id_d" [id_e]="userCurrent().user_info.id_e"
+                                [required]="field['requis']" [multiple]="field['multiple']"
+                                [comment]="field['commentaire']" [control]="getFormControl(field.idField)" />
+                            }
+                            @case ('externalData') {
+                            <meg-external-data-input [idField]="field.idField" [name]="field['name']"
+                                [required]="field['requis']" [link_name]="field['link_name']"
+                                [documentId]="documentInfo.info.id_d" [control]="getFormControl(field.idField)" />
+                            }
+                            }
+                        </div>
                         }
-                        @case ('checkbox') {
-                        <meg-checkbox-input [idField]="field.idField" [name]="field['name']"
-                            [required]="field['requis']" [readOnly]="field['read-only']"
-                            [defaultChecked]="field['default'] === 'checked'" />
-                        }
-                        @case ('select') {
-                        <meg-select-input [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
-                            [multiple]="field['multiple']" [readOnly]="field['read-only']" [options]="field['value']"
-                            [comment]="field['commentaire']" />
-                        }
-                        @case ('date') {
-                        <meg-date-input [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
-                            [default]="field['default']" [comment]="field['commentaire']" />
-                        }
-                        @case ('file') {
-                        <meg-file-upload [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
-                            [multiple]="field['multiple']" [comment]="field['commentaire']" />
-                        }
-                        @case ('externalData') {
-                        <meg-external-data-input [idField]="field.idField" [name]="field['name']"
-                            [required]="field['requis']" [link_name]="field['link_name']" [documentId]="documentId" />
-                        }
-                        }
-                    </div>
-                    }
+                    </form>
 
                     <div class="fr-fieldset__element">
                         <ul class="fr-btns-group--right fr-btns-group fr-btns-group--inline">
@@ -63,14 +72,11 @@
                             </li>
                         </ul>
                     </div>
-                    @if (isLoading) {
-                    <div> <meg-loading /></div>
-                    }
                 </div>
                 }
                 @if (currentStep === 2) {
                 <div class="step-container">
-                    <h3 class="step-title">{{file_type_field['name']}}</h3>
+                    <h3 class="step-title">{{fileTypeField['name']}}</h3>
                     @if (globalErrorMessage && !isFormFileTypesValid()) {
                     <div class="fr-alert fr-alert--error" role="alert">
                         {{ globalErrorMessage }}
@@ -109,16 +115,17 @@
                                 <button class="fr-mt-2v fr-btn" type="button" (click)="onAssignFileTypesClick()"
                                     data-fr-opened="false" aria-controls="fr-modal">Enregistrer</button>
                             </li>
-                            <li>
+                            <!-- <li>
                                 <button class="fr-mt-2v fr-btn" type="submit" data-fr-opened="false"
                                     aria-controls="fr-modal" [disabled]="!isFormFileTypesValid()">Transmettre</button>
-                            </li>
+                            </li> -->
                         </ul>
                     </div>
                 </div>
                 }
             </div>
             }@else{
+            <!-- TODO - faire un composant à part-->
             <div class="fr-table fr-table--bordered fr-table--no-caption">
                 <table id="table-md" class="fr-text--sm">
                     <caption>Informations du document</caption>

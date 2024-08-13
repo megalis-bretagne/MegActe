@@ -68,7 +68,7 @@ export class DocumentService {
             formData.append('files', file, file.name);
         });
 
-        return this.http.post<any>(`${this.settingsService.apiUrl}/document/${documentId}/file/${elementId}?entite_id=${entiteId}`, formData).pipe(
+        return this.http.post<any>(`${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}`, formData).pipe(
             catchError((error) => {
                 this.logger.error('Error uploading files', error);
                 return of(null);
@@ -77,7 +77,7 @@ export class DocumentService {
     }
 
     getDocumentById(documentId: string, entiteId: number): Observable<DocumentDetail> {
-        return this.http.get<any>(`${this.settingsService.apiUrl}/document/${documentId}?entite_id=${entiteId}`).pipe(
+        return this.http.get<any>(`${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}`).pipe(
             catchError((error) => {
                 this.logger.error('Error get document', error);
                 return of(null);
@@ -85,7 +85,7 @@ export class DocumentService {
         );
     }
     assignFileTypes(entiteId: number, documentId: string, elementId: string, fileTypes: string[]): Observable<any> {
-        return this.http.patch<any>(`${this.settingsService.apiUrl}/document/${documentId}/file/${elementId}/types?entite_id=${entiteId}`, fileTypes).pipe(
+        return this.http.patch<any>(`${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}/types`, fileTypes).pipe(
             catchError((error) => {
                 this.logger.error('Error assigning file types', error);
                 return throwError(() => error);
@@ -109,7 +109,7 @@ export class DocumentService {
     }
 
     downloadFileByName(entiteId: number, documentId: string, elementId: string, fileName: string): Observable<Blob> {
-        return this.http.get(`${this.settingsService.apiUrl}/document/${documentId}/file/${elementId}/${fileName}?entite_id=${entiteId}`, { responseType: 'blob' }).pipe(
+        return this.http.get(`${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}/${fileName}`, { responseType: 'blob' }).pipe(
             catchError((error) => {
                 this.logger.error('Error downloading file', error);
                 return of(null);
@@ -118,8 +118,8 @@ export class DocumentService {
     }
 
     deleteFileFromDocument(documentId: string, elementId: string, entiteId: number, fileName: string): Observable<any> {
-        const body = { entite_id: entiteId, file_name: fileName };
-        return this.http.request<any>('delete', `${this.settingsService.apiUrl}/document/${documentId}/file/${elementId}`, { body }).pipe(
+        const body = { file_name: fileName };
+        return this.http.request<any>('delete', `${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}`, { body }).pipe(
             catchError((error) => {
                 this.logger.error('Error deleting file from document', error);
                 return throwError(() => error);
