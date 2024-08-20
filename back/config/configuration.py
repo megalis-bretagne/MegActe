@@ -8,6 +8,18 @@ from pydantic_settings import (
 )
 
 
+class DocumentConfig(BaseModel):
+    """
+    Configuration pour les documents de pastell
+
+    Args:
+        BaseModel (_type_):
+    """
+
+    # La liste des external Data à récupérer au get des Documents
+    external_data_to_retrieve: list[str] = ["type_piece_fichier"]
+
+
 class Pastell(BaseModel):
     """
     Configuration pour la connexion pastell
@@ -72,6 +84,7 @@ class Settings(BaseSettings):
 
     """
 
+    document: DocumentConfig = DocumentConfig()
     pastell: Pastell
     keycloak: Keycloak
     database: Database

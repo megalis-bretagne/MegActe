@@ -11,6 +11,9 @@ from ..schemas.document_schemas import (
 from fastapi import HTTPException
 from io import BytesIO
 from fastapi.responses import StreamingResponse
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def create_empty_document(entite_id: int, flux_type: str, client_api: ApiPastell):
@@ -84,6 +87,7 @@ def get_document_info_service(
     entite_id: int,
     document_id: str,
     client_api: ApiPastell,
+    external_data_to_retrieve: list[str] = [],
 ):
     """Récupère les infos d'un document dans Pastell.
 
@@ -92,11 +96,23 @@ def get_document_info_service(
         document_id (str): L'ID du document à récupérer.
         user (UserPastell): L'utilisateur pour lequel le document doit être récupéré.
         client_api (ApiPastell): client api
+        external_data_to_retrieve (list[str]) : liste des external Data a récupérer
 
     Returns:
         dict: Les détails du document récupéré.
     """
-    return client_api.perform_get(f"/entite/{entite_id}/document/{document_id}")
+    document = client_api.perform_get(f"/entite/{entite_id}/document/{document_id}")
+
+    for external_data in external_data_to_retrieve:
+        if external_data in document["data"]:
+            logger.debug(
+                f"Récupération des informations de {external_data} pour le document {document_id}"
+            )
+            info = client_api.perform_get(
+                f"/entite/{entite_id}/document/{document_id}/file/{external_data}"
+            )
+            document["data"][external_data] = info.json()
+    return document
 
 
 def delete_document_service(entite_id: int, document_id: str, client_api: ApiPastell):

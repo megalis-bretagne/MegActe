@@ -6,7 +6,7 @@ from config import configuration as config
 
 
 @lru_cache
-def get_settings():
+def get_settings() -> config.Settings:
     return config.Settings()
 
 

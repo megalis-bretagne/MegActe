@@ -1,5 +1,9 @@
+from typing_extensions import Annotated
 from fastapi import APIRouter, Depends, File, UploadFile
 from typing import List
+
+from app.dependencies import get_settings
+from config.configuration import Settings
 
 from ..clients.pastell.api import ApiPastell
 from ..routers import get_or_make_api_pastell
@@ -51,9 +55,12 @@ def update_document(
 def get_document(
     document_id: str,
     entite_id: int,
+    settings: Annotated[Settings, Depends(get_settings)],
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return get_document_info_service(entite_id, document_id, client)
+    return get_document_info_service(
+        entite_id, document_id, client, settings.document.external_data_to_retrieve
+    )
 
 
 # Delete Document
@@ -134,7 +141,10 @@ def assign_file_types(
 
 
 # Récupérer les valeurs pour un champ externalData
-@router.get("/document/{document_id}/externalData/{element_id}", tags=["document"])
+@router.get(
+    "/entite/{entite_id}/document/{document_id}/externalData/{element_id}",
+    tags=["document"],
+)
 def get_external_data(
     entite_id: int,
     document_id: str,
