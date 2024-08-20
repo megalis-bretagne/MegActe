@@ -28,7 +28,7 @@ export class FluxService {
     }
 
     public get_externalData(entiteId: number, documentId: string, elementId: string): Observable<any> {
-        const url = `${this.settingsService.apiUrl}/document/${documentId}/externalData/${elementId}?entite_id=${entiteId}`;
+        const url = `${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/externalData/${elementId}`;
         return this.http.get<any>(url).pipe(
             tap(() => this.logger.info('Successfully fetched external data')),
             catchError((error) => {

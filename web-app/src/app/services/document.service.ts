@@ -84,8 +84,8 @@ export class DocumentService {
             })
         );
     }
-    assignFileTypes(entiteId: number, documentId: string, elementId: string, fileTypes: string[]): Observable<any> {
-        return this.http.patch<any>(`${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}/types`, fileTypes).pipe(
+    patchExternalData(entiteId: number, documentId: string, elementId: string, fileTypes: string[]): Observable<any> {
+        return this.http.patch<any>(`${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/externalData/${elementId}`, fileTypes).pipe(
             catchError((error) => {
                 this.logger.error('Error assigning file types', error);
                 return throwError(() => error);

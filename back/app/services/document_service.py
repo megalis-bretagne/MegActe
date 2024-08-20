@@ -348,7 +348,7 @@ def transfer_tdt_document_service(
     return check_and_perform_action_service(entite_id, document_id, action, client_api)
 
 
-def assign_file_types_service(
+def assign_file_typologie_service(
     entite_id: int,
     document_id: str,
     element_id: str,

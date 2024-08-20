@@ -18,7 +18,7 @@ export abstract class BaseInputComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.initInput()
+        this.initInput();
     }
 
     initInput(): void {

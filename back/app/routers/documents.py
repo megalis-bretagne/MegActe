@@ -18,7 +18,7 @@ from ..services.document_service import (
     delete_document_service,
     cancel_transfer_tdt_document_service,
     transfer_tdt_document_service,
-    assign_file_types_service,
+    assign_file_typologie_service,
     get_file_by_name_service,
 )
 
@@ -125,19 +125,22 @@ def get_file_for_document(
 
 # Attribuer un type à un fichier
 @router.patch(
-    "/entite/{entite_id}/document/{document_id}/file/{element_id}/types",
+    "/entite/{entite_id}/document/{document_id}/externalData/{element_id}",
     tags=["document"],
 )
-def assign_file_types(
+def patch_external_data(
     document_id: str,
     entite_id: int,
     element_id: str,
-    file_types: List[str],
+    data: List[str],
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return assign_file_types_service(
-        entite_id, document_id, element_id, file_types, client
-    )
+
+    if element_id == "type_piece":
+        return assign_file_typologie_service(
+            entite_id, document_id, element_id, data, client
+        )
+    return 200
 
 
 # Récupérer les valeurs pour un champ externalData

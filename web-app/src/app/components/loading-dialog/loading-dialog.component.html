@@ -4,12 +4,16 @@
     <div class="fr-alert fr-alert--error">
         <h3 class="fr-alert__title">{{error}}</h3>
     </div>
-    } @else {
+    } @else if (success) {
+    <div class="fr-alert fr-alert--success">
+        <h3 class="fr-alert__title">{{success}}</h3>
+    </div>
+    }
+    @else {
     <meg-loading [message]="message" />
-
     }
 </mat-dialog-content>
-@if(error) {
+@if(error || success) {
 <mat-dialog-actions>
     <div class="dialog-close">
         <div>

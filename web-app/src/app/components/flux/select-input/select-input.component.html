@@ -1,18 +1,33 @@
-<div class="fr-select-group" [class.fr-select-group--disabled]="formControl.disabled">
+<div class="fr-select-group" [class.fr-select-group--disabled]="formControl.disabled" [ngClass]="{
+    'fr-input-group': true,
+    'fr-input-group--error': formControl.invalid && (formControl.dirty || formControl.touched),
+    'fr-input-group--valid': formControl.valid && (formControl.dirty || formControl.touched)
+  }">
     <label class="fr-label" [for]="controlId">
         {{ name }}
-        @if (required && !formControl.disable) {
+        @if (required && !formControl.disabled) {
         <span class="required-star">*</span>
         }
         @if (comment) {
         <span class="fr-hint-text">{{ comment }}</span>
         }
-    </label>
-    <select class="fr-select" [id]="controlId" [name]="controlId" [formControl]="formControl" [multiple]="multiple">
+    </label><!-- @TODO gérer le cas multiple-->
+    <select class="fr-select" [id]="controlId" [name]="controlId" [formControl]="formControl" [required]="required">
         @for (option of options | keyvalue; track option.key) {
         <option [value]="option.key" [selected]="option.key === formControl.value">
             {{ option.value }}
         </option>
         }
     </select>
+    @if(formControl.dirty || formControl.touched ) {
+    @if (formControl.invalid) {
+    <p class="fr-error-text">
+        Ce champ est requis
+    </p>
+    } @else {
+    <p class="fr-valid-text">
+        Champ valide
+    </p>
+    }
+    }
 </div>

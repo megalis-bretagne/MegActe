@@ -42,23 +42,20 @@ export class ActeFormComponent implements OnInit {
   filteredFields: Field[] = [];
   fileTypes: { [key: string]: string } = {};
   pieces = signal<string[]>([]);
-  selectedTypes: string[] = [];
   fileTypeField: Field;
 
   currentStep = 1;
   globalErrorMessage: string;
-  isFormValid = true;
-  isformSubmitted: boolean = false;
-  isTypoSuccess: boolean = null;
-  isLoading = false;
-  isSaving = false;
-  modalMessage: string;
   isReadOnly: boolean = false;
   fileFields: Field[] = [];
 
   formValues: { [idField: string]: any } = {};
 
+  // @TODO, revoir le mécanisme des steps pour faire un composant par steps
+  // Formulaire de la step 1
   form: FormGroup = new FormGroup({});
+  // Formulaire pour la step 2
+  formExternalData: FormGroup = new FormGroup({})
 
   constructor(
     private route: ActivatedRoute,
@@ -109,18 +106,21 @@ export class ActeFormComponent implements OnInit {
     return this.form.get(name) as FormControl;
   }
 
+  getFormControlExternal(index: number | string): FormControl {
+    return this.formExternalData.get(index.toString()) as FormControl;
+  }
+
 
   onNextStepClick(): void {
     if (this.validateForm()) {
       this.globalErrorMessage = '';
-      this.isLoading = true;
       this._save();
     } else {
       this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
     }
   }
 
-  private _retrieveInfo(): void {
+  private _retrieveInfo(): any {
     const docInfo = this.form.getRawValue();
     Object.keys(docInfo).forEach(key => {
       // Conditions pour supprimer une clé :
@@ -134,7 +134,6 @@ export class ActeFormComponent implements OnInit {
 
   private _save(): void {
     this.loadingservice.showLoading();
-    this.pieces.set([]);
     const docInfo = this._retrieveInfo();
     const docUpdateInfo = {
       entite_id: this.userCurrent().user_info.id_e,
@@ -159,6 +158,21 @@ export class ActeFormComponent implements OnInit {
     });
   }
 
+  /**
+   * Construit le formulaire de la seconde étape.
+   * @param doc_info les données du document mise à jours
+   * @param types 
+   */
+  private _buildFormExternalDataForFile(files: string[], externalDataValue: { [key: string]: string }) {
+    this.formExternalData = new FormGroup({});
+    const valueTypePiece = this.documentInfo.data.type_piece_fichier || [];
+    const entriesExternalData = Object.entries(externalDataValue);
+    files.forEach((file: string, idx: number) => {
+      const valueString = valueTypePiece.find(piece => piece.filename === file)?.typologie || undefined;
+      const valueKey = valueString ? entriesExternalData.find(([_key, val]) => val === valueString)[0] : null;
+      this.formExternalData.addControl(idx.toString(), new FormControl(valueKey))
+    });
+  }
 
   private _fetchExternalDataByFile(): void {
     //TODO changer pour la sélection d'entite
@@ -166,9 +180,9 @@ export class ActeFormComponent implements OnInit {
     this.fluxService.get_externalData(entiteId, this.documentInfo.info.id_d, 'type_piece').subscribe({
       next: (response) => {
         this.fileTypes = response.actes_type_pj_list;
-        this.pieces.set(response.pieces);
-        this.selectedTypes = Array(this.pieces().length).fill('');
         this.currentStep = 2;
+        this._buildFormExternalDataForFile(response.pieces, response.actes_type_pj_list)
+        this.pieces.set(response.pieces);
         this.loadingservice.hideLoading();
       },
       error: (error) => {
@@ -177,69 +191,49 @@ export class ActeFormComponent implements OnInit {
     });
   }
 
+  isFormFileTypesValid() {
+    return false;
+  }
 
   onAssignFileTypesClick(): void {
-    this.isformSubmitted = true;
-    if (this.isFormFileTypesValid()) {
-      this.isSaving = true;
-      this.assignFileTypes();
+    this.formExternalData.markAllAsTouched();
+    if (this.formExternalData.valid) {
+      this.loadingservice.showLoading();
+      const info = this.formExternalData.getRawValue();
+      this._assignFileTypes(Object.values(info));
     } else {
       this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
-      this.modalMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
     }
   }
 
-  isFormFileTypesValid(): boolean {
-    return this.selectedTypes.every((type) => type !== '' && type !== undefined);
-  }
-
-  assignFileTypes(): void {
-    const entiteId = this.userCurrent().user_info.id_e;
-    this.documentService.assignFileTypes(entiteId, this.documentInfo.info.id_d, 'type_piece', this.selectedTypes).subscribe({
+  private _assignFileTypes(data: string[]): void {
+    this.documentService.patchExternalData(this.userCurrent().user_info.id_e, this.documentInfo.info.id_d, 'type_piece', data).subscribe({
       next: (response) => {
-        this.isSaving = false;
-        this.isTypoSuccess = true;
-        this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
-        this.scheduleRedirect();
+        this.loadingservice.showSuccess('Le document a été créé et mis à jour avec succès.', ['/documents', this.acteName]);
         this.logger.info('File types assigned successfully', response);
       },
       error: (error) => {
-        this.isTypoSuccess = false;
+        this.loadingservice.showError(error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.');
         this.logger.error('Error assigning file types', error);
-        this.modalMessage = error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.';
       }
     });
   }
 
-  onSelectChange(event: Event, index: number): void {
-    const value = (event.target as HTMLSelectElement).value;
-    this.selectedTypes[index] = value;
-  }
-
   onPreviousStepClick() {
     this.currentStep = 1;
-    this.isLoading = false;
   }
 
-
   validateForm(): boolean {
-    this.isFormValid = true;
     this.globalErrorMessage = '';
     this.form.markAllAsTouched();
-    this.isFormValid = this.form.valid;
 
-    if (!this.isFormValid) {
+    if (!this.form.valid) {
       this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
     }
 
-    return this.isFormValid;
+    return this.form.valid;
   }
 
-
-
-  isTypeSelected(index: number): boolean {
-    return this.selectedTypes[index] !== '';
-  }
 
   scheduleRedirect(): void {
     setTimeout(() => {
@@ -247,12 +241,7 @@ export class ActeFormComponent implements OnInit {
     }, 3000);
   }
 
-  objectKeys(obj: any): string[] {
-    return Object.keys(obj);
-  }
-
   goBack(): void {
     this.router.navigate(['/']);
   }
-
 }

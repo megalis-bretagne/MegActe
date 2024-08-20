@@ -32,6 +32,11 @@ export interface DocumentPaginate {
     documents: DocumentInfo[]
 }
 
+export interface TypePieceFichier {
+    filename: string,
+    typologie: string
+}
+
 export interface DocumentDetail {
     info: {
         id_d: string;
@@ -57,7 +62,7 @@ export interface DocumentDetail {
         type_piece?: string;
         type_acte?: string;
         type_pj?: string;
-        type_piece_fichier?: string[];
+        type_piece_fichier?: TypePieceFichier[];
         [key: string]: any;
     };
 

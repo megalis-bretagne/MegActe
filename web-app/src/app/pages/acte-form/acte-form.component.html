@@ -77,50 +77,37 @@
                 @if (currentStep === 2) {
                 <div class="step-container">
                     <h3 class="step-title">{{fileTypeField['name']}}</h3>
-                    @if (globalErrorMessage && !isFormFileTypesValid()) {
+                    @if (globalErrorMessage) {
                     <div class="fr-alert fr-alert--error" role="alert">
                         {{ globalErrorMessage }}
                     </div>
                     }
-                    @for (piece of pieces(); track piece; let idx = $index) {
-                    <div class="fr-select-group"
-                        [class.fr-select-group--error]="!isTypeSelected(idx) && isformSubmitted">
-                        <label class="fr-label" for="select-error-{{ idx }}"> {{ piece }} <span
-                                class="required-star">*</span>
-                        </label>
-                        <select class="fr-select" [class.fr-select--error]="!isTypeSelected(idx) && isformSubmitted"
-                            aria-describedby="select-error-desc-error" id="select-error-{{ idx }}" name="select-error"
-                            (change)="onSelectChange($event, idx)" required>
-                            <option value="" selected disabled hidden>Sélectionner un type</option>
-                            @for (key of objectKeys(fileTypes); track key) {
-                            <option [value]=" key">{{ fileTypes[key] }}</option>
-                            }
-                        </select>
-                        @if (!isTypeSelected(idx) && isformSubmitted) {
-                        <p id="select-error-desc-error" class="fr-error-text">
-                            Ce champ est requis
-                        </p>
+                    <form [formGroup]="formExternalData">
+                        @for (piece of pieces(); track piece; let idx = $index) {
+                        <div class="input-container">
+                            <meg-select-input [idField]="piece" [name]="piece" [required]="true" [options]="fileTypes"
+                                [control]="getFormControlExternal(idx)" />
+                        </div>
                         }
-                    </div>
-                    }
-                    <div class="fr-fieldset__element clearfix">
-                        <ul class="fr-btns-group--left fr-btns-group fr-btns-group--inline btn-left">
-                            <li>
-                                <button class="fr-mt-2v fr-btn fr-btn--secondary" type="button"
-                                    (click)="onPreviousStepClick()">Précédent</button>
-                            </li>
-                        </ul>
-                        <ul class="fr-btns-group--right fr-btns-group fr-btns-group--inline btn-right">
-                            <li>
-                                <button class="fr-mt-2v fr-btn" type="button" (click)="onAssignFileTypesClick()"
-                                    data-fr-opened="false" aria-controls="fr-modal">Enregistrer</button>
-                            </li>
-                            <!-- <li>
+                        <div class="fr-fieldset__element clearfix">
+                            <ul class="fr-btns-group--left fr-btns-group fr-btns-group--inline btn-left">
+                                <li>
+                                    <button class="fr-mt-2v fr-btn fr-btn--secondary" type="button"
+                                        (click)="onPreviousStepClick()">Précédent</button>
+                                </li>
+                            </ul>
+                            <ul class="fr-btns-group--right fr-btns-group fr-btns-group--inline btn-right">
+                                <li>
+                                    <button class="fr-mt-2v fr-btn" type="button"
+                                        (click)="onAssignFileTypesClick()">Enregistrer</button>
+                                </li>
+                                <!-- <li>
                                 <button class="fr-mt-2v fr-btn" type="submit" data-fr-opened="false"
                                     aria-controls="fr-modal" [disabled]="!isFormFileTypesValid()">Transmettre</button>
                             </li> -->
-                        </ul>
-                    </div>
+                            </ul>
+                        </div>
+                    </form>
                 </div>
                 }
             </div>
@@ -171,36 +158,3 @@
         </div>
     </div>
 </div>
-
-<dialog aria-labelledby="fr-modal-title" id="fr-modal" class="fr-modal">
-    <div class="fr-container fr-container--fluid fr-container-md">
-        <div class="fr-grid-row fr-grid-row--center">
-            <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
-                <div class="fr-modal__body">
-                    <div class="fr-modal__header">
-                        @if(!isFormFileTypesValid()){
-                        <button class="fr-btn--close fr-btn" title="Fermer la fenêtre modale"
-                            aria-controls="fr-modal">Fermer</button>
-                        }
-                    </div>
-                    <div class="fr-modal__content">
-                        @if (isSaving ) {
-                        <meg-loading /> }
-                        @if(isTypoSuccess !== null ){
-                        <p class="fr-badge" [class]="isTypoSuccess ? 'fr-badge--success' : 'fr-badge--error'">
-                            {{ isTypoSuccess ? 'Succès' : 'Erreur' }}
-                        </p>
-                        <p>{{ modalMessage }}</p>
-                        }
-                        @if(!isFormFileTypesValid()){
-                        <p class="fr-badge fr-badge--error">
-                            Erreur
-                        </p>
-                        <p>{{ modalMessage }}</p>
-                        }
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</dialog>

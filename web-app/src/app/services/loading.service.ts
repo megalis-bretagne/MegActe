@@ -26,12 +26,26 @@ export class LoadingService {
         }
     }
 
-    showError(error: string) {
+    showSuccess(success: string, redirect: string[] = null) {
         if (this.dialogRef) {
-            this.dialogRef.componentInstance.error = error;
+            this.dialogRef.componentInstance.success = success;
+            this.dialogRef.componentInstance.error = null;
+            this.dialogRef.componentInstance.redirect_on_close = redirect;
         } else {
             this.dialogRef = this.dialog.open(LoadingDialogComponent, {
-                data: { message: '', error: error }
+                data: { message: '', success: success, redirect_on_close: redirect }
+            });
+        }
+    }
+
+    showError(error: string, redirect: string[] = null) {
+        if (this.dialogRef) {
+            this.dialogRef.componentInstance.success = null;
+            this.dialogRef.componentInstance.error = error;
+            this.dialogRef.componentInstance.redirect_on_close = redirect;
+        } else {
+            this.dialogRef = this.dialog.open(LoadingDialogComponent, {
+                data: { message: '', error: error, redirect_on_close: redirect }
             });
         }
     }
