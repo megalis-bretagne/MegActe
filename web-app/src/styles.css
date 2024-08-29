@@ -1,15 +1,39 @@
 /* You can add global styles to this file, and also import other style files */
-@import "@gouvfr/dsfr/dist/dsfr.min.css";
-
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
 html,
 body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
+    @apply text text-base font-sans  p-0 m-0 w-full h-full;
 }
 
+
+
+@layer components {
+    .btn-meg-primary {
+        @apply focus:outline-none rounded-full focus-visible:outline-black focus-visible:outline-offset-2
+         bg-light-primary hover:bg-blue-hover dark:bg-dark-primary text-white;
+    }
+
+    .btn-meg-secondary {
+        @apply focus:outline-none rounded-full focus-visible:outline-black focus-visible:outline-offset-2
+         bg-light-secondary border border-gray-200 hover:bg-gray-hover dark:bg-dark-secondary text-blue hover:text-blue-hover;
+    }
+
+    .meg-toggle {
+        @apply relative w-11 h-6 bg-gray-200 rounded-full after:content-[''] after:absolute after:top-0.5 after:start-[2px]
+        after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5
+         after:w-5 after:transition-all dark:border-gray-600;
+    }
+    
+    a {
+        @apply focus-visible:outline-blue-hover focus-visible:outline-offset-2 ;
+    }
+} 
+
+
+/*
 .header {
     background-color: rgb(240, 240, 240);
     color: #414856;
@@ -47,11 +71,11 @@ body {
 }
 
 /* Appliquer une couleur de fond aux lignes paires */
-table tbody tr:nth-child(even) {
+/* table tbody tr:nth-child(even) {
     background-color: #f2f2f2;
-}
+} */
 
 /* Appliquer une couleur de fond aux lignes impaires */
-table tbody tr:nth-child(odd) {
+/* table tbody tr:nth-child(odd) {
     background-color: #ffffff;
-}
+} */

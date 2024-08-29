@@ -1,14 +1,15 @@
 <app-navbar />
 <main role="main">
-    <div class="fr-container--fluid">
+    <div class="w-full overflow-hidden px-1">
 
-        <div class="fr-grid-row">
-            <div class="fr-col-3 fr-col-md-3">
+        <div class="flex flex-wrap">
+            <div class="w-full md:w-6/12">
                 <app-sidebar />
             </div>
-            <div class="fr-col-9 fr-col-md-9 fr-py-8v fr-px-8v">
-                <router-outlet />
+            <div class="w-full md:w-9/12 py-8 px-8">
+                <!-- <router-outlet /> -->
             </div>
         </div>
+
     </div>
 </main>
