@@ -10,10 +10,10 @@
             @if(!isReadOnly){
             <div class="fr-stepper">
                 <h2 class="fr-stepper__title">
-                    <span class="fr-stepper__state">Étape {{ currentStep }} sur 2</span>
+                    <span class="fr-stepper__state">Étape {{ currentStep() }} sur 2</span>
                 </h2>
-                <div class="fr-stepper__steps" [attr.data-fr-current-step]="currentStep" data-fr-steps="2"></div>
-                @if (currentStep === 1) {
+                <div class="fr-stepper__steps" [attr.data-fr-current-step]="currentStep()" data-fr-steps="2"></div>
+                @if (currentStep() === 1) {
                 <div class="step-container">
                     @if (globalErrorMessage && !form.valid) {
                     <div class="fr-alert fr-alert--error" role="alert">
@@ -74,7 +74,7 @@
                     </div>
                 </div>
                 }
-                @if (currentStep === 2) {
+                @if (currentStep() === 2) {
                 <div class="step-container">
                     <h3 class="step-title">{{fileTypeField['name']}}</h3>
                     @if (globalErrorMessage) {
@@ -83,7 +83,7 @@
                     </div>
                     }
                     <form [formGroup]="formExternalData">
-                        @for (piece of pieces(); track piece; let idx = $index) {
+                        @for (piece of pieces(); track $index; let idx = $index) {
                         <div class="input-container">
                             <meg-select-input [idField]="piece" [name]="piece" [required]="true" [options]="fileTypes"
                                 [control]="getFormControlExternal(idx)" />

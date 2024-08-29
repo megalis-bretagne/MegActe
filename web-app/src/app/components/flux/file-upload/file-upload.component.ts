@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, input } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, input, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { FileUploadValidationService } from 'src/app/services/file-upload-validation.service';
@@ -20,7 +20,7 @@ export class FileUploadComponent extends BaseInputComponent {
   id_d = input.required<string>();
   id_e = input.required<number>();
 
-  upload_loading = false;
+  upload_loading = signal<boolean>(false);
 
 
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef | undefined;
@@ -69,7 +69,7 @@ export class FileUploadComponent extends BaseInputComponent {
 
 
   removeFile(file: File): void {
-    this.upload_loading = true;
+    this.upload_loading.set(true);
 
     this.documentService.deleteFileFromDocument(this.id_d(), this.idField, this.id_e(), file.name).subscribe(
       {
@@ -84,7 +84,7 @@ export class FileUploadComponent extends BaseInputComponent {
             this.formControl.setValue(this.files);
             this.formControl.updateValueAndValidity();
           }
-          this.upload_loading = false;
+          this.upload_loading.set(false);
         },
       }
     )
@@ -92,7 +92,7 @@ export class FileUploadComponent extends BaseInputComponent {
   }
 
   private _uploadFile(files: File[]): void {
-    this.upload_loading = true;
+    this.upload_loading.set(true);
     this.documentService.uploadFiles(this.id_d(), this.idField, this.id_e(), files).subscribe(
       {
         next: () => {
@@ -105,7 +105,7 @@ export class FileUploadComponent extends BaseInputComponent {
           this.formControl.updateValueAndValidity();
           this._resetFileInput();
         },
-        complete: () => this.upload_loading = false
+        complete: () => this.upload_loading.set(false)
       }
     );
   }

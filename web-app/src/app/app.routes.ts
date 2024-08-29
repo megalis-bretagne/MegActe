@@ -1,10 +1,9 @@
-import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { Routes } from '@angular/router';
 import { AuthGuardService } from './services/keycloakServices/auth-guard.service';
-import { DocumentDetailResolver } from './resolvers/document-detail.resolver';
 import { ActeFormComponent } from './pages/acte-form/acte-form.component';
+import { DocumentDetailResolver } from './resolvers/document-detail.resolver';
 
-const routes: Routes = [
+export const routes: Routes = [
     {
         path: '',
         loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
@@ -25,9 +24,3 @@ const routes: Routes = [
         redirectTo: ''
     }
 ];
-
-@NgModule({
-    imports: [RouterModule.forRoot(routes)],
-    exports: [RouterModule]
-})
-export class AppRoutingModule { }
