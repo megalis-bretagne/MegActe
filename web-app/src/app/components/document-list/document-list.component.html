@@ -21,7 +21,7 @@
     }
 
     <div class="fr-table  fr-table--bordered fr-table--no-caption">
-        @if(is_loading) {
+        @if(is_loading()) {
         <meg-loading [message]="'Chargement des documents en cours...'" />
         } @else {
         <table id="table-md" class="fr-text--sm">

@@ -13,15 +13,16 @@
         <div class="upload-section" megDragAndDrop (filesDropped)="onFilesDropped($event)">
             <p>Glissez/déposez le(s) fichier(s) ici ou cliquez sur "Parcourir les fichiers".</p>
             <button mat-raised-button color="primary" (click)="fileInput.click()" class="custom-button"
-                [disabled]="upload_loading === true">Parcourir les
+                [disabled]="upload_loading() === true">Parcourir les
                 fichiers</button>
             <input type="file" (change)="onFileSelected($event)" [multiple]="multiple" hidden #fileInput
                 [id]="controlId">
             <input type="hidden" [formControl]="formControl" />
         </div>
 
-        @if (files.length > 0 || upload_loading) {
+
         <div class="uploaded-files">
+            @if (files.length > 0 ) {
             <h6>Fichiers téléchargés :</h6>
             <ul>
                 @for (file of files; track file.name) {
@@ -32,12 +33,12 @@
                     </button>
                 </li>
                 }
-                @if (upload_loading) {
-                <meg-loading [message]="'Envoi de documents'" />
-                }
             </ul>
+            }
+            @if (upload_loading()) {
+            <meg-loading [message]="'Envoi de documents'" />
+            }
         </div>
-        }
     </div>
 
     @if (formControl.invalid && formControl.touched) {

@@ -51,7 +51,7 @@ export class DocumentListComponent {
     return 0;
   })
 
-  is_loading = true;
+  is_loading = signal<boolean>(true);
   pageActive = signal(1);
 
   constructor(private documentService: DocumentService, private router: Router) {
@@ -73,12 +73,12 @@ export class DocumentListComponent {
   }
 
   private _loadDataPage(idflux: string, page: number = 1) {
-    this.is_loading = true;
+    this.is_loading.set(true);
     if (page < 1) page = 1
 
     this.documentService.getDocuments(this.userCurrent().user_info.id_e, idflux, (page - 1) * this.itemPerPage, this.itemPerPage).subscribe({
       next: (documentPaginate: DocumentPaginate) => this.documentsPaginate.set(documentPaginate),
-      complete: () => this.is_loading = false
+      complete: () => this.is_loading.set(false)
     })
   }
 
