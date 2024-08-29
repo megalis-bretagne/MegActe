@@ -11,13 +11,10 @@ export class LoadingService {
     constructor(private dialog: MatDialog) { }
 
     showLoading(message: string = 'Chargement ...') {
-
         this.dialogRef = this.dialog.open(LoadingDialogComponent, {
             data: { message: message, error: null },
             disableClose: true
         });
-
-
     }
 
     hideLoading() {
@@ -28,9 +25,9 @@ export class LoadingService {
 
     showSuccess(success: string, redirect: string[] = null) {
         if (this.dialogRef) {
-            this.dialogRef.componentInstance.success = success;
-            this.dialogRef.componentInstance.error = null;
-            this.dialogRef.componentInstance.redirect_on_close = redirect;
+            this.dialogRef.componentInstance.success.set(success);
+            this.dialogRef.componentInstance.error.set(null);
+            this.dialogRef.componentInstance.redirect_on_close.set(redirect);
         } else {
             this.dialogRef = this.dialog.open(LoadingDialogComponent, {
                 data: { message: '', success: success, redirect_on_close: redirect }
@@ -40,9 +37,9 @@ export class LoadingService {
 
     showError(error: string, redirect: string[] = null) {
         if (this.dialogRef) {
-            this.dialogRef.componentInstance.success = null;
-            this.dialogRef.componentInstance.error = error;
-            this.dialogRef.componentInstance.redirect_on_close = redirect;
+            this.dialogRef.componentInstance.success.set(null);
+            this.dialogRef.componentInstance.error.set(error);
+            this.dialogRef.componentInstance.redirect_on_close.set(redirect);
         } else {
             this.dialogRef = this.dialog.open(LoadingDialogComponent, {
                 data: { message: '', error: error, redirect_on_close: redirect }

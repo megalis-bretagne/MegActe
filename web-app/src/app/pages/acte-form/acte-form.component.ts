@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { CheckboxInputComponent } from 'src/app/components/flux/checkbox-input/checkbox-input.component';
@@ -44,7 +44,7 @@ export class ActeFormComponent implements OnInit {
   pieces = signal<string[]>([]);
   fileTypeField: Field;
 
-  currentStep = 1;
+  currentStep = signal<number>(1);
   globalErrorMessage: string;
   isReadOnly: boolean = false;
   fileFields: Field[] = [];
@@ -66,11 +66,6 @@ export class ActeFormComponent implements OnInit {
     private router: Router,
     private fluxService: FluxService,
   ) {
-
-
-    effect(() => {
-      this.acteName = this.fluxSelected().nom;
-    });
 
     this.route.data.subscribe(data => {
       this.fluxDetail = data['docDetail'].flux;
@@ -96,6 +91,8 @@ export class ActeFormComponent implements OnInit {
 
 
   ngOnInit(): void {
+    this.acteName = this.fluxSelected().nom;
+
     this.filteredFields.forEach(field => {
       const value = this.documentInfo.data[field.idField] ?? null;
       this.form.addControl(field.idField, new FormControl(value));
@@ -180,7 +177,7 @@ export class ActeFormComponent implements OnInit {
     this.fluxService.get_externalData(entiteId, this.documentInfo.info.id_d, 'type_piece').subscribe({
       next: (response) => {
         this.fileTypes = response.actes_type_pj_list;
-        this.currentStep = 2;
+        this.currentStep.set(2);
         this._buildFormExternalDataForFile(response.pieces, response.actes_type_pj_list)
         this.pieces.set(response.pieces);
         this.loadingservice.hideLoading();
@@ -220,7 +217,7 @@ export class ActeFormComponent implements OnInit {
   }
 
   onPreviousStepClick() {
-    this.currentStep = 1;
+    this.currentStep.set(1);
   }
 
   validateForm(): boolean {
