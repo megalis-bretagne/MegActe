@@ -1,48 +1,61 @@
-<div class="file-upload fr-input-group" [class.fr-input-group--error]="formControl.invalid && formControl.touched">
-    <label class="fr-label para-name" [class.fr-label--error]="formControl.invalid && formControl.touched"
-        [for]="controlId">
+<div class="file-upload my-3">
+    <label class="meg-label m-0" [ngClass]="{
+        '!text-alert': formControl.invalid && (formControl.dirty || formControl.touched),
+        '!text-success': formControl.valid && (formControl.dirty || formControl.touched)
+      }" [for]="controlId">
         {{ name }}
         @if (required) {
-        <span class="required-star">*</span>
+        <span class="text-required">*</span>
         }
     </label>
     @if (comment) {
-    <div class="fr-hint-text">{{ comment }}</div>
+    <p id="tooltip-helper-text" class="mt-0.5 text-xs text text-ellipsis whitespace-nowrap overflow-hidden"
+        title="{{comment}}">{{comment}}</p>
     }
-    <div class="file-upload-container">
-        <div class="upload-section" megDragAndDrop (filesDropped)="onFilesDropped($event)">
-            <p>Glissez/déposez le(s) fichier(s) ici ou cliquez sur "Parcourir les fichiers".</p>
-            <button mat-raised-button color="primary" (click)="fileInput.click()" class="custom-button"
-                [disabled]="upload_loading() === true">Parcourir les
+    <div class="flex">
+        <div class="upload-section" [ngClass]="files.length === 0 && action_one_file() === null ? 'w-full' : 'w-1/2'"
+            megDragAndDrop (filesDropped)=" onFilesDropped($event)">
+            <p class="text">Glissez/déposez le(s) fichier(s) ici ou cliquez sur "Parcourir les fichiers".</p>
+            <button mat-raised-button class="btn-meg-primary px-4 py-2" (click)="fileInput.click()"
+                [disabled]="action_one_file() !== null">Parcourir les
                 fichiers</button>
             <input type="file" (change)="onFileSelected($event)" [multiple]="multiple" hidden #fileInput
                 [id]="controlId">
             <input type="hidden" [formControl]="formControl" />
         </div>
 
-
-        <div class="uploaded-files">
+        <div class="pl-2 overflow-y-auto"
+            [ngClass]="files.length === 0 && action_one_file() === null ? 'hidden' : 'w-1/2'">
             @if (files.length > 0 ) {
-            <h6>Fichiers téléchargés :</h6>
-            <ul>
+            <p class="text-lg font-semibold mb-4">Fichiers téléchargés :</p>
+            <ul class="space-y-2">
                 @for (file of files; track file.name) {
-                <li class="fr-hint-text">
-                    {{ file.name }}
-                    <button mat-button color="warn" (click)="removeFile(file)">
-                        <span class="fr-icon-delete-fill" aria-hidden="true">Supprimer</span>
+                <li class="flex justify-between items-center p-2 bg-gray-100 rounded-md">
+                    <p class="text-ellipsis whitespace-nowrap overflow-hidden" title="{{file.name}}">{{ file.name }}</p>
+                    <button class="ml-4 px-2 py-1 btn-meg-delete" (click)="removeFile(file)"
+                        [attr.aria-label]="'Supprimer le fichier '+ file.name">
+                        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                            height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd"
+                                d="M8.586 2.586A2 2 0 0 1 10 2h4a2 2 0 0 1 2 2v2h3a1 1 0 1 1 0 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V8a1 1 0 0 1 0-2h3V4a2 2 0 0 1 .586-1.414ZM10 6h4V4h-4v2Zm1 4a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Zm4 0a1 1 0 1 0-2 0v8a1 1 0 1 0 2 0v-8Z"
+                                clip-rule="evenodd" />
+                        </svg>
                     </button>
                 </li>
                 }
             </ul>
             }
-            @if (upload_loading()) {
+            @if (action_one_file() === actionState.Add) {
             <meg-loading [message]="'Envoi de documents'" />
+            }
+            @if (action_one_file() === actionState.Delete) {
+            <meg-loading [message]="'Suppression des documents'" />
             }
         </div>
     </div>
 
     @if (formControl.invalid && formControl.touched) {
-    <p id="file-upload-with-error-desc-error" class="fr-error-text">
+    <p id="file-upload-with-error-desc-error" class="meg-invalid">
         {{ errorMessage || (formControl.hasError('required') ? 'Ce champ est requis.' : '') }}
     </p>
     }

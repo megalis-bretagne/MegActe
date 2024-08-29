@@ -1,19 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { LoadingComponent } from 'src/app/components/loading-component/loading.component';
 import { PaginationComponent } from 'src/app/components/pagination/pagination.component';
 import { UserContextService } from 'src/app/services/user-context.service';
 
 @Component({
-  selector: 'app-user-profile',
+  selector: 'meg-user-profile',
   standalone: true,
   imports: [
-    LoadingComponent,
     CommonModule,
     PaginationComponent
   ],
   templateUrl: './user-profile.component.html',
-  styleUrls: ['./user-profile.component.scss']
+  styleUrls: []
 })
 export class UserProfileComponent {
   currentUser = inject(UserContextService).userCurrent;

@@ -1,28 +1,28 @@
-<div [ngClass]="{
-    'fr-input-group': true,
-    'fr-input-group--error': formControl.invalid && (formControl.dirty || formControl.touched),
-    'fr-input-group--valid': formControl.valid && (formControl.dirty || formControl.touched)
-  }">
-    <label class="fr-label" [for]="controlId">
+<div class="my-3">
+    <label class="meg-label" [ngClass]="{
+        '!text-alert': formControl.invalid && (formControl.dirty || formControl.touched),
+        '!text-success': formControl.valid && (formControl.dirty)
+      }" [for]="controlId">
         {{ name }}
         @if (required) {
-        <span class="required-star">*</span>
-        }
-        @if (comment) {
-        <span class="fr-hint-text">{{ comment }}</span>
+        <span class="text-required">*</span>
         }
     </label>
-    <input class="fr-input" [id]="controlId" [ngClass]="{
-           'fr-input--error': formControl.invalid && (formControl.dirty || formControl.touched),
-           'fr-input--valid': formControl.valid && (formControl.dirty || formControl.touched)
-         }" [formControl]="formControl" type="text" />
+    @if (comment) {
+    <p id="tooltip-helper-text" class="mt-0.5 text-xs text text-ellipsis whitespace-nowrap overflow-hidden"
+        title="{{comment}}">{{comment}}</p>
+    }
+    <input [id]="controlId" aria-describedby="helper-text-explanation" [ngClass]="{
+           'invalid': formControl.invalid && (formControl.dirty || formControl.touched),
+           'valid': formControl.valid && (formControl.dirty || formControl.touched)
+         }" [formControl]="formControl" type="text" class="meg-text" />
     @if(formControl.dirty || formControl.touched ) {
     @if (formControl.invalid) {
-    <p class="fr-error-text">
+    <p class="meg-error">
         {{ getErrorMessage() }}
     </p>
     } @else {
-    <p class="fr-valid-text">
+    <p class="meg-valid">
         Champ valide
     </p>
     }

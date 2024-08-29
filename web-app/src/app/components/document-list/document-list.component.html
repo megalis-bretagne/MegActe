@@ -1,55 +1,60 @@
-<div class="fr-container--fluid">
-    @if (fluxSelected(); as fluxSelected) {
-    <div class="fr-grid-row">
-        <div class="fr-col-9 fr-col-md-9">
-            <h1>Liste des documents {{fluxSelected.nom}}</h1>
-        </div>
-        <div class="fr-col-3 fr-col-md-3">
-            <button class="fr-btn" (click)="createDoc()">
+<div class="container mx-auto">
+    <div class="flex justify-between items-center mb-4">
+        @if (fluxSelected(); as fluxSelected) {
+        <h1>Liste des documents {{fluxSelected.nom}}</h1>
+        <div class="space-x-4">
+            <button [attr.aria-label]="'Créer un document de type '+ fluxSelected.nom" class="btn-meg-primary px-4 py-2"
+                (click)="createDoc()">
                 Créer
-                <span class="fr-icon-add-line icone-add" aria-hidden="true"></span>
+                <svg class="w-5 h-5 inline-block ml-1" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
             </button>
         </div>
+        }
+        @else {
+        <h1>Liste des documents</h1>
+        }
     </div>
-    }
-    @else {
-    <div class="fr-grid-row">
-        <div class="fr-col-9 fr-col-md-9">
-            <h1>Liste des documents</h1>
-        </div>
-    </div>
-    }
 
-    <div class="fr-table  fr-table--bordered fr-table--no-caption">
-        @if(is_loading()) {
-        <meg-loading [message]="'Chargement des documents en cours...'" />
-        } @else {
-        <table id="table-md" class="fr-text--sm">
+    @if(is_loading()) {
+    <meg-loading [message]="'Chargement des documents en cours...'" />
+    } @else {
+    <div class="meg-table">
+        <table id="table-md">
             @if (fluxSelected(); as fluxSelected) {
-            <caption> Documents {{fluxSelected.nom}} </caption>
+            <caption class="hidden"> Documents {{fluxSelected.nom}} </caption>
             } @else {
-            <caption>Documents</caption>
+            <caption class="hidden">Documents</caption>
             }
-            <thead>
+            <thead class="text-medium bg-gray-50 border border-b-black">
                 <tr>
-                    <th scope="col" class="meg fr-col-xl-4  fr-col-lg-4 fr-col-md-4"> Titre </th>
-                    <th scope="col" class="meg fr-col-xl-2 fr-col-lg-2 fr-col-md-2"> Type </th>
-                    <th scope="col" class="meg fr-col-xl-2 fr-col-lg-2 fr-col-md-2"> Etat </th>
-                    <th scope="col" class="meg fr-col-xl-2 fr-col-lg-2 fr-col-md-2"> Date de modification </th>
-                    <th scope="col" class="meg fr-col-xl-2 fr-col-lg-2 fr-col-md-2">Actions</th>
+                    <th scope="col">Titre</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">État</th>
+                    <th scope="col">Date de modification</th>
+                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @for (doc of documents(); track doc.id_d) {
                 <tr>
-                    <td>{{doc.titre || doc.id_d}}</td>
+                    <td class="whitespace-nowrap">{{doc.titre || doc.id_d}}</td>
                     <td>{{doc.type}}</td>
                     <td>{{doc.last_action_display | stateDocument}}</td>
                     <td>{{doc.last_action_date | date:'dd/MM/yyyy HH:mm'}}</td>
                     <td>
                         @if(doc.last_action_display === 'modification' || doc.last_action_display === 'creation') {
-                        <a (click)="goUpdateDoc(doc.id_d)" title="Modifier le document {{doc.titre}}">
-                            <span class="fr-icon-edit-fill icon-edit" aria-hidden="true">Modifier</span>
+                        <a (click)="goUpdateDoc(doc.id_d)" title="Modifier le document {{doc.titre}}"
+                            class="text-blue hover:text-blue-hover hover:cursor-pointer">
+                            <svg class="w-5 h-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M10.779 17.779 4.36 19.918 6.5 13.5m4.279 4.279 8.364-8.643a3.027 3.027 0 0 0-2.14-5.165 3.03 3.03 0 0 0-2.14.886L6.5 13.5m4.279 4.279L6.499 13.5m2.14 2.14 6.213-6.504M12.75 7.04 17 11.28" />
+                            </svg>
+                            Modifier
                         </a>
                         }
                     </td>
@@ -57,15 +62,13 @@
                 }
                 @empty {
                 <tr>
-                    <td colspan="5">Aucun documents</td>
+                    <td colspan="5" class="text-center text-gray-500">Aucun document</td>
                 </tr>
                 }
-
-            </tbody>
         </table>
-        }
-        @if (totalPages() > 1) {
-        <meg-pagination [pageActive]="pageActive()" [totalPages]="totalPages()" (onChangePage)="changePage($event)" />
-        }
     </div>
+    }
+    @if (totalPages() > 1) {
+    <meg-pagination [pageActive]="pageActive()" [totalPages]="totalPages()" (onChangePage)="changePage($event)" />
+    }
 </div>

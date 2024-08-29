@@ -1,18 +1,22 @@
-<div class="fr-select-group" [class.fr-select-group--disabled]="formControl.disabled" [ngClass]="{
-    'fr-input-group': true,
-    'fr-input-group--error': formControl.invalid && (formControl.dirty || formControl.touched),
-    'fr-input-group--valid': formControl.valid && (formControl.dirty || formControl.touched)
-  }">
-    <label class="fr-label" [for]="controlId">
+<div class="my-3">
+    <label class="meg-label" [ngClass]="{
+        '!text-alert': formControl.invalid && (formControl.dirty || formControl.touched),
+        '!text-success': formControl.valid && formControl.dirty
+      }" [for]="controlId">
         {{ name }}
         @if (required && !formControl.disabled) {
-        <span class="required-star">*</span>
+        <span class="text-required">*</span>
         }
-        @if (comment) {
-        <span class="fr-hint-text">{{ comment }}</span>
-        }
+
     </label><!-- @TODO gérer le cas multiple-->
-    <select class="fr-select" [id]="controlId" [name]="controlId" [formControl]="formControl" [required]="required">
+    @if (comment) {
+    <p id="tooltip-helper-text" class="mt-0.5 text-xs text text-ellipsis whitespace-nowrap overflow-hidden"
+        title="{{comment}}">{{comment}}</p>
+    }
+    <select class="meg-select" [id]="controlId" [name]="controlId" [formControl]="formControl" [required]="required"
+        [ngClass]="{
+        'invalid': formControl.invalid && (formControl.dirty || formControl.touched),
+        'valid': formControl.valid && (formControl.dirty || formControl.touched)}">
         @for (option of options | keyvalue; track option.key) {
         <option [value]="option.key" [selected]="option.key === formControl.value">
             {{ option.value }}
@@ -21,11 +25,11 @@
     </select>
     @if(formControl.dirty || formControl.touched ) {
     @if (formControl.invalid) {
-    <p class="fr-error-text">
+    <p class="meg-error">
         Ce champ est requis
     </p>
     } @else {
-    <p class="fr-valid-text">
+    <p class="meg-valid">
         Champ valide
     </p>
     }

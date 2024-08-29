@@ -1,72 +1,74 @@
-<nav role="navigation" class="fr-pagination" aria-label="Pagination">
-    <ul class="fr-pagination__list">
+<nav role="navigation" aria-label="Pagination" class="flex justify-center items-center space-x-2 my-4">
+    <ul class="inline-flex items-center space-x-2">
         <li>
-            <a class="fr-pagination__link fr-pagination__link--first" [attr.href]="currentPage() === 1 ? null : '#'"
-                [attr.aria-disabled]="currentPage() === 1" role="link" (click)="changePage(1)" title="Première page">
-                Première page
-            </a>
+            <a href="#" (click)="changePage(1,$event)" [class.cursor-not-allowed]="currentPage() === 1"
+                [class.text-gray-400]="currentPage() === 1" [attr.aria-disabled]="currentPage() === 1"
+                title="Première page" class="px-3 py-2 bg-white hover:bg-gray-100 hover:text-gray-700">
+                |&lt; </a>
         </li>
         <li>
-            <a class="fr-pagination__link fr-pagination__link--prev" [attr.href]="currentPage() === 1 ? null : '#'"
-                [attr.aria-disabled]="currentPage() === 1" role="link" title="Page précédente"
-                (click)="changePage(currentPage() - 1)">
-                Page précédente
-            </a>
+            <a href="#" (click)="changePage(currentPage() - 1,$event)" [class.cursor-not-allowed]="currentPage() === 1"
+                [class.text-gray-400]="currentPage() === 1" [attr.aria-disabled]="currentPage() === 1"
+                title="Page précédente" class="px-3 py-2 hover:bg-gray-100 hover:text-gray-700">
+                &lt; </a>
         </li>
         <li>
-            <a class=" fr-pagination__link" [attr.href]="currentPage() === 1 ? null : '#'"
-                [attr.aria-current]="1 === currentPage() ? 'page' : null" title="Page une" (click)="changePage(1)">
+            <a (click)="changePage(1,$event)" [class.bg-blue]="1 === currentPage()"
+                [class.text-white]="1 === currentPage()" [class.bg-white]="1 !== currentPage()"
+                [class.text]="1 !== currentPage()" title="Première page" role="link"
+                [attr.href]="currentPage() === 1 ? null : '#'" class="px-3 py-2 hover:bg-gray-100 hover:text-gray-700">
                 1
             </a>
+
         </li>
-        @if(currentPage() > (pagesToShow/2) + 2 ) { <li>
-            <a class="fr-pagination__link fr-displayed-lg" aria-disabled="true">
-                …
-            </a>
+        @if(currentPage() > (pagesToShow/2) + 2 ) {
+        <li>
+            <span class="px-3 py-2">…</span>
         </li>
         }
 
         @for(page of pagesToDisplay(); track page) {
         <li>
-            <a class="fr-pagination__link" href="#" [attr.href]="currentPage() === page ? null : '#'"
-                [attr.aria-current]="page === currentPage() ? 'page' : null" title="Page {{page}}"
-                (click)="changePage(page)">
+            <a (click)="changePage(page, $event)" [class.bg-blue]="page === currentPage()"
+                [class.text-white]="page === currentPage()" [class.bg-white]="page !== currentPage()"
+                title="Page {{page}}" [class.text]="page !== currentPage()"
+                [attr.href]="currentPage() === page ? null : '#'"
+                class="px-3 py-2 hover:bg-gray-100 hover:text-gray-700">
                 {{page}}
             </a>
         </li>
         }
 
-        @if( totalPages() > (currentPage() +(pagesToShow/2) + 2) ) { <li>
-            <a class="fr-pagination__link fr-displayed-lg" aria-disabled="true">
-                …
-            </a>
+        @if( totalPages() > (currentPage() +(pagesToShow/2) + 2) ) {
+        <li>
+            <span class="px-3 py-2">…</span>
         </li>
         }
 
-
         <li>
-            <a class="fr-pagination__link" [attr.href]="currentPage() === totalPages() ? null : '#'"
-                [attr.aria-current]="totalPages() === currentPage() ? 'page' : null" title="Page {{totalPages()}}"
-                (click)="changePage(totalPages())">
+            <a (click)="changePage(totalPages(),$event)" [class.bg-blue]="totalPages() === currentPage()"
+                [class.text-white]="totalPages() === currentPage()" [class.bg-white]="totalPages() !== currentPage()"
+                [class.text]="totalPages() !== currentPage()" [attr.href]="currentPage() === totalPages() ? null : '#'"
+                title="Page {{totalPages()}}" role="link" class="px-3 py-2 hover:text-white hover:bg-blue">
                 {{totalPages()}}
             </a>
         </li>
-
-
         <li>
-            <a class="fr-pagination__link fr-pagination__link--next"
-                [attr.href]="currentPage() >= totalPages() ? null : '#'"
+            <a [attr.href]="currentPage() >= totalPages() ? null : '#'" (click)="changePage(currentPage() + 1,$event)"
+                [class.cursor-not-allowed]="currentPage() >= totalPages()" role="link"
+                [class.text-gray-400]="currentPage() >= totalPages()"
                 [attr.aria-disabled]="currentPage() >= totalPages()" title="Page suivante"
-                (click)="changePage(currentPage() +1)" role="link">
-                Page suivante
+                class="px-3 py-2 bg-white hover:bg-gray-100 hover:text-gray-700">
+                &gt;
             </a>
         </li>
         <li>
-            <a class="fr-pagination__link fr-pagination__link--last"
-                [attr.href]="currentPage() >= totalPages() ? null : '#'"
-                [attr.aria-disabled]="currentPage() >= totalPages()" title="Dernière page"
-                (click)="changePage(totalPages())" role="link">
-                Dernière page
+            <a [attr.href]="currentPage() >= totalPages() ? null : '#'" (click)="changePage(totalPages(),$event)"
+                [class.cursor-not-allowed]="currentPage() >= totalPages()"
+                [class.text-gray-400]="currentPage() >= totalPages()" title="Dernière page"
+                [attr.aria-disabled]="currentPage() >= totalPages()" role="link"
+                class="px-3 py-2 bg-white hover:bg-gray-100 hover:text-gray-700">
+                &gt;|
             </a>
         </li>
     </ul>

@@ -8,11 +8,12 @@ import { NGXLogger } from 'ngx-logger';
 import { FluxService } from 'src/app/services/flux.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, CommonModule],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
@@ -27,7 +28,7 @@ export class SidebarComponent {
 
   groupedActes: { [key: string]: Acte[]; };
   listType: string[];
-  groupByType: boolean = false;
+  isGroupByType: boolean = false;
   constructor(private logger: NGXLogger, private documentService: DocumentService, private router: Router) {
     effect(() => {
       this.actes = Object.values(this.userFlux());

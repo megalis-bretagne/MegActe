@@ -23,6 +23,7 @@
         ],
         "createDefaultProgram": true
       },
+      "plugins": ["@typescript-eslint"],
       "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
@@ -30,14 +31,23 @@
         "plugin:@angular-eslint/template/process-inline-templates"
       ],
       "rules": {
+        // "@angular-eslint/component-selector": [
+        //   "error",
+        //   {
+        //     "type": "element",
+        //     "prefix": "meg",
+        //     "style": "kebab-case"
+        //   }
+        // ],
         "no-irregular-whitespace": [
           "error",
           {
             "skipComments": true
           }
         ],
-        "no-unused-vars": [
-          "error",
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": [
+          "off",
           {
             "vars": "all",
             "args": "none",

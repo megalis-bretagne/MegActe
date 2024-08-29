@@ -1,12 +1,8 @@
-<div class="fr-fieldset__element">
-    <div class="fr-checkbox-group">
-        <input [name]="controlId" [id]="controlId" type="checkbox" [formControl]="formControl"
-            [attr.aria-describedby]="controlId + '-messages'">
+<div class="flex items-center h-5 my-3">
+    <input [id]="controlId" type="checkbox" [formControl]="formControl"
+        class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue">
 
-        <label class="fr-label" [for]="controlId">
-            {{ name }} <span *ngIf="required" class="required-star">*</span>
-        </label>
-
-        <div class="fr-messages-group" [id]="controlId + '-messages'" aria-live="assertive"></div>
-    </div>
+    <label [for]="controlId" class="meg-label ms-2">
+        {{ name }} <span *ngIf="required" class="required-star">*</span>
+    </label>
 </div>
