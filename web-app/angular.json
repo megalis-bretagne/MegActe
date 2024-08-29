@@ -34,14 +34,10 @@
               "src/assets"
             ],
             "styles": [
-              "./node_modules/@gouvfr/dsfr/dist/dsfr.min.css",
-              "./node_modules/@gouvfr/dsfr/dist/utility/icons/icons.css",
-              "@angular/material/prebuilt-themes/deeppurple-amber.css",
+              "@angular/material/prebuilt-themes/azure-blue.css",
               "src/styles.css"
             ],
-            "scripts": [
-              "./node_modules/@gouvfr/dsfr/dist/dsfr.module.min.js"
-            ]
+            "scripts": []
           },
           "configurations": {
             "production": {

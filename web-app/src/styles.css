@@ -1,57 +1,95 @@
 /* You can add global styles to this file, and also import other style files */
-@import "@gouvfr/dsfr/dist/dsfr.min.css";
-
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
 html,
 body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-.header {
-    background-color: rgb(240, 240, 240);
-    color: #414856;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    position: relative;
-    z-index: 0;
+    @apply text text-base font-sans  p-0 m-0 w-full h-full;
 }
 
 
-.container-fluid {
-    padding: 0;
-}
 
-.row.no-gutters {
-    margin: 0;
-}
+@layer components {
+    .btn-meg-primary {
+        @apply focus:outline-none rounded-full focus-visible:outline-black focus-visible:outline-offset-2
+         bg-light-primary hover:bg-blue-hover dark:bg-dark-primary text-white;
+    }
 
-.content {
-    padding: 20px;
-}
+    .btn-meg-secondary {
+        @apply focus:outline-none rounded-full focus-visible:outline-black focus-visible:outline-offset-2
+         bg-light-secondary border border-gray-200 hover:bg-gray-hover dark:bg-dark-secondary text-blue hover:text-blue-hover;
+    }
+    
+    .btn-meg-delete {
+        @apply text-alert border border-red rounded-md hover:bg-red hover:text-white;
+    }
 
-.mdc-list-item__primary-text {
-    color: black !important;
-}
+    .meg-toggle {
+        @apply relative w-11 h-6 bg-gray-200 rounded-full after:content-[''] after:absolute after:top-0.5 after:start-[2px]
+        after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5
+         after:w-5 after:transition-all dark:border-gray-600;
+    }
+    
+    a {
+        @apply focus-visible:outline-blue-hover focus-visible:outline-offset-2 ;
+    }
 
-.mat-pseudo-checkbox-checked {
-    display: none !important;
-}
+    table > tbody > tr {
+        @apply odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700;
+    }
 
-.required-star {
-    color: #CE0500;
-}
+    table > tbody > tr > td {
+        @apply px-6 py-4;
+    }
 
-/* Appliquer une couleur de fond aux lignes paires */
-table tbody tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
+    table > thead > tr > th {
+        @apply px-6 py-3;
+    }
 
-/* Appliquer une couleur de fond aux lignes impaires */
-table tbody tr:nth-child(odd) {
-    background-color: #ffffff;
+    table > tbody {
+        @apply bg-white divide-y divide-gray-200;
+    }
+
+    h1 {
+        @apply text-4xl font-bold;
+    }
+
+    h2 {
+        @apply text-2xl font-semibold;
+    }
+
+    div.meg-table, div.meg-container {
+        @apply overflow-x-auto shadow-md sm:rounded-lg;
+    }
+
+    div.meg-table > table {
+        @apply min-w-full text text-left;
+    }
+
+    input.meg-text, select.meg-select {
+        @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+        focus:ring-blue-500 first-letter:capitalize
+       focus:border-blue-500 block w-full p-2.5;
+    }
+
+    input.meg-text.invalid, select.meg-select.invalid {
+        @apply bg-red-50 border border-red-500 text-alert rounded-lg focus:ring-red-500
+    }
+    input.meg-text.valid, select.meg-select.valid {
+        @apply bg-green-50 border border-green-500 text-success rounded-lg focus:ring-green-500
+    }
+
+    .meg-error {
+        @apply text-alert text-sm;
+    }
+
+    .meg-valid {
+        @apply text-success text-sm;
+    }
+
+    label.meg-label {
+        @apply text block font-semibold;
+    }
+
 }

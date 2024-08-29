@@ -1,13 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, inject, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, Input, OnInit, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { NGXLogger } from 'ngx-logger';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { FluxService } from 'src/app/services/flux.service';
-import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { map, startWith } from 'rxjs/operators';
 import { BaseInputComponent } from '../BaseInput.component';
 import { UserContextService } from 'src/app/services/user-context.service';
 
@@ -18,7 +17,7 @@ import { UserContextService } from 'src/app/services/user-context.service';
   templateUrl: './external-data-input.component.html'
 })
 
-export class ExternalDataInputComponent extends BaseInputComponent implements OnInit, AfterViewInit {
+export class ExternalDataInputComponent extends BaseInputComponent implements OnInit {
   @Input() link_name: string = '';
   @Input() documentId: string = '';
 
@@ -27,7 +26,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
   externalDataOptions: string[] = [];
   filteredOptions: string[] = [];
 
-  @ViewChild('autoCompleteInput', { read: MatAutocompleteTrigger }) autoComplete: MatAutocompleteTrigger;
+  @ViewChild('autoCompleteInput') input: ElementRef<HTMLInputElement>;
 
   constructor(
     protected override fieldFluxService: FieldFluxService,
@@ -54,22 +53,15 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
     return this.required ? [Validators.required] : [];
   }
 
-  ngAfterViewInit(): void {
-    window.addEventListener('scroll', this.scrollEvent, true);
-  }
-
-
   // Récupérer les données du champ
   private fetchExternalData(): void {
     const id_e = this.currentUser().user_info.id_e;
 
-    // TODO: Récupérer le documentId dynamiquement plutôt que de le coder en dur
-
     this.fluxService.get_externalData(id_e, this.documentId, this.idField).subscribe({
       next: (data) => {
-        const filteredData = this.filterExternalData(data);
-        this.externalDataOptions = this.removeNumbering(filteredData);
-        this.setupAutoComplete();
+        const filteredData = this._filterExternalData(data);
+        this.externalDataOptions = this._removeNumbering(filteredData);
+        this.filteredOptions = this.externalDataOptions;
       },
       error: (error) => {
         this.logger.error('Failed to retrieve external data', error);
@@ -77,32 +69,20 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
     });
   }
 
+  public filter(): void {
+    const filterValue = this.input.nativeElement.value.toLowerCase();
+    this.filteredOptions = this.externalDataOptions.filter(o => o.toLowerCase().includes(filterValue));
+  }
+
   // Filtrer les données en éliminant les titres du premier niveau
-  private filterExternalData(data: any): string[] {
+  private _filterExternalData(data: any): string[] {
     return Object.keys(data).filter(idField => idField.split('.').length > 1);
   }
 
   // Retirer la numérotation des titres
-  private removeNumbering(titles: string[]): string[] {
+  private _removeNumbering(titles: string[]): string[] {
     return titles.map(title => title.replace(/^\d+(\.\d+)*\s*/, ''));
   }
 
-  private setupAutoComplete(): void {
-    this.formControl.valueChanges.pipe(
-      startWith(''),
-      map(value => this._filter(value || ''))
-    ).subscribe(options => this.filteredOptions = options);
-  }
 
-  // Filtrer les options en fonction de la valeur saisie
-  private _filter(value: string): string[] {
-    const filterValue = value.toLowerCase();
-    return this.externalDataOptions.filter(option => option.toLowerCase().includes(filterValue));
-  }
-
-  private scrollEvent = (): void => {
-    if (this.autoComplete.panelOpen) {
-      this.autoComplete.updatePosition();
-    }
-  };
 }

@@ -8,6 +8,11 @@ import { DragAndDropDirective } from 'src/app/shared/directives/drag-and-drop.di
 import { DocumentService } from 'src/app/services/document.service';
 import { LoadingComponent } from '../../loading-component/loading.component';
 
+export enum FileActionState {
+  Add = 'ADD',
+  Delete = 'DELETE'
+}
+
 @Component({
   selector: 'meg-file-upload',
   standalone: true,
@@ -20,8 +25,8 @@ export class FileUploadComponent extends BaseInputComponent {
   id_d = input.required<string>();
   id_e = input.required<number>();
 
-  upload_loading = signal<boolean>(false);
-
+  actionState = FileActionState;
+  action_one_file = signal<FileActionState | null>(null);
 
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef | undefined;
 
@@ -67,9 +72,8 @@ export class FileUploadComponent extends BaseInputComponent {
     }
   }
 
-
   removeFile(file: File): void {
-    this.upload_loading.set(true);
+    this.action_one_file.set(FileActionState.Delete)
 
     this.documentService.deleteFileFromDocument(this.id_d(), this.idField, this.id_e(), file.name).subscribe(
       {
@@ -84,7 +88,7 @@ export class FileUploadComponent extends BaseInputComponent {
             this.formControl.setValue(this.files);
             this.formControl.updateValueAndValidity();
           }
-          this.upload_loading.set(false);
+          this.action_one_file.set(null);
         },
       }
     )
@@ -92,7 +96,7 @@ export class FileUploadComponent extends BaseInputComponent {
   }
 
   private _uploadFile(files: File[]): void {
-    this.upload_loading.set(true);
+    this.action_one_file.set(FileActionState.Add);
     this.documentService.uploadFiles(this.id_d(), this.idField, this.id_e(), files).subscribe(
       {
         next: () => {
@@ -105,7 +109,7 @@ export class FileUploadComponent extends BaseInputComponent {
           this.formControl.updateValueAndValidity();
           this._resetFileInput();
         },
-        complete: () => this.upload_loading.set(false)
+        complete: () => this.action_one_file.set(null)
       }
     );
   }

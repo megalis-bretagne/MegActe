@@ -1,60 +1,75 @@
-<nav class="fr-sidemenu" role="navigation" aria-labelledby="fr-sidemenu-title">
-    <div class="fr-sidemenu__inner">
-        <div class="fr-collapse" id="fr-sidemenu-wrapper">
-            <div class="fr-toggle fr-toggle--label-left toggle-container">
-                <input type="checkbox" class="fr-toggle__input" aria-describedby="toggle-ordre-hint-text"
-                    id="toggle-ordre" [(ngModel)]="groupByType">
-                <label class="fr-toggle__label" for="toggle-ordre" data-fr-checked-label="Grouper par Type"
-                    data-fr-unchecked-label="Regroupé">Grouper par type</label>
-            </div>
-            <ul class="fr-sidemenu__list">
-                @if (groupByType) {
-                @for(type of listType; track type) {
-                <li class="fr-sidemenu__item">
-                    <button class="fr-sidemenu__btn fr-sidemenu-btn" aria-expanded="false"
-                        [attr.aria-controls]="'fr-sidemenu-item-' + type">
-                        {{ type }}
-                    </button>
-                    <div class="fr-collapse" [id]="'fr-sidemenu-item-' + type">
-                        <ul class="fr-sidemenu__list">
-                            @for (acte of groupedActes[type]; track acte.id ) {
-                            <li class="fr-sidemenu__item">
-                                <div class="meg-link-row">
-                                    <div><a class="fr-sidemenu__link" [routerLink]="['/']" (click)="selectFlux(acte)"
-                                            [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null">{{
-                                            acte.nom }}</a></div>
-                                    <div>
-                                        <a (click)="createDoc(acte)" title="Créer document de type {{acte.nom}}">
-                                            <span class="fr-icon-add-circle-fill  icon-add" aria-hidden="true"></span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </li>
-                            }
-                        </ul>
-                    </div>
-                </li>
-                }
-                } @else {
-                @for (acte of actes; track acte.id ) {
-                <li class="fr-sidemenu__item">
-                    <div class="meg-link-row">
-                        <div><a class="fr-sidemenu__link" [routerLink]="['/']"
-                                [attr.aria-current]=" fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null"
-                                (click)="selectFlux(acte)">{{
-                                acte.nom }}</a></div>
-                        <div>
-                            <a (click)="createDoc(acte)" title="Créer document de type {{acte.nom}}">
-                                <span class="fr-icon-add-circle-fill  icon-add" aria-hidden="true"></span>
-                            </a>
-                        </div>
-
-                    </div>
-                </li>
-                }
-
-                }
-            </ul>
+<nav class="border border-gray-200 p-4 rounded-md" role="navigation" aria-labelledby="sidebar-title">
+    <div class="space-y-4">
+        <div class="flex items-center justify-between">
+            <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" value="" class="sr-only peer" [(ngModel)]="isGroupByType">
+                <div class="meg-toggle peer peer-focus:ring-2 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full 
+                     peer-checked:bg-blue">
+                </div>
+                <span class="ms-3 font-bold text dark:text">Grouper par type</span>
+            </label>
         </div>
+        <!-- partie groupée -->
+        <ul class="mt-4 space-y-2" [ngClass]="isGroupByType ? 'block' : 'hidden'" id="group-element">
+            @for(type of listType; track type; let idx = $index) {
+            <li>
+                <button type="button"
+                    class="flex items-center w-full p-2 text transition rounded group hover:bg-gray-hover"
+                    [attr.aria-controls]="'dropdown-'+ idx " [attr.data-collapse-toggle]="'dropdown-'+ idx">
+
+                    <span class="flex-1 ms-3 font-xl font-bold text-left rtl:text-right whitespace-nowrap">{{ type
+                        }}</span>
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 10 6">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m1 1 4 4 4-4" />
+                    </svg>
+                </button>
+                <ul class="hidden pl-4 space-y-2" id="dropdown-{{idx}}">
+                    @for (acte of groupedActes[type]; track acte.id ) {
+
+                    <li class="flex justify-between items-center">
+                        <a class="text font-medium ml-2 p-2 hover:bg-gray-hover rounded w-full inline-flex items-center "
+                            [routerLink]="['/']" (click)="selectFlux(acte)"
+                            [attr.aria-current]="fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null">
+                            {{ acte.nom }}
+                        </a>
+                        <a (click)="createDoc(acte)" title="Créer un  document de type {{acte.nom}}">
+                            <svg class="w-6 h-6 text-blue hover:text-blue-hover hover:cursor-pointer dark:text-white"
+                                aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd"
+                                    d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4.243a1 1 0 1 0-2 0V11H7.757a1 1 0 1 0 0 2H11v3.243a1 1 0 1 0 2 0V13h3.243a1 1 0 1 0 0-2H13V7.757Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    </li>
+                    }
+                </ul>
+            </li>
+            }
+        </ul>
+        <!-- partie non groupé -->
+        <ul class="mt-4 space-y-2" [ngClass]="!isGroupByType ? 'block' : 'hidden'" id="list-element">
+
+            @for (acte of actes; track acte.id ) {
+            <li class="flex w-full items-center">
+                <a class="text font-medium p-2 hover:bg-gray-hover rounded w-full inline-flex items-center "
+                    [routerLink]="['/']" (click)="selectFlux(acte)"
+                    [attr.aria-current]="fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null">
+                    {{ acte.nom }}
+                </a>
+                <a class="" (click)="createDoc(acte)" title="Créer un document {{acte.nom}}">
+                    <svg class="w-6 h-6 text-blue hover:text-blue-hover hover:cursor-pointer dark:text-white"
+                        aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                        viewBox="0 0 24 24">
+                        <path fill-rule="evenodd"
+                            d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4.243a1 1 0 1 0-2 0V11H7.757a1 1 0 1 0 0 2H11v3.243a1 1 0 1 0 2 0V13h3.243a1 1 0 1 0 0-2H13V7.757Z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </a>
+            </li>
+            }
+        </ul>
     </div>
 </nav>

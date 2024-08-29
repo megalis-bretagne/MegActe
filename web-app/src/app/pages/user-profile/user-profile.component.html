@@ -1,33 +1,30 @@
 @if (currentUser(); as currentUser) {
-<div class="fr-container--fluid">
-    <h1>Bonjour {{ currentUser.user_info.prenom }}</h1>
-    <div class="fr-grid-row">
-        <div class="fr-col">
-            <p>Bienvenue sur Megacte.</p>
-        </div>
-    </div>
+<div class="container mx-auto">
+    <h1>Compte de {{ currentUser.user_info.prenom }} </h1>
 
-    <div class="fr-table  fr-table--bordered">
-        <table id="table-md" class="fr-text--sm">
-            <caption> {{ currentUser.entites.length === 1 ? 'Entité' : 'Liste des Entités' }} : </caption>
-            <thead>
+    <div class="meg-table mt-4">
+        <table id="table-md">
+            <caption class="p-5 text-lg font-semibold text-left">
+                {{ currentUser.entites.length === 1 ? 'Entité' : 'Liste des entités' }}
+            </caption>
+            <thead class="bg-gray-50 text-medium">
                 <tr>
-                    <th scope="col" class="meg fr-col-xl-9  fr-col-lg-9 fr-col-md-9"> Denomination </th>
-                    <th scope="col" class="meg fr-col-xl-2 fr-col-lg-2 fr-col-md-2"> Type </th>
-                    <th scope="col" class="meg fr-col-xl-2 fr-col-lg-2 fr-col-md-2"> Siren </th>
+                    <th scope="col"> Denomination </th>
+                    <th scope="col"> Type </th>
+                    <th scope="col"> Siren </th>
                 </tr>
             </thead>
             <tbody>
-                <tr *ngFor="let entite of paginatedEntities">
+                @for(entite of paginatedEntities; track entite.id_e) {
+                <tr>
                     <td>{{ entite.denomination }}</td>
                     <td>{{ entite.type }}</td>
                     <td>{{ entite.siren }}</td>
                 </tr>
+                }
             </tbody>
         </table>
         <meg-pagination [totalPages]="totalPages()" (onChangePage)="updateDisplayedPages($event)" />
     </div>
 </div>
-} @else{
-<meg-loading />
 }

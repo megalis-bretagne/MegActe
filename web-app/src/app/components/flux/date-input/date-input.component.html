@@ -1,14 +1,19 @@
-<div class="fr-input-group">
-    <label class="fr-label" [for]="controlId">
+<div class="my-3">
+    <label class="meg-label" [ngClass]="{
+        '!text-alert': formControl.invalid && (formControl.dirty || formControl.touched),
+        '!text-success': formControl.valid && formControl.dirty
+      }" [for]="controlId">
         {{ name }}
         @if (required) {
-        <span class="required-star">*</span>
-        }
-        @if (comment) {
-        <span class="fr-hint-text">{{ comment }}</span>
+        <span class="text-required">*</span>
         }
     </label>
-    <input class="fr-input" [id]="controlId" type="date" [formControl]="formControl"
-        [attr.aria-describedby]="controlId + '-messages'" [attr.min]="getMinDate()">
-    <div class="fr-messages-group" [id]="controlId + '-messages'" aria-live="assertive"></div>
+    @if (comment) {
+    <p id="tooltip-helper-text" class="mt-0.5 text-xs text text-ellipsis whitespace-nowrap overflow-hidden"
+        title="{{comment}}">{{comment}}</p>
+    }
+    <input class="meg-text" [id]="controlId" type="date" [formControl]="formControl"
+        [attr.aria-describedby]="controlId + '-messages'" [attr.min]="getMinDate()" [ngClass]="{
+            'invalid': formControl.invalid && (formControl.dirty || formControl.touched),
+            'valid': formControl.valid && (formControl.dirty || formControl.touched)}">
 </div>

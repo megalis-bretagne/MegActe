@@ -53,6 +53,8 @@ export class PaginationComponent {
     if (event != null)
       event.preventDefault();
 
+    if (page === this.currentPage()) return;
+
     if (page < 1 || page > this.totalPages()) this.currentPage.set(1);
     this.currentPage.set(page);
     this.onChangePage.emit(page);

@@ -1,41 +1,44 @@
-<header role="banner" class="fr-header">
-    <div class="fr-header__body">
-        <div class="fr-container">
-            <div class="fr-header__body-row">
-                <div class="fr-header__brand fr-enlarge-link">
-                    <div class="fr-header__brand-top">
-                        <div class="fr-header__logo">
-                            <img src="../../../assets/img/megalis_logo.png" alt="Logo de megalis bretagne" class="logo">
-                        </div>
-                    </div>
-                    <div class="fr-header__service">
-                        <a routerLink="/" title="Accueil Megacte">
-                            <p class="fr-header__service-title">Megacte</p>
+<header role="banner" class="bg-white shadow">
+    <div class="container mx-auto px-3 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0">
+                    <img src="../../../assets/img/megalis_logo.png" alt="Logo de megalis bretagne" class="h-20 w-auto">
+                </div>
+                <div>
+                    <a routerLink="/" title="Accueil Megacte" class="text-lg font-bold text-gray-900">
+                        Megactes
+                    </a>
+                    <p class="text-sm text-gray-500">Gestion des actes administratifs</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-6">
+                @if (currentUser(); as currentUser) {
+                <ul class="flex space-x-6">
+                    <li class="flex items-center">
+                        <a class="btn-meg-secondary px-2 py-2 inline-flex items-center justify-center"
+                            routerLink="/user-profile" aria-label="Accéder au profil utilisateur">
+                            <svg class="w-5 h-5 inline mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                fill="currentColor" aria-hidden="true">
+                                <path
+                                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                            </svg>
+                            <span>{{ currentUser.user_info.prenom }} {{ currentUser.user_info.nom }}</span>
                         </a>
-                        <p class="fr-header__service-tagline">Gestion des actes administratifs</p>
-                    </div>
-                </div>
-                <div class="fr-header__tools">
-                    <div class="fr-header__tools-links">
-                        @if (currentUser(); as currentUser) {
-
-                        <ul class="fr-btns-group">
-                            <li>
-                                <a class="fr-btn" routerLink="/user-profile" aria-label="Accéder au profil utilisateur">
-                                    <span class="fr-icon-account-circle-fill" aria-hidden="true"></span>
-                                    {{ currentUser.user_info.prenom }} {{ currentUser.user_info.nom }}
-                                </a>
-                            </li>
-                            <li>
-                                <button class="fr-btn" (click)="logout()" aria-label="Déconnexion" type="button">
-                                    <span class="fr-icon-logout-box-r-fill" aria-hidden="true"></span>
-                                    Déconnexion
-                                </button>
-                            </li>
-                        </ul>
-                    }
-                    </div>
-                </div>
+                    </li>
+                    <li class="flex items-center">
+                        <button (click)="logout()" aria-label="Déconnexion" class="btn-meg-primary px-4 py-2">
+                            Déconnexion
+                            <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M20 12H8m12 0-4 4m4-4-4-4M9 4H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h2" />
+                            </svg>
+                        </button>
+                    </li>
+                </ul>
+                }
             </div>
         </div>
     </div>

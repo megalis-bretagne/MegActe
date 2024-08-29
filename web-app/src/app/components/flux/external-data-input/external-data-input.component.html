@@ -1,18 +1,23 @@
-<div
-    [ngClass]="{'fr-select-group': true, 'fr-select-group--error': formControl.invalid && (formControl.dirty || formControl.touched)}">
-    <label class="fr-label" [for]="controlId">
+<div class="my-3">
+    <label class="meg-label" [ngClass]="{
+        '!text-alert': formControl.invalid && (formControl.dirty || formControl.touched),
+        '!text-success': formControl.valid && (formControl.dirty || formControl.touched)
+      }" [for]="controlId">
         {{ name }}
         @if (required) {
-        <span class="required-star">*</span>
-        }
-        @if (link_name) {
-        <span class="fr-hint-text">{{ link_name }}</span>
+        <span class="text-required">*</span>
         }
     </label>
-    <input class="fr-input"
-        [ngClass]="{'fr-select--error': formControl.invalid && (formControl.dirty || formControl.touched)}"
-        [id]="controlId" type="text" [formControl]="formControl" [matAutocomplete]="auto" #autoCompleteInput />
-    <mat-autocomplete #auto="matAutocomplete" class="fr-select">
+    @if (link_name) {
+    <p id="tooltip-helper-text" class="mt-0.5 text-xs text text-ellipsis whitespace-nowrap overflow-hidden"
+        title="{{link_name}}">{{ link_name }}</p>
+    }
+    <input class="meg-text" [ngClass]="{
+        'invalid': formControl.invalid && (formControl.dirty || formControl.touched),
+        'valid': formControl.valid && (formControl.dirty || formControl.touched)
+      }" [id]="controlId" type="text" [formControl]="formControl" [matAutocomplete]="auto" (input)="filter()"
+        (focus)="filter()" #autoCompleteInput />
+    <mat-autocomplete #auto="matAutocomplete" requireSelection class="fr-select">
         @for (option of filteredOptions; track $index) {
         <mat-option [value]="option">
             {{ option }}
@@ -20,7 +25,7 @@
         }
     </mat-autocomplete>
     @if (formControl.invalid && (formControl.dirty || formControl.touched)) {
-    <p class="fr-error-text">
+    <p class="meg-error">
         Ce champ est requis.
     </p>
     }
