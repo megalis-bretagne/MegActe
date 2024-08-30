@@ -1,7 +1,7 @@
 <div class="fr-fieldset__element">
     <div class="fr-checkbox-group">
         <input [name]="controlId" [id]="controlId" type="checkbox" [formControl]="formControl"
-            [attr.aria-describedby]="controlId + '-messages'" [disabled]="readOnly ? true : null">
+            [attr.aria-describedby]="controlId + '-messages'">
 
         <label class="fr-label" [for]="controlId">
             {{ name }} <span *ngIf="required" class="required-star">*</span>

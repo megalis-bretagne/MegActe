@@ -1,4 +1,4 @@
-import { Component, effect, inject, QueryList, ViewChildren, signal } from '@angular/core';
+import { Component, effect, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
 import { CheckboxInputComponent } from 'src/app/components/flux/checkbox-input/checkbox-input.component';
@@ -10,80 +10,84 @@ import { TextInputComponent } from 'src/app/components/flux/text-input/text-inpu
 import { Data, Field } from 'src/app/model/field-form.model';
 import { DocumentService } from 'src/app/services/document.service';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
-import { Observable, forkJoin, of } from 'rxjs';
+import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LoadingComponent } from 'src/app/components/loading-component/loading.component';
 import { FluxService } from 'src/app/services/flux.service';
-import { FormsModule } from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserContextService } from 'src/app/services/user-context.service';
+import { CommonModule } from '@angular/common';
+import { DocumentDetail } from 'src/app/model/document.model';
+import { LoadingService } from 'src/app/services/loading.service';
 
 @Component({
   selector: 'app-acte-form',
   standalone: true,
   imports: [
     LoadingComponent, ExternalDataInputComponent, FileUploadComponent,
-    DateInputComponent, SelectInputComponent, CheckboxInputComponent, TextInputComponent, FormsModule
+    DateInputComponent, SelectInputComponent, CheckboxInputComponent, TextInputComponent, FormsModule, CommonModule, ReactiveFormsModule
   ],
   templateUrl: './acte-form.component.html',
   styleUrls: ['./acte-form.component.scss']
 })
-export class ActeFormComponent {
+export class ActeFormComponent implements OnInit {
   fluxSelected = inject(FluxService).fluxSelected;
   userCurrent = inject(UserContextService).userCurrent;
 
   acteName: string;
   fluxDetail: Data;
+  // Le document à créer éditer
+  documentInfo: DocumentDetail;
   fields: Field[] = [];
   filteredFields: Field[] = [];
-  documentId: string;
-  modalMessage: string;
-  globalErrorMessage: string;
-  isSaving: boolean = false;
-  isCreationSuccess: boolean = false;
-  isValid: boolean = true;
-  isSuccess: boolean;
-  isSend: boolean = false;
   fileTypes: { [key: string]: string } = {};
-  pieces = signal<string[]>([])
-  selectedTypes: string[] = [];
-  file_type_field: Field;
-  fetchedFileType: boolean = false;
+  pieces = signal<string[]>([]);
+  fileTypeField: Field;
 
+  currentStep = 1;
+  globalErrorMessage: string;
+  isReadOnly: boolean = false;
+  fileFields: Field[] = [];
 
-  @ViewChildren(TextInputComponent) textInputs: QueryList<TextInputComponent>;
-  @ViewChildren(CheckboxInputComponent) checkboxInputs: QueryList<CheckboxInputComponent>;
-  @ViewChildren(SelectInputComponent) selectInputs: QueryList<SelectInputComponent>;
-  @ViewChildren(DateInputComponent) dateInputs: QueryList<DateInputComponent>;
-  @ViewChildren(ExternalDataInputComponent) externalDataInputs: QueryList<ExternalDataInputComponent>;
-  @ViewChildren(FileUploadComponent) fileUploads: QueryList<FileUploadComponent>;
+  formValues: { [idField: string]: any } = {};
 
+  // @TODO, revoir le mécanisme des steps pour faire un composant par steps
+  // Formulaire de la step 1
+  form: FormGroup = new FormGroup({});
+  // Formulaire pour la step 2
+  formExternalData: FormGroup = new FormGroup({})
 
   constructor(
     private route: ActivatedRoute,
     private logger: NGXLogger,
     private fieldFluxService: FieldFluxService,
     private documentService: DocumentService,
+    private loadingservice: LoadingService,
     private router: Router,
     private fluxService: FluxService,
   ) {
+
+
     effect(() => {
       this.acteName = this.fluxSelected().nom;
-    })
+    });
 
     this.route.data.subscribe(data => {
       this.fluxDetail = data['docDetail'].flux;
-      const flowId = data['docDetail'].document.info.type;
-      // TODO récupérer les info du document dans data['docDetail'].document
-      this.documentId = this.route.snapshot.paramMap.get('documentId');
+      this.documentInfo = data['docDetail'].document as DocumentDetail;
+      const flowId = this.documentInfo.info.type;
 
       if (this.fluxDetail) {
         this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
-        // @TODO check type_piece existe
         this.filteredFields =
           this.fieldFluxService.filterFields(this.fields, flowId)
             .filter(field => field.idField !== 'type_piece');
+        this.fileFields = this.filteredFields.filter(field => field.type === 'file');
 
-        this.file_type_field = this.fields.find(field => field.idField === 'type_piece');
+        this.fileTypeField = this.fields.find(field => field.idField === 'type_piece');
+        if (this.documentInfo['last_action'].action !== 'modification' && this.documentInfo['last_action'].action !== 'creation') {
+          this.isReadOnly = true;
+        }
       } else {
         this.logger.error('Flux detail not found for the given acte');
       }
@@ -91,196 +95,145 @@ export class ActeFormComponent {
   }
 
 
-  save(): void {
-    if (!this.validateForm()) {
-      this.isSuccess = false;
-      this.modalMessage = 'Veuillez remplir tous les champs requis correctement.';
-      return;
-    }
+  ngOnInit(): void {
+    this.filteredFields.forEach(field => {
+      const value = this.documentInfo.data[field.idField] ?? null;
+      this.form.addControl(field.idField, new FormControl(value));
+    })
+  }
 
-    this.isSaving = true;
-    this.pieces.set([]);
-    const docInfo = this.collectFormData();
+  getFormControl(name: string): FormControl {
+    return this.form.get(name) as FormControl;
+  }
+
+  getFormControlExternal(index: number | string): FormControl {
+    return this.formExternalData.get(index.toString()) as FormControl;
+  }
+
+
+  onNextStepClick(): void {
+    if (this.validateForm()) {
+      this.globalErrorMessage = '';
+      this._save();
+    } else {
+      this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
+    }
+  }
+
+  private _retrieveInfo(): any {
+    const docInfo = this.form.getRawValue();
+    Object.keys(docInfo).forEach(key => {
+      // Conditions pour supprimer une clé :
+      // Ici on supprime les champs qui sont de type file
+      if (this.fileFields.find(field => field.idField === key)) {
+        delete docInfo[key];
+      }
+    });
+    return docInfo;
+  }
+
+  private _save(): void {
+    this.loadingservice.showLoading();
+    const docInfo = this._retrieveInfo();
     const docUpdateInfo = {
       entite_id: this.userCurrent().user_info.id_e,
       doc_info: docInfo
     };
 
     // Création d'un observable pour la mise à jour du document
-    const updateDocument$ = this.documentService.updateDocument(this.documentId, docUpdateInfo).pipe(
+    const updateDocument$ = this.documentService.updateDocument(this.documentInfo.info.id_d, docUpdateInfo).pipe(
       catchError(error => {
         this.logger.error('Error updating document', error);
-        this.isSuccess = false;
-        this.isSaving = false;
-        this.modalMessage = error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.';
-        this.deleteDocument();
         return of(null);
       })
     );
 
-    // Téléchargement de fichiers
-    const fileUploadObservables = this.uploadFiles().filter(obs => obs !== null);
-
-    // @TODO, check avant si les fichiers sont déjà présent dans pastell.
-
-    // Utilisation de forkJoin 
-    forkJoin([...fileUploadObservables, updateDocument$]).subscribe({
+    updateDocument$.subscribe({
       next: () => {
-        this.isCreationSuccess = true;
-        this.isSaving = false;
-        // @TODO check type_piece existe. Si non, pas besoin de faire de modal
-        this.fetchFileTypes();
+        this._fetchExternalDataByFile();
       },
       error: (error) => {
-        this.logger.error('Error in one of the file uploads', error);
-        this.isSuccess = false;
-        this.isSaving = false;
-        this.modalMessage = 'Une erreur est survenue lors du téléchargement des fichiers.';
-        this.openModal();
+        this.logger.error('Error updating document', error);
       }
     });
   }
 
-  uploadFiles(): Observable<any>[] {
-    return this.fileUploads.map(fileUpload => {
-      const files = fileUpload.formControl.value;
-      const elementId = fileUpload.getIdField();
-
-      if (files.length > 0) {
-        return this.documentService.uploadFiles(this.documentId, elementId, this.userCurrent().user_info.id_e, files).pipe(
-          catchError(error => {
-            this.logger.error('Error uploading files', error);
-            return of(null);
-          })
-        );
-      } else {
-        return of(null);
-      }
+  /**
+   * Construit le formulaire de la seconde étape.
+   * @param doc_info les données du document mise à jours
+   * @param types 
+   */
+  private _buildFormExternalDataForFile(files: string[], externalDataValue: { [key: string]: string }) {
+    this.formExternalData = new FormGroup({});
+    const valueTypePiece = this.documentInfo.data.type_piece_fichier || [];
+    const entriesExternalData = Object.entries(externalDataValue);
+    files.forEach((file: string, idx: number) => {
+      const valueString = valueTypePiece.find(piece => piece.filename === file)?.typologie || undefined;
+      const valueKey = valueString ? entriesExternalData.find(([_key, val]) => val === valueString)[0] : null;
+      this.formExternalData.addControl(idx.toString(), new FormControl(valueKey))
     });
   }
 
-  deleteDocument(): void {
-    const entiteId = this.userCurrent().user_info.id_e;
-    this.documentService.deleteDocument(this.documentId, entiteId).subscribe({
-      next: (response) => this.logger.info('Document deleted successfully', response),
-      error: (error) => this.logger.error('Error deleting document', error)
-    });
-  }
-
-  collectFormData(): { [idField: string]: any } {
-    const formData: { [idField: string]: any } = {};
-
-    this.textInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-    this.checkboxInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-    this.selectInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-    this.dateInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-    this.externalDataInputs.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-    this.fileUploads.forEach(comp => formData[comp.getIdField()] = comp.formControl.value);
-
-    return formData;
-  }
-
-  validateForm(): boolean {
-    this.isValid = true;
-    this.globalErrorMessage = '';
-
-    // Créer une collection unique de tous les composants de formulaire
-    const allInputs = [
-      ...this.textInputs.toArray(),
-      ...this.checkboxInputs.toArray(),
-      ...this.selectInputs.toArray(),
-      ...this.dateInputs.toArray(),
-      ...this.externalDataInputs.toArray(),
-      ...this.fileUploads.toArray()
-    ];
-
-    allInputs.forEach(comp => {
-      if (comp instanceof SelectInputComponent && comp.formControl.disabled) {
-        return; // Skip validation for this specific component
-      }
-
-      if (comp instanceof ExternalDataInputComponent && comp.name === "Typologie des pièces") {
-        return; // Skip validation for this specific component
-      }
-
-      if (!comp.formControl.valid) {
-        this.isValid = false;
-        comp.formControl.markAsTouched();
-      }
-    });
-
-    if (!this.isValid) {
-      this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
-    }
-
-    return this.isValid;
-  }
-
-  fetchFileTypes(): void {
+  private _fetchExternalDataByFile(): void {
     //TODO changer pour la sélection d'entite
     const entiteId = this.userCurrent().user_info.id_e;
-    this.fluxService.get_externalData(entiteId, this.documentId, 'type_piece').subscribe({
+    this.fluxService.get_externalData(entiteId, this.documentInfo.info.id_d, 'type_piece').subscribe({
       next: (response) => {
         this.fileTypes = response.actes_type_pj_list;
-        this.pieces.set(response.pieces)
-        this.selectedTypes = Array(this.pieces.length).fill('');
-        this.fetchedFileType = true;
+        this.currentStep = 2;
+        this._buildFormExternalDataForFile(response.pieces, response.actes_type_pj_list)
+        this.pieces.set(response.pieces);
+        this.loadingservice.hideLoading();
       },
       error: (error) => {
         this.logger.error('Error fetching file types and files', error);
-        this.isSuccess = false;
-        this.modalMessage = 'Une erreur est survenue lors de la récupération des types de fichiers.';
-        this.openModal();
       }
     });
   }
 
-  assignFileTypes(): void {
-    const entiteId = this.userCurrent().user_info.id_e;
-    this.documentService.assignFileTypes(entiteId, this.documentId, 'type_piece', this.selectedTypes).subscribe({
+  isFormFileTypesValid() {
+    return false;
+  }
+
+  onAssignFileTypesClick(): void {
+    this.formExternalData.markAllAsTouched();
+    if (this.formExternalData.valid) {
+      this.loadingservice.showLoading();
+      const info = this.formExternalData.getRawValue();
+      this._assignFileTypes(Object.values(info));
+    } else {
+      this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
+    }
+  }
+
+  private _assignFileTypes(data: string[]): void {
+    this.documentService.patchExternalData(this.userCurrent().user_info.id_e, this.documentInfo.info.id_d, 'type_piece', data).subscribe({
       next: (response) => {
+        this.loadingservice.showSuccess('Le document a été créé et mis à jour avec succès.', ['/documents', this.acteName]);
         this.logger.info('File types assigned successfully', response);
-        this.isSuccess = true;
-        this.isSend = true;
-        this.modalMessage = 'Le document a été créé et mis à jour avec succès.';
-        this.openModal();
-        this.scheduleRedirect()
       },
       error: (error) => {
+        this.loadingservice.showError(error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.');
         this.logger.error('Error assigning file types', error);
-        this.isSuccess = false;
-        this.isSend = false;
-        this.modalMessage = 'Une erreur est survenue lors de la création ou de la mise à jour du document.';
-        this.openModal();
-        this.scheduleRedirect()
       }
     });
   }
 
-  isFormFileTypesValid(): boolean {
-    return this.selectedTypes.every(type => type !== '');
-  }
-  isTypeSelected(index: number): boolean {
-    return this.selectedTypes[index] !== '';
+  onPreviousStepClick() {
+    this.currentStep = 1;
   }
 
+  validateForm(): boolean {
+    this.globalErrorMessage = '';
+    this.form.markAllAsTouched();
 
-  openModal(): void {
-    const modal = document.getElementById('fr-modal') as HTMLDialogElement;
-    if (modal) {
-      if (modal.open) {
-        modal.close();
-      }
-      modal.showModal();
+    if (!this.form.valid) {
+      this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
     }
-    this.isSaving = false;
+
+    return this.form.valid;
   }
-  closeModal(): void {
-    const modal = document.getElementById('fr-modal') as HTMLDialogElement;
-    if (modal && modal.open) {
-      modal.close();
-    }
-  }
+
 
   scheduleRedirect(): void {
     setTimeout(() => {
@@ -288,8 +241,7 @@ export class ActeFormComponent {
     }, 3000);
   }
 
-  objectKeys(obj: any): string[] {
-    return Object.keys(obj);
+  goBack(): void {
+    this.router.navigate(['/']);
   }
-
 }

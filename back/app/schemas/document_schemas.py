@@ -43,7 +43,6 @@ class DeleteFileFromDoc(BaseModel):
         file_name (str): Le nom du fichier à supprimer.
     """
 
-    entite_id: int
     file_name: str
 
 

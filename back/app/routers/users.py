@@ -3,8 +3,7 @@ from sqlalchemy.orm import Session
 
 from . import get_or_make_api_pastell, get_or_make_api_pastell_for_admin
 from ..clients.pastell.api import ApiPastell
-from ..database import get_db
-from ..database import get_user_from_db
+from ..database import get_db, get_user_from_db
 from ..schemas.user_schemas import UserCreate
 from ..services.user_service import (
     get_all_users_from_db,

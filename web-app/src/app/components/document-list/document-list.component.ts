@@ -16,6 +16,7 @@ import { LoadingService } from 'src/app/services/loading.service';
   standalone: true,
   imports: [StateDocumentPipe, PaginationComponent, LoadingComponent, DatePipe],
   templateUrl: './document-list.component.html',
+  styleUrls: ['./document-list.component.scss']
 })
 export class DocumentListComponent {
   itemPerPage = 10;
@@ -98,5 +99,9 @@ export class DocumentListComponent {
         }
       })
     }
+  }
+
+  goUpdateDoc(documentId: string): void {
+    this.router.navigate(['/acte', documentId]);
   }
 }

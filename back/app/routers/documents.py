@@ -1,5 +1,9 @@
+from typing_extensions import Annotated
 from fastapi import APIRouter, Depends, File, UploadFile
 from typing import List
+
+from app.dependencies import get_settings
+from config.configuration import Settings
 
 from ..clients.pastell.api import ApiPastell
 from ..routers import get_or_make_api_pastell
@@ -14,7 +18,8 @@ from ..services.document_service import (
     delete_document_service,
     cancel_transfer_tdt_document_service,
     transfer_tdt_document_service,
-    assign_file_types_service,
+    assign_file_typologie_service,
+    get_file_by_name_service,
 )
 
 from ..schemas.document_schemas import (
@@ -46,17 +51,20 @@ def update_document(
 
 
 # Get document info
-@router.get("/document/{document_id}", tags=["document"])
+@router.get("/entite/{entite_id}/document/{document_id}", tags=["document"])
 def get_document(
     document_id: str,
     entite_id: int,
+    settings: Annotated[Settings, Depends(get_settings)],
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return get_document_info_service(entite_id, document_id, client)
+    return get_document_info_service(
+        entite_id, document_id, client, settings.document.external_data_to_retrieve
+    )
 
 
 # Delete Document
-@router.delete("/document/{document_id}", tags=["document"])
+@router.delete("/entite/{entite_id}/document/{document_id}", tags=["document"])
 def delete_document(
     document_id: str,
     entite_id: int,
@@ -66,7 +74,9 @@ def delete_document(
 
 
 # Ajouter des fichiers à un document
-@router.post("/document/{document_id}/file/{element_id}", tags=["document"])
+@router.post(
+    "/entite/{entite_id}/document/{document_id}/file/{element_id}", tags=["document"]
+)
 def add_files_to_document(
     document_id: str,
     element_id: str,
@@ -81,34 +91,63 @@ def add_files_to_document(
 
 
 # Supprimer un fichier appartenant à un document
-@router.delete("/document/{document_id}/file/{element_id}", tags=["document"])
+@router.delete(
+    "/entite/{entite_id}/document/{document_id}/file/{element_id}", tags=["document"]
+)
 def delete_file_from_document(
+    entite_id: int,
     document_id: str,
     element_id: str,
     request_data: DeleteFileFromDoc,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     return delete_file_from_document_service(
-        document_id, element_id, request_data, client
+        entite_id, document_id, element_id, request_data, client
+    )
+
+
+# Récupérer les fichiers liés à un document
+@router.get(
+    "/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_name}",
+    tags=["document"],
+)
+def get_file_for_document(
+    document_id: str,
+    entite_id: int,
+    element_id: str,
+    file_name: str,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return get_file_by_name_service(
+        entite_id, document_id, element_id, file_name, client
     )
 
 
 # Attribuer un type à un fichier
-@router.patch("/document/{document_id}/file/{element_id}/types", tags=["document"])
-def assign_file_types(
+@router.patch(
+    "/entite/{entite_id}/document/{document_id}/externalData/{element_id}",
+    tags=["document"],
+)
+def patch_external_data(
     document_id: str,
     entite_id: int,
     element_id: str,
-    file_types: List[str],
+    data: List[str],
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return assign_file_types_service(
-        entite_id, document_id, element_id, file_types, client
-    )
+
+    if element_id == "type_piece":
+        return assign_file_typologie_service(
+            entite_id, document_id, element_id, data, client
+        )
+    return 200
 
 
 # Récupérer les valeurs pour un champ externalData
-@router.get("/document/{document_id}/externalData/{element_id}", tags=["document"])
+@router.get(
+    "/entite/{entite_id}/document/{document_id}/externalData/{element_id}",
+    tags=["document"],
+)
 def get_external_data(
     entite_id: int,
     document_id: str,

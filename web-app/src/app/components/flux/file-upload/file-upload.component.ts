@@ -1,28 +1,40 @@
-import { Component, Input, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, input } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { FieldFluxService } from 'src/app/services/field-flux.service';
 import { FileUploadValidationService } from 'src/app/services/file-upload-validation.service';
 import { BaseInputComponent } from '../BaseInput.component';
 import { CommonModule } from '@angular/common';
 import { DragAndDropDirective } from 'src/app/shared/directives/drag-and-drop.directive';
+import { DocumentService } from 'src/app/services/document.service';
+import { LoadingComponent } from '../../loading-component/loading.component';
 
 @Component({
   selector: 'meg-file-upload',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, CommonModule, DragAndDropDirective],
+  imports: [FormsModule, ReactiveFormsModule, CommonModule, LoadingComponent, DragAndDropDirective],
   templateUrl: './file-upload.component.html',
   styleUrls: ['./file-upload.component.scss']
 })
 export class FileUploadComponent extends BaseInputComponent {
   @Input() multiple: boolean = false;
+  id_d = input.required<string>();
+  id_e = input.required<number>();
+
+  upload_loading = false;
+
 
   @ViewChild('fileInput', { static: false }) fileInput: ElementRef | undefined;
 
   files: File[] = [];
   errorMessage: string = '';
 
-  constructor(private validationService: FileUploadValidationService, protected override fieldFluxService: FieldFluxService) {
+  constructor(private validationService: FileUploadValidationService, private documentService: DocumentService, protected override fieldFluxService: FieldFluxService) {
     super(fieldFluxService);
+  }
+
+  override initInput(): void {
+    this.formControl.setValidators(this.getValidators());
+    this._setFiles();
   }
 
   override getControlType(): string {
@@ -30,7 +42,7 @@ export class FileUploadComponent extends BaseInputComponent {
   }
 
   override getDefaultValue(): any {
-    return '';
+    return [];
   }
 
   override getValidators(): ValidatorFn[] {
@@ -44,15 +56,7 @@ export class FileUploadComponent extends BaseInputComponent {
       this.formControl.setErrors({ incorrect: true });
       this.formControl.markAsTouched();
     } else {
-      if (this.multiple) {
-        this.files.push(...Array.from(files));
-      } else {
-        this.files = Array.from(files);
-      }
-      this.errorMessage = '';
-      this.formControl.setValue(this.files);
-      this.formControl.updateValueAndValidity();
-      this.resetFileInput();
+      this._uploadFile(Array.from(files));
     }
   }
 
@@ -61,26 +65,63 @@ export class FileUploadComponent extends BaseInputComponent {
     if (input.files) {
       this.onFilesDropped(input.files);
     }
-    this.resetFileInput();
   }
+
 
   removeFile(file: File): void {
-    this.files = this.files.filter(f => f !== file);
-    if (this.files.length === 0 && this.required) {
-      this.formControl.setErrors({ required: true });
-      this.formControl.markAsTouched();
-      this.errorMessage = 'Ce champ est requis.';
-    } else {
-      this.errorMessage = '';
-      this.formControl.setValue(this.files);
-      this.formControl.updateValueAndValidity();
-    }
+    this.upload_loading = true;
+
+    this.documentService.deleteFileFromDocument(this.id_d(), this.idField, this.id_e(), file.name).subscribe(
+      {
+        next: () => {
+          this.files = this.files.filter(f => f !== file);
+          if (this.files.length === 0 && this.required) {
+            this.formControl.setErrors({ required: true });
+            this.formControl.markAsTouched();
+            this.errorMessage = 'Ce champ est requis.';
+          } else {
+            this.errorMessage = '';
+            this.formControl.setValue(this.files);
+            this.formControl.updateValueAndValidity();
+          }
+          this.upload_loading = false;
+        },
+      }
+    )
+
   }
 
-  private resetFileInput(): void {
+  private _uploadFile(files: File[]): void {
+    this.upload_loading = true;
+    this.documentService.uploadFiles(this.id_d(), this.idField, this.id_e(), files).subscribe(
+      {
+        next: () => {
+          if (this.multiple) {
+            this.files.push(...files);
+          } else {
+            this.files = files;
+          }
+          this.formControl.setValue(this.files);
+          this.formControl.updateValueAndValidity();
+          this._resetFileInput();
+        },
+        complete: () => this.upload_loading = false
+      }
+    );
+  }
+
+  private _resetFileInput(): void {
     if (this.fileInput) {
       this.fileInput.nativeElement.value = '';
     }
   }
 
+  private _setFiles(): void {
+    const value = this.formControl.value;
+    if (Array.isArray(value) && value.length > 0) {
+      value.forEach(docName => {
+        this.files.push(new File([], docName))
+      })
+    }
+  }
 }

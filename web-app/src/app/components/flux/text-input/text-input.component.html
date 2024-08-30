@@ -16,14 +16,15 @@
            'fr-input--error': formControl.invalid && (formControl.dirty || formControl.touched),
            'fr-input--valid': formControl.valid && (formControl.dirty || formControl.touched)
          }" [formControl]="formControl" type="text" />
-    @if (formControl.invalid && (formControl.dirty || formControl.touched)) {
+    @if(formControl.dirty || formControl.touched ) {
+    @if (formControl.invalid) {
     <p class="fr-error-text">
         {{ getErrorMessage() }}
     </p>
-    }
-    @if (formControl.valid && (formControl.dirty || formControl.touched) && (formControl.value || !required)) {
+    } @else {
     <p class="fr-valid-text">
         Champ valide
     </p>
+    }
     }
 </div>

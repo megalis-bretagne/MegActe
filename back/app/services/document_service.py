@@ -9,6 +9,11 @@ from ..schemas.document_schemas import (
     AddFileToDoc,
 )
 from fastapi import HTTPException
+from io import BytesIO
+from fastapi.responses import StreamingResponse
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def create_empty_document(entite_id: int, flux_type: str, client_api: ApiPastell):
@@ -82,6 +87,7 @@ def get_document_info_service(
     entite_id: int,
     document_id: str,
     client_api: ApiPastell,
+    external_data_to_retrieve: list[str] = [],
 ):
     """Récupère les infos d'un document dans Pastell.
 
@@ -90,11 +96,23 @@ def get_document_info_service(
         document_id (str): L'ID du document à récupérer.
         user (UserPastell): L'utilisateur pour lequel le document doit être récupéré.
         client_api (ApiPastell): client api
+        external_data_to_retrieve (list[str]) : liste des external Data a récupérer
 
     Returns:
         dict: Les détails du document récupéré.
     """
-    return client_api.perform_get(f"/entite/{entite_id}/document/{document_id}")
+    document = client_api.perform_get(f"/entite/{entite_id}/document/{document_id}")
+
+    for external_data in external_data_to_retrieve:
+        if external_data in document["data"]:
+            logger.debug(
+                f"Récupération des informations de {external_data} pour le document {document_id}"
+            )
+            info = client_api.perform_get(
+                f"/entite/{entite_id}/document/{document_id}/file/{external_data}"
+            )
+            document["data"][external_data] = info.json()
+    return document
 
 
 def delete_document_service(entite_id: int, document_id: str, client_api: ApiPastell):
@@ -169,7 +187,11 @@ def add_file_to_document_service(
 
     files = {
         "file_name": (None, file_data.file.filename),
-        "file": (file_data.file.filename, file_content, file_data.file.content_type),
+        "file_content": (
+            file_data.file.filename,
+            file_content,
+            file_data.file.content_type,
+        ),
     }
 
     return client_api.perform_post(
@@ -179,6 +201,7 @@ def add_file_to_document_service(
 
 
 def delete_file_from_document_service(
+    entite_id: int,
     document_id: str,
     element_id: str,
     file_data: DeleteFileFromDoc,
@@ -187,6 +210,7 @@ def delete_file_from_document_service(
     """Supprime un fichier lié à un document spécifique dans Pastell.
 
     Args:
+        entite_id (int) : L'id de l'entite
         document_id (str): L'ID du document auquel le fichier est associé.
         element_id (str): L'ID du champ auquel le fichier est associé.
         file_data (DeleteFileFromDoc): Les informations nécessaires pour supprimer un fichier.
@@ -197,9 +221,7 @@ def delete_file_from_document_service(
     Returns:
         dict: Les détails de la suppression du fichier.
     """
-    existing_files = get_existing_files(
-        file_data.entite_id, document_id, element_id, client_api
-    )
+    existing_files = get_existing_files(entite_id, document_id, element_id, client_api)
 
     try:
         file_index = existing_files.index(file_data.file_name)
@@ -210,7 +232,7 @@ def delete_file_from_document_service(
         )
 
     return client_api.perform_delete(
-        f"/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{file_index}"
+        f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_index}"
     )
 
 
@@ -326,7 +348,7 @@ def transfer_tdt_document_service(
     return check_and_perform_action_service(entite_id, document_id, action, client_api)
 
 
-def assign_file_types_service(
+def assign_file_typologie_service(
     entite_id: int,
     document_id: str,
     element_id: str,
@@ -398,3 +420,45 @@ def list_documents_paginate(
 
     response = client_api.perform_get(url, query_params=query_param)
     return response
+
+
+def get_file_by_name_service(
+    entite_id: int,
+    document_id: str,
+    element_id: str,
+    file_name: str,
+    client_api: ApiPastell,
+):
+    """Récupère un fichier spécifique par son nom depuis Pastell.
+
+    Args:
+        entite_id (int): L'ID de l'entité.
+        document_id (str): L'ID du document.
+        element_id (str): L'ID de l'élément auquel le fichier est associé.
+        file_name (str): Le nom du fichier à récupérer.
+        client_api (ApiPastell): client api
+
+    Returns:
+        Response: La réponse de l'API Pastell contenant le fichier.
+    """
+    existing_files = get_existing_files(entite_id, document_id, element_id, client_api)
+
+    try:
+        file_index = existing_files.index(file_name)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    response = client_api.perform_get(
+        f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_index}"
+    )
+
+    if response is None or response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Error retrieving file")
+
+    file_content = BytesIO(response.content)
+
+    return StreamingResponse(
+        file_content,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f"attachment; filename={file_name}"},
+    )
