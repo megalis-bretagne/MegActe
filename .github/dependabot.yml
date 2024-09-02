@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # Mise à jour des dépendances Python
+  - package-ecosystem: "pip"
+    directory: "/back"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "python"
+
+  # Mise à jour des dépendances npm
+  - package-ecosystem: "npm"
+    directory: "/web-app"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "javascript"
