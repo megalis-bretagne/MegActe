@@ -17,3 +17,8 @@ updates:
     labels:
       - "dependencies"
       - "javascript"
+    groups:
+      angular:
+        patterns:
+          - "angular*"
+          - "@angular*"
