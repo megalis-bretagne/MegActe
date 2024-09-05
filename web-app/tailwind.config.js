@@ -17,6 +17,9 @@ module.exports = {
         required: '#CE0500'
       },
       colors: {
+        green: {
+          DEFAULT: '#19753C',
+        },
         blue: {
           DEFAULT: '#0051C4',
           hover: '#1E3A8A'

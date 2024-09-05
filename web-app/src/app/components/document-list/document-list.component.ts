@@ -102,6 +102,7 @@ export class DocumentListComponent {
   }
 
   goUpdateDoc(documentId: string): void {
+    this.loadingService.showLoading("Chargement du document en cours");
     this.router.navigate(['/acte', documentId]);
   }
 }

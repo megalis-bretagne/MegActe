@@ -1,28 +1,52 @@
-<mat-dialog-content>
+<!-- Main modal -->
+<div id="successModal" tabindex="-1" aria-hidden="true"
+    class="fixed top-0 left-0 right-0 z-50  items-center justify-center hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            @if(status(); as status) {
+            @if (status.type === 'LOADING') {
+            <meg-loading [message]="status.message" />
+            } @else {
+            <div class="modal-content">
+                <svg aria-hidden="true" [class]="cssClassType()" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
 
-    @if (error()) {
-    <div class="fr-alert fr-alert--error">
-        <h3 class="fr-alert__title">{{error()}}</h3>
-    </div>
-    } @else if (success()) {
-    <div class="fr-alert fr-alert--success">
-        <h3 class="fr-alert__title">{{success()}}</h3>
-    </div>
-    }
-    @else {
-    <meg-loading [message]="message()" />
-    }
-</mat-dialog-content>
-@if(error() || success()) {
-<mat-dialog-actions>
-    <div class="dialog-close">
-        <div>
-            <button class="fr-btn fr-btn--sm fr-icon-close-circle-line fr-btn--icon-right fr-btn--secondary"
-                (click)="onClose()">
-                Fermer
-            </button>
+
+                    @switch(status.type) {
+                    @case('SUCCESS') {
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2l4 -4" />
+
+                    }
+                    @case('ERROR') {
+                    <path fill-rule="evenodd"
+                        d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm7.707-3.707a1 1 0 0 0-1.414 1.414L10.586 12l-2.293 2.293a1 1 0 1 0 1.414 1.414L12 13.414l2.293 2.293a1 1 0 0 0 1.414-1.414L13.414 12l2.293-2.293a1 1 0 0 0-1.414-1.414L12 10.586 9.707 8.293Z"
+                        clip-rule="evenodd" />
+
+                    }
+                    @case('INFO') {
+                    <path fill-rule="evenodd"
+                        d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm9.408-5.5a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2h-.01ZM10 10a1 1 0 1 0 0 2h1v3h-1a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2h-1v-4a1 1 0 0 0-1-1h-2Z"
+                        clip-rule="evenodd" />
+                    }
+                    }
+
+
+
+
+
+                </svg>
+                <p [class]="cssClassType()" class="">{{status.message}}</p>
+            </div>
+            <div class="flex p-2 justify-center">
+                <button type="button" class="btn-meg-secondary px-2 py-2 inline-flex" (click)="closeModal()">
+                    Fermer
+                </button>
+            </div>
+            }
+
+            }
+
+
         </div>
     </div>
-
-</mat-dialog-actions>
-}
+</div>

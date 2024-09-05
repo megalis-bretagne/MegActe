@@ -33,6 +33,7 @@ import { LoadingService } from 'src/app/services/loading.service';
 export class ActeFormComponent implements OnInit {
   fluxSelected = inject(FluxService).fluxSelected;
   userCurrent = inject(UserContextService).userCurrent;
+  loadingService = inject(LoadingService);
 
   acteName: string;
   fluxDetail: Data;
@@ -62,7 +63,6 @@ export class ActeFormComponent implements OnInit {
     private logger: NGXLogger,
     private fieldFluxService: FieldFluxService,
     private documentService: DocumentService,
-    private loadingservice: LoadingService,
     private router: Router,
     private fluxService: FluxService,
   ) {
@@ -130,7 +130,7 @@ export class ActeFormComponent implements OnInit {
   }
 
   private _save(): void {
-    this.loadingservice.showLoading();
+    this.loadingService.showLoading("Sauvegarde en cours ...");
     const docInfo = this._retrieveInfo();
     const docUpdateInfo = {
       entite_id: this.userCurrent().user_info.id_e,
@@ -180,7 +180,7 @@ export class ActeFormComponent implements OnInit {
         this.currentStep.set(2);
         this._buildFormExternalDataForFile(response.pieces, response.actes_type_pj_list)
         this.pieces.set(response.pieces);
-        this.loadingservice.hideLoading();
+        this.loadingService.hideLoading();
       },
       error: (error) => {
         this.logger.error('Error fetching file types and files', error);
@@ -195,7 +195,7 @@ export class ActeFormComponent implements OnInit {
   onAssignFileTypesClick(): void {
     this.formExternalData.markAllAsTouched();
     if (this.formExternalData.valid) {
-      this.loadingservice.showLoading();
+      this.loadingService.showLoading("Sauvegarde du fichier en cours ...");
       const info = this.formExternalData.getRawValue();
       this._assignFileTypes(Object.values(info));
     } else {
@@ -206,11 +206,11 @@ export class ActeFormComponent implements OnInit {
   private _assignFileTypes(data: string[]): void {
     this.documentService.patchExternalData(this.userCurrent().user_info.id_e, this.documentInfo.info.id_d, 'type_piece', data).subscribe({
       next: (response) => {
-        this.loadingservice.showSuccess('Le document a été créé et mis à jour avec succès.', ['/documents', this.acteName]);
+        this.loadingService.showSuccess('Le document a été créé et mis à jour avec succès.', ['/documents', this.acteName]);
         this.logger.info('File types assigned successfully', response);
       },
       error: (error) => {
-        this.loadingservice.showError(error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.');
+        this.loadingService.showError(error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.');
         this.logger.error('Error assigning file types', error);
       }
     });

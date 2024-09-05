@@ -49,13 +49,13 @@
             <meg-loading [message]="'Envoi de documents'" />
             }
             @if (action_one_file() === actionState.Delete) {
-            <meg-loading [message]="'Suppression des documents'" />
+            <meg-loading [message]="'Suppression du document'" />
             }
         </div>
     </div>
 
     @if (formControl.invalid && formControl.touched) {
-    <p id="file-upload-with-error-desc-error" class="meg-invalid">
+    <p id="file-upload-with-error-desc-error" class="meg-error">
         {{ errorMessage || (formControl.hasError('required') ? 'Ce champ est requis.' : '') }}
     </p>
     }

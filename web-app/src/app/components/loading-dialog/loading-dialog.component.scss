@@ -1,5 +1,27 @@
-.dialog-close {
-    width: 100%;
-    display: flex; 
-    flex-direction: row-reverse;
+div.modal-content {
+    @apply p-2 text-center flex items-center justify-center;
+
+}
+svg.success {
+    @apply mx-2 w-14 h-14 text-success;
+}
+
+svg.alert {
+    @apply mx-2 w-10 h-10 text-alert;
+}
+
+svg.info {
+    @apply mx-2 w-10 h-10 text-blue;
+}
+
+p.success {
+    @apply  text-success;
+}
+
+p.alert {
+    @apply  text-alert;
+}
+
+p.info {
+    @apply  text-blue;
 }
