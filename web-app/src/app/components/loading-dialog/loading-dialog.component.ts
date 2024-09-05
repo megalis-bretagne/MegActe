@@ -1,40 +1,75 @@
-import { Component, Inject, signal } from '@angular/core';
-import {
-    MAT_DIALOG_DATA, MatDialogRef, MatDialogModule
-} from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { LoadingComponent } from '../loading-component/loading.component';
+import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { Modal } from 'flowbite';
+import { InfoModal, TypeModal } from 'src/app/model/modal.model';
+import { LoadingService } from 'src/app/services/loading.service';
+import { LoadingComponent } from '../loading-component/loading.component';
+
 
 @Component({
-    selector: 'app-loading-dialog',
+    selector: 'meg-modal',
     standalone: true,
-    imports: [MatDialogModule, MatProgressSpinnerModule, MatButtonModule, LoadingComponent],
+    imports: [LoadingComponent],
     templateUrl: './loading-dialog.component.html',
     styleUrls: ['./loading-dialog.component.scss']
 })
-export class LoadingDialogComponent {
-    message = signal<string>("");
-    error = signal<string | null>(null);
-    success = signal<string | null>(null);
-    redirect_on_close = signal<string[] | null>(null);
+export class LoadingDialogComponent implements OnInit {
+    private loadingService = inject(LoadingService);
+
+    private modal: Modal | undefined;
+    status = signal<InfoModal | null>(null);
+
+    cssClassType = signal<string>("");
 
     constructor(
-        public dialogRef: MatDialogRef<LoadingDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any,
         private router: Router,
     ) {
-        this.message.set(data.message);
-        this.error.set(data.error || null);
-        this.success.set(data.success || null);
-        this.redirect_on_close.set(data.redirect_on_close || null);
+
+        effect(() => {
+            if (this.status()) {
+                this._setClassElement();
+                this.openModal();
+            } else {
+                this.closeModal();
+            }
+        }, { allowSignalWrites: true })
     }
 
-    onClose(): void {
-        if (this.redirect_on_close()) {
-            this.router.navigate(this.redirect_on_close());
+
+    _setClassElement() {
+        switch (this.status().type) {
+            case TypeModal.Error: { this.cssClassType.set("alert"); break; }
+            case TypeModal.Info: { this.cssClassType.set("info"); break; }
+            default: { this.cssClassType.set("success"); break; }
         }
-        this.dialogRef.close();
+    }
+
+    ngOnInit(): void {
+        // Get the modal element
+        const modalElement = document.getElementById('successModal');
+
+        // Initialize the Flowbite modal instance
+        if (modalElement) {
+            this.modal = new Modal(modalElement, { backdrop: 'static' });
+        }
+        this.loadingService.status$.subscribe(
+            (status: InfoModal | null) => this.status.set(status)
+        );
+    }
+
+    openModal(): void {
+        if (this.modal) {
+            this.modal.show();  // Show the modal
+        }
+    }
+
+    closeModal(): void {
+        if (this.modal) {
+            this.modal.hide();
+        }
+
+        if (this.status()?.redirect_on_close) {
+            this.router.navigate(this.status().redirect_on_close);
+        }
     }
 }

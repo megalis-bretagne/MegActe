@@ -1,49 +1,32 @@
-import { Injectable } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { LoadingDialogComponent } from '../components/loading-dialog/loading-dialog.component';
+import { Injectable, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { InfoModal, TypeModal } from '../model/modal.model';
 
 @Injectable({
-    providedIn: 'root'
+    providedIn: 'root',
 })
 export class LoadingService {
-    private dialogRef: any;
+    private status = signal<InfoModal | null>(null);
+    status$ = toObservable(this.status);
 
-    constructor(private dialog: MatDialog) { }
+    constructor() { }
+
+    // Method to show the modal with a custom message
+    showSuccess(message: string, redirect: string[] = null): void {
+        this.status.set({ message: message, type: TypeModal.Success, redirect_on_close: redirect } as InfoModal);
+    }
+
+    // Method to hide the modal
+    hideLoading(): void {
+        this.status.set(null);
+    }
 
     showLoading(message: string = 'Chargement ...') {
-        this.dialogRef = this.dialog.open(LoadingDialogComponent, {
-            data: { message: message, error: null },
-            disableClose: true
-        });
+        this.status.set({ message: message, type: TypeModal.Loading, redirect_on_close: null } as InfoModal);
     }
 
-    hideLoading() {
-        if (this.dialogRef) {
-            this.dialogRef.close();
-        }
-    }
-
-    showSuccess(success: string, redirect: string[] = null) {
-        if (this.dialogRef) {
-            this.dialogRef.componentInstance.success.set(success);
-            this.dialogRef.componentInstance.error.set(null);
-            this.dialogRef.componentInstance.redirect_on_close.set(redirect);
-        } else {
-            this.dialogRef = this.dialog.open(LoadingDialogComponent, {
-                data: { message: '', success: success, redirect_on_close: redirect }
-            });
-        }
-    }
 
     showError(error: string, redirect: string[] = null) {
-        if (this.dialogRef) {
-            this.dialogRef.componentInstance.success.set(null);
-            this.dialogRef.componentInstance.error.set(error);
-            this.dialogRef.componentInstance.redirect_on_close.set(redirect);
-        } else {
-            this.dialogRef = this.dialog.open(LoadingDialogComponent, {
-                data: { message: '', error: error, redirect_on_close: redirect }
-            });
-        }
+        this.status.set({ message: error, type: TypeModal.Error, redirect_on_close: redirect } as InfoModal);
     }
 }
