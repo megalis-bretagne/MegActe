@@ -26,7 +26,7 @@ click==8.1.7
     # via
     #   typer
     #   uvicorn
-cryptography==42.0.8
+cryptography==43.0.1
     # via -r requirements.in
 dnspython==2.6.1
     # via email-validator
