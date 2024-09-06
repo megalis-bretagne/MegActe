@@ -7,13 +7,13 @@ import { LoadingComponent } from '../loading-component/loading.component';
 
 
 @Component({
-    selector: 'meg-modal',
+    selector: 'meg-modal-dialog',
     standalone: true,
     imports: [LoadingComponent],
-    templateUrl: './loading-dialog.component.html',
-    styleUrls: ['./loading-dialog.component.scss']
+    templateUrl: './meg-modal-dialog.component.html',
+    styleUrls: ['./meg-modal-dialog.component.scss']
 })
-export class LoadingDialogComponent implements OnInit {
+export class ModalDialogComponent implements OnInit {
     private loadingService = inject(LoadingService);
 
     private modal: Modal | undefined;

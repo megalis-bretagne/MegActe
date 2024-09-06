@@ -105,4 +105,8 @@ export class DocumentListComponent {
     this.loadingService.showLoading("Chargement du document en cours");
     this.router.navigate(['/acte', documentId]);
   }
+
+  removeDoc(documentId: string): void {
+
+  }
 }
