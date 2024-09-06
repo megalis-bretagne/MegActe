@@ -8,6 +8,10 @@ updates:
     labels:
       - "dependencies"
       - "python"
+    groups:
+      all-python-packages:
+        patterns:
+          - "*"
 
   # Mise à jour des dépendances npm
   - package-ecosystem: "npm"
