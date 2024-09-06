@@ -29,6 +29,7 @@
             }
             <thead class="text-medium bg-gray-50 border border-b-black">
                 <tr>
+                    <th scope="col"></th>
                     <th scope="col">Titre</th>
                     <th scope="col" class="md:w-1/6 hidden sm:table-cell">Type</th>
                     <!-- colonne masqué sur les écran type tablette-->
@@ -40,6 +41,16 @@
             <tbody>
                 @for (doc of documents(); track doc.id_d) {
                 <tr>
+                    <td class="">
+                        @if(doc.last_action_display === 'modification' || doc.last_action_display === 'creation') {
+                        <div class="flex items-center">
+                            <input [id]="'checkbox-'+ doc.id_d" type="checkbox" [(ngModel)]="doc.selected"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                            <label [for]="'checkbox-'+ doc.id_d" class="sr-only">Sélectionner document
+                                {{doc.titre || doc.id_d}}</label>
+                        </div>
+                        }
+                    </td>
                     <td class="whitespace-normal">{{doc.titre || doc.id_d}}</td>
                     <td class="hidden sm:table-cell">{{doc.type}}</td>
                     <td>{{doc.last_action_display | stateDocument}}</td>
@@ -55,7 +66,8 @@
                                     d="M10.779 17.779 4.36 19.918 6.5 13.5m4.279 4.279 8.364-8.643a3.027 3.027 0 0 0-2.14-5.165 3.03 3.03 0 0 0-2.14.886L6.5 13.5m4.279 4.279L6.499 13.5m2.14 2.14 6.213-6.504M12.75 7.04 17 11.28" />
                             </svg>
                         </a>
-                        <a (click)="removeDoc(doc.id_d)" title="Supprimer le document {{doc.titre || doc.id_d}}"
+                        <a (click)="confirmDeleteDocuments([doc])"
+                            title="Supprimer le document {{doc.titre || doc.id_d}}"
                             class="text-red-500 hover:text-red-800 hover:cursor-pointer">
                             <svg class="w-5 h-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -74,10 +86,56 @@
                     <td colspan="5" class="text-center text-gray-500">Aucun document</td>
                 </tr>
                 }
+            <tfoot>
+                <tr>
+                    <td colspan="1">
+                        <a (click)="confirmDeleteDocuments(document_selected)"
+                            title="Supprimer les documents sélectionnés" [class.hidden]="!anySelected()"
+                            class="text-red-500 hover:text-red-800 hover:cursor-pointer">
+                            <svg class="w-5 h-5 " xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor" aria-hidden="true">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
+                            </svg>
+                        </a>
+                    </td>
+                    @if (totalPages() > 1) {
+                    <td colspan="5">
+                        <meg-pagination [pageActive]="pageActive()" [totalPages]="totalPages()"
+                            (onChangePage)="changePage($event)" />
+                    </td>
+                    }
+                </tr>
+            </tfoot>
         </table>
     </div>
     }
-    @if (totalPages() > 1) {
-    <meg-pagination [pageActive]="pageActive()" [totalPages]="totalPages()" (onChangePage)="changePage($event)" />
-    }
+</div>
+
+<div id="confirmDelete" tabindex="-1"
+    class="fixed top-0 left-0 right-0 z-50  items-center justify-center hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative w-full max-w-md max-h-full">
+        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+            <div class="p-4 md:p-5 text-center">
+                <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                @if(documents_to_delete()?.length === 1 ) {
+                <h3 class="mb-5 text-lg text dark:text-gray-400">Confirmer la suppression du document {{
+                    documents_to_delete()[0].titre || documents_to_delete()[0].id_d }} ?</h3>
+                } @else {
+                <h3 class="mb-5 text-lg text dark:text-gray-400">Confirmer la suppression de
+                    {{documents_to_delete().length}} documents ?</h3>
+                }
+                <button type="button" (click)="cancelDeleteDocuments()"
+                    class="btn-meg-secondary px-2 py-2 inline-flex ">Annuler</button>
+                <button type="button" (click)="doDeleteDocuments()" class="btn-meg-delete px-2 py-2 inline-flex ml-6">
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
 </div>

@@ -22,7 +22,7 @@ body {
     }
     
     .btn-meg-delete {
-        @apply text-alert border border-red rounded-md hover:bg-red hover:text-white;
+        @apply text-alert border border-red hover:bg-red hover:text-white focus:outline-none rounded-full;
     }
 
     .meg-toggle {
@@ -39,9 +39,9 @@ body {
         @apply odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700;
     }
 
-    table > tbody > tr > td {
+    table > tbody > tr > td,   table > tfoot > tr > td {
         @apply px-6 py-4;
-    }
+    } 
 
     table > thead > tr > th {
         @apply px-6 py-3;

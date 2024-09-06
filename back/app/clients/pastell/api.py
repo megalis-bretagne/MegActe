@@ -52,7 +52,11 @@ class ApiPastell:
 
         for key, value in count_response[str(id_e)]["flux"].items():
             if not isinstance(value, list):
-                total += sum(value.values())
+                try:
+                    total += sum(value.values())
+                except TypeError:  # pour compatibilité pastell v3
+                    total += sum(int(x) for x in value.values())
+
         return total
 
     @call_handler

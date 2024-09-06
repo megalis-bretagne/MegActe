@@ -8,12 +8,12 @@ import { Component, computed, output, input, signal, effect, untracked } from '@
 export class PaginationComponent {
 
   totalPages = input.required<number>();
-  pageActive = input<number>(1);
+  pageActive = input.required<number>();
   pagesToShow: number = 7;
 
   onChangePage = output<number>()
 
-  currentPage = signal(this.pageActive());
+  currentPage = signal<number>(0);
 
 
   pagesToDisplay = computed(() => {
@@ -39,8 +39,8 @@ export class PaginationComponent {
 
   constructor() {
     effect(() => {
-      if (this.totalPages() < this.currentPage())
-        this.currentPage.set(1)
+      if (this.pageActive() > 0)
+        this.currentPage.set(this.pageActive())
     }, { allowSignalWrites: true })
   }
 

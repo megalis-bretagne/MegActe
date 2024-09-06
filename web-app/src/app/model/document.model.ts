@@ -24,6 +24,7 @@ export interface DocumentInfo {
     is_active: boolean;
     entite_base: string;
     last_action_display: string;
+    selected: boolean;
     [key: string]: any;
 }
 
