@@ -22,7 +22,7 @@
     <meg-loading [message]="'Chargement des documents en cours...'" />
     } @else {
     <div class="meg-table">
-        <table id="table-md">
+        <table id="table-md" class="table-auto">
             @if (fluxSelected(); as fluxSelected) {
             <caption class="hidden"> Documents {{fluxSelected.nom}} </caption>
             } @else {
@@ -30,17 +30,17 @@
             }
             <thead class="text-medium bg-gray-50 border border-b-black">
                 <tr>
-                    <th scope="col">Titre</th>
-                    <th scope="col">Type</th>
+                    <th scope="col" class="md:w-2/6">Titre</th>
+                    <th scope="col" class="md:w-1/6">Type</th>
                     <th scope="col">État</th>
                     <th scope="col">Date de modification</th>
-                    <th scope="col">Actions</th>
+                    <th scope="col" class="md:w-1/6">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @for (doc of documents(); track doc.id_d) {
                 <tr>
-                    <td class="whitespace-nowrap">{{doc.titre || doc.id_d}}</td>
+                    <td class="whitespace-normal">{{doc.titre || doc.id_d}}</td>
                     <td>{{doc.type}}</td>
                     <td>{{doc.last_action_display | stateDocument}}</td>
                     <td>{{doc.last_action_date | date:'dd/MM/yyyy HH:mm'}}</td>
