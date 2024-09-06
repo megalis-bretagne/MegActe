@@ -1,5 +1,5 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
-import { DocCreateInfo, DocumentPaginate } from 'src/app/model/document.model';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/model/document.model';
 import { DocumentService } from 'src/app/services/document.service';
 import { FluxService } from 'src/app/services/flux.service';
 import { UserContextService } from 'src/app/services/user-context.service';
@@ -9,22 +9,26 @@ import { DatePipe } from '@angular/common';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { Router } from '@angular/router';
 import { LoadingService } from 'src/app/services/loading.service';
+import { Modal } from 'flowbite';
+import { FormsModule } from '@angular/forms';
 
 
 @Component({
   selector: 'meg-document-list',
   standalone: true,
-  imports: [StateDocumentPipe, PaginationComponent, LoadingComponent, DatePipe],
+  imports: [StateDocumentPipe, PaginationComponent, LoadingComponent, DatePipe, FormsModule],
   templateUrl: './document-list.component.html',
   styleUrls: []
 })
-export class DocumentListComponent {
+export class DocumentListComponent implements OnInit {
   itemPerPage = 10;
   fluxSelected = inject(FluxService).fluxSelected
   loadingService = inject(LoadingService);
+  documentService = inject(DocumentService);
 
   //TODO a modifier quand le changement d'id_e sera possible
   userCurrent = inject(UserContextService).userCurrent;
+  modal_confirm_delete: Modal | undefined;
 
   entiteSelected = computed(() => {
     if (this.userCurrent() != null) {
@@ -33,7 +37,8 @@ export class DocumentListComponent {
     return null;
   })
 
-
+  // la liste des documents à supprimer
+  documents_to_delete = signal<DocumentInfo[]>([]);
   documentsPaginate = signal<DocumentPaginate | null>(null);
 
   /**
@@ -54,7 +59,7 @@ export class DocumentListComponent {
   is_loading = signal<boolean>(true);
   pageActive = signal(1);
 
-  constructor(private documentService: DocumentService, private router: Router) {
+  constructor(private router: Router) {
     // effect sur le changement de flux
     effect(() => {
       this.pageActive.set(1);
@@ -63,23 +68,29 @@ export class DocumentListComponent {
   }
 
   /**
+   * Permet d'initialiser la modale
+   */
+  ngOnInit(): void {
+    const modalElement = document.getElementById('confirmDelete');
+    if (modalElement) {
+      this.modal_confirm_delete = new Modal(modalElement);
+    }
+  }
+
+  /**
    * Controle le changement de page de la pagination
    * @param page 
    * @param event 
    */
   changePage(page: number) {
+    this.pageActive.set(page);
     const idFlux = this.fluxSelected() !== null ? this.fluxSelected().id : null
     this._loadDataPage(idFlux, page)
   }
 
-  private _loadDataPage(idflux: string, page: number = 1) {
-    this.is_loading.set(true);
-    if (page < 1) page = 1
 
-    this.documentService.getDocuments(this.userCurrent().user_info.id_e, idflux, (page - 1) * this.itemPerPage, this.itemPerPage).subscribe({
-      next: (documentPaginate: DocumentPaginate) => this.documentsPaginate.set(documentPaginate),
-      complete: () => this.is_loading.set(false)
-    })
+  get document_selected(): DocumentInfo[] {
+    return this.documents().filter(doc => doc.selected);
   }
 
   createDoc(): void {
@@ -106,7 +117,39 @@ export class DocumentListComponent {
     this.router.navigate(['/acte', documentId]);
   }
 
-  removeDoc(documentId: string): void {
+  confirmDeleteDocuments(documents: DocumentInfo[]): void {
+    if (documents.length > 0) {
+      this.documents_to_delete.set(documents);
+      this.modal_confirm_delete.show();
+    }
+  }
 
+  cancelDeleteDocuments(): void {
+    this.modal_confirm_delete.hide();
+    this.documents_to_delete.set([]);
+  }
+
+  doDeleteDocuments(): void {
+    this.modal_confirm_delete.hide();
+    //this.documentService.deleteDocument
+    //this.loadingService.showLoading("Suppression du/des document(s) en cours ...");
+  }
+
+  /**
+   * Check si au moins un document est sélectionné
+   * @returns 
+   */
+  anySelected() {
+    return this.documents().some(doc => doc.selected);
+  }
+
+  private _loadDataPage(idflux: string, page: number = 1) {
+    this.is_loading.set(true);
+    if (page < 1) page = 1
+
+    this.documentService.getDocuments(this.userCurrent().user_info.id_e, idflux, (page - 1) * this.itemPerPage, this.itemPerPage).subscribe({
+      next: (documentPaginate: DocumentPaginate) => this.documentsPaginate.set(documentPaginate),
+      complete: () => this.is_loading.set(false)
+    })
   }
 }

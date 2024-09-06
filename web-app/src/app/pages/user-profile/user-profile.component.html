@@ -24,7 +24,7 @@
                 }
             </tbody>
         </table>
-        <meg-pagination [totalPages]="totalPages()" (onChangePage)="updateDisplayedPages($event)" />
+        <meg-pagination [pageActive]="0" [totalPages]="totalPages()" (onChangePage)="updateDisplayedPages($event)" />
     </div>
 </div>
 }
