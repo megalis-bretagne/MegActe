@@ -3,14 +3,14 @@ import { NavigationEnd, Router, RouterModule, RouterOutlet } from '@angular/rout
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { initFlowbite } from 'flowbite';
-import { LoadingDialogComponent } from './components/loading-dialog/loading-dialog.component';
+import { ModalDialogComponent } from './components/modal/meg-modal-dialog.component';
 
 
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, NavbarComponent, RouterModule, LoadingDialogComponent],
+  imports: [RouterOutlet, SidebarComponent, NavbarComponent, RouterModule, ModalDialogComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })

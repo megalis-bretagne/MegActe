@@ -17,7 +17,6 @@
         <h1>Liste des documents</h1>
         }
     </div>
-
     @if(is_loading()) {
     <meg-loading [message]="'Chargement des documents en cours...'" />
     } @else {
@@ -30,10 +29,11 @@
             }
             <thead class="text-medium bg-gray-50 border border-b-black">
                 <tr>
-                    <th scope="col" class="md:w-2/6">Titre</th>
-                    <th scope="col" class="md:w-1/6">Type</th>
+                    <th scope="col">Titre</th>
+                    <th scope="col" class="md:w-1/6 hidden sm:table-cell">Type</th>
+                    <!-- colonne masqué sur les écran type tablette-->
                     <th scope="col">État</th>
-                    <th scope="col">Date de modification</th>
+                    <th scope="col" class="md:w-1/5 hidden sm:table-cell">Date de modification</th>
                     <th scope="col" class="md:w-1/6">Actions</th>
                 </tr>
             </thead>
@@ -41,21 +41,30 @@
                 @for (doc of documents(); track doc.id_d) {
                 <tr>
                     <td class="whitespace-normal">{{doc.titre || doc.id_d}}</td>
-                    <td>{{doc.type}}</td>
+                    <td class="hidden sm:table-cell">{{doc.type}}</td>
                     <td>{{doc.last_action_display | stateDocument}}</td>
-                    <td>{{doc.last_action_date | date:'dd/MM/yyyy HH:mm'}}</td>
+                    <td class="hidden sm:table-cell">{{doc.last_action_date | date:'dd/MM/yyyy HH:mm'}}</td>
                     <td>
                         @if(doc.last_action_display === 'modification' || doc.last_action_display === 'creation') {
                         <a (click)="goUpdateDoc(doc.id_d)" title="Modifier le document {{doc.titre}}"
-                            class="text-blue hover:text-blue-hover hover:cursor-pointer">
+                            class="text-blue hover:text-blue-hover hover:cursor-pointer mr-4">
                             <svg class="w-5 h-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none"
                                 viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                     stroke-width="2"
                                     d="M10.779 17.779 4.36 19.918 6.5 13.5m4.279 4.279 8.364-8.643a3.027 3.027 0 0 0-2.14-5.165 3.03 3.03 0 0 0-2.14.886L6.5 13.5m4.279 4.279L6.499 13.5m2.14 2.14 6.213-6.504M12.75 7.04 17 11.28" />
                             </svg>
-                            Modifier
                         </a>
+                        <a (click)="removeDoc(doc.id_d)" title="Supprimer le document {{doc.titre || doc.id_d}}"
+                            class="text-red-500 hover:text-red-800 hover:cursor-pointer">
+                            <svg class="w-5 h-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
+                            </svg>
+                        </a>
+
                         }
                     </td>
                 </tr>
