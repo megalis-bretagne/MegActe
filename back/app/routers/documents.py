@@ -1,5 +1,5 @@
 from typing_extensions import Annotated
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from typing import List
 
 from app.dependencies import get_settings
@@ -15,12 +15,14 @@ from ..services.document_service import (
     delete_file_from_document_service,
     add_multiple_files_to_document_service,
     get_external_data_service,
-    delete_document_service,
     cancel_transfer_tdt_document_service,
     transfer_tdt_document_service,
     assign_file_typologie_service,
     get_file_by_name_service,
 )
+import logging
+
+logger = logging.getLogger(__name__)
 
 from ..schemas.document_schemas import (
     DocCreateInfo,
@@ -64,13 +66,27 @@ def get_document(
 
 
 # Delete Document
-@router.delete("/entite/{entite_id}/document/{document_id}", tags=["document"])
+@router.delete(
+    "/entite/{entite_id}/document",
+    tags=["document"],
+    description="Supprime une liste de documents",
+    status_code=status.HTTP_200_OK,
+)
 def delete_document(
-    document_id: str,
     entite_id: int,
+    documents_id: Annotated[
+        List[str],
+        Query(
+            title="les identifiants de documents",
+            description="Les identifiants de documents",
+        ),
+    ] = [],
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return delete_document_service(entite_id, document_id, client)
+    for doc_id in documents_id:
+        logger.debug(f"Suppression du document  {doc_id} sur l'entite {entite_id}")
+        client.perform_delete(f"/entite/{entite_id}/document/{doc_id}")
+    return status.HTTP_200_OK
 
 
 # Ajouter des fichiers à un document
