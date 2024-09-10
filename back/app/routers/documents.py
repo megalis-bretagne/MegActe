@@ -85,7 +85,7 @@ def delete_document(
 ):
     for doc_id in documents_id:
         logger.debug(f"Suppression du document  {doc_id} sur l'entite {entite_id}")
-        # client.perform_delete(f"/entite/{entite_id}/document/{doc_id}")
+        client.perform_delete(f"/entite/{entite_id}/document/{doc_id}")
     return status.HTTP_200_OK
 
 
