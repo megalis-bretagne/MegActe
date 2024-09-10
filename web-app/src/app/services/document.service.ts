@@ -32,9 +32,9 @@ export class DocumentService {
         );
     }
 
-    deleteDocument(documentId: string, entiteId: number): Observable<any> {
-        const params = new HttpParams().set('entite_id', entiteId);
-        return this.http.delete<any>(`${this.settingsService.apiUrl}/document/${documentId}`, { params }).pipe(
+    deleteDocuments(documentsId: string[], entiteId: number): Observable<void> {
+        const queryParams = `documents_id=${documentsId.join('&documents_id=')}`;
+        return this.http.delete<void>(`${this.settingsService.apiUrl}/entite/${entiteId}/documents?${queryParams}`).pipe(
             catchError((error) => {
                 this.logger.error('Error deleting document', error);
                 throw error;
@@ -84,6 +84,7 @@ export class DocumentService {
             })
         );
     }
+
     patchExternalData(entiteId: number, documentId: string, elementId: string, fileTypes: string[]): Observable<any> {
         return this.http.patch<any>(`${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/externalData/${elementId}`, fileTypes).pipe(
             catchError((error) => {
@@ -103,15 +104,6 @@ export class DocumentService {
         return this.http.get<any>(`${this.settingsService.apiUrl}/entite/${entiteId}/documents?${queryParams}`).pipe(
             catchError((error) => {
                 this.logger.error('Error get documents', error);
-                return of(null);
-            })
-        );
-    }
-
-    downloadFileByName(entiteId: number, documentId: string, elementId: string, fileName: string): Observable<Blob> {
-        return this.http.get(`${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}/${fileName}`, { responseType: 'blob' }).pipe(
-            catchError((error) => {
-                this.logger.error('Error downloading file', error);
                 return of(null);
             })
         );

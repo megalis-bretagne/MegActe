@@ -11,6 +11,8 @@ import { Router } from '@angular/router';
 import { LoadingService } from 'src/app/services/loading.service';
 import { Modal } from 'flowbite';
 import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorCustom } from 'src/app/model/http-error-custom.model';
 
 
 @Component({
@@ -131,8 +133,14 @@ export class DocumentListComponent implements OnInit {
 
   doDeleteDocuments(): void {
     this.modal_confirm_delete.hide();
-    //this.documentService.deleteDocument
-    //this.loadingService.showLoading("Suppression du/des document(s) en cours ...");
+    this.loadingService.showLoading("Suppression en cours ...");
+    // @TODO a modifier quand sélection d'entité
+    this.documentService.deleteDocuments(this.documents_to_delete().map(doc => doc.id_d), this.userCurrent().user_info.id_e).subscribe({
+      next: () => {
+        this.loadingService.showSuccess('Les documents ont bien été supprimés', null, () => { this.changePage(this.pageActive()); });
+      },
+      error: (error: HttpErrorCustom) => this.loadingService.showError("Erreur lors de la suppression. " + error.error.detail),
+    })
   }
 
   /**

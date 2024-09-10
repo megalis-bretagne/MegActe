@@ -67,6 +67,9 @@ export class ModalDialogComponent implements OnInit {
         if (this.modal) {
             this.modal.hide();
         }
+        if (this.status()?.callbackClose) {
+            this.status().callbackClose();
+        }
 
         if (this.status()?.redirect_on_close) {
             this.router.navigate(this.status().redirect_on_close);
