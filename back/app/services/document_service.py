@@ -1,3 +1,4 @@
+from typing import List
 from ..clients.pastell.api import ApiPastell
 
 from ..exceptions.custom_exceptions import EntiteIdException, PastellException
@@ -113,19 +114,6 @@ def get_document_info_service(
             )
             document["data"][external_data] = info.json()
     return document
-
-
-def delete_document_service(entite_id: int, document_id: str, client_api: ApiPastell):
-    """Supprime un document spécifique dans Pastell.
-
-    Args:
-        document_id (str): L'ID du document à supprimer.
-        user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
-
-    Returns:
-        dict: Les détails de la suppression du document.
-    """
-    return client_api.perform_delete(f"/entite/{entite_id}/document/{document_id}")
 
 
 def add_multiple_files_to_document_service(
