@@ -1,6 +1,7 @@
 from pydantic import TypeAdapter
 import requests
 
+from .models.user_info import UserInfo
 from .models.entite_info import EntiteInfo
 from .models.config import Config
 from .models.auth import AuthUser
@@ -52,6 +53,17 @@ class ApiPastell:
             if not only_active
             else filter(lambda entite: entite.is_active, list_entites)
         )
+
+    def get_user_by_id_u(self, id_u: int, auth: AuthUser = None):
+        """Retourne les infos d'un utilisateur
+
+        Args:
+            id_u (int): identifiant de l'utilisateur
+            auth (AuthUser, optional): le contexte utilisateur redéfini
+        """
+
+        response = self.perform_get(f"utilisateur/{id_u}", auth)
+        return TypeAdapter(UserInfo).validate_python(response)
 
     def count_documents_by_id_e(
         self, id_e: int, type: str = None, auth: AuthUser = None

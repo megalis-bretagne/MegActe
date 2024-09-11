@@ -1,11 +1,10 @@
-from pydantic import TypeAdapter, parse_obj_as
 from sqlalchemy import or_
 from ..clients.pastell.api import ApiPastell
 from ..utils import PasswordUtils
 
 from sqlalchemy.orm import Session
 
-from ..schemas.user_schemas import UserCreate, UserInfo
+from ..schemas.user_schemas import UserCreate
 
 from ..exceptions.custom_exceptions import (
     UserNotFoundException,
@@ -107,15 +106,7 @@ def get_user_context_service(client_api: ApiPastell, user: UserPastell):
     """
 
     # Récupérer les infos du user depuis Pastell
-    user_info_data = client_api.perform_get(f"utilisateur/{user.id_pastell}")
-
-    if "certificat" not in user_info_data or not isinstance(
-        user_info_data["certificat"], list
-    ):
-        user_info_data["certificat"] = []
-
-    user_info = UserInfo(**user_info_data)
-
+    user_info = client_api.get_user_by_id_u(user.id_pastell)
     if user_info.id_e == 0:
         return {"user_info": user_info}
 
