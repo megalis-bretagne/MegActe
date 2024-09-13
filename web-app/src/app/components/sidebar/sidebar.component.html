@@ -1,4 +1,8 @@
 <nav class="border border-gray-200 p-4 rounded-md" role="navigation" aria-labelledby="sidebar-title">
+
+    <div class="mb-5">
+        <meg-entite-select />
+    </div>
     <div class="space-y-4">
         <div class="flex items-center justify-between">
             <label class="inline-flex items-center cursor-pointer">
@@ -17,7 +21,7 @@
                     class="flex items-center w-full p-2 text transition rounded group hover:bg-gray-hover"
                     [attr.aria-controls]="'dropdown-'+ idx " [attr.data-collapse-toggle]="'dropdown-'+ idx">
 
-                    <span class="flex-1 ms-3 font-xl font-bold text-left rtl:text-right whitespace-nowrap">{{ type
+                    <span class="flex-1 ms-3 font-xl font-bold text-left rtl:text-right">{{ type
                         }}</span>
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                         viewBox="0 0 10 6">

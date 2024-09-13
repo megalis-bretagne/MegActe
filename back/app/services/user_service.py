@@ -1,4 +1,9 @@
+from typing import Dict, List, Optional
 from sqlalchemy import or_
+
+from ..clients.pastell.api.entite_api import EntiteApi
+
+from ..clients.pastell.models.entite_info import EntiteInfo
 from ..clients.pastell.api import ApiPastell
 from ..utils import PasswordUtils
 
@@ -90,7 +95,7 @@ def delete_user_from_db(user_id: int, db: Session):
 
 
 # Get user context
-def get_user_context_service(client_api: ApiPastell, user: UserPastell):
+def get_user_context_service(client_api: EntiteApi, user: UserPastell):
     """Récupère le contexte du user à partir de Pastell en utilisant le jeton Keycloak réceptionner côté API
 
     Args:
@@ -111,6 +116,6 @@ def get_user_context_service(client_api: ApiPastell, user: UserPastell):
         return {"user_info": user_info}
 
     # Récupérer les entités du user depuis Pastell
-    user_entites = client_api.get_entite(only_active=True)
+    user_entites = client_api.get_entite_with_child(only_active=True)
 
     return {"user_info": user_info, "entites": user_entites}

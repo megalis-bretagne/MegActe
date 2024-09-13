@@ -9,11 +9,12 @@ import { FluxService } from 'src/app/services/flux.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { EntiteSelectComponent } from '../entite-select/entite-select.component';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, FormsModule, CommonModule],
+  imports: [RouterLink, FormsModule, CommonModule, EntiteSelectComponent],
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
