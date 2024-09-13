@@ -1,7 +1,13 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from . import get_or_make_api_pastell, get_or_make_api_pastell_for_admin
+from ..clients.pastell.api.entite_api import EntiteApi
+
+from . import (
+    get_client_api,
+    get_or_make_api_pastell,
+    get_or_make_api_pastell_for_admin,
+)
 from ..clients.pastell.api import ApiPastell
 from ..database import get_db, get_user_from_db
 from ..schemas.user_schemas import UserCreate
@@ -25,7 +31,7 @@ router = APIRouter()
 )
 def get_user(
     user: UserPastell = Depends(get_user_from_db),
-    client: ApiPastell = Depends(get_or_make_api_pastell),
+    client: ApiPastell = Depends(get_client_api(EntiteApi)),
 ):
     return get_user_context_service(client, user)
 

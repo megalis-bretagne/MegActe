@@ -46,7 +46,7 @@ export class UserContextService {
   }
 
   public getUserFlux(): Observable<void> {
-    return this.http.get<{ [key: string]: Acte }>(this.settingsService.apiUrl + '/flux').pipe(
+    return this.http.get<{ [key: string]: Acte }>(this.settingsService.apiUrl + '/user/flux').pipe(
       map((data: { [key: string]: Acte }) => {
         const actes = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
         this.userFlux.set(actes);

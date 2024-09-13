@@ -1,11 +1,13 @@
 from pydantic import TypeAdapter
 import requests
 
-from .models.user_info import UserInfo
-from .models.entite_info import EntiteInfo
-from .models.config import Config
-from .models.auth import AuthUser
-from .handlers import call_handler
+from ..models.user_info import UserInfo
+from ..models.config import Config
+from ..models.auth import AuthUser
+from ..handlers import call_handler
+
+
+__all__ = ("entite_api", "ApiPastell")
 
 
 class ApiPastell:
@@ -33,26 +35,6 @@ class ApiPastell:
 
     def perform_post(self, url, data=None, files=None, auth: AuthUser = None):
         return self._perform_request("POST", url, data=data, files=files, auth=auth)
-
-    def get_entite(self, only_active: bool = False, auth: AuthUser = None):
-        """Retourne les entités en fonction du contexte utilisateur
-
-        Args:
-            only_active (bool, optional): pour filtrer les entités actite uniquement ou non
-            auth (AuthUser, optional): le contexte utilisateur redéfini
-
-        Returns:
-            Liste d'entite
-        """
-        list_entites = TypeAdapter(list[EntiteInfo]).validate_python(
-            self.perform_get("/entite", auth)
-        )
-
-        return (
-            list_entites
-            if not only_active
-            else filter(lambda entite: entite.is_active, list_entites)
-        )
 
     def get_user_by_id_u(self, id_u: int, auth: AuthUser = None):
         """Retourne les infos d'un utilisateur

@@ -1,3 +1,4 @@
+from typing import List, Optional
 from pydantic import BaseModel, field_validator
 
 
@@ -34,3 +35,7 @@ class EntiteInfo(BaseModel):
             int: La valeur convertie en entier.
         """
         return int(v)
+
+
+class EntiteInfoWithChild(EntiteInfo):
+    child: Optional[List["EntiteInfoWithChild"]] = []
