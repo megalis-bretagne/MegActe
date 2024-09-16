@@ -15,6 +15,7 @@ export interface EntiteInfo {
     type: string;
     entite_mere: number;
     centre_de_gestion: string;
+    child: EntiteInfo[]
 }
 
 export interface UserContext {

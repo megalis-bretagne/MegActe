@@ -10,7 +10,7 @@ body {
 
 
 
-@layer components {
+@layer components {    
     .btn-meg-primary {
         @apply focus:outline-none rounded-full focus-visible:outline-black focus-visible:outline-offset-2
          bg-light-primary hover:bg-blue-hover dark:bg-dark-primary text-white;
@@ -92,4 +92,7 @@ body {
         @apply text block font-semibold;
     }
 
+    a.entite {
+        @apply items-center flex px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white;
+    }
 }

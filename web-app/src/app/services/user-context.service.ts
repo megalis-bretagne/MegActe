@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Observable, catchError, of, map } from 'rxjs';
-import { UserContext } from 'src/app/model/user.model';
+import { EntiteInfo, UserContext } from 'src/app/model/user.model';
 import { SettingsService } from 'src/environments/settings.service';
 import { Acte } from '../model/acte.model';
 
@@ -23,6 +23,11 @@ export class UserContextService {
    * L'utilisateur connecté
    */
   userCurrent = signal<UserContext | null>(null);
+
+  /**
+   * L'entité sélectionné par défaut
+   */
+  entiteSelected = signal<EntiteInfo | null>(null);
   /**
    * Les flux de l'utilsiateur
    */
@@ -34,9 +39,15 @@ export class UserContextService {
 
   public getUser(): Observable<void> {
     return this.http.get<UserContext>(this.settingsService.apiUrl + '/user').pipe(
-      map((res) => {
+      map((res: UserContext) => {
         this.logger.info('Successfully fetched user context');
         this.userCurrent.set(res);
+
+        if (res.entites.length >= 1) {
+          this.entiteSelected.set(res.entites[0]);
+        } else {
+          this.entiteSelected.set(null);
+        }
       }),
       catchError((error) => {
         this.logger.error('Error fetching user context' + error);
@@ -57,6 +68,11 @@ export class UserContextService {
         return of(void 0);
       })
     );
+  }
+
+
+  public changeEntiteSelected(newEntite: EntiteInfo): void {
+    this.entiteSelected.set(newEntite);
   }
 
 }
