@@ -1,86 +1,22 @@
-<button id="multiLevelDropdownButton" data-dropdown-toggle="multi-dropdown"
-    class=" btn-meg-primary px-4 py-2 inline-flex items-center mb-3 text-center" type="button">Entite Racine<svg
-        class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
-    </svg>
-</button>
+<div class="p-4 md:p-5 max-h-[400px] overflow-y-auto">
+    <!-- <div class="text-sm font-normal text-gray-500 dark:text-gray-400">Afficher le chemin complet </div> -->
 
-
-<div id="multi-dropdown" class="z-10 hidden bg-white divide-y  divide-gray-100 rounded-lg shadow dark:bg-gray-700">
-    <div class="p-3">
-        <label for="input-group-search" class="sr-only">Rechercher entite</label>
-        <div class="relative">
-            <div class="absolute inset-y-0 rtl:inset-r-0 start-0 flex items-center ps-3 pointer-events-none">
-                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                </svg>
+    <ul class="my-4 space-y-3">
+        @for (entite of entitesToDisplay; track entite.id_e) {
+        <li
+            class="flex justify-between items-center p-4  rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white transition-colors duration-200">
+            <div class="text-base font-bold text-gray-900" (click)="selectEntite(entite)">{{ entite.denomination }}
             </div>
-            <input type="text" id="input-group-search"
-                class="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder="Rechercher entite">
-        </div>
-    </div>
-    <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="multiLevelDropdownButton">
-        <li>
-            <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Megalis
-                Bretagne</a>
-        </li>
-        <li>
-            <button id="doubleDropdownButton" data-dropdown-toggle="doubleDropdown"
-                data-dropdown-placement="right-start" type="button"
-                class="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Commune
-                de Brest<svg class="w-2.5 h-2.5 ms-3 rtl:rotate-180" aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+            @if (entite.child?.length > 0) {
+            <button>
+                <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 6 10">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="m1 9 4-4-4-4" />
-                </svg></button>
-            <div id="doubleDropdown"
-                class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
-                <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="doubleDropdownButton">
-                    <li>
-                        <button id="tripleDropdownButton" data-dropdown-toggle="tripleDropdown"
-                            data-dropdown-placement="right-start" type="button"
-                            class="flex items-center justify-between w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Commande
-                            publique<svg class="w-2.5 h-2.5 ms-3 rtl:rotate-180" aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 9 4-4-4-4" />
-                            </svg></button>
-                        <div id="tripleDropdown"
-                            class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
-                            <ul class="py-2 text-sm text-gray-700 dark:text-gray-200"
-                                aria-labelledby="tripleDropdownButton">
-                                <li>
-                                    <a href="#"
-                                        class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">CAB
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                    </li>
-                    <li>
-                        <a href="#"
-                            class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Marchés
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#"
-                            class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">urbanisme</a>
-                    </li>
-
-                </ul>
-            </div>
+                </svg>
+            </button>
+            }
         </li>
-        <li>
-            <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Commune
-                de Liffré</a>
-        </li>
-        <li>
-            <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Commune
-                de Domloup</a>
-        </li>
+        }
     </ul>
 </div>

@@ -10,6 +10,8 @@ import { LoadingService } from 'src/app/services/loading.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { EntiteSelectComponent } from '../entite-select/entite-select.component';
+import { EntiteInfo } from 'src/app/model/user.model';
+import { Modal } from 'flowbite';
 
 @Component({
   selector: 'app-sidebar',
@@ -19,8 +21,11 @@ import { EntiteSelectComponent } from '../entite-select/entite-select.component'
   styleUrls: ['./sidebar.component.scss']
 })
 export class SidebarComponent {
-  userFlux = inject(UserContextService).userFlux
-  userCurrent = inject(UserContextService).userCurrent;
+  private _userContextService = inject(UserContextService);
+
+  entiteSelected = this._userContextService.entiteSelected;
+  userFlux = this._userContextService.userFlux
+  userCurrent = this._userContextService.userCurrent;
   loadingService = inject(LoadingService);
 
   fluxSelected = inject(FluxService).fluxSelected /** contient le flux sélectionné */
@@ -76,6 +81,17 @@ export class SidebarComponent {
 
   sortActes(): void {
     this.actes.sort((a, b) => a.nom.localeCompare(b.nom));
+  }
+
+  selectedEntite(e: EntiteInfo) {
+    const modalElement = document.getElementById('modal-select-entite');
+
+    // Initialize the Flowbite modal instance
+    if (modalElement) {
+      const modal = new Modal(modalElement, { backdrop: 'static' });
+      modal.hide();
+    }
+    this._userContextService.entiteSelected.set(e);
   }
 
 }
