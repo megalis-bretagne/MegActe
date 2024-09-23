@@ -1,8 +1,7 @@
 <nav class="border border-gray-200 p-4 rounded-md" role="navigation" aria-labelledby="sidebar-title">
 
-    @if(entiteSelected()) {
     <div class="mb-5">
-        <button data-modal-target="modal-select-entite" data-modal-toggle="modal-select-entite"
+        <button (click)="showSelectEntite()"
             class=" btn-meg-primary px-4 py-2 inline-flex items-center mb-3 text-center"
             type="button">{{entiteSelected().denomination}}
             @if (userCurrent().entites.length > 1 || userCurrent().entites[0].child.length > 0) {
@@ -25,7 +24,7 @@
                         </h3>
                         <button type="button"
                             class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                            data-modal-hide="modal-select-entite">
+                            (click)="hideSelectEntite()">
                             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                                 viewBox="0 0 14 14">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -35,12 +34,12 @@
                         </button>
                     </div>
                     <!-- Modal content -->
-                    <meg-entite-select (onSelect)="selectedEntite($event)" />
+                    <meg-entite-select (onSelect)="selectEntite($event)" (onNavigate)="selectEntite($event, false)" />
                 </div>
             </div>
         </div>
     </div>
-    }
+
     <div class="space-y-4">
         <div class="flex items-center justify-between">
             <label class="inline-flex items-center cursor-pointer">
