@@ -11,7 +11,6 @@ import { Router } from '@angular/router';
 import { LoadingService } from 'src/app/services/loading.service';
 import { Modal } from 'flowbite';
 import { FormsModule } from '@angular/forms';
-import { HttpErrorResponse } from '@angular/common/http';
 import { HttpErrorCustom } from 'src/app/model/http-error-custom.model';
 
 
@@ -27,17 +26,11 @@ export class DocumentListComponent implements OnInit {
   fluxSelected = inject(FluxService).fluxSelected
   loadingService = inject(LoadingService);
   documentService = inject(DocumentService);
+  userContextService = inject(UserContextService);
 
-  //TODO a modifier quand le changement d'id_e sera possible
-  userCurrent = inject(UserContextService).userCurrent;
+  userCurrent = this.userContextService.userCurrent;
+  entiteSelected = this.userContextService.entiteSelected;
   modal_confirm_delete: Modal | undefined;
-
-  entiteSelected = computed(() => {
-    if (this.userCurrent() != null) {
-      return this.userCurrent().user_info.id_e;
-    }
-    return null;
-  })
 
   // la liste des documents à supprimer
   documents_to_delete = signal<DocumentInfo[]>([]);
@@ -100,7 +93,7 @@ export class DocumentListComponent implements OnInit {
       this.loadingService.showLoading("Création du document en cours ...");
 
       const docCreateInfo: DocCreateInfo = {
-        entite_id: this.userCurrent().user_info.id_e,
+        entite_id: this.entiteSelected().id_e,
         flux_type: this.fluxSelected().id,
         doc_info: {}
       };
@@ -134,8 +127,7 @@ export class DocumentListComponent implements OnInit {
   doDeleteDocuments(): void {
     this.modal_confirm_delete.hide();
     this.loadingService.showLoading("Suppression en cours ...");
-    // @TODO a modifier quand sélection d'entité
-    this.documentService.deleteDocuments(this.documents_to_delete().map(doc => doc.id_d), this.userCurrent().user_info.id_e).subscribe({
+    this.documentService.deleteDocuments(this.documents_to_delete().map(doc => doc.id_d), this.entiteSelected().id_e).subscribe({
       next: () => {
         this.loadingService.showSuccess('Les documents ont bien été supprimés', null, () => { this.changePage(this.pageActive()); });
       },
@@ -155,7 +147,7 @@ export class DocumentListComponent implements OnInit {
     this.is_loading.set(true);
     if (page < 1) page = 1
 
-    this.documentService.getDocuments(this.userCurrent().user_info.id_e, idflux, (page - 1) * this.itemPerPage, this.itemPerPage).subscribe({
+    this.documentService.getDocuments(this.entiteSelected().id_e, idflux, (page - 1) * this.itemPerPage, this.itemPerPage).subscribe({
       next: (documentPaginate: DocumentPaginate) => this.documentsPaginate.set(documentPaginate),
       complete: () => this.is_loading.set(false)
     })

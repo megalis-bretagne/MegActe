@@ -1,4 +1,4 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { Acte } from 'src/app/model/acte.model';
 import { DocCreateInfo } from 'src/app/model/document.model';
 import { DocumentService } from 'src/app/services/document.service';
@@ -20,7 +20,7 @@ import { Modal } from 'flowbite';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
   private _userContextService = inject(UserContextService);
 
   entiteSelected = this._userContextService.entiteSelected;
@@ -31,6 +31,8 @@ export class SidebarComponent {
   fluxSelected = inject(FluxService).fluxSelected /** contient le flux sélectionné */
 
   actes: Acte[] = [];
+  private _modal: Modal | undefined;
+
 
   groupedActes: { [key: string]: Acte[]; };
   listType: string[];
@@ -42,6 +44,14 @@ export class SidebarComponent {
       this.groupActesByType();
     })
 
+  }
+  ngOnInit(): void {
+    const modalElement = document.getElementById('modal-select-entite');
+
+    // Initialize the Flowbite modal instance
+    if (modalElement) {
+      this._modal = new Modal(modalElement, { backdrop: 'dynamic' }, { override: true });
+    }
   }
 
   createDoc(acte: Acte): void {
@@ -83,13 +93,17 @@ export class SidebarComponent {
     this.actes.sort((a, b) => a.nom.localeCompare(b.nom));
   }
 
-  selectedEntite(e: EntiteInfo) {
-    const modalElement = document.getElementById('modal-select-entite');
+  showSelectEntite(): void {
+    this._modal.show();
+  }
 
-    // Initialize the Flowbite modal instance
-    if (modalElement) {
-      const modal = new Modal(modalElement, { backdrop: 'static' });
-      modal.hide();
+  hideSelectEntite(): void {
+    this._modal.hide();
+  }
+
+  selectEntite(e: EntiteInfo, close_modal = true) {
+    if (close_modal) {
+      this.hideSelectEntite();
     }
     this._userContextService.entiteSelected.set(e);
   }
