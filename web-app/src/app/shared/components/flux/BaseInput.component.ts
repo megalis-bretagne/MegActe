@@ -1,6 +1,6 @@
 import { Directive, Input, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { FieldFluxService } from 'src/app/services/field-flux.service';
+import { FieldFluxService } from 'src/app/core/services/field-flux.service';
 
 @Directive()
 export abstract class BaseInputComponent implements OnInit {

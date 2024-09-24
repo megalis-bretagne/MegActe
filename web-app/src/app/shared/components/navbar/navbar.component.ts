@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { AuthService } from 'src/app/services/keycloakServices/auth.service';
-import { UserContextService } from 'src/app/services/user-context.service';
+import { AuthService } from 'src/app/core/services/keycloakServices/auth.service';
+import { UserContextService } from 'src/app/core/services/user-context.service';
 
 @Component({
   selector: 'app-navbar',

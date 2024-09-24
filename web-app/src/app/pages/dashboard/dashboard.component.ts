@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { DocumentListComponent } from '../../components/document-list/document-list.component';
+import { DocumentListComponent } from '../../shared/components/document-list/document-list.component';
 
 @Component({
   selector: 'app-dashboard',

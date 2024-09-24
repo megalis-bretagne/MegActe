@@ -1,8 +1,8 @@
 import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Modal } from 'flowbite';
-import { InfoModal, TypeModal } from 'src/app/model/modal.model';
-import { LoadingService } from 'src/app/services/loading.service';
+import { InfoModal, TypeModal } from 'src/app/core/model/modal.model';
+import { LoadingService } from 'src/app/core/services/loading.service';
 import { LoadingComponent } from '../loading-component/loading.component';
 
 

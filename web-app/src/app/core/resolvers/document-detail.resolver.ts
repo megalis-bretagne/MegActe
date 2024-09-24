@@ -14,14 +14,12 @@ export const DocumentDetailResolver: ResolveFn<any> = (
 ): Observable<{ document: DocumentDetail, flux: any } | null> => {
     const fluxService = inject(FluxService);
     const documentService = inject(DocumentService);
-    const userCurrent = inject(UserContextService).userCurrent();
     const userFlux = inject(UserContextService).userFlux();
     const docId = route.paramMap.get('documentId');
+    const id_e = route.paramMap.get('ide');
     const loadingService = inject(LoadingService);
     if (docId) {
-        // TODO modifier quand l'entité courrant change
-
-        return documentService.getDocumentById(docId, userCurrent.user_info.id_e).pipe(
+        return documentService.getDocumentById(docId, id_e).pipe(
             switchMap((docDetail: DocumentDetail) => {
                 const idFlux = docDetail.info.type;
                 if (idFlux) {

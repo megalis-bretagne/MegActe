@@ -1,7 +1,7 @@
 import { Component, effect, inject, output } from "@angular/core";
-import { UserContextService } from "src/app/services/user-context.service";
+import { UserContextService } from "src/app/core/services/user-context.service";
 import { CommonModule } from "@angular/common";
-import { EntiteInfo } from "src/app/model/user.model";
+import { EntiteInfo, sortEntiteInfo } from "src/app/core/model/user.model";
 
 
 @Component({
@@ -30,7 +30,7 @@ export class EntiteSelectComponent {
 
   constructor() {
     effect(() => {
-      this.entitesToDisplay = this.entiteSelected().child;
+      this.entitesToDisplay = sortEntiteInfo(this.entiteSelected().child);
       if (this.pathEntite.length < 1) {
         this.pathEntite.push(this.entiteSelected());
       }
@@ -53,9 +53,11 @@ export class EntiteSelectComponent {
     this.pathEntite.push(e);
   }
 
+
+
   public selectEntite(e: EntiteInfo): void {
     this._addToPath(e);
-    this.entitesToDisplay = e.child;
+    this.entitesToDisplay = sortEntiteInfo(e.child);
     this.onSelect.emit(e);
   }
 
@@ -82,12 +84,12 @@ export class EntiteSelectComponent {
   backToParent(entiteParent: EntiteInfo | null = null): void {
     if (entiteParent === null) { // si l'entité parent est null, on revient un cran en arrière (donc pop)
       this.pathEntite.pop();
-      this.entitesToDisplay = this.getParent().child;
+      this.entitesToDisplay = sortEntiteInfo(this.getParent().child);
     } else {
       while (this.pathEntite.length > 0 && this.pathEntite[this.pathEntite.length - 1].id_e !== entiteParent.id_e) {
         this.pathEntite.pop();
       }
-      this.entitesToDisplay = entiteParent.child;
+      this.entitesToDisplay = sortEntiteInfo(entiteParent.child);
       this.onNavigate.emit(entiteParent);
     }
   }

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Observable, catchError, of, map } from 'rxjs';
-import { EntiteInfo, UserContext } from 'src/app/model/user.model';
+import { EntiteInfo, UserContext } from 'src/app/core/model/user.model';
 import { SettingsService } from 'src/environments/settings.service';
 import { Acte } from '../model/acte.model';
 

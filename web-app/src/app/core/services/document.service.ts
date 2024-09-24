@@ -76,7 +76,7 @@ export class DocumentService {
         );
     }
 
-    getDocumentById(documentId: string, entiteId: number): Observable<DocumentDetail> {
+    getDocumentById(documentId: string, entiteId: number | string): Observable<DocumentDetail> {
         return this.http.get<any>(`${this.settingsService.apiUrl}/entite/${entiteId}/document/${documentId}`).pipe(
             catchError((error) => {
                 this.logger.error('Error get document', error);

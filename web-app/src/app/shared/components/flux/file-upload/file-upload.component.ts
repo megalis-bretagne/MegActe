@@ -1,11 +1,11 @@
 import { Component, Input, ViewChild, ElementRef, input, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
-import { FieldFluxService } from 'src/app/services/field-flux.service';
-import { FileUploadValidationService } from 'src/app/services/file-upload-validation.service';
+import { FieldFluxService } from 'src/app/core/services/field-flux.service';
+import { FileUploadValidationService } from 'src/app/core/services/file-upload-validation.service';
 import { BaseInputComponent } from '../BaseInput.component';
 import { CommonModule } from '@angular/common';
 import { DragAndDropDirective } from 'src/app/shared/directives/drag-and-drop.directive';
-import { DocumentService } from 'src/app/services/document.service';
+import { DocumentService } from 'src/app/core/services/document.service';
 import { LoadingComponent } from '../../loading-component/loading.component';
 
 export enum FileActionState {

@@ -20,11 +20,10 @@
 
     <ul class="my-4 space-y-3">
         @for (entite of entitesToDisplay; track entite.id_e) {
-        <li
-            class="flex items-center  rounded-lg bg-gray-50 hover:bg-gray-100 group hover:shadow dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white transition-colors duration-200">
+        <li class="flex items-center  rounded-lg bg-gray-50 group  dark:bg-gray-600">
 
             <a href="#" (click)="selectEntite(entite)"
-                class="inline-flex flex-grow items-center justify-center p-4 text-base font-bold text-gray-900 rounded-lg bg-gray-50 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:bg-gray-800 dark:hover:bg-gray-700 dark:hover:text-white">
+                class="inline-flex flex-grow items-center p-4 justify-center text-base font-bold text-gray-900 rounded-lg hover:shadow bg-gray-50 hover:text-gray-900 hover:bg-gray-100 transition-colors duration-200">
                 <span class="w-full">{{ entite.denomination }}</span>
             </a>
             @if (entite.child?.length > 0) {

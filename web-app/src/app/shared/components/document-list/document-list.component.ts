@@ -1,17 +1,17 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/model/document.model';
-import { DocumentService } from 'src/app/services/document.service';
-import { FluxService } from 'src/app/services/flux.service';
-import { UserContextService } from 'src/app/services/user-context.service';
-import { StateDocumentPipe } from './state-document/state-document.pipe';
+import { DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/core/model/document.model';
+import { DocumentService } from 'src/app/core/services/document.service';
+import { FluxService } from 'src/app/core/services/flux.service';
+import { UserContextService } from 'src/app/core/services/user-context.service';
+import { StateDocumentPipe } from '../../pipes/state-document.pipe';
 import { LoadingComponent } from '../loading-component/loading.component';
 import { DatePipe } from '@angular/common';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { Router } from '@angular/router';
-import { LoadingService } from 'src/app/services/loading.service';
+import { LoadingService } from 'src/app/core/services/loading.service';
 import { Modal } from 'flowbite';
 import { FormsModule } from '@angular/forms';
-import { HttpErrorCustom } from 'src/app/model/http-error-custom.model';
+import { HttpErrorCustom } from 'src/app/core/model/http-error-custom.model';
 
 
 @Component({
@@ -101,7 +101,7 @@ export class DocumentListComponent implements OnInit {
       this.documentService.createDocument(docCreateInfo).subscribe({
         next: (response) => {
           const documentId = response.content.info.id_d;
-          this.router.navigate(['/acte', documentId]);
+          this.router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
         }
       })
     }
@@ -109,7 +109,7 @@ export class DocumentListComponent implements OnInit {
 
   goUpdateDoc(documentId: string): void {
     this.loadingService.showLoading("Chargement du document en cours");
-    this.router.navigate(['/acte', documentId]);
+    this.router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
   }
 
   confirmDeleteDocuments(documents: DocumentInfo[]): void {

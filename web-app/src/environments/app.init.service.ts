@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { NGXLogger, NgxLoggerLevel } from 'ngx-logger';
 import { SettingsService } from './settings.service';
 import { Settings } from './settings';
-import { UserContextService } from 'src/app/services/user-context.service';
+import { UserContextService } from 'src/app/core/services/user-context.service';
 
 @Injectable({ providedIn: 'root' })
 export class AppInitService {

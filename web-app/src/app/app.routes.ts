@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
-import { AuthGuardService } from './services/keycloakServices/auth-guard.service';
+import { AuthGuardService } from './core/services/guards/auth-guard.service';
 import { ActeFormComponent } from './pages/acte-form/acte-form.component';
-import { DocumentDetailResolver } from './resolvers/document-detail.resolver';
+import { DocumentDetailResolver } from './core/resolvers/document-detail.resolver';
 
 export const routes: Routes = [
     {
@@ -15,7 +15,7 @@ export const routes: Routes = [
     },
     {
         // TODO ajouter l'id de l'entité quand la sélection des entités sera à faire
-        path: 'acte/:documentId',
+        path: 'org/:ide/acte/:documentId',
         component: ActeFormComponent,
         resolve: { docDetail: DocumentDetailResolver },
     },

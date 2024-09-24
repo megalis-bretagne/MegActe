@@ -2,13 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, inject, Input, OnInit, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { NGXLogger } from 'ngx-logger';
-import { FieldFluxService } from 'src/app/services/field-flux.service';
-import { FluxService } from 'src/app/services/flux.service';
+import { FieldFluxService } from 'src/app/core/services/field-flux.service';
+import { FluxService } from 'src/app/core/services/flux.service';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BaseInputComponent } from '../BaseInput.component';
-import { UserContextService } from 'src/app/services/user-context.service';
+import { UserContextService } from 'src/app/core/services/user-context.service';
 
 @Component({
   selector: 'meg-external-data-input',

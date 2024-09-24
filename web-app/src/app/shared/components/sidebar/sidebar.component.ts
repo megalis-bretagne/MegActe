@@ -1,16 +1,16 @@
 import { Component, effect, inject, OnInit } from '@angular/core';
-import { Acte } from 'src/app/model/acte.model';
-import { DocCreateInfo } from 'src/app/model/document.model';
-import { DocumentService } from 'src/app/services/document.service';
-import { UserContextService } from 'src/app/services/user-context.service';
+import { Acte } from 'src/app/core/model/acte.model';
+import { DocCreateInfo } from 'src/app/core/model/document.model';
+import { DocumentService } from 'src/app/core/services/document.service';
+import { UserContextService } from 'src/app/core/services/user-context.service';
 import { Router, RouterLink } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
-import { FluxService } from 'src/app/services/flux.service';
-import { LoadingService } from 'src/app/services/loading.service';
+import { FluxService } from 'src/app/core/services/flux.service';
+import { LoadingService } from 'src/app/core/services/loading.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { EntiteSelectComponent } from '../entite-select/entite-select.component';
-import { EntiteInfo } from 'src/app/model/user.model';
+import { EntiteInfo } from 'src/app/core/model/user.model';
 import { Modal } from 'flowbite';
 
 @Component({

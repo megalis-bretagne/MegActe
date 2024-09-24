@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { PaginationComponent } from 'src/app/components/pagination/pagination.component';
-import { UserContextService } from 'src/app/services/user-context.service';
+import { PaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
+import { UserContextService } from 'src/app/core/services/user-context.service';
 
 @Component({
   selector: 'meg-user-profile',

@@ -1,24 +1,24 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
-import { CheckboxInputComponent } from 'src/app/components/flux/checkbox-input/checkbox-input.component';
-import { DateInputComponent } from 'src/app/components/flux/date-input/date-input.component';
-import { ExternalDataInputComponent } from 'src/app/components/flux/external-data-input/external-data-input.component';
-import { FileUploadComponent } from 'src/app/components/flux/file-upload/file-upload.component';
-import { SelectInputComponent } from 'src/app/components/flux/select-input/select-input.component';
-import { TextInputComponent } from 'src/app/components/flux/text-input/text-input.component';
-import { Data, Field } from 'src/app/model/field-form.model';
-import { DocumentService } from 'src/app/services/document.service';
-import { FieldFluxService } from 'src/app/services/field-flux.service';
+import { CheckboxInputComponent } from 'src/app/shared/components/flux/checkbox-input/checkbox-input.component';
+import { DateInputComponent } from 'src/app/shared/components/flux/date-input/date-input.component';
+import { ExternalDataInputComponent } from 'src/app/shared/components/flux/external-data-input/external-data-input.component';
+import { FileUploadComponent } from 'src/app/shared/components/flux/file-upload/file-upload.component';
+import { SelectInputComponent } from 'src/app/shared/components/flux/select-input/select-input.component';
+import { TextInputComponent } from 'src/app/shared/components/flux/text-input/text-input.component';
+import { Data, Field } from 'src/app/core/model/field-form.model';
+import { DocumentService } from 'src/app/core/services/document.service';
+import { FieldFluxService } from 'src/app/core/services/field-flux.service';
 import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { LoadingComponent } from 'src/app/components/loading-component/loading.component';
-import { FluxService } from 'src/app/services/flux.service';
+import { LoadingComponent } from 'src/app/shared/components/loading-component/loading.component';
+import { FluxService } from 'src/app/core/services/flux.service';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { UserContextService } from 'src/app/services/user-context.service';
+import { UserContextService } from 'src/app/core/services/user-context.service';
 import { CommonModule } from '@angular/common';
-import { DocumentDetail } from 'src/app/model/document.model';
-import { LoadingService } from 'src/app/services/loading.service';
+import { DocumentDetail } from 'src/app/core/model/document.model';
+import { LoadingService } from 'src/app/core/services/loading.service';
 
 @Component({
   selector: 'app-acte-form',
@@ -31,8 +31,11 @@ import { LoadingService } from 'src/app/services/loading.service';
   styleUrls: ['./acte-form.component.scss']
 })
 export class ActeFormComponent implements OnInit {
+  userContextService = inject(UserContextService);
+
   fluxSelected = inject(FluxService).fluxSelected;
-  userCurrent = inject(UserContextService).userCurrent;
+  userCurrent = this.userContextService.userCurrent;
+  entiteSelected = this.userContextService.entiteSelected;
   loadingService = inject(LoadingService);
 
   acteName: string;
@@ -133,7 +136,7 @@ export class ActeFormComponent implements OnInit {
     this.loadingService.showLoading("Sauvegarde en cours ...");
     const docInfo = this._retrieveInfo();
     const docUpdateInfo = {
-      entite_id: this.userCurrent().user_info.id_e,
+      entite_id: this.entiteSelected().id_e,
       doc_info: docInfo
     };
 
@@ -172,9 +175,7 @@ export class ActeFormComponent implements OnInit {
   }
 
   private _fetchExternalDataByFile(): void {
-    //TODO changer pour la sélection d'entite
-    const entiteId = this.userCurrent().user_info.id_e;
-    this.fluxService.get_externalData(entiteId, this.documentInfo.info.id_d, 'type_piece').subscribe({
+    this.fluxService.get_externalData(this.entiteSelected().id_e, this.documentInfo.info.id_d, 'type_piece').subscribe({
       next: (response) => {
         this.fileTypes = response.actes_type_pj_list;
         this.currentStep.set(2);
@@ -204,7 +205,7 @@ export class ActeFormComponent implements OnInit {
   }
 
   private _assignFileTypes(data: string[]): void {
-    this.documentService.patchExternalData(this.userCurrent().user_info.id_e, this.documentInfo.info.id_d, 'type_piece', data).subscribe({
+    this.documentService.patchExternalData(this.entiteSelected().id_e, this.documentInfo.info.id_d, 'type_piece', data).subscribe({
       next: (response) => {
         this.loadingService.showSuccess('Le document a été créé et mis à jour avec succès.', ['/documents', this.acteName]);
         this.logger.info('File types assigned successfully', response);
