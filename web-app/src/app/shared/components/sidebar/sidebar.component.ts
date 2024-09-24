@@ -42,8 +42,7 @@ export class SidebarComponent implements OnInit {
       this.actes = Object.values(this.userFlux());
       this.sortActes();
       this.groupActesByType();
-    })
-
+    });
   }
   ngOnInit(): void {
     const modalElement = document.getElementById('modal-select-entite');
@@ -105,7 +104,8 @@ export class SidebarComponent implements OnInit {
     if (close_modal) {
       this.hideSelectEntite();
     }
-    this._userContextService.entiteSelected.set(e);
+    this.router.navigate(['/org', e.id_e]);
+    //this._userContextService.entiteSelected.set(e);
   }
 
 }

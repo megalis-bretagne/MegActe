@@ -12,6 +12,7 @@ import { EntiteInfo, sortEntiteInfo } from "src/app/core/model/user.model";
   styleUrls: ['./entite-select.component.scss'],
 })
 export class EntiteSelectComponent {
+  private _userContextService = inject(UserContextService);
 
   // event quand on sélectionne une entité (balise li)
   onSelect = output<EntiteInfo>();
@@ -19,20 +20,22 @@ export class EntiteSelectComponent {
   // event quand on navigue dans l'arbre 
   onNavigate = output<EntiteInfo>();
 
-  entiteSelected = inject(UserContextService).entiteSelected;
+  entiteSelected = this._userContextService.entiteSelected;
 
   // Contient une liste ordonnée des parents de l'entité sélectionné (permet de revenir dans l'arbre)
   pathEntite: EntiteInfo[] = []; // liste ordonnée des parents
 
-
-  // Les entites à choisir
+  // Les entites à afficher pour sélection
   entitesToDisplay: EntiteInfo[] = [];
 
   constructor() {
     effect(() => {
-      this.entitesToDisplay = sortEntiteInfo(this.entiteSelected().child);
-      if (this.pathEntite.length < 1) {
-        this.pathEntite.push(this.entiteSelected());
+      if (this.entiteSelected()) {
+        this.entitesToDisplay = sortEntiteInfo(this.entiteSelected().child);
+        if (this.pathEntite.length < 1) {
+          const parents = this._userContextService.getParentPathEntite(this.entiteSelected());
+          this.pathEntite = [...parents, this.entiteSelected()];
+        }
       }
     })
   }
@@ -55,7 +58,8 @@ export class EntiteSelectComponent {
 
 
 
-  public selectEntite(e: EntiteInfo): void {
+  public selectEntite(event: any, e: EntiteInfo): void {
+    event.preventDefault();
     this._addToPath(e);
     this.entitesToDisplay = sortEntiteInfo(e.child);
     this.onSelect.emit(e);
@@ -64,7 +68,8 @@ export class EntiteSelectComponent {
   /**
    * Affiche les enfants de l'entité sélectionné et l'ajoute au path
    */
-  public showChild(e: EntiteInfo): void {
+  public showChild(event: any, e: EntiteInfo): void {
+    event.preventDefault();
     this.entitesToDisplay = e.child;
     this._addToPath(e);
   }
@@ -81,7 +86,8 @@ export class EntiteSelectComponent {
    * Permet de revenir dans l'arbre des entités
    * @param eniteParent 
    */
-  backToParent(entiteParent: EntiteInfo | null = null): void {
+  backToParent(event: any, entiteParent: EntiteInfo | null = null): void {
+    event.preventDefault();
     if (entiteParent === null) { // si l'entité parent est null, on revient un cran en arrière (donc pop)
       this.pathEntite.pop();
       this.entitesToDisplay = sortEntiteInfo(this.getParent().child);
