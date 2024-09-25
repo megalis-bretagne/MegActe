@@ -7,6 +7,15 @@ Base = declarative_base()
 
 
 class UserPastell(Base):
+    """Model User Pastell
+
+    Args:
+        Base (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+
     __tablename__ = "megacte_pastell_users"
 
     id = Column(Integer, primary_key=True)

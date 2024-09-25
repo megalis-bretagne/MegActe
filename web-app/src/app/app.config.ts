@@ -12,7 +12,7 @@ import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from "@a
 import { AppInitService } from 'src/environments/app.init.service';
 import { KeycloakAngularModule, KeycloakBearerInterceptor, KeycloakService } from 'keycloak-angular';
 import { SettingsService } from 'src/environments/settings.service';
-import { UserContextService } from './services/user-context.service';
+import { UserContextService } from './core/services/user-context.service';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 
 // Provider for Keycloak Bearer Interceptor

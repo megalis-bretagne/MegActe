@@ -37,7 +37,7 @@
             </div>
             }
             <form [formGroup]="form">
-                <div class="">
+                <div>
                     @for (field of filteredFields; track field.idField) {
                     @switch (field.type) {
                     @case ('text') {
@@ -63,9 +63,8 @@
                     }
                     @case ('file') {
                     <meg-file-upload [idField]="field.idField" [name]="field['name']" [id_d]="documentInfo.info.id_d"
-                        [id_e]="userCurrent().user_info.id_e" [required]="field['requis']"
-                        [multiple]="field['multiple']" [comment]="field['commentaire']"
-                        [control]="getFormControl(field.idField)" />
+                        [id_e]="entiteSelected().id_e" [required]="field['requis']" [multiple]="field['multiple']"
+                        [comment]="field['commentaire']" [control]="getFormControl(field.idField)" />
                     }
                     @case ('externalData') {
                     <meg-external-data-input [idField]="field.idField" [name]="field['name']"

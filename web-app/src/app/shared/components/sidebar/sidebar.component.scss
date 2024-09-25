@@ -1,0 +1,21 @@
+
+
+.meg-link-row {
+    display: flex;                  /* Active Flexbox sur la div */
+    justify-content: space-between; /* Aligne les éléments avec de l'espace entre eux */
+    align-items: center;            /* Centre verticalement les éléments */
+}
+
+.meg-link-row > div {
+    flex-grow: 1;                   /* Fait en sorte que les div enfants prennent tout l'espace disponible */
+}
+  
+.meg-link-row> div:last-child {
+    flex-grow: 0;                   /* Le dernier enfant ne grandit pas */
+}
+
+.icon-add {
+    padding: 10px; 
+    color: #000091;
+    cursor: pointer;
+}

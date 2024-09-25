@@ -1,11 +1,13 @@
 from sqlalchemy import or_
+
+from ..clients.pastell.api.entite_api import EntiteApi
+
 from ..clients.pastell.api import ApiPastell
 from ..utils import PasswordUtils
 
 from sqlalchemy.orm import Session
 
-from ..schemas.user_schemas import UserCreate, UserInfo
-from ..schemas.entite_schemas import EntiteInfo
+from ..schemas.user_schemas import UserCreate
 
 from ..exceptions.custom_exceptions import (
     UserNotFoundException,
@@ -22,14 +24,6 @@ logger = logging.getLogger(__name__)
 def get_all_users_from_db(db: Session):
     users = db.query(UserPastell).all()
     return users
-
-
-# Get user by id
-def get_user_by_id_from_db(user_id: int, db: Session):
-    db_user = db.query(UserPastell).filter(UserPastell.id == user_id).first()
-    if db_user is None:
-        raise UserNotFoundException()
-    return db_user
 
 
 # Add user
@@ -86,20 +80,6 @@ def add_user_to_db(user_data: UserCreate, client_api: ApiPastell, db: Session):
     return new_user
 
 
-# Update User
-def update_user_in_db(user_id: int, user_data: UserCreate, db: Session):
-    db_user = db.query(UserPastell).filter(UserPastell.id == user_id).first()
-    if not db_user:
-        raise UserNotFoundException()
-
-    db_user.login = user_data.login
-    db_user.id_pastell = user_data.id_pastell
-    db.commit()
-    db.refresh(db_user)
-
-    return db_user
-
-
 # Delete User
 def delete_user_from_db(user_id: int, db: Session):
     db_user = db.query(UserPastell).filter(UserPastell.id == user_id).first()
@@ -113,7 +93,7 @@ def delete_user_from_db(user_id: int, db: Session):
 
 
 # Get user context
-def get_user_context_service(client_api: ApiPastell, user: UserPastell):
+def get_user_context_service(client_api: EntiteApi, user: UserPastell):
     """Récupère le contexte du user à partir de Pastell en utilisant le jeton Keycloak réceptionner côté API
 
     Args:
@@ -129,39 +109,11 @@ def get_user_context_service(client_api: ApiPastell, user: UserPastell):
     """
 
     # Récupérer les infos du user depuis Pastell
-    user_info_data = client_api.perform_get(f"utilisateur/{user.id_pastell}")
-
-    if "certificat" not in user_info_data or not isinstance(
-        user_info_data["certificat"], list
-    ):
-        user_info_data["certificat"] = []
-
-    user_info = UserInfo(**user_info_data)
-
+    user_info = client_api.get_user_by_id_u(user.id_pastell)
     if user_info.id_e == 0:
         return {"user_info": user_info}
 
     # Récupérer les entités du user depuis Pastell
-    entites_data = client_api.perform_get("/entite/")
-
-    # Convertir les données des entités en objets EntiteInfo
-    user_entites = [EntiteInfo(**entite) for entite in entites_data]
+    user_entites = client_api.get_entite_with_child(only_active=True)
 
     return {"user_info": user_info, "entites": user_entites}
-
-
-# Get liste des flux dispo pour l'utilisateur connecté
-def get_user_flux_service(client_api: ApiPastell):
-    """Récupère les flux disponibles pour l'utilisateur depuis Pastell
-
-    Args:
-        client_api: client api
-    Returns:
-       list: Une liste contenant les flux disponibles pour l'utilisateur.
-    """
-
-    # Récupérer les infos du user depuis Pastell
-
-    return client_api.perform_get(
-        "/flux",
-    )

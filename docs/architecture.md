@@ -9,7 +9,7 @@
 
 ## Schéma d'architecture globale
 
-<img src="./img/architecture.png" width="800">
+<img src="./img/architecture.png" width="800" alt="Doc d'architecture"/>
 
 
 ## Sécurité
@@ -20,4 +20,5 @@ La gestion des accès à l'application se fait en deux temps.
 2. [Gestion du profil utilisateur via les rôles Pastell](#gestion-du-profil-utilisateur)
 
 ### OIDC
-La web-app et les api Rest sont soumis à authentification auprès d'une IAM compatible OIDC (exemple [keycloak](https://www.keycloak.org/))
+La web-app et les api Rest sont soumis à authentification auprès d'une IAM 
+compatible OIDC (exemple [keycloak](https://www.keycloak.org/))

@@ -4,7 +4,9 @@
 
         <div class="flex flex-wrap">
             <div class="w-full md:w-3/12">
+                @if(entiteSelected()) {
                 <app-sidebar />
+                }
             </div>
             <div class="w-full md:w-9/12 py-8 px-8">
                 <router-outlet />
