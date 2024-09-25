@@ -13,13 +13,16 @@ Dans le dossier "back".
 python3 -m venv .venv
 ```
 * Activer le venv
+
 ```
 source .venv/bin/activate
 ```
 
 * installer les dépendances
+
 ```
 pip install pip-tools
+```
 
 
 # Pour mettre à jour les dépendances épinglées

@@ -1,4 +1,3 @@
-from typing import List
 from ..clients.pastell.api import ApiPastell
 
 from ..exceptions.custom_exceptions import EntiteIdException, PastellException

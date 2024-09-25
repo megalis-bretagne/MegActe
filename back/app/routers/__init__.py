@@ -8,6 +8,7 @@ from ..models.users import UserPastell
 from ..database import get_user_from_db
 from ..dependencies import settings
 from ..clients.pastell.api import *
+from ..clients.pastell.api import ApiPastell
 from ..clients.pastell.models.config import Config
 from ..clients.pastell.models.auth import AuthUser
 

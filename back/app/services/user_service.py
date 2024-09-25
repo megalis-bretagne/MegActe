@@ -1,9 +1,7 @@
-from typing import Dict, List, Optional
 from sqlalchemy import or_
 
 from ..clients.pastell.api.entite_api import EntiteApi
 
-from ..clients.pastell.models.entite_info import EntiteInfo
 from ..clients.pastell.api import ApiPastell
 from ..utils import PasswordUtils
 

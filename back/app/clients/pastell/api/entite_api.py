@@ -9,6 +9,11 @@ __all__ = "EntiteApi"
 
 
 class EntiteApi(ApiPastell):
+    """Client pour les entites de pastell
+
+    Args:
+        ApiPastell (_type_): _description_
+    """
 
     def get_entite(self, only_active: bool = False, auth: AuthUser = None):
         """Retourne les entités à plat en fonction du contexte utilisateur

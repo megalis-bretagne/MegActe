@@ -6,6 +6,11 @@ from app.clients.pastell.models.config import Config
 
 
 class TestEntiteApi(unittest.TestCase):
+    """test des api Entite
+
+    Args:
+        unittest (_type_): _description_
+    """
 
     def setUp(self):
         self.entite = EntiteApi(conf=Config(base_url="", timeout=5))

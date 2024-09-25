@@ -67,7 +67,7 @@ class ApiPastell:
         )
         total = 0
 
-        for key, value in count_response[str(id_e)]["flux"].items():
+        for _, value in count_response[str(id_e)]["flux"].items():
             if not isinstance(value, list):
                 try:
                     total += sum(value.values())
