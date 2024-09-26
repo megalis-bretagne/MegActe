@@ -81,6 +81,7 @@
                             [attr.aria-current]="fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null">
                             {{ acte.nom }}
                         </a>
+                        @if(acte.enable) {
                         <a (click)="createDoc(acte)" title="Créer un  document de type {{acte.nom}}">
                             <svg class="w-6 h-6 text-blue hover:text-blue-hover hover:cursor-pointer dark:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -90,6 +91,8 @@
                                     clip-rule="evenodd" />
                             </svg>
                         </a>
+
+                        }
                     </li>
                     }
                 </ul>
@@ -106,7 +109,8 @@
                     [attr.aria-current]="fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null">
                     {{ acte.nom }}
                 </a>
-                <a class="" (click)="createDoc(acte)" title="Créer un document {{acte.nom}}">
+                @if(acte.enable) {
+                <a (click)="createDoc(acte)" title="Créer un document {{acte.nom}}">
                     <svg class="w-6 h-6 text-blue hover:text-blue-hover hover:cursor-pointer dark:text-white"
                         aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                         viewBox="0 0 24 24">
@@ -115,6 +119,7 @@
                             clip-rule="evenodd" />
                     </svg>
                 </a>
+                }
             </li>
             }
         </ul>

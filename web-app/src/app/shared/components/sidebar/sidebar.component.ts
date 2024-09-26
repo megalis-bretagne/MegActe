@@ -89,7 +89,7 @@ export class SidebarComponent implements OnInit {
 
 
   sortActes(): void {
-    this.actes.sort((a, b) => a.nom.localeCompare(b.nom));
+    this.actes.sort((a1: Acte, a2: Acte) => a1.nom.localeCompare(a2.nom));
   }
 
   showSelectEntite(): void {
@@ -105,7 +105,6 @@ export class SidebarComponent implements OnInit {
       this.hideSelectEntite();
     }
     this.router.navigate(['/org', e.id_e]);
-    //this._userContextService.entiteSelected.set(e);
   }
 
 }
