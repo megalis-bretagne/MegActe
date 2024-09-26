@@ -28,6 +28,7 @@ export class DocumentListComponent implements OnInit {
   documentService = inject(DocumentService);
   userContextService = inject(UserContextService);
 
+
   userCurrent = this.userContextService.userCurrent;
   entiteSelected = this.userContextService.entiteSelected;
   modal_confirm_delete: Modal | undefined;
@@ -107,10 +108,19 @@ export class DocumentListComponent implements OnInit {
     }
   }
 
-  goUpdateDoc(documentId: string): void {
-    this.loadingService.showLoading("Chargement du document en cours");
-    this.router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
+  goUpdateDoc(document: DocumentInfo): void {
+    const flux = this.userContextService.userFlux();
+    if (document.type) {
+      const acte = flux.find(f => f.id === document.type);
+      if (acte.enable) { // si le flux est activé dans megacte
+        this.loadingService.showLoading("Chargement du document en cours");
+        this.router.navigate(['/org', this.entiteSelected().id_e, 'acte', document.id_d]);
+      } else {
+        this.documentService.redirectEditToPastell(document);
+      }
+    }
   }
+
 
   confirmDeleteDocuments(documents: DocumentInfo[]): void {
     if (documents.length > 0) {

@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { DocCreateInfo, DocumentDetail, DocumentPaginate, DocUpdateInfo } from "../model/document.model";
+import { DocCreateInfo, DocumentDetail, DocumentInfo, DocumentPaginate, DocUpdateInfo } from "../model/document.model";
 import { Observable, catchError, of, tap, throwError } from "rxjs";
 import { NGXLogger } from "ngx-logger";
 import { SettingsService } from "src/environments/settings.service";
@@ -117,5 +117,12 @@ export class DocumentService {
                 return throwError(() => error);
             })
         );
+    }
+
+    /**
+     * Redirige l'edition du document vers Pastell
+     */
+    redirectEditToPastell(document: DocumentInfo): void {
+        window.open(`${this.settingsService.settings.pastellUrl}/Document/edition?id_d=${document.id_d}&id_e=${document.id_e}`)
     }
 }

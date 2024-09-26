@@ -9,6 +9,7 @@
   "apiUrl": "http://localhost:5000",
   "opendataToolUrl": "https://data-publication.megalis.bretagne.bzh/",
   "urlmarqueblanche": "https://data.megalis.bretagne.bzh",
+  "pastellUrl": "https://pastell.megalis.bretagne.bzh",
   "fileUpload": {
     "maxSingleFileSize": "<maxSingleFileSize>",
     "maxTotalFileSize": "<maxTotalFileSize>",

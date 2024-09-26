@@ -21,6 +21,7 @@ export class Settings {
     urlmarqueblanche = "";
     apiUrl = "";
     opendataToolUrl = "";
+    pastellUrl = "";
     fileUpload: FileUpload = new FileUpload();
     flowType: FlowType = {
         'deliberations-studio': ['document_papier', 'autre_document_attache', 'publication_open_data'],
