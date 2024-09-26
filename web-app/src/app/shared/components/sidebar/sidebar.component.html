@@ -76,9 +76,9 @@
                     @for (f of groupedFlux[type]; track f.id ) {
 
                     <li class="flex justify-between items-center">
-                        <a class="text font-medium ml-2 p-2 hover:bg-gray-hover rounded w-full inline-flex items-center "
+                        <a class="text font-medium ml-2 p-2 rounded w-full inline-flex items-center "
                             [routerLink]="['/org',entiteSelected().id_e]" (click)="selectFlux(f)"
-                            [attr.aria-current]="fluxSelected() !== null && f.id === fluxSelected().id ? 'page' : null">
+                            [ngClass]="fluxSelected() !== null && f.id === fluxSelected().id ? 'bg-gray-hover' : ' hover:bg-gray-hover'">
                             {{ f.nom }}
                         </a>
                         @if(f.enable) {
@@ -104,11 +104,13 @@
 
             @for (f of flux; track f.id ) {
             <li class="flex w-full items-center">
-                <a class="text font-medium p-2 hover:bg-gray-hover rounded w-full inline-flex items-center "
+                <a class="rounded w-full inline-flex text items-center p-2 font-medium"
                     [routerLink]="['/org',entiteSelected().id_e]" (click)="selectFlux(f)"
-                    [attr.aria-current]="fluxSelected() !== null && f.id === fluxSelected().id ? 'page' : null">
+                    [ngClass]="fluxSelected() !== null && f.id === fluxSelected().id ? 'bg-gray-hover' : 'hover:bg-gray-hover'">
                     {{ f.nom }}
                 </a>
+
+
                 @if(f.enable) {
                 <a (click)="createDoc(f)" title="Créer un document {{f.nom}}">
                     <svg class="w-6 h-6 text-blue hover:text-blue-hover hover:cursor-pointer dark:text-white"
