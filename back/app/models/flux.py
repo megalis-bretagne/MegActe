@@ -1,11 +1,8 @@
-from sqlalchemy import Boolean, Column, Integer, String
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Boolean, Integer, Column, String
+from .base import Base  # Assurez-vous de pointer vers la base SQLAlchemy
 
 
-Base = declarative_base()
-
-
-class Flux(Base):
+class FluxAvailable(Base):
     """Contient les flux disponible pour l'application
 
     Args:
@@ -15,7 +12,8 @@ class Flux(Base):
         _type_: _description_
     """
 
-    __tablename__ = "megacte_flux"
+    __tablename__ = "flux_available"
 
-    flux_id = Column(String, unique=True)
-    enable = Column(Boolean)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    flux_id_pastell = Column(String, unique=True)
+    enable = Column(Boolean, nullable=False)
