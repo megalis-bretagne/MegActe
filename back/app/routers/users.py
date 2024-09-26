@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from ..schemas.flux_schemas import FluxResponseModel
+from ..services.flux_service import get_flux
+
 from ..clients.pastell.api.entite_api import EntiteApi
 
 from . import (
@@ -59,6 +62,11 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 
 
 # Get liste des flux dispo pour l'utilisateur connecté
-@router.get("/user/flux", tags=["users"])
-def get_user_flux(client: ApiPastell = Depends(get_or_make_api_pastell)):
-    return client.perform_get("/flux")
+@router.get(
+    "/user/flux",
+    tags=["users"],
+    description="Récupère les flux de l'utilisateur connecté.",
+    response_model=FluxResponseModel,
+)
+def get_user_flux_available(client: ApiPastell = Depends(get_or_make_api_pastell)):
+    return get_flux(client)
