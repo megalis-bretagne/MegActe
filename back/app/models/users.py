@@ -1,9 +1,7 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import declarative_base
+from .base import Base  # Assurez-vous de pointer vers la base SQLAlchemy
 
 from ..utils import PasswordUtils
-
-Base = declarative_base()
 
 
 class UserPastell(Base):
@@ -16,13 +14,13 @@ class UserPastell(Base):
         _type_: _description_
     """
 
-    __tablename__ = "megacte_pastell_users"
+    __tablename__ = "pastell_users"
 
-    id = Column(Integer, primary_key=True)
-    login = Column(String, unique=True)
-    id_pastell = Column(Integer, unique=True)
-    pwd_pastell = Column(String, unique=True)
-    pwd_key = Column(String, unique=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    login = Column(String, unique=True, nullable=False, index=True)
+    id_pastell = Column(Integer, unique=True, nullable=False)
+    pwd_pastell = Column(String)
+    pwd_key = Column(String)
 
     _cached_password = None  # mot de passe non chiffré en cache
 
