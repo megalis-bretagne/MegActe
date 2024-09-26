@@ -23,14 +23,13 @@ def _make_api_pastell(
 
 
 def get_or_make_api_pastell(
-    api: Type[ApiPastell] = ApiPastell,
     current_user: UserPastell = Depends(get_user_from_db),
 ) -> ApiPastell:
     logging.debug(
         f"Get api pastell client for user : {current_user.login}, {current_user.id_pastell}"
     )
     auth = AuthUser(current_user.login, current_user.get_decrypt_password())
-    return _make_api_pastell(api, auth)
+    return _make_api_pastell(ApiPastell, auth)
 
 
 def get_client_api(
@@ -39,7 +38,8 @@ def get_client_api(
     def api_dependency(
         current_user: UserPastell = Depends(get_user_from_db),
     ) -> ApiPastell:
-        return get_or_make_api_pastell(api_type, current_user)
+        auth = AuthUser(current_user.login, current_user.get_decrypt_password())
+        return _make_api_pastell(api_type, auth)
 
     return api_dependency
 
