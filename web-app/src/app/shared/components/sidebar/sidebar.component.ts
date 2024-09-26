@@ -1,5 +1,5 @@
 import { Component, effect, inject, OnInit } from '@angular/core';
-import { Acte } from 'src/app/core/model/acte.model';
+import { Flux } from 'src/app/core/model/flux.model';
 import { DocCreateInfo } from 'src/app/core/model/document.model';
 import { DocumentService } from 'src/app/core/services/document.service';
 import { UserContextService } from 'src/app/core/services/user-context.service';
@@ -30,18 +30,18 @@ export class SidebarComponent implements OnInit {
 
   fluxSelected = inject(FluxService).fluxSelected /** contient le flux sélectionné */
 
-  actes: Acte[] = [];
+  flux: Flux[] = [];
   private _modal: Modal | undefined;
 
 
-  groupedActes: { [key: string]: Acte[]; };
+  groupedFlux: { [key: string]: Flux[]; };
   listType: string[];
   isGroupByType: boolean = false;
   constructor(private logger: NGXLogger, private documentService: DocumentService, private router: Router) {
     effect(() => {
-      this.actes = Object.values(this.userFlux());
-      this.sortActes();
-      this.groupActesByType();
+      this.flux = Object.values(this.userFlux());
+      this.sortFlux();
+      this.groupFluxByType();
     });
   }
   ngOnInit(): void {
@@ -53,11 +53,11 @@ export class SidebarComponent implements OnInit {
     }
   }
 
-  createDoc(acte: Acte): void {
+  createDoc(flux: Flux): void {
     this.loadingService.showLoading("Création du document en cours ...");
     const docCreateInfo: DocCreateInfo = {
       entite_id: this.userCurrent().user_info.id_e,
-      flux_type: acte.id,
+      flux_type: flux.id,
       doc_info: {}
     };
 
@@ -70,26 +70,26 @@ export class SidebarComponent implements OnInit {
     })
   }
 
-  selectFlux(acte: Acte) {
-    this.fluxSelected.set(acte);
+  selectFlux(flux: Flux) {
+    this.fluxSelected.set(flux);
   }
 
-  groupActesByType(): void {
-    this.groupedActes = this.actes.reduce((acc, acte) => {
+  groupFluxByType(): void {
+    this.groupedFlux = this.flux.reduce((acc, acte) => {
       if (!acc[acte.type]) {
         acc[acte.type] = [];
       }
       acc[acte.type].push(acte);
       return acc;
-    }, {} as { [key: string]: Acte[] });
+    }, {} as { [key: string]: Flux[] });
 
-    this.listType = Object.keys(this.groupedActes);
+    this.listType = Object.keys(this.groupedFlux);
 
   }
 
 
-  sortActes(): void {
-    this.actes.sort((a1: Acte, a2: Acte) => a1.nom.localeCompare(a2.nom));
+  sortFlux(): void {
+    this.flux.sort((a1: Flux, a2: Flux) => a1.nom.localeCompare(a2.nom));
   }
 
   showSelectEntite(): void {
