@@ -4,7 +4,7 @@ import { NGXLogger } from 'ngx-logger';
 import { Observable, catchError, of, map } from 'rxjs';
 import { EntiteInfo, UserContext } from 'src/app/core/model/user.model';
 import { SettingsService } from 'src/environments/settings.service';
-import { Acte } from '../model/acte.model';
+import { Flux } from '../model/flux.model';
 
 /**
  * 
@@ -37,7 +37,7 @@ export class UserContextService {
   /**
    * Les flux de l'utilsiateur
    */
-  userFlux = signal<Acte[]>([])
+  userFlux = signal<Flux[]>([])
 
 
   public getUser(): Observable<void> {
@@ -54,8 +54,8 @@ export class UserContextService {
   }
 
   public getUserFlux(): Observable<void> {
-    return this._http.get<{ [key: string]: Acte }>(this._settingsService.apiUrl + '/user/flux').pipe(
-      map((data: { [key: string]: Acte }) => {
+    return this._http.get<{ [key: string]: Flux }>(this._settingsService.apiUrl + '/user/flux').pipe(
+      map((data: { [key: string]: Flux }) => {
         const actes = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
         this.userFlux.set(actes);
       }

@@ -3,7 +3,7 @@ import { Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Observable, catchError, of, tap } from 'rxjs';
 import { SettingsService } from 'src/environments/settings.service';
-import { Acte } from '../model/acte.model';
+import { Flux } from '../model/flux.model';
 
 
 @Injectable({
@@ -11,7 +11,7 @@ import { Acte } from '../model/acte.model';
 })
 export class FluxService {
 
-    fluxSelected = signal<Acte | null>(null)
+    fluxSelected = signal<Flux | null>(null)
 
 
     constructor(private http: HttpClient, private logger: NGXLogger, private settingsService: SettingsService) {
@@ -38,7 +38,7 @@ export class FluxService {
         );
     }
 
-    public selectCurrentFlux(acte: Acte) {
-        this.fluxSelected.set(acte);
+    public selectCurrentFlux(flux: Flux) {
+        this.fluxSelected.set(flux);
     }
 }

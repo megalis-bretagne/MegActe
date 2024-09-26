@@ -73,16 +73,16 @@
                     </svg>
                 </button>
                 <ul class="hidden pl-4 space-y-2" id="dropdown-{{idx}}">
-                    @for (acte of groupedActes[type]; track acte.id ) {
+                    @for (f of groupedFlux[type]; track f.id ) {
 
                     <li class="flex justify-between items-center">
                         <a class="text font-medium ml-2 p-2 hover:bg-gray-hover rounded w-full inline-flex items-center "
-                            [routerLink]="['/org',entiteSelected().id_e]" (click)="selectFlux(acte)"
-                            [attr.aria-current]="fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null">
-                            {{ acte.nom }}
+                            [routerLink]="['/org',entiteSelected().id_e]" (click)="selectFlux(f)"
+                            [attr.aria-current]="fluxSelected() !== null && f.id === fluxSelected().id ? 'page' : null">
+                            {{ f.nom }}
                         </a>
-                        @if(acte.enable) {
-                        <a (click)="createDoc(acte)" title="Créer un  document de type {{acte.nom}}">
+                        @if(f.enable) {
+                        <a (click)="createDoc(f)" title="Créer un  document de type {{f.nom}}">
                             <svg class="w-6 h-6 text-blue hover:text-blue-hover hover:cursor-pointer dark:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                 fill="currentColor" viewBox="0 0 24 24">
@@ -102,15 +102,15 @@
         <!-- partie non groupé -->
         <ul class="mt-4 space-y-2" [ngClass]="!isGroupByType ? 'block' : 'hidden'" id="list-element">
 
-            @for (acte of actes; track acte.id ) {
+            @for (f of flux; track f.id ) {
             <li class="flex w-full items-center">
                 <a class="text font-medium p-2 hover:bg-gray-hover rounded w-full inline-flex items-center "
-                    [routerLink]="['/org',entiteSelected().id_e]" (click)="selectFlux(acte)"
-                    [attr.aria-current]="fluxSelected() !== null && acte.id === fluxSelected().id ? 'page' : null">
-                    {{ acte.nom }}
+                    [routerLink]="['/org',entiteSelected().id_e]" (click)="selectFlux(f)"
+                    [attr.aria-current]="fluxSelected() !== null && f.id === fluxSelected().id ? 'page' : null">
+                    {{ f.nom }}
                 </a>
-                @if(acte.enable) {
-                <a (click)="createDoc(acte)" title="Créer un document {{acte.nom}}">
+                @if(f.enable) {
+                <a (click)="createDoc(f)" title="Créer un document {{f.nom}}">
                     <svg class="w-6 h-6 text-blue hover:text-blue-hover hover:cursor-pointer dark:text-white"
                         aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                         viewBox="0 0 24 24">
