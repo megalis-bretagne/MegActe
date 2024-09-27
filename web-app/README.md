@@ -3,7 +3,7 @@
 
 ## Installation
 
-* Installer nodejs 18.x (vous pouvez utiliser [nvm](https://github.com/nvm-sh/nvm))
+* Installer nodejs 20.x (vous pouvez utiliser [nvm](https://github.com/nvm-sh/nvm))
 * Lancer la commande 
 ```
 npm install
