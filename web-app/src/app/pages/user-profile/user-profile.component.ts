@@ -1,41 +1,19 @@
-import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { PaginationComponent } from 'src/app/shared/components/pagination/pagination.component';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 
 @Component({
   selector: 'meg-user-profile',
   standalone: true,
-  imports: [
-    CommonModule,
-    PaginationComponent
-  ],
   templateUrl: './user-profile.component.html',
   styleUrls: []
 })
 export class UserProfileComponent {
   currentUser = inject(UserContextService).userCurrent;
+  entiteBase = computed(() => {
 
-  //calculé en fonction du nombre d'entité de l'utilsateur
-  totalPages = computed(() => {
-    if (this.currentUser() != null) {
-      return Math.ceil(this.currentUser().entites.length / this.itemsPerPage);
+    if (this.currentUser()?.entites.length > 0) {
+      return this.currentUser().entites.find(e => e.id_e === this.currentUser().user_info.id_e) || null;
     }
-    return 0;
-  });
-
-  itemsPerPage: number = 5;
-  paginatedEntities: any[] = [];
-
-
-  constructor() {
-    this.paginatedEntities = this.currentUser().entites.slice(1, this.itemsPerPage);
-  }
-
-
-  updateDisplayedPages(newPage: number) {
-    const start = (newPage - 1) * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    this.paginatedEntities = this.currentUser().entites.slice(start, end);
-  }
+    return null;
+  })
 }
