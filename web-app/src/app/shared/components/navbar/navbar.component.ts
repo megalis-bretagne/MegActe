@@ -4,7 +4,7 @@ import { AuthService } from 'src/app/core/services/keycloakServices/auth.service
 import { UserContextService } from 'src/app/core/services/user-context.service';
 
 @Component({
-  selector: 'app-navbar',
+  selector: 'meg-navbar',
   standalone: true,
   imports: [RouterModule],
   templateUrl: './navbar.component.html',

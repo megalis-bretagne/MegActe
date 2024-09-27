@@ -9,7 +9,7 @@ import { UserContextService } from './core/services/user-context.service';
 
 
 @Component({
-  selector: 'app-root',
+  selector: 'meg-root',
   standalone: true,
   imports: [RouterOutlet, SidebarComponent, NavbarComponent, RouterModule, ModalDialogComponent],
   templateUrl: './app.component.html',

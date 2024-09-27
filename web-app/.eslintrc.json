@@ -31,14 +31,14 @@
         "plugin:@angular-eslint/template/process-inline-templates"
       ],
       "rules": {
-        // "@angular-eslint/component-selector": [
-        //   "error",
-        //   {
-        //     "type": "element",
-        //     "prefix": "meg",
-        //     "style": "kebab-case"
-        //   }
-        // ],
+        "@angular-eslint/component-selector": [
+          "error",
+          {
+            "type": "element",
+            "prefix": "meg",
+            "style": "kebab-case"
+          }
+        ],
         "no-irregular-whitespace": [
           "error",
           {
