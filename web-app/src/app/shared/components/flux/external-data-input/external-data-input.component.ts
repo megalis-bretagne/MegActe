@@ -59,8 +59,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
 
     this.fluxService.get_externalData(id_e, this.documentId, this.idField).subscribe({
       next: (data) => {
-        const filteredData = this._filterExternalData(data);
-        this.externalDataOptions = this._removeNumbering(filteredData);
+        this.externalDataOptions = this._filterExternalData(data);
         this.filteredOptions = this.externalDataOptions;
       },
       error: (error) => {
@@ -78,11 +77,4 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
   private _filterExternalData(data: any): string[] {
     return Object.keys(data).filter(idField => idField.split('.').length > 1);
   }
-
-  // Retirer la numérotation des titres
-  private _removeNumbering(titles: string[]): string[] {
-    return titles.map(title => title.replace(/^\d+(\.\d+)*\s*/, ''));
-  }
-
-
 }
