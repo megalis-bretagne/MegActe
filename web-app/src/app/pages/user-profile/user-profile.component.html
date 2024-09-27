@@ -1,30 +1,26 @@
 @if (currentUser(); as currentUser) {
-<div class="container mx-auto">
-    <h1>Compte de {{ currentUser.user_info.prenom }} </h1>
 
-    <div class="meg-table mt-4">
-        <table id="table-md">
-            <caption class="p-5 text-lg font-semibold text-left">
-                {{ currentUser.entites.length === 1 ? 'Entité' : 'Liste des entités' }}
-            </caption>
-            <thead class="bg-gray-50 text-medium">
-                <tr>
-                    <th scope="col"> Denomination </th>
-                    <th scope="col"> Type </th>
-                    <th scope="col"> Siren </th>
-                </tr>
-            </thead>
-            <tbody>
-                @for(entite of paginatedEntities; track entite.id_e) {
-                <tr>
-                    <td>{{ entite.denomination }}</td>
-                    <td>{{ entite.type }}</td>
-                    <td>{{ entite.siren }}</td>
-                </tr>
-                }
-            </tbody>
-        </table>
-        <meg-pagination [pageActive]="0" [totalPages]="totalPages()" (onChangePage)="updateDisplayedPages($event)" />
+<div class="bg-white shadow-md rounded-lg p-6 max-w-lg w-full">
+    <h2 class="text-2xl font-bold mb-4 text-center">Informations de l'Utilisateur</h2>
+
+    <div class="mb-4">
+        <span class="block text-gray-700 font-semibold">Nom / Prénom :</span>
+        <p class="text-gray-600">{{currentUser.user_info.nom}} {{currentUser.user_info.prenom}}</p>
+    </div>
+
+    <div class="mb-4">
+        <span class="block text-gray-700 font-semibold">Entité de Base :</span>
+        <p class="text">{{entiteBase()?.denomination}} (siren : {{entiteBase()?.siren}})</p>
+    </div>
+
+    <div class="mb-4">
+        <span class="block text-gray-700 font-semibold">Email :</span>
+        <p class="text">{{currentUser.user_info.email}}</p>
+    </div>
+
+    <div class="mb-4">
+        <span class="block text-gray-700 font-semibold">Login :</span>
+        <p class="text-nowrap">{{currentUser.user_info.login}}</p>
     </div>
 </div>
 }

@@ -4,7 +4,6 @@ export interface UserInfo {
     nom: string;
     prenom: string;
     email: string;
-    certificat: any[];
     id_e: number;
 }
 
