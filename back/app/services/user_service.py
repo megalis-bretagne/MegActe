@@ -20,12 +20,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# Get liste de tous les users
-def get_all_users_from_db(db: Session):
-    users = db.query(UserPastell).all()
-    return users
-
-
 # Add user
 def add_user_to_db(user_data: UserCreate, client_api: ApiPastell, db: Session):
     """Ajouter un nouvel utilisateur dans la BD et envoyer le mot de passe non chifré à PASTELL
