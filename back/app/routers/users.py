@@ -15,7 +15,6 @@ from ..clients.pastell.api import ApiPastell
 from ..database import get_db, get_user_from_db
 from ..schemas.user_schemas import UserCreate
 from ..services.user_service import (
-    get_all_users_from_db,
     add_user_to_db,
     delete_user_from_db,
     get_user_context_service,
@@ -37,12 +36,6 @@ def get_user(
     client: ApiPastell = Depends(get_client_api(EntiteApi)),
 ):
     return get_user_context_service(client, user)
-
-
-# Get liste de tous les users
-@router.get("/users", tags=["users"])
-def get_all_users(db: Session = Depends(get_db)):
-    return get_all_users_from_db(db)
 
 
 # Add user
