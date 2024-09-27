@@ -64,7 +64,7 @@ export class SidebarComponent implements OnInit {
     this.documentService.createDocument(docCreateInfo).subscribe({
       next: (response) => {
         const documentId = response.content.info.id_d;
-        this.router.navigate(['/acte', documentId]);
+        this.router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
       },
       error: (error) => { this.logger.error('Error creating document:', error); },
     })
