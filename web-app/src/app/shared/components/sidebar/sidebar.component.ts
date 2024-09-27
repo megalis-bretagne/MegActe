@@ -14,7 +14,7 @@ import { EntiteInfo } from 'src/app/core/model/user.model';
 import { Modal } from 'flowbite';
 
 @Component({
-  selector: 'app-sidebar',
+  selector: 'meg-sidebar',
   standalone: true,
   imports: [RouterLink, FormsModule, CommonModule, EntiteSelectComponent],
   templateUrl: './sidebar.component.html',

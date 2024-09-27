@@ -21,7 +21,7 @@ import { DocumentDetail } from 'src/app/core/model/document.model';
 import { LoadingService } from 'src/app/core/services/loading.service';
 
 @Component({
-  selector: 'app-acte-form',
+  selector: 'meg-acte-form',
   standalone: true,
   imports: [
     LoadingComponent, ExternalDataInputComponent, FileUploadComponent,

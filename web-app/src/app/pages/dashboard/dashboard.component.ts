@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'meg-dashboard',
   standalone: true,
   imports: [DocumentListComponent],
   templateUrl: './dashboard.component.html',
