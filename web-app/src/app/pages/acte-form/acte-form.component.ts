@@ -10,7 +10,7 @@ import { TextInputComponent } from 'src/app/shared/components/flux/text-input/te
 import { Data, Field } from 'src/app/core/model/field-form.model';
 import { DocumentService } from 'src/app/core/services/document.service';
 import { FieldFluxService } from 'src/app/core/services/field-flux.service';
-import { of } from 'rxjs';
+import { from, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LoadingComponent } from 'src/app/shared/components/loading-component/loading.component';
 import { FluxService } from 'src/app/core/services/flux.service';
@@ -194,14 +194,28 @@ export class ActeFormComponent implements OnInit {
   }
 
   onAssignFileTypesClick(): void {
-    this.formExternalData.markAllAsTouched();
-    if (this.formExternalData.valid) {
+    if (this._checkFormValid(this.formExternalData)) {
       this.loadingService.showLoading("Sauvegarde du fichier en cours ...");
       const info = this.formExternalData.getRawValue();
       this._assignFileTypes(Object.values(info));
     } else {
       this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
     }
+  }
+
+  sendActe(): void {
+    if (this._checkFormValid(this.formExternalData)) {
+      this.loadingService.showLoading("Envoi de l'acte en cours ...");
+
+    }
+    else {
+      this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
+    }
+  }
+
+  private _checkFormValid(form: FormGroup): boolean {
+    form.markAllAsTouched();
+    return form.valid;
   }
 
   private _assignFileTypes(data: string[]): void {

@@ -25,7 +25,7 @@
                     class="flex items-center justify-center w-5 h-5 me-2 text-sm border border-gray-500 rounded-full shrink-0">
                     2
                 </span>
-                Typologie des Pièces
+                Envoyer l'acte
             </li>
         </ol>
 
@@ -116,8 +116,16 @@
                         </button>
                     </div>
                     <div>
-                        <button class="btn-meg-primary px-4 py-2" type="button"
-                            (click)="onAssignFileTypesClick()">Enregistrer</button>
+                        <button class="btn-meg-secondary px-4 py-2 inline-flex items-center justify-center"
+                            type="button" (click)="onAssignFileTypesClick()">Enregistrer</button>
+                        <button class="btn-meg-primary px-4 py-2 ml-2" type="button" (click)="sendActe()">
+                            <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M13.5 8H4m4 6h8m0 0-2-2m2 2-2 2M4 6v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-5.032a1 1 0 0 1-.768-.36l-1.9-2.28a1 1 0 0 0-.768-.36H5a1 1 0 0 0-1 1Z" />
+                            </svg>
+                            Envoyer l'acte</button>
                     </div>
                 </div>
             </form>
