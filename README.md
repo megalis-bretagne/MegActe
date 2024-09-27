@@ -1,6 +1,7 @@
 # MegActe - Surcouche Pastell
 
  
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9e0537db36c94c38a01f7e8e430d510f)](https://app.codacy.com/gh/megalis-bretagne/MegActe?utm_source=github.com&utm_medium=referral&utm_content=megalis-bretagne/MegActe&utm_campaign=Badge_Grade)
 [![Python version](https://img.shields.io/badge/python-3.11.2-blue?logo=python)](https://www.python.org/downloads/release/python-3121/)
 [![FastApi](https://img.shields.io/badge/FastAPI-0.111.0-blue?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Angular](https://img.shields.io/badge/Angular-17-%23DD0031?logo=angular)](https://angular.io/)
