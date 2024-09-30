@@ -301,40 +301,6 @@ def check_and_perform_action_service(
     )
 
 
-def cancel_transfer_tdt_document_service(
-    entite_id: int, document_id: str, client_api: ApiPastell
-) -> dict:
-    """Annule la transmission TDT d'un document.
-
-    Args:
-        entite_id (int): L'ID de l'entité.
-        document_id (str): L'ID du document.
-        user (UserPastell): User pour lequel l'opération doit être effectuée.
-
-    Returns:
-        dict: Les détails de l'annulation.
-    """
-    action = "annulation-tdt"
-    return check_and_perform_action_service(entite_id, document_id, action, client_api)
-
-
-def transfer_tdt_document_service(
-    entite_id: int, document_id: str, client_api: ApiPastell
-) -> dict:
-    """Transmet un document via TDT.
-
-    Args:
-        entite_id (int): L'ID de l'entité.
-        document_id (str): L'ID du document.
-        user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
-
-    Returns:
-        dict: Les détails de la transmission.
-    """
-    action = "orientation"
-    return check_and_perform_action_service(entite_id, document_id, action, client_api)
-
-
 def assign_file_typologie_service(
     entite_id: int,
     document_id: str,

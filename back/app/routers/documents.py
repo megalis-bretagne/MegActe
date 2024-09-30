@@ -9,14 +9,13 @@ from ..clients.pastell.api import ApiPastell
 from ..routers import get_or_make_api_pastell
 
 from ..services.document_service import (
+    check_and_perform_action_service,
     update_document_service,
     create_document_service,
     get_document_info_service,
     delete_file_from_document_service,
     add_multiple_files_to_document_service,
     get_external_data_service,
-    cancel_transfer_tdt_document_service,
-    transfer_tdt_document_service,
     assign_file_typologie_service,
     get_file_by_name_service,
 )
@@ -173,21 +172,17 @@ def get_external_data(
     return get_external_data_service(entite_id, document_id, element_id, client)
 
 
-# Transmettre un doc via TDT
-@router.post("/document/{document_id}/transfer-tdt", tags=["document"])
-def transfer_tdt_document(
+# transmettre le document
+@router.post(
+    "/entite/{entite_id}/document/{document_id}/send",
+    tags=["document"],
+    description="Envoi le document dans le flux pastell",
+)
+def send_acte(
     document_id: str,
     entite_id: int,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return transfer_tdt_document_service(entite_id, document_id, client)
-
-
-# Annuler la transmission TDT d'un doc
-@router.post("/document/{document_id}/cancel-tdt", tags=["document"])
-def cancel_document_transfer_tdt(
-    document_id: str,
-    entite_id: int,
-    client: ApiPastell = Depends(get_or_make_api_pastell),
-):
-    return cancel_transfer_tdt_document_service(entite_id, document_id, client)
+    return check_and_perform_action_service(
+        entite_id, document_id, "orientation", client
+    )
