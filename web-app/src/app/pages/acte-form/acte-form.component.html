@@ -78,7 +78,7 @@
             </form>
 
             <div class="flex flex-row-reverse w-full">
-                <button (click)="onNextStepClick()" aria-label="Suivant" class="btn-meg-primary px-4 py-2">
+                <button (click)="onNextStep()" aria-label="Suivant" class="btn-meg-primary px-4 py-2">
                     Suivant
                     <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                         fill="none" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@
 
                 <div class="flex flex-row justify-between">
                     <div>
-                        <button class="btn-meg-secondary px-4 py-2" type="button" (click)="onPreviousStepClick()">
+                        <button class="btn-meg-secondary px-4 py-2" type="button" (click)="onPreviousStep()">
                             <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                                 fill="none" viewBox="0 0 24 24">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -117,7 +117,7 @@
                     </div>
                     <div>
                         <button class="btn-meg-secondary px-4 py-2 inline-flex items-center justify-center"
-                            type="button" (click)="onAssignFileTypesClick()">Enregistrer</button>
+                            type="button" (click)="onAssignFileTypesAndSave()">Enregistrer</button>
                         <button class="btn-meg-primary px-4 py-2 ml-2" type="button" (click)="sendActe()">
                             <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
                                 height="24" fill="none" viewBox="0 0 24 24">

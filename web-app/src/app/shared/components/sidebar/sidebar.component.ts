@@ -1,11 +1,10 @@
 import { Component, effect, inject, OnInit } from '@angular/core';
 import { Flux } from 'src/app/core/model/flux.model';
 import { DocCreateInfo } from 'src/app/core/model/document.model';
-import { DocumentService } from 'src/app/core/services/document.service';
+import { HttpDocumentService } from 'src/app/core/services/http/http-document.service';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 import { Router, RouterLink } from '@angular/router';
 import { NGXLogger } from 'ngx-logger';
-import { FluxService } from 'src/app/core/services/flux.service';
 import { LoadingService } from 'src/app/core/services/loading.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -28,7 +27,7 @@ export class SidebarComponent implements OnInit {
   userCurrent = this._userContextService.userCurrent;
   loadingService = inject(LoadingService);
 
-  fluxSelected = inject(FluxService).fluxSelected /** contient le flux sélectionné */
+  fluxSelected = this._userContextService.fluxSelected /** contient le flux sélectionné */
 
   flux: Flux[] = [];
   private _modal: Modal | undefined;
@@ -37,7 +36,7 @@ export class SidebarComponent implements OnInit {
   groupedFlux: { [key: string]: Flux[]; };
   listType: string[];
   isGroupByType: boolean = false;
-  constructor(private logger: NGXLogger, private documentService: DocumentService, private router: Router) {
+  constructor(private logger: NGXLogger, private documentService: HttpDocumentService, private router: Router) {
     effect(() => {
       this.flux = Object.values(this.userFlux());
       this.sortFlux();

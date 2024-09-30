@@ -8,17 +8,17 @@ import { FileUploadComponent } from 'src/app/shared/components/flux/file-upload/
 import { SelectInputComponent } from 'src/app/shared/components/flux/select-input/select-input.component';
 import { TextInputComponent } from 'src/app/shared/components/flux/text-input/text-input.component';
 import { Data, Field } from 'src/app/core/model/field-form.model';
-import { DocumentService } from 'src/app/core/services/document.service';
+import { HttpDocumentService } from 'src/app/core/services/http/http-document.service';
 import { FieldFluxService } from 'src/app/core/services/field-flux.service';
-import { from, of } from 'rxjs';
+import { of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { LoadingComponent } from 'src/app/shared/components/loading-component/loading.component';
-import { FluxService } from 'src/app/core/services/flux.service';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 import { CommonModule } from '@angular/common';
 import { DocumentDetail } from 'src/app/core/model/document.model';
 import { LoadingService } from 'src/app/core/services/loading.service';
+import { HttpFluxService } from 'src/app/core/services/http/http-flux.service';
 
 @Component({
   selector: 'meg-acte-form',
@@ -33,7 +33,7 @@ import { LoadingService } from 'src/app/core/services/loading.service';
 export class ActeFormComponent implements OnInit {
   userContextService = inject(UserContextService);
 
-  fluxSelected = inject(FluxService).fluxSelected;
+  fluxSelected = this.userContextService.fluxSelected;
   userCurrent = this.userContextService.userCurrent;
   entiteSelected = this.userContextService.entiteSelected;
   loadingService = inject(LoadingService);
@@ -55,7 +55,6 @@ export class ActeFormComponent implements OnInit {
 
   formValues: { [idField: string]: any } = {};
 
-  // @TODO, revoir le mécanisme des steps pour faire un composant par steps
   // Formulaire de la step 1
   form: FormGroup = new FormGroup({});
   // Formulaire pour la step 2
@@ -65,9 +64,9 @@ export class ActeFormComponent implements OnInit {
     private route: ActivatedRoute,
     private logger: NGXLogger,
     private fieldFluxService: FieldFluxService,
-    private documentService: DocumentService,
+    private documentService: HttpDocumentService,
     private router: Router,
-    private fluxService: FluxService,
+    private fluxService: HttpFluxService,
   ) {
 
     this.route.data.subscribe(data => {
@@ -111,7 +110,7 @@ export class ActeFormComponent implements OnInit {
   }
 
 
-  onNextStepClick(): void {
+  onNextStep(): void {
     if (this.validateForm()) {
       this.globalErrorMessage = '';
       this._save();
@@ -130,6 +129,69 @@ export class ActeFormComponent implements OnInit {
       }
     });
     return docInfo;
+  }
+
+
+
+  onAssignFileTypesAndSave(): void {
+    if (this._checkFormValid(this.formExternalData)) {
+      this.loadingService.showLoading("Sauvegarde de l'acte en cours ...");
+      const info = this.formExternalData.getRawValue();
+      this._assignFileTypes(Object.values(info));
+    } else {
+      this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
+    }
+  }
+
+  sendActe(): void {
+    if (this._checkFormValid(this.formExternalData)) {
+      this.loadingService.showLoading("Envoi de l'acte en cours ...");
+
+    }
+    else {
+      this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
+    }
+  }
+
+  onPreviousStep() {
+    this.currentStep.set(1);
+  }
+
+  validateForm(): boolean {
+    this.globalErrorMessage = '';
+    this.form.markAllAsTouched();
+
+    if (!this.form.valid) {
+      this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
+    }
+
+    return this.form.valid;
+  }
+
+  goBack(): void {
+    this.router.navigate(['/']);
+  }
+
+  private _checkFormValid(form: FormGroup): boolean {
+    form.markAllAsTouched();
+    return form.valid;
+  }
+
+  /**
+   * Assign les externalData
+   * @param data 
+   */
+  private _assignFileTypes(data: string[]): void {
+    this.documentService.patchExternalData(this.entiteSelected().id_e, this.documentInfo.info.id_d, 'type_piece', data).subscribe({
+      next: (response) => {
+        this.loadingService.showSuccess('Le document a été créé et mis à jour avec succès.', ['/documents', this.acteName]);
+        this.logger.info('File types assigned successfully', response);
+      },
+      error: (error) => {
+        this.loadingService.showError(error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.');
+        this.logger.error('Error assigning file types', error);
+      }
+    });
   }
 
   private _save(): void {
@@ -187,73 +249,5 @@ export class ActeFormComponent implements OnInit {
         this.logger.error('Error fetching file types and files', error);
       }
     });
-  }
-
-  isFormFileTypesValid() {
-    return false;
-  }
-
-  onAssignFileTypesClick(): void {
-    if (this._checkFormValid(this.formExternalData)) {
-      this.loadingService.showLoading("Sauvegarde du fichier en cours ...");
-      const info = this.formExternalData.getRawValue();
-      this._assignFileTypes(Object.values(info));
-    } else {
-      this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
-    }
-  }
-
-  sendActe(): void {
-    if (this._checkFormValid(this.formExternalData)) {
-      this.loadingService.showLoading("Envoi de l'acte en cours ...");
-
-    }
-    else {
-      this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
-    }
-  }
-
-  private _checkFormValid(form: FormGroup): boolean {
-    form.markAllAsTouched();
-    return form.valid;
-  }
-
-  private _assignFileTypes(data: string[]): void {
-    this.documentService.patchExternalData(this.entiteSelected().id_e, this.documentInfo.info.id_d, 'type_piece', data).subscribe({
-      next: (response) => {
-        this.loadingService.showSuccess('Le document a été créé et mis à jour avec succès.', ['/documents', this.acteName]);
-        this.logger.info('File types assigned successfully', response);
-      },
-      error: (error) => {
-        this.loadingService.showError(error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.');
-        this.logger.error('Error assigning file types', error);
-      }
-    });
-  }
-
-  onPreviousStepClick() {
-    this.currentStep.set(1);
-  }
-
-  validateForm(): boolean {
-    this.globalErrorMessage = '';
-    this.form.markAllAsTouched();
-
-    if (!this.form.valid) {
-      this.globalErrorMessage = 'Veuillez remplir tous les champs requis correctement.';
-    }
-
-    return this.form.valid;
-  }
-
-
-  scheduleRedirect(): void {
-    setTimeout(() => {
-      this.router.navigate(['/documents', this.acteName]);
-    }, 3000);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/']);
   }
 }
