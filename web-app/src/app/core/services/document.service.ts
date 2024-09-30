@@ -3,7 +3,7 @@ import { ActionPossibleEnum, DocumentDetail, DocUpdateInfo, LastActionEnum } fro
 import { HttpDocumentService } from './http/http-document.service';
 import { NGXLogger } from 'ngx-logger';
 import { LoadingService } from './loading.service';
-import { catchError, concatMap, Observable, of, switchMap, tap } from 'rxjs';
+import { catchError, concatMap, Observable, of, tap } from 'rxjs';
 import { HttpFluxService } from './http/http-flux.service';
 
 
@@ -18,8 +18,12 @@ export class DocumentService {
     private _loadingService = inject(LoadingService);
 
 
-    sendActe(document: DocumentDetail): void {
-        return;
+    sendActe(id_e: number, document: DocumentDetail): void {
+        this._loadingService.showLoading("Envoi de l'acte en cours ...");
+        this._httpDocumentService.sendActe(document.info.id_d, id_e).subscribe({
+            next: () => this._loadingService.showSuccess("Le document a bien été transmis.", ['/org', id_e.toString()])
+        }
+        )
     }
 
 
@@ -59,20 +63,23 @@ export class DocumentService {
 
 
     /**
-     * Assigne les Typologie de Piece à un document
+     * Mise  àjours de type de piece
+     * @param id_e id e de l'entité du document
+     * @param id_d  id du document
+     * @param data les données à Maj
+     * @param _showSuccess indique si on affiche un loader pendant les évènements
+     * @returns 
      */
-    assignTypePiece(id_e: number, id_d: string, data: string[]): void {
+    updateTypePiece(id_e: number, id_d: string, data: string[], _showSuccess = true): Observable<void> {
         this._loadingService.showLoading("Sauvegarde de l'acte en cours ...");
-        this._httpDocumentService.patchExternalData(id_e, id_d, 'type_piece', data).subscribe({
-            next: (response) => {
-                this._loadingService.showSuccess('Le document a été créé et mis à jour avec succès.', ['/org', id_e.toString()]);
-                this._logger.info('File types assigned successfully', response);
-            },
-            error: (error) => {
+        return this._httpDocumentService.patchExternalData(id_e, id_d, 'type_piece', data).pipe(
+            tap(() => { if (_showSuccess) this._loadingService.showSuccess('Le document a été créé et mis à jour avec succès.', ['/org', id_e.toString()]) }),
+            catchError(error => {
                 this._loadingService.showError(error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.');
-                this._logger.error('Error assigning file types', error);
-            }
-        });
+                this._logger.error('Error fetching file types and files', error);
+                return of(null);
+            })
+        );
     }
 
     /**
@@ -91,5 +98,12 @@ export class DocumentService {
      */
     canDelete(document: DocumentDetail): boolean {
         return document.action_possible.includes(ActionPossibleEnum.Suppression);
+    }
+
+    /**
+     * Indique si le document est modifiable
+     */
+    canEdit(document: DocumentDetail): boolean {
+        return (document.last_action.action === LastActionEnum.Modification || document.last_action.action === LastActionEnum.Creation);
     }
 }

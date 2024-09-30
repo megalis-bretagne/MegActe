@@ -48,7 +48,6 @@ export class ActeFormComponent implements OnInit {
 
   currentStep = signal<number>(1);
   globalErrorMessage: string;
-  isReadOnly: boolean = false;
   fileFields: Field[] = [];
 
   formValues: { [idField: string]: any } = {};
@@ -77,9 +76,6 @@ export class ActeFormComponent implements OnInit {
         this.fileFields = this.filteredFields.filter(field => field.type === 'file');
 
         this.fileTypeField = this.fields.find(field => field.idField === 'type_piece');
-        if (this.documentInfo['last_action'].action !== 'modification' && this.documentInfo['last_action'].action !== 'creation') {
-          this.isReadOnly = true;
-        }
       } else {
         this._logger.error('Flux detail not found for the given acte');
       }
@@ -131,7 +127,7 @@ export class ActeFormComponent implements OnInit {
   onAssignFileTypesAndSave(): void {
     if (this._checkFormValid(this.formExternalData)) {
       const info = this.formExternalData.getRawValue();
-      this.documentService.assignTypePiece(this.entiteSelected().id_e, this.documentInfo.info.id_d, Object.values(info));
+      this.documentService.updateTypePiece(this.entiteSelected().id_e, this.documentInfo.info.id_d, Object.values(info));
     } else {
       this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
     }
@@ -139,7 +135,14 @@ export class ActeFormComponent implements OnInit {
 
   sendActe(): void {
     if (this._checkFormValid(this.formExternalData)) {
+      const info = this.formExternalData.getRawValue();
+      const updateTypePiece$ = this.documentService.updateTypePiece(this.entiteSelected().id_e, this.documentInfo.info.id_d, Object.values(info), false);
 
+      updateTypePiece$.subscribe({
+        next: () => {
+          this.documentService.sendActe(this.entiteSelected().id_e, this.documentInfo);
+        }
+      })
     }
     else {
       this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';

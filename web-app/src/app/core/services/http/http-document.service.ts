@@ -101,6 +101,16 @@ export class HttpDocumentService {
         );
     }
 
+    sendActe(documentId: string, entiteId: number): Observable<any> {
+        return this._http.post<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/send`, {}).pipe(
+            catchError((error) => {
+                this._logger.error('Error when sending document', error);
+                return throwError(() => error);
+            })
+        );
+    }
+
+
     /**
      * Redirige l'edition du document vers Pastell
      */
