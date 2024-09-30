@@ -6,7 +6,7 @@
     </div>
 
     <div class="meg-container p-4 border rounded-sm">
-        @if(!isReadOnly){
+        @if(documentService.canEdit(documentInfo)){
         <ol class="flex items-center w-full p-3 space-x-2 text-center text">
             <li class="flex items-center" [ngClass]="{'text-blue': currentStep() === 1}">
                 <span [ngClass]="{'border-blue': currentStep() === 1}"
@@ -124,7 +124,7 @@
                                     d="M5 13l4 4L19 7" />
                             </svg>
                             Enregistrer</button>
-                        @if (documentService.canSendActe(this.documentInfo) ) {
+                        @if (documentService.canSendActe(documentInfo) ) {
 
                         <button class="btn-meg-primary px-4 py-2 ml-2" type="button" (click)="sendActe()">
                             <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
