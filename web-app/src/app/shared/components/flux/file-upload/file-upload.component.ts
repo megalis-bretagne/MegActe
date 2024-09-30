@@ -5,7 +5,7 @@ import { FileUploadValidationService } from 'src/app/core/services/file-upload-v
 import { BaseInputComponent } from '../BaseInput.component';
 import { CommonModule } from '@angular/common';
 import { DragAndDropDirective } from 'src/app/shared/directives/drag-and-drop.directive';
-import { DocumentService } from 'src/app/core/services/document.service';
+import { HttpDocumentService } from 'src/app/core/services/http/http-document.service';
 import { LoadingComponent } from '../../loading-component/loading.component';
 
 export enum FileActionState {
@@ -33,7 +33,7 @@ export class FileUploadComponent extends BaseInputComponent {
   files: File[] = [];
   errorMessage: string = '';
 
-  constructor(private validationService: FileUploadValidationService, private documentService: DocumentService, protected override fieldFluxService: FieldFluxService) {
+  constructor(private validationService: FileUploadValidationService, private documentService: HttpDocumentService, protected override fieldFluxService: FieldFluxService) {
     super(fieldFluxService);
   }
 

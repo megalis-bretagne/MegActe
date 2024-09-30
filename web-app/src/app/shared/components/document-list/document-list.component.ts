@@ -1,7 +1,6 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/core/model/document.model';
-import { DocumentService } from 'src/app/core/services/document.service';
-import { FluxService } from 'src/app/core/services/flux.service';
+import { HttpDocumentService } from 'src/app/core/services/http/http-document.service';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 import { StateDocumentPipe } from '../../pipes/state-document.pipe';
 import { LoadingComponent } from '../loading-component/loading.component';
@@ -23,10 +22,11 @@ import { HttpErrorCustom } from 'src/app/core/model/http-error-custom.model';
 })
 export class DocumentListComponent implements OnInit {
   itemPerPage = 10;
-  fluxSelected = inject(FluxService).fluxSelected
+
   loadingService = inject(LoadingService);
-  documentService = inject(DocumentService);
+  documentService = inject(HttpDocumentService);
   userContextService = inject(UserContextService);
+  fluxSelected = this.userContextService.fluxSelected
 
 
   userCurrent = this.userContextService.userCurrent;

@@ -11,7 +11,7 @@ import { UserContextService } from 'src/app/core/services/user-context.service';
 export class AppInitService {
 
     constructor(private http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService,
-        private userService: UserContextService, private _logger: NGXLogger) {
+        private userContextService: UserContextService, private _logger: NGXLogger) {
     }
 
 
@@ -57,8 +57,8 @@ export class AppInitService {
             }
         }).then(async () => { // chargement des infos de l'utilisateur et de son contexte
             try {
-                await firstValueFrom(this.userService.getUser());
-                await firstValueFrom(this.userService.getUserFlux());
+                await firstValueFrom(this.userContextService.fetchUser());
+                await firstValueFrom(this.userContextService.fetchUserFlux());
             } catch (error) {
                 throw new Error("Une erreur s'est déroulée durant la récupération de l'utilisateur et des flux");
             }

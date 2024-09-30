@@ -1,10 +1,9 @@
-import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
-import { Observable, catchError, of, map } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { EntiteInfo, UserContext } from 'src/app/core/model/user.model';
-import { SettingsService } from 'src/environments/settings.service';
 import { Flux } from '../model/flux.model';
+import { HttpUserService } from './http/http-user.service';
 
 /**
  * 
@@ -21,8 +20,7 @@ import { Flux } from '../model/flux.model';
 export class UserContextService {
 
   private _logger = inject(NGXLogger);
-  private _http = inject(HttpClient);
-  private _settingsService = inject(SettingsService);
+  private _httpUserService = inject(HttpUserService);
 
 
   /**
@@ -39,32 +37,33 @@ export class UserContextService {
    */
   userFlux = signal<Flux[]>([])
 
+  /**
+   * Le flux sélectionné par défaut
+   */
+  fluxSelected = signal<Flux | null>(null)
 
-  public getUser(): Observable<void> {
-    return this._http.get<UserContext>(this._settingsService.apiUrl + '/user').pipe(
+
+  public fetchUser(): Observable<void> {
+    return this._httpUserService.getUser().pipe(
       map((res: UserContext) => {
         this._logger.info('Successfully fetched user context');
         this.userCurrent.set(res);
       }),
-      catchError((error) => {
-        this._logger.error('Error fetching user context' + error);
-        return of(void 0);
-      })
     )
   }
 
-  public getUserFlux(): Observable<void> {
-    return this._http.get<{ [key: string]: Flux }>(this._settingsService.apiUrl + '/user/flux').pipe(
+  public fetchUserFlux(): Observable<void> {
+    return this._httpUserService.getUserFlux().pipe(
       map((data: { [key: string]: Flux }) => {
         const actes = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
         this.userFlux.set(actes);
       }
-      ),
-      catchError((error) => {
-        this._logger.error('Error fetching user flux', error);
-        return of(void 0);
-      })
+      )
     );
+  }
+
+  public selectCurrentFlux(flux: Flux) {
+    this.fluxSelected.set(flux);
   }
 
   /**

@@ -3,12 +3,12 @@ import { Component, ElementRef, inject, Input, OnInit, ViewChild } from '@angula
 import { ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { NGXLogger } from 'ngx-logger';
 import { FieldFluxService } from 'src/app/core/services/field-flux.service';
-import { FluxService } from 'src/app/core/services/flux.service';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BaseInputComponent } from '../BaseInput.component';
 import { UserContextService } from 'src/app/core/services/user-context.service';
+import { HttpFluxService } from 'src/app/core/services/http/http-flux.service';
 
 @Component({
   selector: 'meg-external-data-input',
@@ -30,7 +30,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
 
   constructor(
     protected override fieldFluxService: FieldFluxService,
-    private fluxService: FluxService,
+    private fluxService: HttpFluxService,
     private logger: NGXLogger
   ) {
     super(fieldFluxService);
