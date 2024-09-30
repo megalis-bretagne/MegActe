@@ -196,10 +196,9 @@ export class ActeFormComponent implements OnInit {
 
   private _save(): void {
     this.loadingService.showLoading("Sauvegarde en cours ...");
-    const docInfo = this._retrieveInfo();
     const docUpdateInfo = {
       entite_id: this.entiteSelected().id_e,
-      doc_info: docInfo
+      doc_info: this._retrieveInfo()
     };
 
     // Création d'un observable pour la mise à jour du document
