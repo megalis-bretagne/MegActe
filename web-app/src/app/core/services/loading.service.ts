@@ -6,24 +6,24 @@ import { InfoModal, TypeModal } from '../model/modal.model';
     providedIn: 'root',
 })
 export class LoadingService {
-    private status = signal<InfoModal | null>(null);
-    status$ = toObservable(this.status);
+    private _status = signal<InfoModal | null>(null);
+    status$ = toObservable(this._status);
 
     // Method to show the modal with a custom message
     showSuccess(message: string, redirect: string[] = null, callback: (result: any) => void = () => { }): void {
-        this.status.set({ message: message, type: TypeModal.Success, redirect_on_close: redirect, callbackClose: callback } as InfoModal);
+        this._status.set({ message: message, type: TypeModal.Success, redirect_on_close: redirect, callbackClose: callback } as InfoModal);
     }
 
     // Method to hide the modal
     hideLoading(): void {
-        this.status.set(null);
+        this._status.set(null);
     }
 
     showLoading(message: string = 'Chargement ...') {
-        this.status.set({ message: message, type: TypeModal.Loading, redirect_on_close: null } as InfoModal);
+        this._status.set({ message: message, type: TypeModal.Loading, redirect_on_close: null } as InfoModal);
     }
 
     showError(error: string, redirect: string[] = null, callback: (result: any) => void = () => { }) {
-        this.status.set({ message: error, type: TypeModal.Error, redirect_on_close: redirect, callbackClose: callback } as InfoModal);
+        this._status.set({ message: error, type: TypeModal.Error, redirect_on_close: redirect, callbackClose: callback } as InfoModal);
     }
 }

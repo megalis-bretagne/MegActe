@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { KeycloakService } from 'keycloak-angular';
 import { NGXLogger } from 'ngx-logger';
 import { SettingsService } from 'src/environments/settings.service';
@@ -7,23 +7,23 @@ import { SettingsService } from 'src/environments/settings.service';
   providedIn: 'root'
 })
 export class AuthService {
-
-  constructor(private keycloakService: KeycloakService, private settings: SettingsService, private logger: NGXLogger
-  ) { }
+  private _keycloakService = inject(KeycloakService);
+  private _settings = inject(SettingsService);
+  private _logger = inject(NGXLogger);
 
   checkLogin(): Promise<Keycloak.KeycloakProfile> {
-    return this.keycloakService.loadUserProfile();
+    return this._keycloakService.loadUserProfile();
   }
 
   getToken(): Promise<string> {
-    return this.keycloakService.getToken();
+    return this._keycloakService.getToken();
   }
 
   logout(): void {
-    this.keycloakService.logout(this.settings.settings.keycloak.urlLogout).then(() => {
-      this.logger.info('Déconnexion réussie');
+    this._keycloakService.logout(this._settings.settings.keycloak.urlLogout).then(() => {
+      this._logger.info('Déconnexion réussie');
     }).catch((err) => {
-      this.logger.error('Erreur lors de la déconnexion', err);
+      this._logger.error('Erreur lors de la déconnexion', err);
     });
   }
 }

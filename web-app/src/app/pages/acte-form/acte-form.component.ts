@@ -8,17 +8,13 @@ import { FileUploadComponent } from 'src/app/shared/components/flux/file-upload/
 import { SelectInputComponent } from 'src/app/shared/components/flux/select-input/select-input.component';
 import { TextInputComponent } from 'src/app/shared/components/flux/text-input/text-input.component';
 import { Data, Field } from 'src/app/core/model/field-form.model';
-import { HttpDocumentService } from 'src/app/core/services/http/http-document.service';
 import { FieldFluxService } from 'src/app/core/services/field-flux.service';
-import { of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { LoadingComponent } from 'src/app/shared/components/loading-component/loading.component';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 import { CommonModule } from '@angular/common';
 import { DocumentDetail } from 'src/app/core/model/document.model';
-import { LoadingService } from 'src/app/core/services/loading.service';
-import { HttpFluxService } from 'src/app/core/services/http/http-flux.service';
+import { DocumentService } from 'src/app/core/services/document.service';
 
 @Component({
   selector: 'meg-acte-form',
@@ -31,12 +27,14 @@ import { HttpFluxService } from 'src/app/core/services/http/http-flux.service';
   styleUrls: ['./acte-form.component.scss']
 })
 export class ActeFormComponent implements OnInit {
+  private _fieldFluxService = inject(FieldFluxService);
+
   userContextService = inject(UserContextService);
+  documentService = inject(DocumentService);
 
   fluxSelected = this.userContextService.fluxSelected;
   userCurrent = this.userContextService.userCurrent;
   entiteSelected = this.userContextService.entiteSelected;
-  loadingService = inject(LoadingService);
 
   acteName: string;
   fluxDetail: Data;
@@ -61,23 +59,20 @@ export class ActeFormComponent implements OnInit {
   formExternalData: FormGroup = new FormGroup({})
 
   constructor(
-    private route: ActivatedRoute,
-    private logger: NGXLogger,
-    private fieldFluxService: FieldFluxService,
-    private documentService: HttpDocumentService,
-    private router: Router,
-    private fluxService: HttpFluxService,
+    private _route: ActivatedRoute,
+    private _logger: NGXLogger,
+    private _router: Router,
   ) {
 
-    this.route.data.subscribe(data => {
+    this._route.data.subscribe(data => {
       this.fluxDetail = data['docDetail'].flux;
       this.documentInfo = data['docDetail'].document as DocumentDetail;
       const flowId = this.documentInfo.info.type;
 
       if (this.fluxDetail) {
-        this.fields = this.fieldFluxService.extractFields(this.fluxDetail);
+        this.fields = this._fieldFluxService.extractFields(this.fluxDetail);
         this.filteredFields =
-          this.fieldFluxService.filterFields(this.fields, flowId)
+          this._fieldFluxService.filterFields(this.fields, flowId)
             .filter(field => field.idField !== 'type_piece');
         this.fileFields = this.filteredFields.filter(field => field.type === 'file');
 
@@ -86,7 +81,7 @@ export class ActeFormComponent implements OnInit {
           this.isReadOnly = true;
         }
       } else {
-        this.logger.error('Flux detail not found for the given acte');
+        this._logger.error('Flux detail not found for the given acte');
       }
     });
   }
@@ -135,9 +130,8 @@ export class ActeFormComponent implements OnInit {
 
   onAssignFileTypesAndSave(): void {
     if (this._checkFormValid(this.formExternalData)) {
-      this.loadingService.showLoading("Sauvegarde de l'acte en cours ...");
       const info = this.formExternalData.getRawValue();
-      this._assignFileTypes(Object.values(info));
+      this.documentService.assignTypePiece(this.entiteSelected().id_e, this.documentInfo.info.id_d, Object.values(info));
     } else {
       this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
     }
@@ -145,7 +139,6 @@ export class ActeFormComponent implements OnInit {
 
   sendActe(): void {
     if (this._checkFormValid(this.formExternalData)) {
-      this.loadingService.showLoading("Envoi de l'acte en cours ...");
 
     }
     else {
@@ -169,7 +162,7 @@ export class ActeFormComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/']);
+    this._router.navigate(['/']);
   }
 
   private _checkFormValid(form: FormGroup): boolean {
@@ -177,46 +170,25 @@ export class ActeFormComponent implements OnInit {
     return form.valid;
   }
 
-  /**
-   * Assign les externalData
-   * @param data 
-   */
-  private _assignFileTypes(data: string[]): void {
-    this.documentService.patchExternalData(this.entiteSelected().id_e, this.documentInfo.info.id_d, 'type_piece', data).subscribe({
-      next: (response) => {
-        this.loadingService.showSuccess('Le document a été créé et mis à jour avec succès.', ['/documents', this.acteName]);
-        this.logger.info('File types assigned successfully', response);
-      },
-      error: (error) => {
-        this.loadingService.showError(error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.');
-        this.logger.error('Error assigning file types', error);
-      }
-    });
-  }
-
   private _save(): void {
-    this.loadingService.showLoading("Sauvegarde en cours ...");
+
     const docUpdateInfo = {
       entite_id: this.entiteSelected().id_e,
       doc_info: this._retrieveInfo()
     };
 
-    // Création d'un observable pour la mise à jour du document
-    const updateDocument$ = this.documentService.updateDocument(this.documentInfo.info.id_d, docUpdateInfo).pipe(
-      catchError(error => {
-        this.logger.error('Error updating document', error);
-        return of(null);
-      })
-    );
-
-    updateDocument$.subscribe({
-      next: () => {
-        this._fetchExternalDataByFile();
+    this.documentService.updateDocument(this.entiteSelected().id_e, this.documentInfo.info.id_d, docUpdateInfo).subscribe({
+      next: (response) => {
+        this.fileTypes = response.actes_type_pj_list;
+        this.currentStep.set(2);
+        this._buildFormExternalDataForFile(response.pieces, response.actes_type_pj_list)
+        this.pieces.set(response.pieces);
       },
       error: (error) => {
-        this.logger.error('Error updating document', error);
+        this._logger.error('Error updating document', error);
       }
-    });
+    }
+    )
   }
 
   /**
@@ -235,18 +207,4 @@ export class ActeFormComponent implements OnInit {
     });
   }
 
-  private _fetchExternalDataByFile(): void {
-    this.fluxService.get_externalData(this.entiteSelected().id_e, this.documentInfo.info.id_d, 'type_piece').subscribe({
-      next: (response) => {
-        this.fileTypes = response.actes_type_pj_list;
-        this.currentStep.set(2);
-        this._buildFormExternalDataForFile(response.pieces, response.actes_type_pj_list)
-        this.pieces.set(response.pieces);
-        this.loadingService.hideLoading();
-      },
-      error: (error) => {
-        this.logger.error('Error fetching file types and files', error);
-      }
-    });
-  }
 }

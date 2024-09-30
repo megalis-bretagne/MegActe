@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { SettingsService } from 'src/environments/settings.service';
 
 @Injectable({
@@ -6,17 +6,17 @@ import { SettingsService } from 'src/environments/settings.service';
 })
 export class FileUploadValidationService {
 
-    constructor(private settingsService: SettingsService) { }
+    private _settingsService = inject(SettingsService);
 
     validateFiles(files: FileList, existingFiles: File[], multiple: boolean): string | null {
         if (!multiple) {
-            return this.validateSingleFile(files, existingFiles);
+            return this._validateSingleFile(files, existingFiles);
         } else {
-            return this.validateMultipleFiles(files, existingFiles);
+            return this._validateMultipleFiles(files, existingFiles);
         }
     }
 
-    private validateSingleFile(files: FileList, existingFiles: File[]): string | null {
+    private _validateSingleFile(files: FileList, existingFiles: File[]): string | null {
         if (existingFiles.length > 0) {
             return "Un fichier est déjà déposé.";
         }
@@ -26,43 +26,43 @@ export class FileUploadValidationService {
         }
 
         const file = files[0];
-        if (!this.isFileTypeAllowed(file)) {
-            return `Seuls les fichiers ${this.getAllowedFileType()} sont autorisés.`;
+        if (!this._isFileTypeAllowed(file)) {
+            return `Seuls les fichiers ${this._getAllowedFileType()} sont autorisés.`;
         }
 
-        if (!this.isFileSizeAllowed(file.size)) {
-            return `La taille du fichier ne doit pas dépasser ${this.getMaxSingleFileSizeMo()} Mo`;
+        if (!this._isFileSizeAllowed(file.size)) {
+            return `La taille du fichier ne doit pas dépasser ${this._getMaxSingleFileSizeMo()} Mo`;
         }
 
         return null;
     }
 
-    private validateMultipleFiles(files: FileList, existingFiles: File[]): string | null {
-        if (!Array.from(files).every(file => this.isFileTypeAllowed(file))) {
-            return `Seuls les fichiers ${this.getAllowedFileType()} sont autorisés.`;
+    private _validateMultipleFiles(files: FileList, existingFiles: File[]): string | null {
+        if (!Array.from(files).every(file => this._isFileTypeAllowed(file))) {
+            return `Seuls les fichiers ${this._getAllowedFileType()} sont autorisés.`;
         }
 
-        if (Array.from(files).some(file => this.isDuplicateFile(file, existingFiles))) {
+        if (Array.from(files).some(file => this._isDuplicateFile(file, existingFiles))) {
             return "Vous ne pouvez pas télécharger le même fichier plusieurs fois.";
         }
 
         const totalSize = existingFiles.reduce((acc, file) => acc + file.size, 0) + Array.from(files).reduce((acc, file) => acc + file.size, 0);
-        if (totalSize > this.settingsService.getSetting().fileUpload.maxTotalFileSize) {
-            return `La taille totale des fichiers ne doit pas dépasser ${this.getMaxTotalFileSizeMo()} Mo.`;
+        if (totalSize > this._settingsService.getSetting().fileUpload.maxTotalFileSize) {
+            return `La taille totale des fichiers ne doit pas dépasser ${this._getMaxTotalFileSizeMo()} Mo.`;
         }
 
         return null;
     }
 
-    private isFileTypeAllowed(file: File): boolean {
-        return file.type === this.settingsService.getSetting().fileUpload.allowedFileType;
+    private _isFileTypeAllowed(file: File): boolean {
+        return file.type === this._settingsService.getSetting().fileUpload.allowedFileType;
     }
 
-    private isFileSizeAllowed(size: number): boolean {
-        return size <= this.settingsService.getSetting().fileUpload.maxSingleFileSize;
+    private _isFileSizeAllowed(size: number): boolean {
+        return size <= this._settingsService.getSetting().fileUpload.maxSingleFileSize;
     }
 
-    private isDuplicateFile(file: File, existingFiles: File[]): boolean {
+    private _isDuplicateFile(file: File, existingFiles: File[]): boolean {
         return existingFiles.some(existingFile =>
             existingFile.name === file.name &&
             existingFile.size === file.size &&
@@ -71,16 +71,16 @@ export class FileUploadValidationService {
     }
 
     //Récupèrer la taille maximale d'un fichier unique en Mo
-    private getMaxSingleFileSizeMo(): number {
-        return this.settingsService.getSetting().fileUpload.maxSingleFileSize / (1024 * 1024);
+    private _getMaxSingleFileSizeMo(): number {
+        return this._settingsService.getSetting().fileUpload.maxSingleFileSize / (1024 * 1024);
     }
 
     //Récupèrer la taille totale maximale des fichiers en Mo
-    private getMaxTotalFileSizeMo(): number {
-        return this.settingsService.getSetting().fileUpload.maxTotalFileSize / (1024 * 1024);
+    private _getMaxTotalFileSizeMo(): number {
+        return this._settingsService.getSetting().fileUpload.maxTotalFileSize / (1024 * 1024);
     }
     //Récupèrer le type de fichier autorisé
-    private getAllowedFileType(): string {
-        return this.settingsService.getSetting().fileUpload.allowedFileType.split('/')[1];
+    private _getAllowedFileType(): string {
+        return this._settingsService.getSetting().fileUpload.allowedFileType.split('/')[1];
     }
 }

@@ -18,6 +18,8 @@ import { HttpFluxService } from 'src/app/core/services/http/http-flux.service';
 })
 
 export class ExternalDataInputComponent extends BaseInputComponent implements OnInit {
+
+  private _fluxService = inject(HttpFluxService);
   @Input() link_name: string = '';
   @Input() documentId: string = '';
 
@@ -30,15 +32,14 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
 
   constructor(
     protected override fieldFluxService: FieldFluxService,
-    private fluxService: HttpFluxService,
-    private logger: NGXLogger
+    private _logger: NGXLogger
   ) {
     super(fieldFluxService);
   }
 
   override ngOnInit(): void {
     super.ngOnInit();
-    this.fetchExternalData();
+    this._fetchExternalData();
   }
 
   override getControlType(): string {
@@ -54,16 +55,16 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
   }
 
   // Récupérer les données du champ
-  private fetchExternalData(): void {
+  private _fetchExternalData(): void {
     const id_e = this.currentUser().user_info.id_e;
 
-    this.fluxService.get_externalData(id_e, this.documentId, this.idField).subscribe({
+    this._fluxService.get_externalData(id_e, this.documentId, this.idField).subscribe({
       next: (data) => {
         this.externalDataOptions = this._filterExternalData(data);
         this.filteredOptions = this.externalDataOptions;
       },
       error: (error) => {
-        this.logger.error('Failed to retrieve external data', error);
+        this._logger.error('Failed to retrieve external data', error);
       }
     });
   }

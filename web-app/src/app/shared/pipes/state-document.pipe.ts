@@ -14,12 +14,12 @@ export class StateDocumentPipe implements PipeTransform {
 
   transform(state: string): unknown {
     if (this.mapStatusDocument) { // si le mapping est surchargé en settings, il est prioritaire
-      return this.mapStatusDocument[state] || this.defaultMapping[state] || state
+      return this.mapStatusDocument[state] || this._defaultMapping[state] || state
     }
-    return this.defaultMapping[state] || state;
+    return this._defaultMapping[state] || state;
   }
 
-  private defaultMapping: { [key: string]: string } = {
+  private _defaultMapping: { [key: string]: string } = {
     'termine': 'Traitement terminé',
     'error-ged': 'Erreur lors du dépôt à la GED',
     'accepter-sae': 'Archiver SAE',
