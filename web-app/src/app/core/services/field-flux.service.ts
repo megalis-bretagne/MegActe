@@ -37,12 +37,12 @@ export class FieldFluxService {
             }
         });
 
-        // Organiser les filteredFields dans le même ordre que fields
-        const orderedFilteredFields = fields.filter(field =>
-            filteredFields.some(filteredField => filteredField.idField === field.idField)
-        );
-
-        return orderedFilteredFields;
+        return filteredFields.sort((f1, f2) => {
+            if (f1['requis'] === f2['requis']) return 0
+            if (f1['requis']) return -1
+            if (f2['requis']) return 1
+            return 0
+        });
     }
 
     // Nettoyer les délimiteurs de l'expression régulière
