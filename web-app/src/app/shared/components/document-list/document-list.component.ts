@@ -55,7 +55,7 @@ export class DocumentListComponent implements OnInit {
   is_loading = signal<boolean>(true);
   pageActive = signal(1);
 
-  constructor(private router: Router) {
+  constructor(private _router: Router) {
     // effect sur le changement de flux
     effect(() => {
       this.pageActive.set(1);
@@ -102,7 +102,7 @@ export class DocumentListComponent implements OnInit {
       this.documentService.createDocument(docCreateInfo).subscribe({
         next: (response) => {
           const documentId = response.content.info.id_d;
-          this.router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
+          this._router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
         }
       })
     }
@@ -114,7 +114,7 @@ export class DocumentListComponent implements OnInit {
       const acte = flux.find(f => f.id === document.type);
       if (acte.enable) { // si le flux est activé dans megacte
         this.loadingService.showLoading("Chargement du document en cours");
-        this.router.navigate(['/org', this.entiteSelected().id_e, 'acte', document.id_d]);
+        this._router.navigate(['/org', this.entiteSelected().id_e, 'acte', document.id_d]);
       } else {
         this.documentService.redirectEditToPastell(document);
       }

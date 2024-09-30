@@ -38,6 +38,20 @@ export interface TypePieceFichier {
     typologie: string
 }
 
+export enum LastActionEnum {
+    Modification = 'modification',
+    Creation = 'creation',
+    Suppression = 'supression',
+    // Ajoute d'autres actions si nécessaire
+}
+
+export enum ActionPossibleEnum {
+    Orientation = 'orientation',
+    Suppression = 'supression',
+    Modification = 'modification',
+    // Ajoute d'autres actions si nécessaire
+}
+
 export interface DocumentDetail {
     info: {
         id_d: string;
@@ -68,9 +82,9 @@ export interface DocumentDetail {
     };
 
     last_action: {
-        action: string;
+        action: LastActionEnum;
         message: string;
         date: string;
     };
-    action_possible: string[];
+    action_possible: ActionPossibleEnum[];
 }

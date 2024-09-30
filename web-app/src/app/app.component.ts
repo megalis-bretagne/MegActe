@@ -16,14 +16,15 @@ import { UserContextService } from './core/services/user-context.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+  private _router = inject(Router);
+
   title = 'Megacte';
   userContexteService = inject(UserContextService);
   entiteSelected = this.userContexteService.entiteSelected;
 
-  constructor(private router: Router) { }
 
   ngOnInit() {
-    this.router.events.subscribe((event) => {
+    this._router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         setTimeout(() => { initFlowbite(); })
       }

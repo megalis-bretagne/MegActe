@@ -21,6 +21,7 @@ import { Modal } from 'flowbite';
 })
 export class SidebarComponent implements OnInit {
   private _userContextService = inject(UserContextService);
+  private _documentService = inject(HttpDocumentService);
 
   entiteSelected = this._userContextService.entiteSelected;
   userFlux = this._userContextService.userFlux
@@ -36,7 +37,7 @@ export class SidebarComponent implements OnInit {
   groupedFlux: { [key: string]: Flux[]; };
   listType: string[];
   isGroupByType: boolean = false;
-  constructor(private logger: NGXLogger, private documentService: HttpDocumentService, private router: Router) {
+  constructor(private _logger: NGXLogger, private _router: Router) {
     effect(() => {
       this.flux = Object.values(this.userFlux());
       this.sortFlux();
@@ -60,12 +61,12 @@ export class SidebarComponent implements OnInit {
       doc_info: {}
     };
 
-    this.documentService.createDocument(docCreateInfo).subscribe({
+    this._documentService.createDocument(docCreateInfo).subscribe({
       next: (response) => {
         const documentId = response.content.info.id_d;
-        this.router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
+        this._router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
       },
-      error: (error) => { this.logger.error('Error creating document:', error); },
+      error: (error) => { this._logger.error('Error creating document:', error); },
     })
   }
 
@@ -103,7 +104,7 @@ export class SidebarComponent implements OnInit {
     if (close_modal) {
       this.hideSelectEntite();
     }
-    this.router.navigate(['/org', e.id_e]);
+    this._router.navigate(['/org', e.id_e]);
   }
 
 }

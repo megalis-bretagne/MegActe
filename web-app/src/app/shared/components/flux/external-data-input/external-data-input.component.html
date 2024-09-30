@@ -18,7 +18,7 @@
       }" [id]="controlId" type="text" [formControl]="formControl" [matAutocomplete]="auto" (input)="filter()"
         (focus)="filter()" #autoCompleteInput />
     <mat-autocomplete #auto="matAutocomplete" requireSelection class="fr-select">
-        @for (option of filteredOptions; track option) {
+        @for (option of filteredOptions; track $index) {
         <mat-option [value]="option">
             {{ option }}
         </mat-option>

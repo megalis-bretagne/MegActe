@@ -14,15 +14,15 @@ import { LoadingComponent } from '../loading-component/loading.component';
     styleUrls: ['./meg-modal-dialog.component.scss']
 })
 export class ModalDialogComponent implements OnInit {
-    private loadingService = inject(LoadingService);
+    private _loadingService = inject(LoadingService);
 
-    private modal: Modal | undefined;
+    private _modal: Modal | undefined;
     status = signal<InfoModal | null>(null);
 
     cssClassType = signal<string>("");
 
     constructor(
-        private router: Router,
+        private _router: Router,
     ) {
 
         effect(() => {
@@ -50,29 +50,29 @@ export class ModalDialogComponent implements OnInit {
 
         // Initialize the Flowbite modal instance
         if (modalElement) {
-            this.modal = new Modal(modalElement, { backdrop: 'static' });
+            this._modal = new Modal(modalElement, { backdrop: 'static' });
         }
-        this.loadingService.status$.subscribe(
+        this._loadingService.status$.subscribe(
             (status: InfoModal | null) => this.status.set(status)
         );
     }
 
     openModal(): void {
-        if (this.modal) {
-            this.modal.show();  // Show the modal
+        if (this._modal) {
+            this._modal.show();  // Show the modal
         }
     }
 
     closeModal(): void {
-        if (this.modal) {
-            this.modal.hide();
+        if (this._modal) {
+            this._modal.hide();
         }
         if (this.status()?.callbackClose) {
             this.status().callbackClose();
         }
 
         if (this.status()?.redirect_on_close) {
-            this.router.navigate(this.status().redirect_on_close);
+            this._router.navigate(this.status().redirect_on_close);
         }
     }
 }

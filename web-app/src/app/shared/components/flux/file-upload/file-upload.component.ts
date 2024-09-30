@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, input, signal } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, input, signal, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { FieldFluxService } from 'src/app/core/services/field-flux.service';
 import { FileUploadValidationService } from 'src/app/core/services/file-upload-validation.service';
@@ -21,6 +21,8 @@ export enum FileActionState {
   styleUrls: ['./file-upload.component.scss']
 })
 export class FileUploadComponent extends BaseInputComponent {
+  private _documentService = inject(HttpDocumentService);
+
   @Input() multiple: boolean = false;
   id_d = input.required<string>();
   id_e = input.required<number>();
@@ -33,7 +35,7 @@ export class FileUploadComponent extends BaseInputComponent {
   files: File[] = [];
   errorMessage: string = '';
 
-  constructor(private validationService: FileUploadValidationService, private documentService: HttpDocumentService, protected override fieldFluxService: FieldFluxService) {
+  constructor(private _validationService: FileUploadValidationService, protected override fieldFluxService: FieldFluxService) {
     super(fieldFluxService);
   }
 
@@ -55,7 +57,7 @@ export class FileUploadComponent extends BaseInputComponent {
   }
 
   onFilesDropped(files: FileList): void {
-    const error = this.validationService.validateFiles(files, this.files, this.multiple);
+    const error = this._validationService.validateFiles(files, this.files, this.multiple);
     if (error) {
       this.errorMessage = error;
       this.formControl.setErrors({ incorrect: true });
@@ -75,7 +77,7 @@ export class FileUploadComponent extends BaseInputComponent {
   removeFile(file: File): void {
     this.action_one_file.set(FileActionState.Delete)
 
-    this.documentService.deleteFileFromDocument(this.id_d(), this.idField, this.id_e(), file.name).subscribe(
+    this._documentService.deleteFileFromDocument(this.id_d(), this.idField, this.id_e(), file.name).subscribe(
       {
         next: () => {
           this.files = this.files.filter(f => f !== file);
@@ -97,7 +99,7 @@ export class FileUploadComponent extends BaseInputComponent {
 
   private _uploadFile(files: File[]): void {
     this.action_one_file.set(FileActionState.Add);
-    this.documentService.uploadFiles(this.id_d(), this.idField, this.id_e(), files).subscribe(
+    this._documentService.uploadFiles(this.id_d(), this.idField, this.id_e(), files).subscribe(
       {
         next: () => {
           if (this.multiple) {

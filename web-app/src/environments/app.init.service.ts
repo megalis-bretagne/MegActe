@@ -10,14 +10,14 @@ import { UserContextService } from 'src/app/core/services/user-context.service';
 @Injectable({ providedIn: 'root' })
 export class AppInitService {
 
-    constructor(private http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService,
-        private userContextService: UserContextService, private _logger: NGXLogger) {
+    constructor(private _http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService,
+        private _userContextService: UserContextService, private _logger: NGXLogger) {
     }
 
 
     initializeApp(): Promise<any> {
         return new Promise((resolve, reject) => {
-            firstValueFrom(this.http.get('assets/settings.json'))
+            firstValueFrom(this._http.get('assets/settings.json'))
                 .then((response) => {
                     this._settingsService.setSettings(response as Settings);
                     resolve(true);
@@ -57,8 +57,8 @@ export class AppInitService {
             }
         }).then(async () => { // chargement des infos de l'utilisateur et de son contexte
             try {
-                await firstValueFrom(this.userContextService.fetchUser());
-                await firstValueFrom(this.userContextService.fetchUserFlux());
+                await firstValueFrom(this._userContextService.fetchUser());
+                await firstValueFrom(this._userContextService.fetchUserFlux());
             } catch (error) {
                 throw new Error("Une erreur s'est déroulée durant la récupération de l'utilisateur et des flux");
             }

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Data } from '@angular/router';
 import { Field } from '../model/field-form.model';
 import { SettingsService } from 'src/environments/settings.service';
@@ -8,7 +8,7 @@ import { SettingsService } from 'src/environments/settings.service';
     providedIn: 'root'
 })
 export class FieldFluxService {
-    constructor(private settingsService: SettingsService) { }
+    private _settingsService = inject(SettingsService);
 
 
     // Générer un id unique pour chaque champs 
@@ -28,7 +28,7 @@ export class FieldFluxService {
             return !field['read-only'] && !field['no-show'] && field['requis']
         });
 
-        const additionalFields = this.settingsService.getFlowType(flowId) || [];
+        const additionalFields = this._settingsService.getFlowType(flowId) || [];
 
         additionalFields.forEach(fieldId => {
             const field = fields.find(f => f.idField === fieldId);
