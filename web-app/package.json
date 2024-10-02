@@ -25,7 +25,7 @@
     "@angular/platform-browser-dynamic": "^18.2.5",
     "@angular/router": "^18.2.5",
     "date-fns": "^3.6.0",
-    "flowbite": "^2.5.1",
+    "flowbite": "^2.5.2",
     "keycloak-angular": "^16.0.1",
     "keycloak-js": "^25.0.6",
     "moment": "^2.29.3",
