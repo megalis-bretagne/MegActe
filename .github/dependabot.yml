@@ -25,7 +25,7 @@ updates:
       - "javascript"
     ignore: 
       - dependency-name: "*"
-        update-types: ["version-update:semver-minor"]
+        update-types: ["version-update:semver-patch"]
     groups:
       angular:
         patterns:
