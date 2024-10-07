@@ -8,6 +8,21 @@ from pydantic_settings import (
 )
 
 
+class S2low(BaseModel):
+    """
+    Configuration pour la connexion à s2low
+
+    Attributes:
+        url     url api s2low
+        path_certificate    le chemin du certificat (format .pem)
+        path_key    le chemin de la clé du certificat (format .pem)
+    """
+
+    url: str
+    path_certificate: str
+    path_key: str
+
+
 class DocumentConfig(BaseModel):
     """
     Configuration pour les documents de pastell
@@ -80,12 +95,11 @@ class Settings(BaseSettings):
 
     Args:
         BaseSettings (_type_):
-
-
     """
 
     document: DocumentConfig = DocumentConfig()
     pastell: Pastell
+    s2low: S2low
     keycloak: Keycloak
     database: Database
     request_timeout: int = 5

@@ -286,7 +286,7 @@ def check_and_perform_action_service(
     """
 
     response = client_api.perform_get(
-        f"/entite/{entite_id}/document/{document_id}/action"
+        f"/entite/{entite_id}/document/{document_id}"
     )
 
     actions = response.get("action_possible", [])
