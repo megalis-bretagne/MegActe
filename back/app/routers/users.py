@@ -7,7 +7,7 @@ from ..services.flux_service import get_flux
 from ..clients.pastell.api.entite_api import EntiteApi
 
 from . import (
-    get_client_api,
+    get_client_api_pastell,
     get_or_make_api_pastell,
     get_or_make_api_pastell_for_admin,
 )
@@ -16,7 +16,6 @@ from ..database import get_db, get_user_from_db
 from ..schemas.user_schemas import UserCreate
 from ..services.user_service import (
     add_user_to_db,
-    delete_user_from_db,
     get_user_context_service,
 )
 from ..models.users import UserPastell
@@ -33,7 +32,7 @@ router = APIRouter()
 )
 def get_user(
     user: UserPastell = Depends(get_user_from_db),
-    client: ApiPastell = Depends(get_client_api(EntiteApi)),
+    client: ApiPastell = Depends(get_client_api_pastell(EntiteApi)),
 ):
     return get_user_context_service(client, user)
 
@@ -46,12 +45,6 @@ def add_user(
     client_admin: ApiPastell = Depends(get_or_make_api_pastell_for_admin),
 ):
     return add_user_to_db(user_data, client_admin, db)
-
-
-# Delete User
-@router.delete("/user/{user_id}", tags=["users"])
-def delete_user(user_id: int, db: Session = Depends(get_db)):
-    return delete_user_from_db(user_id, db)
 
 
 # Get liste des flux dispo pour l'utilisateur connecté
