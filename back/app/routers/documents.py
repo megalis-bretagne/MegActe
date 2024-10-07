@@ -6,7 +6,9 @@ from app.dependencies import get_settings
 from config.configuration import Settings
 
 from ..clients.pastell.api import ApiPastell
-from ..routers import get_or_make_api_pastell
+from ..clients.s2low.api import ApiS2low
+
+from ..routers import get_or_make_api_pastell, get_or_make_api_s2low
 
 from ..services.document_service import (
     check_and_perform_action_service,

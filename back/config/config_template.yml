@@ -16,3 +16,8 @@ database:
   host : <host>
   port : <port>
   database: <db name>
+
+s2low:
+  url: <urm>
+  path_certificate: <certificat .pem>
+  path_key: <private_key.pem>
