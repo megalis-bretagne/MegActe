@@ -2,7 +2,7 @@ from typing import Dict, List
 from pydantic import TypeAdapter
 
 from ..models.entite_info import EntiteInfo, EntiteInfoWithChild
-from ..models.auth import AuthUser
+from requests.auth import HTTPBasicAuth
 from . import ApiPastell
 
 __all__ = "EntiteApi"
@@ -15,7 +15,7 @@ class EntiteApi(ApiPastell):
         ApiPastell (_type_): _description_
     """
 
-    def get_entite(self, only_active: bool = False, auth: AuthUser = None):
+    def get_entite(self, only_active: bool = False, auth: HTTPBasicAuth = None):
         """Retourne les entités à plat en fonction du contexte utilisateur
 
         Args:
@@ -35,7 +35,9 @@ class EntiteApi(ApiPastell):
             else list(filter(lambda entite: entite.is_active, list_entites))
         )
 
-    def get_entite_with_child(self, only_active: bool = False, auth: AuthUser = None):
+    def get_entite_with_child(
+        self, only_active: bool = False, auth: HTTPBasicAuth = None
+    ):
         """Retourne les entités hierarchisés  en fonction du contexte utilisateur
 
         Args:
