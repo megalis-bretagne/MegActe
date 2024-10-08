@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from ..schemas.flux_schemas import FluxResponseModel
-from ..services.flux_service import get_flux
+from ..services.flux_service import FluxService
 
 from ..clients.pastell.api.entite_api import EntiteApi
 
@@ -14,10 +14,7 @@ from . import (
 from ..clients.pastell.api import ApiPastell
 from ..database import get_db, get_user_from_db
 from ..schemas.user_schemas import UserCreate
-from ..services.user_service import (
-    add_user_to_db,
-    get_user_context_service,
-)
+from ..services.user_service import UserService
 from ..models.users import UserPastell
 
 router = APIRouter()
@@ -34,7 +31,7 @@ def get_user(
     user: UserPastell = Depends(get_user_from_db),
     client: ApiPastell = Depends(get_client_api_pastell(EntiteApi)),
 ):
-    return get_user_context_service(client, user)
+    return UserService(client).get_user_context_service(user)
 
 
 # Add user
@@ -44,7 +41,7 @@ def add_user(
     db: Session = Depends(get_db),
     client_admin: ApiPastell = Depends(get_or_make_api_pastell_for_admin),
 ):
-    return add_user_to_db(user_data, client_admin, db)
+    return UserService(client_admin).add_user_to_db(user_data, db)
 
 
 # Get liste des flux dispo pour l'utilisateur connecté
@@ -55,4 +52,4 @@ def add_user(
     response_model=FluxResponseModel,
 )
 def get_user_flux_available(client: ApiPastell = Depends(get_or_make_api_pastell)):
-    return get_flux(client)
+    return FluxService(client).get_flux()

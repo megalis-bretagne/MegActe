@@ -1,13 +1,8 @@
-from ..clients.pastell.api import ApiPastell
+from . import BaseService
 from ..exceptions.custom_exceptions import PastellException
 
 
-class ActeService:
-
-    api_pastell: ApiPastell
-
-    def __init__(self, api: ApiPastell = None) -> None:
-        self.api_pastell = api
+class ActeService(BaseService):
 
     def check_and_perform_action_service(
         self, entite_id: int, document_id: str, action: str
