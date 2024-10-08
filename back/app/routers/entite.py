@@ -3,7 +3,7 @@ from typing import Annotated
 
 from ..schemas.pagination import ResponsePagination
 from ..schemas.document_schemas import DocumentPaginate
-from ..services.document_service import list_documents_paginate
+from ..services.document_service import DocumentService
 
 from ..clients.pastell.api import ApiPastell
 from ..routers import get_or_make_api_pastell
@@ -34,7 +34,9 @@ def get_documents_on_entite(
 ):
     args = {}
 
-    docs = list_documents_paginate(client, id_e, type_flux, *(offset, limit), **args)
+    docs = DocumentService(client).list_documents_paginate(
+        id_e, type_flux, *(offset, limit), **args
+    )
     count = client.count_documents_by_id_e(id_e=id_e, type=type_flux)
 
     base_url = f"/entite/{id_e}/documents"

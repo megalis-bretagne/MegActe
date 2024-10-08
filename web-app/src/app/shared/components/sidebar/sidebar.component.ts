@@ -56,14 +56,13 @@ export class SidebarComponent implements OnInit {
   createDoc(flux: Flux): void {
     this.loadingService.showLoading("Création du document en cours ...");
     const docCreateInfo: DocCreateInfo = {
-      entite_id: this.userCurrent().user_info.id_e,
       flux_type: flux.id,
       doc_info: {}
     };
 
-    this._documentService.createDocument(docCreateInfo).subscribe({
+    this._documentService.createDocument(this.userCurrent().user_info.id_e, docCreateInfo).subscribe({
       next: (response) => {
-        const documentId = response.content.info.id_d;
+        const documentId = response.info.id_d;
         this._router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
       },
       error: (error) => { this._logger.error('Error creating document:', error); },

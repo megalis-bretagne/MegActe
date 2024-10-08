@@ -15,8 +15,8 @@ export class HttpDocumentService {
 
 
 
-    createDocument(docCreateInfo: DocCreateInfo): Observable<any> {
-        return this._http.post<any>(`${this._settingsService.apiUrl}/document`, docCreateInfo).pipe(
+    createDocument(entiteId: number, docCreateInfo: DocCreateInfo): Observable<any> {
+        return this._http.post<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document`, docCreateInfo).pipe(
             tap(() => this._logger.info('Document created successfully')),
             catchError((error) => {
                 this._logger.error('Failed to create document:', error);
@@ -25,8 +25,8 @@ export class HttpDocumentService {
         );
     }
 
-    updateDocument(documentId: string, docUpdateInfo: DocUpdateInfo): Observable<any> {
-        return this._http.patch<any>(`${this._settingsService.apiUrl}/document/${documentId}`, docUpdateInfo).pipe(
+    updateDocument(entiteId: number, documentId: string, docUpdateInfo: DocUpdateInfo): Observable<any> {
+        return this._http.patch<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}`, docUpdateInfo).pipe(
             catchError((error) => {
                 this._logger.error('Error updating document', error);
                 return throwError(() => error);
