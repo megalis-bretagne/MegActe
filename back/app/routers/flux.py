@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from ..clients.pastell.api import ApiPastell
 from . import get_or_make_api_pastell
-from ..services.flux_service import get_flux_detail_service
+from ..services.flux_service import FluxService
 import logging
 
 router = APIRouter()
@@ -15,4 +15,4 @@ def get_flux_detail(
     flux_type: str, client: ApiPastell = Depends(get_or_make_api_pastell)
 ):
     logging.debug("call get_flux_detail")
-    return get_flux_detail_service(client, flux_type)
+    return FluxService(client).get_flux_detail_service(flux_type)
