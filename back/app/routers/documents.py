@@ -1,8 +1,10 @@
+from calendar import c
 from typing_extensions import Annotated
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from typing import List
 
 from app.dependencies import get_settings
+from ..services.acte_service import ActeService
 from config.configuration import Settings
 
 from ..clients.pastell.api import ApiPastell
@@ -11,9 +13,6 @@ from ..clients.s2low.api import ApiS2low
 from ..routers import get_or_make_api_pastell, get_or_make_api_s2low
 
 from ..services.document_service import (
-    check_and_perform_action_service,
-    update_document_service,
-    create_document_service,
     get_document_info_service,
     delete_file_from_document_service,
     add_multiple_files_to_document_service,
@@ -36,21 +35,29 @@ router = APIRouter()
 
 
 # Create doc
-@router.post("/document", tags=["document"])
+@router.post("/entite/{entite_id}/document", tags=["document"])
 def add_acte_doc(
-    doc: DocCreateInfo, client: ApiPastell = Depends(get_or_make_api_pastell)
+    entite_id: int,
+    doc: DocCreateInfo,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return create_document_service(doc, client)
+    return client.perform_post(
+        f"/entite/{entite_id}/document", data={"type": doc.flux_type}
+    )
 
 
 # Update doc
-@router.patch("/document/{document_id}", tags=["document"])
+@router.patch("/entite/{entite_id}/document/{document_id}", tags=["document"])
 def update_document(
     document_id: str,
+    entite_id: int,
     request_data: DocUpdateInfo,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return update_document_service(document_id, request_data, client)
+    return client.perform_patch(
+        f"/entite/{entite_id}/document/{document_id}",
+        data=request_data.doc_info,
+    )
 
 
 # Get document info
@@ -185,6 +192,6 @@ def send_acte(
     entite_id: int,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return check_and_perform_action_service(
-        entite_id, document_id, "orientation", client
+    return ActeService(client).check_and_perform_action_service(
+        entite_id, document_id, "orientation"
     )

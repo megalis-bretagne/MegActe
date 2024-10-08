@@ -16,73 +16,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def create_empty_document(entite_id: int, flux_type: str, client_api: ApiPastell):
-    """Crée un document vide dans Pastell pour un type de flux.
-
-    Args:
-        doc (DocCreateEmpty):Les informations nécessaires pour créer le document.
-        client_api (ApiPastell): client api.
-
-    Returns:
-        dict: Les détails du document créé.
-    """
-    return client_api.perform_post(
-        f"/entite/{entite_id}/document", data={"type": flux_type}
-    )
-
-
-def update_document_service(
-    document_id: int,
-    document_data: DocUpdateInfo,
-    client_api: ApiPastell,
-):
-    """Met à jour un document dans Pastell avec les données fournies.
-
-    Args:
-        document_id (int): L'ID du document à mettre à jour.
-        document_data (DocUpdateInfo): Les données à mettre à jour dans le document.
-        client_api (ApiPastell): client api
-
-    Raises:
-        PastellException: Si le document ne peut pas être mis à jour dans Pastell.
-
-    Returns:
-        dict: Les détails du document mis à jour.
-    """
-    return client_api.perform_patch(
-        f"/entite/{document_data.entite_id}/document/{document_id}",
-        data=document_data.doc_info,
-    )
-
-
-def create_document_service(
-    doc_data: DocCreateInfo,
-    client_api: ApiPastell,
-):
-    """Crée un document vide et le met à jour avec les infos fournies.
-
-    Args:
-        doc_create (DocCreateInfo): Les informations nécessaires pour créer le document.
-        client_api (ApiPastell): client api
-
-    Returns:
-        dict: Les détails du document créé et mis à jour.
-    """
-    # Création du doc vide
-    created_document = create_empty_document(
-        doc_data.entite_id, doc_data.flux_type, client_api
-    )
-
-    document_id = created_document.get("id_d")
-
-    doc_update_info = DocUpdateInfo(
-        entite_id=doc_data.entite_id, doc_info=doc_data.doc_info
-    )
-
-    # Mettre à jour le doc vc les infos fournies
-    return update_document_service(document_id, doc_update_info, client_api)
-
-
 def get_document_info_service(
     entite_id: int,
     document_id: str,
@@ -264,40 +197,6 @@ def get_external_data_service(
 
     return client_api.perform_get(
         f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
-    )
-
-
-def check_and_perform_action_service(
-    entite_id: int, document_id: str, action: str, client_api: ApiPastell
-) -> dict:
-    """Vérifie si une action est possible et l'exécute pour un document donné.
-
-    Args:
-        entite_id (int): L'ID de l'entité.
-        document_id (str): L'ID du document.
-        action (str): L'action à vérifier et à exécuter.
-        user (UserPastell): User pour lequel l'opération doit être effectuée.
-
-    Raises:
-        PastellException: Si l'action n'est pas possible ou ne peut pas être exécutée dans Pastell.
-
-    Returns:
-        dict: Les détails de l'action exécutée.
-    """
-
-    response = client_api.perform_get(
-        f"/entite/{entite_id}/document/{document_id}"
-    )
-
-    actions = response.get("action_possible", [])
-    if action not in actions:
-        raise PastellException(
-            status_code=400,
-            detail=f"Action '{action}' not possible for document {document_id}",
-        )
-
-    return client_api.perform_post(
-        f"/entite/{entite_id}/document/{document_id}/action/{action}"
     )
 
 
