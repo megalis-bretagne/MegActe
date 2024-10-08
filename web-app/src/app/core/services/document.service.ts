@@ -38,7 +38,7 @@ export class DocumentService {
     updateDocument(id_e: number, id_d: string, docUpdateInfo: DocUpdateInfo): Observable<any> {
         this._loadingService.showLoading("Sauvegarde en cours ...");
         // Création d'un observable pour la mise à jour du document
-        const updateDocument$ = this._httpDocumentService.updateDocument(id_d, docUpdateInfo).pipe(
+        const updateDocument$ = this._httpDocumentService.updateDocument(id_e, id_d, docUpdateInfo).pipe(
             catchError(error => {
                 this._logger.error('Error updating document', error);
                 return of(null);

@@ -94,14 +94,14 @@ export class DocumentListComponent implements OnInit {
       this.loadingService.showLoading("Création du document en cours ...");
 
       const docCreateInfo: DocCreateInfo = {
-        entite_id: this.entiteSelected().id_e,
         flux_type: this.fluxSelected().id,
         doc_info: {}
       };
 
-      this.documentService.createDocument(docCreateInfo).subscribe({
+      this.documentService.createDocument(this.entiteSelected().id_e, docCreateInfo).subscribe({
         next: (response) => {
-          const documentId = response.content.info.id_d;
+          console.log(response);
+          const documentId = response.info.id_d;
           this._router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
         }
       })
