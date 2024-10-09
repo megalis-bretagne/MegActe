@@ -4,6 +4,9 @@
     "back/**/*",
     "docker/**/*"
   ],
+  "parserOptions": {
+    "project": "**/tsconfig.json"
+  },
   "globals": {
     "document": true,
     "window": true

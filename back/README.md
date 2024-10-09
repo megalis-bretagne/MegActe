@@ -25,7 +25,8 @@ pip install pip-tools
 ```
 
 
-# Pour mettre à jour les dépendances épinglées
+* Pour mettre à jour les dépendances épinglées
+```
 pip-compile --resolver=backtracking && pip-compile --resolver=backtracking requirements_dev.in
 pip install -r requirements.txt -r requirements_dev.txt
 ```
@@ -42,9 +43,20 @@ Commande pour lancer les TU
 python -m pytest
 ```
 
+## Mise en place de la base de donnée
+
+La base de données est versionné grâce à Alembic.
+
+* Pour avoir la dernière version schéma
+Dans le dossier back :
+```
+alembic upgrade head
+```
+
+
 ## Lancement du back
 
-Dans le dossier back.
+Dans le dossier back :
 ``` 
 uvicorn app.main:app --host <HOST> --port <PORT> --reload
 ```
