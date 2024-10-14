@@ -8,8 +8,6 @@ import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
 
-
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
@@ -18,10 +16,9 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 });
 
-
 export default [{
     ignores: ["back/**/*", "docker/**/*", "dist/**/*", "node_modules/**/*", "**/tailwind.config.js", "**/postcss.config.js", '**/eslint.config.mjs'],
-}, js.configs.recommended,
+},
 ...tseslint.configs.recommended,
 {
     languageOptions: {
@@ -31,10 +28,8 @@ export default [{
             document: true,
             window: true,
         },
-
         ecmaVersion: 5,
         sourceType: "commonjs",
-
         parserOptions: {
             project: "tsconfig.json",
             tsconfigRootDir: __dirname,
@@ -54,9 +49,7 @@ export default [{
     plugins: {
         "@typescript-eslint": typescriptEslint,
     },
-
     languageOptions: {
-        // ecmaVersion: 5,
         sourceType: "script",
 
         parserOptions: {
@@ -65,29 +58,23 @@ export default [{
             tsconfigRootDir: __dirname,
         },
     },
-
     rules: {
         "@angular-eslint/prefer-standalone": ["error"],
-
         "@typescript-eslint/naming-convention": ["error", {
             selector: "memberLike",
             modifiers: ["private"],
             format: ["camelCase"],
             leadingUnderscore: "require",
         }],
-
         "@angular-eslint/component-selector": ["error", {
             type: "element",
             prefix: "meg",
             style: "kebab-case",
         }],
-
         "no-irregular-whitespace": ["error", {
             skipComments: true,
         }],
-
         "no-unused-vars": "off",
-
         "@typescript-eslint/no-unused-vars": ["off", {
             vars: "all",
             args: "none",
@@ -101,15 +88,12 @@ export default [{
     files: ["**/*.html"],
 })), {
     files: ["**/*.html"],
-
     plugins: {
         "@angular-eslint/template": angularEslintTemplate,
     },
-
     languageOptions: {
         parser: parser,
     },
-
     rules: {
         "@angular-eslint/template/prefer-self-closing-tags": "error",
     },
