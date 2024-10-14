@@ -20,7 +20,7 @@ const compat = new FlatCompat({
 
 
 export default [{
-    ignores: ["back/**/*", "docker/**/*", "dist/**/*", "node_modules/**/*", "**/tailwind.config.js"],
+    ignores: ["back/**/*", "docker/**/*", "dist/**/*", "node_modules/**/*", "**/tailwind.config.js", "**/postcss.config.js", '**/eslint.config.mjs'],
 }, js.configs.recommended,
 ...tseslint.configs.recommended,
 {
@@ -37,6 +37,7 @@ export default [{
 
         parserOptions: {
             project: "tsconfig.json",
+            tsconfigRootDir: __dirname,
         },
     },
 }, ...compat.extends(
@@ -114,6 +115,7 @@ export default [{
     },
 }, {
     rules: {
+        "@typescript-eslint/no-explicit-any": "off",
         "@typescript-eslint/ban-ts-comment": ["off",
             {
                 'ts-check': 'allow-with-description',
