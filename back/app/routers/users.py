@@ -6,7 +6,7 @@ from ..services.flux_service import FluxService
 
 from ..clients.pastell.api.entite_api import EntiteApi
 
-from . import (
+from ..services import (
     get_client_api_pastell,
     get_or_make_api_pastell,
     get_or_make_api_pastell_for_admin,

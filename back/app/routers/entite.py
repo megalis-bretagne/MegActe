@@ -6,7 +6,7 @@ from ..schemas.document_schemas import DocumentPaginate
 from ..services.document_service import DocumentService
 
 from ..clients.pastell.api import ApiPastell
-from ..routers import get_or_make_api_pastell
+from ..services import get_or_make_api_pastell
 
 
 router = APIRouter()
@@ -29,7 +29,7 @@ def get_documents_on_entite(
         ),
     ] = None,
     offset: int = 0,
-    limit: int = 100,
+    limit: int = 10,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     args = {}
