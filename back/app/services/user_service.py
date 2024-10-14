@@ -1,8 +1,5 @@
 from sqlalchemy import or_
 
-from ..clients.pastell.api.entite_api import EntiteApi
-
-from ..clients.pastell.api import ApiPastell
 from ..utils import PasswordUtils
 from . import BaseService
 from sqlalchemy.orm import Session

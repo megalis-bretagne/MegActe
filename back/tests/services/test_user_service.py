@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 import pytest
 from app.models.users import UserPastell
-from app.services.user_service import add_user_to_db
+from app.services.user_service import UserService
 from app.schemas.user_schemas import UserCreate
 from app.exceptions.custom_exceptions import UserExistException
 from ..conftest import TestDatabase
@@ -35,7 +35,7 @@ class TestUserService(TestDatabase):
         )
         # Assert
         with pytest.raises(UserExistException):
-            add_user_to_db(user_login_exist, self.client_api, self.session)
+            UserService(self.client_api).add_user_to_db(user_login_exist, self.session)
 
     def test_should_return_error_add_exist_user_id_pastell(self):
         # Given
@@ -46,7 +46,9 @@ class TestUserService(TestDatabase):
         )
         # Assert
         with pytest.raises(UserExistException):
-            add_user_to_db(user_id_pastell_exist, self.client_api, self.session)
+            UserService(self.client_api).add_user_to_db(
+                user_id_pastell_exist, self.session
+            )
 
     def test_should_add_new_user(self):
         # Given
@@ -57,7 +59,9 @@ class TestUserService(TestDatabase):
         )
 
         # assert
-        insert_user = add_user_to_db(new_user, self.client_api, self.session)
+        insert_user = UserService(self.client_api).add_user_to_db(
+            new_user, self.session
+        )
         self.client_api.perform_patch.assert_called_once_with(
             f"/utilisateur/{new_user.id_pastell}",
             {"password": new_user.pwd_pastell},
