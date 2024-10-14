@@ -5,7 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "lint": "ng lint"
+    "lint": "eslint"
   },
   "env": {
     "browser": true,
@@ -42,12 +42,16 @@
     "@angular-eslint/template-parser": "^18.3.1",
     "@angular/cli": "^18.2.5",
     "@angular/compiler-cli": "^18.2.5",
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.12.0",
     "@typescript-eslint/eslint-plugin": "^8.8.0",
     "@typescript-eslint/parser": "^8.8.0",
     "autoprefixer": "^10.4.20",
-    "eslint": "^9.11.1",
+    "eslint": "^9.12.0",
+    "globals": "^15.11.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.13",
-    "typescript": "5.5.4"
+    "typescript": "5.5.4",
+    "typescript-eslint": "^8.8.1"
   }
 }
