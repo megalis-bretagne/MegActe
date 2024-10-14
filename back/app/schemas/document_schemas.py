@@ -1,7 +1,8 @@
+from enum import Enum
 from pydantic import BaseModel
 from typing import Dict, Any
 from fastapi import UploadFile
-from typing import List
+from typing import List, Optional
 
 from .pagination import ResponsePagination
 
@@ -68,6 +69,105 @@ class AddFilesToDoc(BaseModel):
     files: List[UploadFile]
 
 
+class ActionDocument(str, Enum):
+
+    teletransmission_tdt = "teletransmission-tdt"
+    verif_tdt = "verif-tdt"
+    creation = "creation"
+    modification = "modification"
+    document_transmis_tdt = "document-transmis-tdt"
+    accepter_sae = "accepter-sae"
+    acquitter_tdt = "acquiter-tdt"
+    ar_recu_sae = "ar-recu-sae"
+    erreur_envoie_sae = "erreur-envoie-sae"
+    erreur_verif_tdt = "erreur-verif-tdt"
+    pre_send_tdt = "pre-send-tdt"
+    send_tdt = "send_tdt"
+    preparation_send_ged = "preparation-send-ged"
+    preparation_send_sae = "preparation-send-sae"
+    return_teletransmission_tdt = "return-teletransmission-tdt"
+    send_tdt_erreur = "send-tdt-erreur"
+    termine = "termine"
+    supression = "supression"
+    orientation = "orientation"
+
+
+class LastActionDocument(BaseModel):
+    action: ActionDocument | str
+    message: Optional[str] = None
+    date: Optional[str] = None
+
+
+class ActionPossible(BaseModel):
+    action: str
+    message: str
+
+
+class DocumentInfo(BaseModel):
+    """Les informations d'un document.
+        L'objet ne contient pas les détails de tous le document
+
+    Attributes:
+        id_d (str): L'identifiant unique du document.
+        id_e (int): L'identifiant unique de l'entité associée au document.
+        role (str): Le rôle ou la fonction liée à ce document.
+        type (str): Le type actuel du document.
+        titre (str): Le titre ou le nom du document.
+        creation (str): La date de création du document (format attendu : YYYY-MM-DD hh:mm:ss).
+        modification (str): La date de la dernière modification du document (format attendu : YYYY-MM-DD hh:mm:ss).
+        siren (str): Le numéro SIREN de l'entité associée au document.
+        last_action_date (str) : la date de la dernière action   (format attendu : YYYY-MM-DD hh:mm:ss).
+        last_action (Optional[ActionDocument]): La dernière action effectuée sur le document
+        last_action_message (Optional[str]) : le message de la dernière action
+        action_possible (list[ActionDocument]): La liste des actions manuels possibles pour le document (Si vide, le document est dans un workflow auto).
+    """
+
+    id_d: str
+    id_e: int
+    role: str
+    type: str
+    titre: str
+    creation: str
+    modification: str
+    siren: str
+    last_action_date: str
+    last_action: Optional[ActionDocument] = None
+    last_action_message: Optional[str] = None
+    action_possible: list[ActionPossible] = []
+
+    def model_post_init(self, __context: Any):
+        """Complète la creation du documentInfo après l'init
+
+        Args:
+            __context (Any): _description_
+        """
+        if self.last_action is None:
+            self.last_action = ActionDocument.creation
+
+        self._complete_next_action()
+
+    def _complete_next_action(self):
+        """
+        complete les action_possible manuels possibles
+        """
+        # si creation, on ne peut faire que de la modif ou supression
+        if self.last_action == ActionDocument.creation:
+            self.action_possible = [
+                ActionPossible(action=ActionDocument.modification, message="modifier"),
+                ActionPossible(action=ActionDocument.supression, message="supprimer"),
+            ]
+
+        # Si modification, on peut envoyer (orientation) ou supprimer ou continuer à modifier
+        if self.last_action == ActionDocument.modification:
+            self.action_possible = [
+                ActionPossible(action=ActionDocument.modification, message="modifier"),
+                ActionPossible(action=ActionDocument.supression, message="supprimer"),
+                ActionPossible(
+                    action=ActionDocument.orientation, message="Envoyer Document"
+                ),
+            ]
+
+
 class DocumentPaginate(BaseModel):
     """
     Modèle contenant la liste des documents, ainsi que les informations de pagination
@@ -76,5 +176,5 @@ class DocumentPaginate(BaseModel):
         BaseModel (_type_): _description_
     """
 
-    documents: dict | list
+    documents: list[DocumentInfo]
     pagination: ResponsePagination

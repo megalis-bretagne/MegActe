@@ -10,9 +10,10 @@ from config.configuration import Settings
 from ..clients.pastell.api import ApiPastell
 from ..clients.s2low.api import ApiS2low
 
-from ..routers import get_or_make_api_pastell, get_or_make_api_s2low
+from ..services import get_or_make_api_pastell, get_or_make_api_s2low
 
 from ..services.document_service import DocumentService
+from ..services.document_file_service import DocumentFileServicve
 import logging
 
 logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ def get_document(
     settings: Annotated[Settings, Depends(get_settings)],
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentService(client).get_document_info_service(
+    return DocumentService(client).get_single_document(
         entite_id, document_id, settings.document.external_data_to_retrieve
     )
 
@@ -102,7 +103,7 @@ def add_files_to_document(
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     file_data = AddFilesToDoc(entite_id=entite_id, files=files)
-    return DocumentService(client).add_multiple_files_to_document_service(
+    return DocumentFileServicve(client).add_multiple_files(
         document_id, element_id, file_data
     )
 
@@ -118,7 +119,7 @@ def delete_file_from_document(
     request_data: DeleteFileFromDoc,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentService(client).delete_file_from_document_service(
+    return DocumentFileServicve(client).delete_file(
         entite_id, document_id, element_id, request_data
     )
 
@@ -135,7 +136,7 @@ def get_file_for_document(
     file_name: str,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentService(client).get_file_by_name_service(
+    return DocumentFileServicve(client).get_file_by_name(
         entite_id, document_id, element_id, file_name
     )
 
@@ -154,7 +155,7 @@ def patch_external_data(
 ):
 
     if element_id == "type_piece":
-        return DocumentService(client).assign_file_typologie_service(
+        return DocumentFileServicve(client).assign_file_typologie(
             entite_id, document_id, element_id, data
         )
     return 200
@@ -171,9 +172,7 @@ def get_external_data(
     element_id: str,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentService(client).get_external_data_service(
-        entite_id, document_id, element_id
-    )
+    return DocumentService(client).get_external_data(entite_id, document_id, element_id)
 
 
 # transmettre le document
