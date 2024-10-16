@@ -15,6 +15,12 @@ class DocumentService(BaseService):
         BaseService
     """
 
+    def __init__(
+        self, api=None, flux_action_service: FluxActionService = FluxActionService()
+    ):
+        super().__init__(api)
+        self.flux_action_service = flux_action_service
+
     def get_single_document(
         self,
         entite_id: int,
@@ -68,7 +74,7 @@ class DocumentService(BaseService):
         )
 
     def list_documents_paginate(
-        self, id_e: int, type=None, offset=0, limit=10, **kwargs
+        self, id_e: int, type=None, offset=0, limit=100, **kwargs
     ) -> list[DocumentInfo]:
         """Retourne la liste des documents paginer
 
@@ -100,7 +106,7 @@ class DocumentService(BaseService):
         )
         flux_action = None
         if type is not None:
-            flux_action = FluxActionService().get_action_on_flux(type)
+            flux_action = self.flux_action_service.get_action_on_flux(type)
 
         for doc in list_documents:
             document_info = DocumentInfo(**doc)

@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from .dependencies import validate_token
-from .routers import users, health, flux, documents, entite
+from .routers import users, health, flux, documents, entite, connecteurs
 from .exceptions.error_handlers import add_exception_handlers
 
 app = FastAPI()
@@ -22,5 +22,7 @@ app.include_router(users.router, dependencies=[Depends(validate_token)])
 app.include_router(flux.router, dependencies=[Depends(validate_token)])
 app.include_router(documents.router, dependencies=[Depends(validate_token)])
 app.include_router(entite.router, dependencies=[Depends(validate_token)])
+app.include_router(connecteurs.router, dependencies=[Depends(validate_token)])
+
 
 app.include_router(health.router)
