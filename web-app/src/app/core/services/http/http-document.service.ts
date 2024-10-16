@@ -83,7 +83,7 @@ export class HttpDocumentService {
             queryParams += `&type_flux=${idFlux}`;
         }
 
-        return this._http.get<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/documents?${queryParams}`).pipe(
+        return this._http.get<DocumentPaginate>(`${this._settingsService.apiUrl}/entite/${entiteId}/documents?${queryParams}`).pipe(
             catchError((error) => {
                 this._logger.error('Error get documents', error);
                 return of(null);

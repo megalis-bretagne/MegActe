@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { ActionPossibleEnum, DocumentDetail, DocUpdateInfo, LastActionEnum } from '../model/document.model';
+import { ActionPossibleEnum, DocumentDetail, DocUpdateInfo } from '../model/document.model';
 import { HttpDocumentService } from './http/http-document.service';
 import { NGXLogger } from 'ngx-logger';
 import { LoadingService } from './loading.service';
@@ -87,7 +87,7 @@ export class DocumentService {
      * @param document  le document à check
      */
     canSendActe(document: DocumentDetail): boolean {
-        if (document.last_action.action === LastActionEnum.Modification || document.last_action.action === LastActionEnum.Creation) return true;
+        if (document.last_action.action === ActionPossibleEnum.Modification || document.last_action.action === ActionPossibleEnum.Creation) return true;
 
         return document.action_possible.includes(ActionPossibleEnum.Orientation);
     }
@@ -104,6 +104,6 @@ export class DocumentService {
      * Indique si le document est modifiable
      */
     canEdit(document: DocumentDetail): boolean {
-        return (document.last_action.action === LastActionEnum.Modification || document.last_action.action === LastActionEnum.Creation);
+        return (document.last_action.action === ActionPossibleEnum.Modification || document.last_action.action === ActionPossibleEnum.Creation);
     }
 }

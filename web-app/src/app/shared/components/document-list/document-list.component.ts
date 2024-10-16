@@ -11,12 +11,13 @@ import { LoadingService } from 'src/app/core/services/loading.service';
 import { Modal } from 'flowbite';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorCustom } from 'src/app/core/model/http-error-custom.model';
+import { ActionDocumentComponent } from '../action-document/action-document.component';
 
 
 @Component({
   selector: 'meg-document-list',
   standalone: true,
-  imports: [StateDocumentPipe, PaginationComponent, LoadingComponent, DatePipe, FormsModule],
+  imports: [StateDocumentPipe, PaginationComponent, LoadingComponent, DatePipe, FormsModule, ActionDocumentComponent],
   templateUrl: './document-list.component.html',
   styleUrls: []
 })

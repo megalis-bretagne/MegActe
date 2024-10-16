@@ -9,6 +9,11 @@ export interface DocUpdateInfo {
     doc_info: any;
 }
 
+export interface ActionPossible {
+    action: ActionPossibleEnum | string;
+    message: string
+}
+
 export interface DocumentInfo {
     id_d: string;
     id_e: string;
@@ -19,11 +24,10 @@ export interface DocumentInfo {
     titre: string;
     creation: string;
     modification: string;
-    is_active: boolean;
-    entite_base: string;
-    last_action_display: string;
     selected: boolean;
-    [key: string]: any;
+    last_action: string;
+    last_action_message: string;
+    action_possible: ActionPossible[];
 }
 
 export interface DocumentPaginate {
@@ -36,17 +40,13 @@ export interface TypePieceFichier {
     typologie: string
 }
 
-export enum LastActionEnum {
-    Modification = 'modification',
-    Creation = 'creation',
-    Suppression = 'supression',
-    // Ajoute d'autres actions si nécessaire
-}
 
 export enum ActionPossibleEnum {
     Orientation = 'orientation',
     Suppression = 'supression',
     Modification = 'modification',
+    Teletransmission_TDT = 'teletransmission-tdt',
+    Creation = "creation"
     // Ajoute d'autres actions si nécessaire
 }
 
@@ -80,7 +80,7 @@ export interface DocumentDetail {
     };
 
     last_action: {
-        action: LastActionEnum;
+        action: string;
         message: string;
         date: string;
     };
