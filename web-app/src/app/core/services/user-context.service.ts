@@ -19,8 +19,8 @@ import { HttpUserService } from './http/http-user.service';
 })
 export class UserContextService {
 
-  private _logger = inject(NGXLogger);
-  private _httpUserService = inject(HttpUserService);
+  private readonly _logger = inject(NGXLogger);
+  private readonly _httpUserService = inject(HttpUserService);
 
 
   /**

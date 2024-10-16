@@ -9,10 +9,9 @@ import { SettingsService } from 'src/environments/settings.service';
     providedIn: 'root'
 })
 export class HttpFluxService {
-    private _logger = inject(NGXLogger);
-    private _http = inject(HttpClient);
-    private _settingsService = inject(SettingsService);
-
+    private readonly _logger = inject(NGXLogger);
+    private readonly _http = inject(HttpClient);
+    private readonly _settingsService = inject(SettingsService);
 
 
     public get_flux_detail(fluxId: string): Observable<any> {

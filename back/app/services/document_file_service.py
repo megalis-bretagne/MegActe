@@ -13,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class DocumentFileServicve(BaseService):
+class DocumentFileService(BaseService):
     """Service sur la gestion des fichiers dans les documents
 
     Args:
@@ -41,9 +41,7 @@ class DocumentFileServicve(BaseService):
 
         for file in files_data.files:
             file_data = AddFileToDoc(entite_id=files_data.entite_id, file=file)
-            result = self.add_file_to_document_service(
-                document_id, element_id, file_data
-            )
+            result = self.add_file(document_id, element_id, file_data)
             results.append(result)
 
         return results
@@ -123,6 +121,26 @@ class DocumentFileServicve(BaseService):
             f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_index}"
         )
 
+    def get_external_data(
+        self,
+        entite_id: int,
+        document_id: str,
+        element_id: str,
+    ) -> dict:
+        """Récupère les valeurs possibles pour un champ externalData dans Pastell.
+
+        Args:
+            entite_id (int): L'ID de l'entité.
+            document_id (str): L'ID du document.
+            element_id (str): L'ID de l'élément externalData.
+        Returns:
+            dict: Les valeurs possibles pour l'élément externalData.
+        """
+
+        return self.api_pastell.perform_get(
+            f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
+        )
+
     def assign_file_typologie(
         self,
         entite_id: int,
@@ -145,7 +163,7 @@ class DocumentFileServicve(BaseService):
             dict: Les détails de l'opération d'attribution de type.
         """
 
-        response = self.get_external_data_service(entite_id, document_id, element_id)
+        response = self.get_external_data(entite_id, document_id, element_id)
 
         existing_files = response["pieces"]
 

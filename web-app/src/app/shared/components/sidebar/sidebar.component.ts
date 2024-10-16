@@ -20,8 +20,8 @@ import { Modal } from 'flowbite';
   styleUrls: ['./sidebar.component.scss']
 })
 export class SidebarComponent implements OnInit {
-  private _userContextService = inject(UserContextService);
-  private _documentService = inject(HttpDocumentService);
+  private readonly _userContextService = inject(UserContextService);
+  private readonly _documentService = inject(HttpDocumentService);
 
   entiteSelected = this._userContextService.entiteSelected;
   userFlux = this._userContextService.userFlux
@@ -37,7 +37,7 @@ export class SidebarComponent implements OnInit {
   groupedFlux: { [key: string]: Flux[]; };
   listType: string[];
   isGroupByType: boolean = false;
-  constructor(private _logger: NGXLogger, private _router: Router) {
+  constructor(private readonly _logger: NGXLogger, private readonly _router: Router) {
     effect(() => {
       this.flux = Object.values(this.userFlux());
       this.sortFlux();

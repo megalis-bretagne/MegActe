@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { ActionPossibleEnum, DocumentDetail, DocUpdateInfo, LastActionEnum } from '../model/document.model';
+import { ActionPossible, ActionPossibleEnum, BaseDocumentInfo, DocCreateInfo, DocumentDetail, DocumentInfo, DocumentPaginate, DocUpdateInfo } from '../model/document.model';
 import { HttpDocumentService } from './http/http-document.service';
 import { NGXLogger } from 'ngx-logger';
 import { LoadingService } from './loading.service';
@@ -7,23 +7,44 @@ import { catchError, concatMap, Observable, of, tap } from 'rxjs';
 import { HttpFluxService } from './http/http-flux.service';
 
 
+
 @Injectable({
     providedIn: 'root'
 })
 export class DocumentService {
 
-    private _httpDocumentService = inject(HttpDocumentService);
-    private _httpFluxService = inject(HttpFluxService);
-    private _logger = inject(NGXLogger);
-    private _loadingService = inject(LoadingService);
+    private readonly _httpDocumentService = inject(HttpDocumentService);
+    private readonly _httpFluxService = inject(HttpFluxService);
+    private readonly _logger = inject(NGXLogger);
+    private readonly _loadingService = inject(LoadingService);
 
 
     sendActe(id_e: number, document: DocumentDetail): void {
         this._loadingService.showLoading("Envoi de l'acte en cours ...");
-        this._httpDocumentService.sendActe(document.info.id_d, id_e).subscribe({
+        this._httpDocumentService.performAction(document.info.id_d, id_e, ActionPossibleEnum.Orientation).subscribe({
             next: () => this._loadingService.showSuccess("Le document a bien été transmis.", ['/org', id_e.toString()])
-        }
-        )
+        })
+    }
+
+
+    createDocument(id_e: number, doc: DocCreateInfo) {
+        return this._httpDocumentService.createDocument(id_e, doc);
+    }
+
+    deleteDocuments(documentsId: string[], entiteId: number): Observable<void> {
+        return this._httpDocumentService.deleteDocuments(documentsId, entiteId);
+    }
+
+    getDocuments(entiteId: number, idFlux: string = null, offset: number = 0, limit: number = 10): Observable<DocumentPaginate> {
+        return this._httpDocumentService.getDocuments(entiteId, idFlux, offset, limit);
+    }
+
+
+    /**
+    * Redirige l'edition du document vers Pastell
+    */
+    redirectEditToPastell(document: DocumentInfo): void {
+        this._httpDocumentService.redirectEditToPastell(document)
     }
 
 
@@ -58,7 +79,6 @@ export class DocumentService {
                 return fetchTypePiece$;
             })
         );
-
     }
 
 
@@ -87,9 +107,16 @@ export class DocumentService {
      * @param document  le document à check
      */
     canSendActe(document: DocumentDetail): boolean {
-        if (document.last_action.action === LastActionEnum.Modification || document.last_action.action === LastActionEnum.Creation) return true;
+        if (document.last_action === ActionPossibleEnum.Modification || document.last_action === ActionPossibleEnum.Creation) return true;
 
-        return document.action_possible.includes(ActionPossibleEnum.Orientation);
+        return document.action_possible.some(a => a.action == ActionPossibleEnum.Orientation);
+    }
+
+    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible) {
+        this._loadingService.showLoading(`Action \`${action.message}\` en cours ...`);
+        this._httpDocumentService.performAction(document.id_d, id_e, action.action).subscribe({
+            next: () => this._loadingService.showSuccess("Action terminé", ['/org', id_e.toString()])
+        })
     }
 
     /**
@@ -97,13 +124,13 @@ export class DocumentService {
      * @param document 
      */
     canDelete(document: DocumentDetail): boolean {
-        return document.action_possible.includes(ActionPossibleEnum.Suppression);
+        return document.action_possible.some(a => a.action == ActionPossibleEnum.Suppression);
     }
 
     /**
      * Indique si le document est modifiable
      */
     canEdit(document: DocumentDetail): boolean {
-        return (document.last_action.action === LastActionEnum.Modification || document.last_action.action === LastActionEnum.Creation);
+        return (document.last_action === ActionPossibleEnum.Modification || document.last_action === ActionPossibleEnum.Creation);
     }
 }

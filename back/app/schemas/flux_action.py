@@ -21,3 +21,16 @@ class FluxAction(BaseModel):
     """Modèle pour représenter les actions disponibles sur un flux."""
 
     actions: Dict[str, ActionDetails]
+
+
+class ActionResult(BaseModel):
+    """
+    Modèle de retour d'une action
+
+    Args:
+        BaseModel (_type_): _description_
+    """
+
+    result: bool
+    message: str
+    data: Optional[Dict] = None

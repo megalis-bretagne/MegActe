@@ -7,9 +7,9 @@ import { SettingsService } from 'src/environments/settings.service';
   providedIn: 'root'
 })
 export class AuthService {
-  private _keycloakService = inject(KeycloakService);
-  private _settings = inject(SettingsService);
-  private _logger = inject(NGXLogger);
+  private readonly _keycloakService = inject(KeycloakService);
+  private readonly _settings = inject(SettingsService);
+  private readonly _logger = inject(NGXLogger);
 
   checkLogin(): Promise<Keycloak.KeycloakProfile> {
     return this._keycloakService.loadUserProfile();

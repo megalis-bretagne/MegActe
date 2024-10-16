@@ -9,22 +9,35 @@ export interface DocUpdateInfo {
     doc_info: any;
 }
 
-export interface DocumentInfo {
+export interface ActionPossible {
+    action: ActionPossibleEnum | string;
+    message: string
+}
+
+export interface BaseDocumentInfo {
     id_d: string;
-    id_e: string;
-    role: string;
     last_action_date: string;
-    last_type: string;
     type: string;
     titre: string;
     creation: string;
     modification: string;
-    is_active: boolean;
-    entite_base: string;
-    last_action_display: string;
-    selected: boolean;
-    [key: string]: any;
 }
+
+export interface DocumentActionDetails {
+    last_action: string;
+    last_action_date: string;
+    last_action_message: string;
+    action_possible: ActionPossible[];
+}
+
+export interface DocumentInfo extends BaseDocumentInfo, DocumentActionDetails {
+    id_e: string;
+    role: string;
+    last_type: string;
+    selected: boolean;
+}
+
+
 
 export interface DocumentPaginate {
     pagination: Pagination,
@@ -36,28 +49,18 @@ export interface TypePieceFichier {
     typologie: string
 }
 
-export enum LastActionEnum {
-    Modification = 'modification',
-    Creation = 'creation',
-    Suppression = 'supression',
-    // Ajoute d'autres actions si nécessaire
-}
 
 export enum ActionPossibleEnum {
     Orientation = 'orientation',
     Suppression = 'supression',
     Modification = 'modification',
+    Teletransmission_TDT = 'teletransmission-tdt',
+    Creation = "creation"
     // Ajoute d'autres actions si nécessaire
 }
 
-export interface DocumentDetail {
-    info: {
-        id_d: string;
-        type: string;
-        titre: string;
-        creation: string;
-        modification: string;
-    };
+export interface DocumentDetail extends DocumentActionDetails {
+    info: BaseDocumentInfo;
 
     data: {
         envoi_tdt_actes?: string;
@@ -78,11 +81,4 @@ export interface DocumentDetail {
         type_piece_fichier?: TypePieceFichier[];
         [key: string]: any;
     };
-
-    last_action: {
-        action: LastActionEnum;
-        message: string;
-        date: string;
-    };
-    action_possible: ActionPossibleEnum[];
 }

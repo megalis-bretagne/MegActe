@@ -8,7 +8,7 @@ import { SettingsService } from 'src/environments/settings.service';
     providedIn: 'root'
 })
 export class FieldFluxService {
-    private _settingsService = inject(SettingsService);
+    private readonly _settingsService = inject(SettingsService);
 
 
     // Générer un id unique pour chaque champs 

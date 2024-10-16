@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, AliasPath, model_validator
 from typing import Dict, Any
 from fastapi import UploadFile
 from typing import List, Optional
@@ -100,10 +100,28 @@ class LastActionDocument(BaseModel):
 
 class ActionPossible(BaseModel):
     action: str
-    message: str
+    message: Optional[str] = None
 
 
-class DocumentInfo(BaseModel):
+class BaseModelDocument(BaseModel):
+    """Les informations de base d'un document
+
+    Args:
+        id_d (str): L'identifiant unique du document.
+        type (str): Le type actuel du document.
+        titre (str): Le titre ou le nom du document.
+        creation (str): La date de création du document (format attendu : YYYY-MM-DD hh:mm:ss).
+        modification (str): La date de la dernière modification du document (format attendu : YYYY-MM-DD hh:mm:ss).
+    """
+
+    id_d: str
+    type: str
+    titre: str
+    creation: str
+    modification: str
+
+
+class DocumentInfo(BaseModelDocument):
     """Les informations d'un document.
         L'objet ne contient pas les détails de tous le document
 
@@ -111,10 +129,6 @@ class DocumentInfo(BaseModel):
         id_d (str): L'identifiant unique du document.
         id_e (int): L'identifiant unique de l'entité associée au document.
         role (str): Le rôle ou la fonction liée à ce document.
-        type (str): Le type actuel du document.
-        titre (str): Le titre ou le nom du document.
-        creation (str): La date de création du document (format attendu : YYYY-MM-DD hh:mm:ss).
-        modification (str): La date de la dernière modification du document (format attendu : YYYY-MM-DD hh:mm:ss).
         siren (str): Le numéro SIREN de l'entité associée au document.
         last_action_date (str) : la date de la dernière action   (format attendu : YYYY-MM-DD hh:mm:ss).
         last_action (Optional[ActionDocument]): La dernière action effectuée sur le document
@@ -122,16 +136,11 @@ class DocumentInfo(BaseModel):
         action_possible (list[ActionDocument]): La liste des actions manuels possibles pour le document (Si vide, le document est dans un workflow auto).
     """
 
-    id_d: str
     id_e: int
     role: str
-    type: str
-    titre: str
-    creation: str
-    modification: str
     siren: str
     last_action_date: str
-    last_action: Optional[ActionDocument] = None
+    last_action: Optional[ActionDocument | str] = None
     last_action_message: Optional[str] = None
     action_possible: list[ActionPossible] = []
 
@@ -178,3 +187,24 @@ class DocumentPaginate(BaseModel):
 
     documents: list[DocumentInfo]
     pagination: ResponsePagination
+
+
+class DocumentDetail(BaseModel):
+    info: BaseModelDocument
+    data: Dict[str, Any]
+
+    last_action: str = Field(validation_alias=AliasPath("last_action", "action"))
+    last_action_message: str = Field(
+        validation_alias=AliasPath("last_action", "message")
+    )
+    last_action_date: str = Field(validation_alias=AliasPath("last_action", "date"))
+    action_possible: list[ActionPossible] = []
+
+    @model_validator(mode="before")
+    def convert_action_possible(cls, values):
+        # Si la clé 'action_possible' existe et contient une liste de chaînes de caractères
+        if "action_possible" in values and isinstance(values["action_possible"], list):
+            values["action_possible"] = [
+                ActionPossible(action=item) for item in values["action_possible"]
+            ]
+        return values

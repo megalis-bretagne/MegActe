@@ -1,4 +1,7 @@
 from fastapi import HTTPException
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MegActeException(HTTPException):
@@ -17,10 +20,11 @@ class MegActeException(HTTPException):
         Args:
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "Decryption failed".
         """
+        logging.error(f"{self.__class__.__name__} : {detail}")
         super().__init__(status_code=status_code, detail=detail)
 
 
-class PastellException(HTTPException):
+class PastellException(MegActeException):
     """Exception pour les erreurs liées à Pastell.
 
     Args:
@@ -66,6 +70,19 @@ class EntiteIdException(MegActeException):
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "User already exist".
         """
         super().__init__(detail)
+
+
+class ConnecteurNotFound(MegActeException):
+    def __init__(self, id_e: str, flux: str):
+        """Initialise une ConnecteurNotFound.
+
+        Args:
+            detail (str, optional): Le message détaillé de l'erreur. Defaults to "User already exist".
+        """
+        super().__init__(
+            status_code=400,
+            detail=f"Connecteur pour le flux {flux} et l'entité {id_e} introuvable",
+        )
 
 
 class ConnecteurExistException(MegActeException):

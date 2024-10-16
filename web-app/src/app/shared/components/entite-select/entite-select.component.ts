@@ -12,7 +12,7 @@ import { EntiteInfo, sortEntiteInfo } from "src/app/core/model/user.model";
   styleUrls: ['./entite-select.component.scss'],
 })
 export class EntiteSelectComponent {
-  private _userContextService = inject(UserContextService);
+  private readonly _userContextService = inject(UserContextService);
 
   // event quand on sélectionne une entité (balise li)
   onSelect = output<EntiteInfo>();

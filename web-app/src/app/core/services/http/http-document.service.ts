@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { DocCreateInfo, DocumentDetail, DocumentInfo, DocumentPaginate, DocUpdateInfo } from "../../model/document.model";
+import { ActionPossibleEnum, DocCreateInfo, DocumentDetail, DocumentInfo, DocumentPaginate, DocUpdateInfo } from "../../model/document.model";
 import { Observable, catchError, of, tap, throwError } from "rxjs";
 import { NGXLogger } from "ngx-logger";
 import { SettingsService } from "src/environments/settings.service";
@@ -9,11 +9,9 @@ import { SettingsService } from "src/environments/settings.service";
     providedIn: 'root'
 })
 export class HttpDocumentService {
-    private _http = inject(HttpClient);
-    private _logger = inject(NGXLogger);
-    private _settingsService = inject(SettingsService);
-
-
+    private readonly _http = inject(HttpClient);
+    private readonly _logger = inject(NGXLogger);
+    private readonly _settingsService = inject(SettingsService);
 
     createDocument(entiteId: number, docCreateInfo: DocCreateInfo): Observable<any> {
         return this._http.post<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document`, docCreateInfo).pipe(
@@ -83,7 +81,7 @@ export class HttpDocumentService {
             queryParams += `&type_flux=${idFlux}`;
         }
 
-        return this._http.get<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/documents?${queryParams}`).pipe(
+        return this._http.get<DocumentPaginate>(`${this._settingsService.apiUrl}/entite/${entiteId}/documents?${queryParams}`).pipe(
             catchError((error) => {
                 this._logger.error('Error get documents', error);
                 return of(null);
@@ -101,8 +99,8 @@ export class HttpDocumentService {
         );
     }
 
-    sendActe(documentId: string, entiteId: number): Observable<any> {
-        return this._http.post<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/send`, {}).pipe(
+    performAction(documentId: string, entiteId: number, action: ActionPossibleEnum | string): Observable<any> {
+        return this._http.post<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/${action}`, {}).pipe(
             catchError((error) => {
                 this._logger.error('Error when sending document', error);
                 return throwError(() => error);
