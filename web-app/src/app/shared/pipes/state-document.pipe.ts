@@ -19,7 +19,7 @@ export class StateDocumentPipe implements PipeTransform {
     return this._defaultMapping[state] || state;
   }
 
-  private _defaultMapping: { [key: string]: string } = {
+  private readonly _defaultMapping: { [key: string]: string } = {
     'termine': 'Traitement terminé',
     'error-ged': 'Erreur lors du dépôt à la GED',
     'accepter-sae': 'Archiver SAE',

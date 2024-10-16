@@ -2,7 +2,7 @@ from ..schemas.flux_action import FluxAction
 from ..services.flux_action_service import FluxActionService
 from . import BaseService
 from ..exceptions.custom_exceptions import EntiteIdException
-from ..schemas.document_schemas import ActionPossible, DocumentInfo
+from ..schemas.document_schemas import ActionPossible, DocumentDetail, DocumentInfo
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,27 +51,15 @@ class DocumentService(BaseService):
                     f"/entite/{entite_id}/document/{document_id}/file/{external_data}"
                 )
                 document["data"][external_data] = info.json()
+
+        document = DocumentDetail(**document)
+        flux_action = self.flux_action_service.get_action_on_flux(document.info.type)
+
+        for action in document.action_possible:
+            if action.action in flux_action.actions:
+                action.message = flux_action.actions[action.action].name_action
+
         return document
-
-    def get_external_data(
-        self,
-        entite_id: int,
-        document_id: str,
-        element_id: str,
-    ) -> dict:
-        """Récupère les valeurs possibles pour un champ externalData dans Pastell.
-
-        Args:
-            entite_id (int): L'ID de l'entité.
-            document_id (str): L'ID du document.
-            element_id (str): L'ID de l'élément externalData.
-        Returns:
-            dict: Les valeurs possibles pour l'élément externalData.
-        """
-
-        return self.api_pastell.perform_get(
-            f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
-        )
 
     def list_documents_paginate(
         self, id_e: int, type=None, offset=0, limit=100, **kwargs

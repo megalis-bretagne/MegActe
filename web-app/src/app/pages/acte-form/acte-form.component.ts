@@ -27,7 +27,7 @@ import { DocumentService } from 'src/app/core/services/document.service';
   styleUrls: ['./acte-form.component.scss']
 })
 export class ActeFormComponent implements OnInit {
-  private _fieldFluxService = inject(FieldFluxService);
+  private readonly _fieldFluxService = inject(FieldFluxService);
 
   userContextService = inject(UserContextService);
   documentService = inject(DocumentService);
@@ -58,9 +58,9 @@ export class ActeFormComponent implements OnInit {
   formExternalData: FormGroup = new FormGroup({})
 
   constructor(
-    private _route: ActivatedRoute,
-    private _logger: NGXLogger,
-    private _router: Router,
+    private readonly _route: ActivatedRoute,
+    private readonly _logger: NGXLogger,
+    private readonly _router: Router,
   ) {
 
     this._route.data.subscribe(data => {

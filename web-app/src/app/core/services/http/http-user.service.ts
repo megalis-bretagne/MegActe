@@ -20,9 +20,9 @@ import { Flux } from '../../model/flux.model';
 })
 export class HttpUserService {
 
-    private _logger = inject(NGXLogger);
-    private _http = inject(HttpClient);
-    private _settingsService = inject(SettingsService);
+    private readonly _logger = inject(NGXLogger);
+    private readonly _http = inject(HttpClient);
+    private readonly _settingsService = inject(SettingsService);
 
 
     public getUser(): Observable<UserContext> {

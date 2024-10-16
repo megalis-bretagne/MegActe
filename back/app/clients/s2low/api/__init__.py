@@ -1,3 +1,4 @@
+from hashlib import sha256
 import os
 
 import requests
@@ -23,6 +24,7 @@ class ApiS2low:
     TEST_AUTHENTICATION_ENDPOINT = "api/test-connexion.php"
     INFO_CONNEXION_ENDPOINT = "api/info-connexion.php"
     GET_NOUNCE_ENDPOINT = "api/get-nounce.php?api=1"
+    ACTES_TRANSAC_POST_CONFIRME = "modules/actes/actes_transac_post_confirm_api.php"
 
     def __init__(self, conf: Config):
         """
@@ -105,4 +107,26 @@ class ApiS2low:
             timeout=self._timeout,
         )
         response.raise_for_status()
-        return response.status_code, response.text
+        return response.status_code, response.json()["nounce"]
+
+    def get_url_post_confirm(
+        self, auth: HTTPBasicAuth, tedetis_transaction_id: int, url_return: str = ""
+    ) -> str:
+        """
+        Construit l'url pour confirmer l'envoi d'un acte (avec validation certificat)
+
+        Args:
+            auth (HTTPBasicAuth): le login/pwd du compte tech
+            tedetis_transaction_id (number): l'id de transaction
+            url_return (str): l'url de retour après confirmation de la transaction
+
+        Returns:
+            str: l'url du service
+        """
+
+        _code, nounce = self.get_nounce(auth)
+
+        to_hash = f"{auth.password}:{nounce}"
+        hash_pass = sha256(str.encode(to_hash)).hexdigest()
+        url = f"{self._config.base_url}{self.ACTES_TRANSAC_POST_CONFIRME}?id={tedetis_transaction_id}&nounce={nounce}&login={auth.username}&hash={hash_pass}"
+        return url
