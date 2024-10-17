@@ -14,21 +14,30 @@ export interface ActionPossible {
     message: string
 }
 
-export interface DocumentInfo {
+export interface BaseDocumentInfo {
     id_d: string;
-    id_e: string;
-    role: string;
     last_action_date: string;
-    last_type: string;
     type: string;
     titre: string;
     creation: string;
     modification: string;
-    selected: boolean;
+}
+
+export interface DocumentActionDetails {
     last_action: string;
+    last_action_date: string;
     last_action_message: string;
     action_possible: ActionPossible[];
 }
+
+export interface DocumentInfo extends BaseDocumentInfo, DocumentActionDetails {
+    id_e: string;
+    role: string;
+    last_type: string;
+    selected: boolean;
+}
+
+
 
 export interface DocumentPaginate {
     pagination: Pagination,
@@ -50,14 +59,8 @@ export enum ActionPossibleEnum {
     // Ajoute d'autres actions si nécessaire
 }
 
-export interface DocumentDetail {
-    info: {
-        id_d: string;
-        type: string;
-        titre: string;
-        creation: string;
-        modification: string;
-    };
+export interface DocumentDetail extends DocumentActionDetails {
+    info: BaseDocumentInfo;
 
     data: {
         envoi_tdt_actes?: string;
@@ -78,11 +81,4 @@ export interface DocumentDetail {
         type_piece_fichier?: TypePieceFichier[];
         [key: string]: any;
     };
-
-    last_action: {
-        action: string;
-        message: string;
-        date: string;
-    };
-    action_possible: ActionPossibleEnum[];
 }

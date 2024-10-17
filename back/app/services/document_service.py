@@ -2,7 +2,7 @@ from ..schemas.flux_action import FluxAction
 from ..services.flux_action_service import FluxActionService
 from . import BaseService
 from ..exceptions.custom_exceptions import EntiteIdException
-from ..schemas.document_schemas import ActionPossible, DocumentInfo
+from ..schemas.document_schemas import ActionPossible, DocumentDetail, DocumentInfo
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,6 +51,14 @@ class DocumentService(BaseService):
                     f"/entite/{entite_id}/document/{document_id}/file/{external_data}"
                 )
                 document["data"][external_data] = info.json()
+
+        document = DocumentDetail(**document)
+        flux_action = self.flux_action_service.get_action_on_flux(document.info.type)
+
+        for action in document.action_possible:
+            if action.action in flux_action.actions:
+                action.message = flux_action.actions[action.action].name_action
+
         return document
 
     def get_external_data(

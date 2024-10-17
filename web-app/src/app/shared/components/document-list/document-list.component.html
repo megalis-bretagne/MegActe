@@ -81,7 +81,8 @@
                         </a>
                         } @else {
                         @for(action of doc.action_possible; track $index) {
-                        <meg-action-document [action]="action.action" [message]="action.message"></meg-action-document>
+                        <meg-action-document [action]="action.action" [message]="action.message"
+                            (action$)="runAction(doc, action)" />
                         }
 
                         }

@@ -1,11 +1,17 @@
+from ..services.tdt_service import TdtService
+from ..schemas.document_schemas import ActionDocument, DocumentDetail
 from . import BaseService
 from ..exceptions.custom_exceptions import PastellException
 
 
 class ActeService(BaseService):
 
+    def __init__(self, api=None):
+        super().__init__(api)
+        self.tdt_service = TdtService()
+
     def check_and_perform_action_service(
-        self, entite_id: int, document_id: str, action: str
+        self, entite_id: int, document_id: str, action: ActionDocument
     ) -> dict:
         """Vérifie si une action est possible et l'exécute pour un document donné.
 
@@ -31,6 +37,11 @@ class ActeService(BaseService):
                 status_code=400,
                 detail=f"Action '{action}' not possible for document {document_id}",
             )
+
+        if action == ActionDocument.teletransmission_tdt:
+            # DO
+            document = DocumentDetail(**response)
+            return {"url": self.tdt_service.teletransmission(document, entite_id)}
 
         return self.api_pastell.perform_post(
             f"/entite/{entite_id}/document/{document_id}/action/{action}"

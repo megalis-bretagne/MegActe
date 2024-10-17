@@ -8,9 +8,8 @@ from ..services.acte_service import ActeService
 from config.configuration import Settings
 
 from ..clients.pastell.api import ApiPastell
-from ..clients.s2low.api import ApiS2low
 
-from ..services import get_or_make_api_pastell, get_or_make_api_s2low
+from ..services import get_or_make_api_pastell
 
 from ..services.document_service import DocumentService
 from ..services.document_file_service import DocumentFileServicve
@@ -177,15 +176,16 @@ def get_external_data(
 
 # transmettre le document
 @router.post(
-    "/entite/{entite_id}/document/{document_id}/send",
+    "/entite/{entite_id}/document/{document_id}/{action}",
     tags=["document"],
     description="Envoi le document dans le flux pastell",
 )
-def send_acte(
+def perform_action_on_document(
     document_id: str,
     entite_id: int,
+    action: str,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     return ActeService(client).check_and_perform_action_service(
-        entite_id, document_id, "orientation"
+        entite_id, document_id, action
     )

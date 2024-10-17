@@ -19,7 +19,7 @@ import { HttpFluxService } from 'src/app/core/services/http/http-flux.service';
 
 export class ExternalDataInputComponent extends BaseInputComponent implements OnInit {
 
-  private _fluxService = inject(HttpFluxService);
+  private readonly _fluxService = inject(HttpFluxService);
   @Input() link_name: string = '';
   @Input() documentId: string = '';
 
@@ -32,7 +32,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
 
   constructor(
     protected override fieldFluxService: FieldFluxService,
-    private _logger: NGXLogger
+    private readonly _logger: NGXLogger
   ) {
     super(fieldFluxService);
   }

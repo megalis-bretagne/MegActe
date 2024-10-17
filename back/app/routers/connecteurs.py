@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, status
 
 from ..services.connecteur_service import ConnecteurTdtService
 from ..schemas.connecteur_schemas import ConnecteurCreateAuthTdt
-from ..database import get_db
 
 
 router = APIRouter()
@@ -17,5 +16,5 @@ def health():
 @router.post(
     "/connecteur-tdt", tags=["connecteurs"], status_code=status.HTTP_201_CREATED
 )
-def add_connecteur_tdt(connecteur: ConnecteurCreateAuthTdt, db=Depends(get_db)):
-    return ConnecteurTdtService().create(connecteur, db)
+def add_connecteur_tdt(connecteur: ConnecteurCreateAuthTdt):
+    return ConnecteurTdtService().create(connecteur)

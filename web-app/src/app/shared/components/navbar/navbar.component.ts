@@ -11,7 +11,7 @@ import { UserContextService } from 'src/app/core/services/user-context.service';
   styleUrls: ['./navbar.component.scss']
 })
 export class NavbarComponent {
-  private _authService = inject(AuthService);
+  private readonly _authService = inject(AuthService);
   currentUser = inject(UserContextService).userCurrent;
 
 

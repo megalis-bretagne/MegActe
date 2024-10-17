@@ -1,6 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker, Session
 
 from .models.users import UserPastell
 from .exceptions.custom_exceptions import (

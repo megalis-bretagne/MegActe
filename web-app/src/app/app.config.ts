@@ -16,7 +16,7 @@ import { UserContextService } from './core/services/user-context.service';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 
 // Provider for Keycloak Bearer Interceptor
-const KeycloakBearerInterceptorProvider: Provider = {
+const keycloakBearerInterceptorProvider: Provider = {
   provide: HTTP_INTERCEPTORS,
   useClass: KeycloakBearerInterceptor,
   multi: true,
@@ -32,21 +32,20 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideHttpClient(withInterceptorsFromDi()),
     KeycloakAngularModule,
-    KeycloakBearerInterceptorProvider,
+    keycloakBearerInterceptorProvider,
     KeycloakService,
-    KeycloakBearerInterceptorProvider,
     importProvidersFrom(LoggerModule.forRoot({ level: NgxLoggerLevel.WARN })),
     // provideZoneChangeDetection()
     provideExperimentalZonelessChangeDetection(),
     {
       provide: APP_INITIALIZER,
-      useFactory: app_Init,
+      useFactory: appInit,
       deps: [AppInitService, KeycloakService, SettingsService, UserContextService],
       multi: true
     },
   ]
 };
 
-function app_Init(appInitService: AppInitService): () => Promise<any> {
+function appInit(appInitService: AppInitService): () => Promise<any> {
   return () => appInitService.initializeApp();
 }

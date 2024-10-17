@@ -21,7 +21,7 @@ export enum FileActionState {
   styleUrls: ['./file-upload.component.scss']
 })
 export class FileUploadComponent extends BaseInputComponent {
-  private _documentService = inject(HttpDocumentService);
+  private readonly _documentService = inject(HttpDocumentService);
 
   @Input() multiple: boolean = false;
   id_d = input.required<string>();
@@ -35,7 +35,7 @@ export class FileUploadComponent extends BaseInputComponent {
   files: File[] = [];
   errorMessage: string = '';
 
-  constructor(private _validationService: FileUploadValidationService, protected override fieldFluxService: FieldFluxService) {
+  constructor(private readonly _validationService: FileUploadValidationService, protected override fieldFluxService: FieldFluxService) {
     super(fieldFluxService);
   }
 

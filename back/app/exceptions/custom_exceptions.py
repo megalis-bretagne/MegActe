@@ -68,6 +68,19 @@ class EntiteIdException(MegActeException):
         super().__init__(detail)
 
 
+class ConnecteurNotFound(MegActeException):
+    def __init__(self, id_e: str, flux: str):
+        """Initialise une ConnecteurNotFound.
+
+        Args:
+            detail (str, optional): Le message détaillé de l'erreur. Defaults to "User already exist".
+        """
+        super().__init__(
+            status_code=400,
+            detail=f"Connecteur pour le flux {flux} et l'entité {id_e} introuvable",
+        )
+
+
 class ConnecteurExistException(MegActeException):
     """Exception pour les erreurs de connecteur déjà créé
     HTTPException (HTTPException): Classe de base pour les exceptions HTTP.
