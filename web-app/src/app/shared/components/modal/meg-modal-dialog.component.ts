@@ -14,7 +14,7 @@ import { LoadingComponent } from '../loading-component/loading.component';
     styleUrls: ['./meg-modal-dialog.component.scss']
 })
 export class ModalDialogComponent implements OnInit {
-    private _loadingService = inject(LoadingService);
+    private readonly _loadingService = inject(LoadingService);
 
     private _modal: Modal | undefined;
     status = signal<InfoModal | null>(null);
@@ -22,7 +22,7 @@ export class ModalDialogComponent implements OnInit {
     cssClassType = signal<string>("");
 
     constructor(
-        private _router: Router,
+        private readonly _router: Router,
     ) {
 
         effect(() => {

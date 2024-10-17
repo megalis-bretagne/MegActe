@@ -6,7 +6,7 @@ import { SettingsService } from 'src/environments/settings.service';
 })
 export class FileUploadValidationService {
 
-    private _settingsService = inject(SettingsService);
+    private readonly _settingsService = inject(SettingsService);
 
     validateFiles(files: FileList, existingFiles: File[], multiple: boolean): string | null {
         if (!multiple) {

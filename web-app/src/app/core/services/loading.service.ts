@@ -6,7 +6,7 @@ import { InfoModal, TypeModal } from '../model/modal.model';
     providedIn: 'root',
 })
 export class LoadingService {
-    private _status = signal<InfoModal | null>(null);
+    private readonly _status = signal<InfoModal | null>(null);
     status$ = toObservable(this._status);
 
     // Method to show the modal with a custom message

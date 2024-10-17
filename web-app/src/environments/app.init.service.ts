@@ -10,8 +10,8 @@ import { UserContextService } from 'src/app/core/services/user-context.service';
 @Injectable({ providedIn: 'root' })
 export class AppInitService {
 
-    constructor(private _http: HttpClient, private _settingsService: SettingsService, private _keycloak: KeycloakService,
-        private _userContextService: UserContextService, private _logger: NGXLogger) {
+    constructor(private readonly _http: HttpClient, private readonly _settingsService: SettingsService, private readonly _keycloak: KeycloakService,
+        private readonly _userContextService: UserContextService, private readonly _logger: NGXLogger) {
     }
 
 

@@ -65,7 +65,19 @@ export default [{
       modifiers: ["private"],
       format: ["camelCase"],
       leadingUnderscore: "require",
-    }],
+    },
+      {
+        selector: 'variable',
+        format: ['camelCase', 'snake_case'],
+        leadingUnderscore: 'allow',
+        trailingUnderscore: 'allow',
+      },
+      {
+        selector: 'function',
+        format: ['camelCase'],
+        leadingUnderscore: 'forbid',
+        trailingUnderscore: 'forbid',
+      }],
     "@angular-eslint/component-selector": ["error", {
       type: "element",
       prefix: "meg",
@@ -74,6 +86,7 @@ export default [{
     "no-irregular-whitespace": ["error", {
       skipComments: true,
     }],
+    "@typescript-eslint/prefer-readonly": "error",
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": ["off", {
       vars: "all",

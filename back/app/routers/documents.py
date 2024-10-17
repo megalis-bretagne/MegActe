@@ -177,15 +177,16 @@ def get_external_data(
 
 # transmettre le document
 @router.post(
-    "/entite/{entite_id}/document/{document_id}/send",
+    "/entite/{entite_id}/document/{document_id}/{action}",
     tags=["document"],
     description="Envoi le document dans le flux pastell",
 )
-def send_acte(
+def perform_action_on_document(
     document_id: str,
     entite_id: int,
+    action: str,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     return ActeService(client).check_and_perform_action_service(
-        entite_id, document_id, "orientation"
+        entite_id, document_id, action
     )

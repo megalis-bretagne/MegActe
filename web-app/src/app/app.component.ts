@@ -16,7 +16,7 @@ import { UserContextService } from './core/services/user-context.service';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  private _router = inject(Router);
+  private readonly _router = inject(Router);
 
   title = 'Megacte';
   userContexteService = inject(UserContextService);

@@ -1,4 +1,4 @@
-import { Component, input } from "@angular/core";
+import { Component, input, output } from "@angular/core";
 import { ActionPossibleEnum } from "src/app/core/model/document.model";
 
 export class ActionConfig {
@@ -16,16 +16,20 @@ export class ActionDocumentComponent {
 
     action = input.required<string>();
     message = input.required<string>();
-    mode_icon = input<boolean>(true);
+    modeIcon = input<boolean>(true);
+    action$ = output();
 
 
-    is_enable(): boolean {
+
+    isEnable(): boolean {
         return Object.keys(ActionConfig.ACTION_CONFIG).includes(this.action() as ActionPossibleEnum);
     }
 
-
-    get_svg() {
+    getSvg() {
         return ActionConfig.ACTION_CONFIG[this.action()].svg ?? '';
     }
 
+    runAction() {
+        this.action$.emit();
+    }
 }

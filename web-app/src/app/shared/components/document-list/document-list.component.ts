@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/core/model/document.model';
+import { ActionPossible, DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/core/model/document.model';
 import { HttpDocumentService } from 'src/app/core/services/http/http-document.service';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 import { StateDocumentPipe } from '../../pipes/state-document.pipe';
@@ -12,6 +12,7 @@ import { Modal } from 'flowbite';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorCustom } from 'src/app/core/model/http-error-custom.model';
 import { ActionDocumentComponent } from '../action-document/action-document.component';
+import { DocumentService } from 'src/app/core/services/document.service';
 
 
 @Component({
@@ -25,7 +26,7 @@ export class DocumentListComponent implements OnInit {
   itemPerPage = 10;
 
   loadingService = inject(LoadingService);
-  documentService = inject(HttpDocumentService);
+  documentService = inject(DocumentService);
   userContextService = inject(UserContextService);
   fluxSelected = this.userContextService.fluxSelected
 
@@ -56,7 +57,7 @@ export class DocumentListComponent implements OnInit {
   is_loading = signal<boolean>(true);
   pageActive = signal(1);
 
-  constructor(private _router: Router) {
+  constructor(private readonly _router: Router) {
     // effect sur le changement de flux
     effect(() => {
       this.pageActive.set(1);
@@ -86,6 +87,8 @@ export class DocumentListComponent implements OnInit {
   }
 
 
+
+
   get document_selected(): DocumentInfo[] {
     return this.documents().filter(doc => doc.selected);
   }
@@ -101,7 +104,6 @@ export class DocumentListComponent implements OnInit {
 
       this.documentService.createDocument(this.entiteSelected().id_e, docCreateInfo).subscribe({
         next: (response) => {
-          console.log(response);
           const documentId = response.info.id_d;
           this._router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
         }
@@ -152,6 +154,15 @@ export class DocumentListComponent implements OnInit {
    */
   anySelected() {
     return this.documents().some(doc => doc.selected);
+  }
+
+  /**
+   * Lancement une action sur le document
+   * @param document le document
+   * @param action le nom de laction
+   */
+  runAction(document: DocumentInfo, action: ActionPossible) {
+    this.documentService.launchActionOnDocument(this.entiteSelected().id_e, document, action)
   }
 
   private _loadDataPage(idflux: string, page: number = 1) {

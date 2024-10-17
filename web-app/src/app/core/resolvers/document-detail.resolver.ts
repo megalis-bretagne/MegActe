@@ -9,7 +9,7 @@ import { HttpFluxService } from '../services/http/http-flux.service';
 
 
 
-export const DocumentDetailResolver: ResolveFn<any> = (
+export const documentDetailResolver: ResolveFn<any> = (
     route
 ): Observable<{ document: DocumentDetail, flux: any } | null> => {
     const userContexteService = inject(UserContextService);
