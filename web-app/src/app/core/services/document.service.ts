@@ -5,7 +5,7 @@ import { NGXLogger } from 'ngx-logger';
 import { LoadingService } from './loading.service';
 import { catchError, concatMap, Observable, of, tap } from 'rxjs';
 import { HttpFluxService } from './http/http-flux.service';
-
+import { ActionResult } from '../model/flux-action.model';
 
 
 @Injectable({
@@ -17,7 +17,6 @@ export class DocumentService {
     private readonly _httpFluxService = inject(HttpFluxService);
     private readonly _logger = inject(NGXLogger);
     private readonly _loadingService = inject(LoadingService);
-
 
     sendActe(id_e: number, document: DocumentDetail): void {
         this._loadingService.showLoading("Envoi de l'acte en cours ...");
@@ -99,7 +98,7 @@ export class DocumentService {
                 this._logger.error('Error fetching file types and files', error);
                 return of(null);
             })
-        );
+        )
     }
 
     /**
@@ -112,10 +111,33 @@ export class DocumentService {
         return document.action_possible.some(a => a.action == ActionPossibleEnum.Orientation);
     }
 
-    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible) {
+    /**
+     * Lance l'action sur un document
+     * @param id_e  id de l'entité
+     * @param document le document
+     * @param action l'action à lancer
+     * @param params autre paramètre pour gérer les actions éventuelles
+     * 
+     */
+    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible, ...params: Record<string, any>[]) {
         this._loadingService.showLoading(`Action \`${action.message}\` en cours ...`);
         this._httpDocumentService.performAction(document.id_d, id_e, action.action).subscribe({
-            next: () => this._loadingService.showSuccess("Action terminé", ['/org', id_e.toString()])
+            next: (result: ActionResult) => {
+                if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
+                    // this._loadingService.showLoading('Tentative de transmission en cours ...');
+                    const url = params.find(d => d['url']);
+                    // window.location.host
+                    // window.location.protocol
+                    let url_return = `http://localhost:30401/return-tdt?id_e=${id_e}&id_d=${document.id_d}&error=%%%%ERROR%%%%&message=%%%%MESSAGE%%%%`;
+                    if (url) {
+                        url_return = url['url'];
+                    }
+                    console.log('redirect ', url_return);
+                    this._redirectTdt(`${result.data.url}&url_return=${encodeURI(url_return)}`);
+                } else {
+                    this._loadingService.showSuccess("Action terminé", ['/org', id_e.toString()])
+                }
+            },
         })
     }
 
@@ -132,5 +154,9 @@ export class DocumentService {
      */
     canEdit(document: DocumentDetail): boolean {
         return (document.last_action === ActionPossibleEnum.Modification || document.last_action === ActionPossibleEnum.Creation);
+    }
+
+    private _redirectTdt(url: string) {
+        window.location.href = url;
     }
 }
