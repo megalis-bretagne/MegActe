@@ -127,7 +127,7 @@ export class ActeFormComponent implements OnInit {
   onAssignFileTypesAndSave(): void {
     if (this._checkFormValid(this.formExternalData)) {
       const info = this.formExternalData.getRawValue();
-      this.documentService.updateTypePiece(this.entiteSelected().id_e, this.documentInfo.info.id_d, Object.values(info));
+      this.documentService.updateTypePiece(this.entiteSelected().id_e, this.documentInfo.info.id_d, Object.values(info)).subscribe();
     } else {
       this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
     }

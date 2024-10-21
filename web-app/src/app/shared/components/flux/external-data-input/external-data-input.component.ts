@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, Input, OnInit, signal, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { NGXLogger } from 'ngx-logger';
 import { FieldFluxService } from 'src/app/core/services/field-flux.service';
@@ -26,7 +26,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
   currentUser = inject(UserContextService).userCurrent
 
   externalDataOptions: string[] = [];
-  filteredOptions: string[] = [];
+  filteredOptions = signal<string[]>([]);
 
   @ViewChild('autoCompleteInput') input: ElementRef<HTMLInputElement>;
 
@@ -61,7 +61,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
     this._fluxService.get_externalData(id_e, this.documentId, this.idField).subscribe({
       next: (data) => {
         this.externalDataOptions = this._filterExternalData(data);
-        this.filteredOptions = this.externalDataOptions;
+        this.filteredOptions.set(this.externalDataOptions);
       },
       error: (error) => {
         this._logger.error('Failed to retrieve external data', error);
@@ -71,7 +71,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
 
   public filter(): void {
     const filterValue = this.input.nativeElement.value.toLowerCase();
-    this.filteredOptions = this.externalDataOptions.filter(o => o.toLowerCase().includes(filterValue));
+    this.filteredOptions.set(this.externalDataOptions.filter(o => o.toLowerCase().includes(filterValue)));
   }
 
   // Filtrer les données en éliminant les titres du premier niveau

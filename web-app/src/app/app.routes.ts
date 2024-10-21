@@ -3,6 +3,7 @@ import { AuthGuardService } from './core/services/guards/auth-guard.service';
 import { ActeFormComponent } from './pages/acte-form/acte-form.component';
 import { documentDetailResolver } from './core/resolvers/document-detail.resolver';
 import { entiteSelectedResolver } from './core/resolvers/entite-selected.resolver';
+import { TdtComponent } from './pages/tdt/tdt.component';
 
 
 export const routes: Routes = [
@@ -28,6 +29,10 @@ export const routes: Routes = [
                 path: 'org/:ide/acte/:documentId',
                 component: ActeFormComponent,
                 resolve: { docDetail: documentDetailResolver },
+            },
+            {
+                path: 'return-tdt',
+                component: TdtComponent
             },
             {
                 path: '**',

@@ -1,7 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { DocumentListComponent } from '../../shared/components/document-list/document-list.component';
-import { ActivatedRoute, Router } from '@angular/router';
-import { UserContextService } from 'src/app/core/services/user-context.service';
 
 @Component({
   selector: 'meg-dashboard',

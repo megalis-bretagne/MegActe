@@ -1,6 +1,5 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ActionPossible, DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/core/model/document.model';
-import { HttpDocumentService } from 'src/app/core/services/http/http-document.service';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 import { StateDocumentPipe } from '../../pipes/state-document.pipe';
 import { LoadingComponent } from '../loading-component/loading.component';
@@ -162,6 +161,7 @@ export class DocumentListComponent implements OnInit {
    * @param action le nom de laction
    */
   runAction(document: DocumentInfo, action: ActionPossible) {
+    console.log(this._router);
     this.documentService.launchActionOnDocument(this.entiteSelected().id_e, document, action)
   }
 
