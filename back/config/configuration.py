@@ -106,14 +106,10 @@ class Settings(BaseSettings):
     request_timeout: int = 5
     log_level: str = "INFO"  # ["debug", "info", "warning", "error", "critical"],
 
-    if pathlib.Path("config/configd.yml").is_file():
-        model_config = SettingsConfigDict(
-            yaml_file="config/config.yml", case_sensitive=False
-        )
+    if pathlib.Path("config/config.yml").is_file():
+        model_config = SettingsConfigDict(yaml_file="config/config.yml", case_sensitive=False)
     else:
-        model_config = SettingsConfigDict(
-            yaml_file="config/config_template.yml", case_sensitive=False
-        )
+        model_config = SettingsConfigDict(yaml_file="config/config_template.yml", case_sensitive=False)
 
     @classmethod
     def settings_customise_sources(
