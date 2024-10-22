@@ -38,4 +38,10 @@ class EntiteInfo(BaseModel):
 
 
 class EntiteInfoWithChild(EntiteInfo):
+    """Liste des entite avec les enfants
+
+    Args:
+        EntiteInfo (_type_): _description_
+    """
+
     child: Optional[List["EntiteInfoWithChild"]] = []

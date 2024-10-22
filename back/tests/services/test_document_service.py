@@ -47,9 +47,7 @@ class TestDocumentService(TestDatabase):
         limit = 10
 
         # DO
-        DocumentService(self.client_api, FluxActionServiceMock()).list_documents_paginate(
-            id_e, type=flux, offset=offset, limit=limit
-        )
+        DocumentService(self.client_api, FluxActionServiceMock()).list_documents_paginate(id_e, doc_type=flux, offset=offset, limit=limit)
 
         # ASSERT
         self.client_api.perform_get.assert_called_once()

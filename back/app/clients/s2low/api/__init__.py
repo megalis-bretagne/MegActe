@@ -121,5 +121,5 @@ class ApiS2low:
 
         to_hash = f"{auth.password}:{nounce}"
         hash_pass = sha256(str.encode(to_hash)).hexdigest()
-        url = f"{self._config.base_url}{self.ACTES_TRANSAC_POST_CONFIRME}?id={tedetis_transaction_id}&nounce={nounce}&login={auth.username}&hash={hash_pass}"
-        return url
+        base_url = {self._config.base_url}{self.ACTES_TRANSAC_POST_CONFIRME}
+        return f"{base_url}?id={tedetis_transaction_id}&nounce={nounce}&login={auth.username}&hash={hash_pass}"

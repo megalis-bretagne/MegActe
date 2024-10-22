@@ -15,7 +15,7 @@ class FluxActionService(BaseService):
     def __init__(self) -> None:
         self.api_pastell = get_or_make_api_pastell_for_admin()
 
-    def get_action_on_flux(self, type: str) -> FluxAction:
+    def get_action_on_flux(self, type_flux: str) -> FluxAction:
         """Recupère les actions possibles sur un flux
 
         Args:
@@ -24,5 +24,5 @@ class FluxActionService(BaseService):
         Returns:
             _type_: _description_
         """
-        actions = self.api_pastell.perform_get(f"flux/{type}/action")
+        actions = self.api_pastell.perform_get(f"flux/{type_flux}/action")
         return FluxAction(actions=actions)
