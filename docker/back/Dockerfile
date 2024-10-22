@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 COPY app/ ./app/
 COPY config/ ./config/
+COPY migrations ./migrations
 
 RUN rm /appli/config/config_template.yml
 
