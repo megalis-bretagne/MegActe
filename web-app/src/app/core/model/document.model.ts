@@ -55,7 +55,8 @@ export enum ActionPossibleEnum {
     Suppression = 'supression',
     Modification = 'modification',
     Teletransmission_TDT = 'teletransmission-tdt',
-    Creation = "creation"
+    Creation = "creation",
+    Verification_TDT = 'verif-tdt'
     // Ajoute d'autres actions si nécessaire
 }
 

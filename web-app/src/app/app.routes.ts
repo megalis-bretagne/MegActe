@@ -31,7 +31,7 @@ export const routes: Routes = [
                 resolve: { docDetail: documentDetailResolver },
             },
             {
-                path: 'return-tdt',
+                path: 'retour-tdt', // route pour gérer le retour du TDT après authentification
                 component: TdtComponent
             },
             {
