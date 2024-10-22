@@ -16,7 +16,8 @@ class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.connection = engine.connect()
         self.transaction = self.connection.begin()
-        self.session = TestingSessionLocal(bind=self.connection)
+        self._sessionLocal = TestingSessionLocal
+        self.session = self._sessionLocal(bind=self.connection)
 
     def tearDown(self):
         self.session.close()

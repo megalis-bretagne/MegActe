@@ -12,10 +12,10 @@ keycloak:
 
 database:
   pwd : <pwd>
-  user : <user>
-  host : <host>
-  port : <port>
-  database: <db name>
+  user : megacte
+  host : localhost
+  port : 54032
+  database: megacte
 
 s2low:
   url: <urm>

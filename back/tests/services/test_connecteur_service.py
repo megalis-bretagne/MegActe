@@ -37,7 +37,7 @@ class TesterConnecteurService(TestDatabase):
         )
         # Assert
         with pytest.raises(ConnecteurExistException):
-            ConnecteurTdtService().create(connecteur_exit, self.session)
+            ConnecteurTdtService().create(connecteur_exit, self._sessionLocal)
 
     def test_should_add_new_connecteur(self):
         # Given
@@ -49,7 +49,9 @@ class TesterConnecteurService(TestDatabase):
         )
 
         # assert
-        insert_connecteur = ConnecteurTdtService().create(new_connecteur, self.session)
+        insert_connecteur = ConnecteurTdtService().create(
+            new_connecteur, self._sessionLocal
+        )
 
         self.assertEqual(insert_connecteur.flux, new_connecteur.flux)
         self.assertEqual(
@@ -58,5 +60,6 @@ class TesterConnecteurService(TestDatabase):
         self.assertEqual(insert_connecteur.id_e, new_connecteur.id_e)
 
     def _insert_one_fake_connecteur(self, co: ConnecteurAuthTdt):
-        self.session.add(co)
-        self.session.commit()
+        with self._sessionLocal() as db:
+            db.add(co)
+            db.commit()
