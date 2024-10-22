@@ -73,6 +73,12 @@ class EntiteIdException(MegActeException):
 
 
 class ConnecteurNotFound(MegActeException):
+    """Exception si le connecteur non trouvé
+
+    Args:
+        MegActeException (_type_): _description_
+    """
+
     def __init__(self, id_e: str, flux: str):
         """Initialise une ConnecteurNotFound.
 

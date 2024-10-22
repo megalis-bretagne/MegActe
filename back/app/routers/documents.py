@@ -80,9 +80,11 @@ def delete_document(
             title="les identifiants de documents",
             description="Les identifiants de documents",
         ),
-    ] = [],
+    ] = None,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
+    if documents_id is None:
+        documents_id = []
     for doc_id in documents_id:
         logger.debug(f"Suppression du document  {doc_id} sur l'entite {entite_id}")
         client.perform_delete(f"/entite/{entite_id}/document/{doc_id}")

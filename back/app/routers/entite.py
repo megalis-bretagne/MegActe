@@ -35,7 +35,7 @@ def get_documents_on_entite(
     args = {}
 
     docs = DocumentService(client).list_documents_paginate(id_e, type_flux, *(offset, limit), **args)
-    count = client.count_documents_by_id_e(id_e=id_e, type=type_flux)
+    count = client.count_documents_by_id_e(id_e=id_e, type_document=type_flux)
 
     base_url = f"/entite/{id_e}/documents"
     type_flux_param = f"&type_flux={type_flux}" if type_flux else ""

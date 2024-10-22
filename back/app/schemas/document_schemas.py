@@ -148,7 +148,7 @@ class DocumentInfo(BaseModelDocument):
         last_action_date (str) : la date de la dernière action   (format attendu : YYYY-MM-DD hh:mm:ss).
         last_action (Optional[ActionDocument]): La dernière action effectuée sur le document
         last_action_message (Optional[str]) : le message de la dernière action
-        action_possible (list[ActionDocument]): La liste des actions manuels possibles pour le document (Si vide, le document est dans un workflow auto).
+        action_possible (list[ActionDocument]): La liste des actions manuels possibles pour le document
     """
 
     id_e: int

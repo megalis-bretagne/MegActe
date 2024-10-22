@@ -23,7 +23,7 @@ class DocumentService(BaseService):
         self,
         entite_id: int,
         document_id: str,
-        external_data_to_retrieve: list[str] = [],
+        external_data_to_retrieve: list[str] = None,
     ):
         """Récupère les infos d'un document dans Pastell.
 
@@ -36,6 +36,9 @@ class DocumentService(BaseService):
         Returns:
             dict: Les détails du document récupéré.
         """
+        if external_data_to_retrieve is None:
+            external_data_to_retrieve = []
+
         document = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}")
 
         for external_data in external_data_to_retrieve:
@@ -53,13 +56,13 @@ class DocumentService(BaseService):
 
         return document
 
-    def list_documents_paginate(self, id_e: int, type=None, offset=0, limit=100, **kwargs) -> list[DocumentInfo]:
+    def list_documents_paginate(self, id_e: int, doc_type=None, offset=0, limit=100, **kwargs) -> list[DocumentInfo]:
         """Retourne la liste des documents paginer
 
         Args:
             client_api (ApiPastell): Client Pastell
             id_e (int): l'id de l'entitite
-            type (str | None) : le type de flux
+            doc_type (str | None) : le type de flux
             offset (int, optional): Décalage à partir duquel récupérer les documents (par défaut est 0).
             limit (int, optional): Nombre maximum de documents à récupérer par page (par défaut est 100).
             **kwargs: Autres paramètres de requête facultatifs à passer à l'API.
@@ -73,16 +76,16 @@ class DocumentService(BaseService):
 
         query_param = {"offset": offset, "limit": limit}
         # Dictionnaire pour renommer les clés
-        if type:
-            query_param["type"] = type
+        if doc_type:
+            query_param["type"] = doc_type
 
         query_param.update(kwargs)
         documents = []
 
         list_documents = self.api_pastell.perform_get(f"entite/{id_e}/document", query_params=query_param)
         flux_action = None
-        if type is not None:
-            flux_action = self.flux_action_service.get_action_on_flux(type)
+        if doc_type is not None:
+            flux_action = self.flux_action_service.get_action_on_flux(doc_type)
 
         for doc in list_documents:
             document_info = DocumentInfo(**doc)

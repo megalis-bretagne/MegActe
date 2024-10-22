@@ -9,14 +9,17 @@ logger = logging.getLogger(__name__)
 
 
 class ActeService(BaseService):
+    """Service pour les Acte
+
+    Args:
+        BaseService (_type_): _description_
+    """
 
     def __init__(self, api=None):
         super().__init__(api)
         self.tdt_service = TdtService()
 
-    def check_and_perform_action_service(
-        self, entite_id: int, document_id: str, action: ActionDocument
-    ) -> ActionResult:
+    def check_and_perform_action_service(self, entite_id: int, document_id: str, action: ActionDocument) -> ActionResult:
         """Vérifie si une action est possible et l'exécute pour un document donné.
 
         Args:
