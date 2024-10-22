@@ -108,4 +108,11 @@ class ApiPastell:
         if not response.content:
             return None
 
-        return response.json()
+        try:
+            return response.json()
+        except requests.JSONDecodeError:
+            # Gérer le cas où la réponse n'est pas du JSON
+            return {
+                "status_code": response.status_code,
+                "content": response.text,  # Retourne le contenu brut sous forme de texte
+            }
