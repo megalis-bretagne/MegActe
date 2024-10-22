@@ -119,26 +119,32 @@ export class DocumentService {
      * @param params autre paramètre pour gérer les actions éventuelles
      * 
      */
-    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible, ...params: Record<string, any>[]) {
+    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible, ...params: Record<string, any>[]): void {
         this._loadingService.showLoading(`Action \`${action.message}\` en cours ...`);
         this._httpDocumentService.performAction(document.id_d, id_e, action.action).subscribe({
             next: (result: ActionResult) => {
                 if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
-                    // this._loadingService.showLoading('Tentative de transmission en cours ...');
                     const url = params.find(d => d['url']);
-                    // window.location.host
-                    // window.location.protocol
-                    let url_return = `http://localhost:30401/return-tdt?id_e=${id_e}&id_d=${document.id_d}&error=%%%%ERROR%%%%&message=%%%%MESSAGE%%%%`;
+                    let url_return = `/retour-tdt?id_e=${id_e}&id_d=${document.id_d}&error=%%ERROR%%&message=%%MESSAGE%%`;
                     if (url) {
                         url_return = url['url'];
                     }
-                    console.log('redirect ', url_return);
-                    this._redirectTdt(`${result.data.url}&url_return=${encodeURI(url_return)}`);
+                    this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
                 } else {
                     this._loadingService.showSuccess("Action terminé", ['/org', id_e.toString()])
                 }
             },
         })
+    }
+
+    /**
+     * Lance l'action de verification après un retour Tdt
+     * @param id_e id de l'entité
+     * @param id_d id du document
+     * @returns 
+     */
+    retourTdt(id_e: number, id_d: string): Observable<ActionResult> {
+        return this._httpDocumentService.performAction(id_d, id_e, ActionPossibleEnum.Verification_TDT);
     }
 
     /**

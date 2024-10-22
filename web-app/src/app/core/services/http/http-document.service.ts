@@ -4,6 +4,7 @@ import { ActionPossibleEnum, DocCreateInfo, DocumentDetail, DocumentInfo, Docume
 import { Observable, catchError, of, tap, throwError } from "rxjs";
 import { NGXLogger } from "ngx-logger";
 import { SettingsService } from "src/environments/settings.service";
+import { ActionResult } from "../../model/flux-action.model";
 
 @Injectable({
     providedIn: 'root'
@@ -99,10 +100,10 @@ export class HttpDocumentService {
         );
     }
 
-    performAction(documentId: string, entiteId: number, action: ActionPossibleEnum | string): Observable<any> {
-        return this._http.post<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/${action}`, {}).pipe(
+    performAction(documentId: string, entiteId: number, action: ActionPossibleEnum | string): Observable<ActionResult> {
+        return this._http.post<ActionResult>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/${action}`, {}).pipe(
             catchError((error) => {
-                this._logger.error('Error when sending document', error);
+                this._logger.error('Error when perform Action on document', error);
                 return throwError(() => error);
             })
         );
