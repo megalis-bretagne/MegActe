@@ -1,3 +1,5 @@
+import os
+import pathlib
 from typing import Tuple, Type
 from pydantic import BaseModel, computed_field
 from pydantic_settings import (
@@ -105,9 +107,14 @@ class Settings(BaseSettings):
     request_timeout: int = 5
     log_level: str = "INFO"  # ["debug", "info", "warning", "error", "critical"],
 
-    model_config = SettingsConfigDict(
-        yaml_file="config/config.yml", case_sensitive=False
-    )
+    if pathlib.Path("config/configd.yml").is_file():
+        model_config = SettingsConfigDict(
+            yaml_file="config/config.yml", case_sensitive=False
+        )
+    else:
+        model_config = SettingsConfigDict(
+            yaml_file="config/config_template.yml", case_sensitive=False
+        )
 
     @classmethod
     def settings_customise_sources(

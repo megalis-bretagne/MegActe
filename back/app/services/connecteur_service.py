@@ -1,4 +1,4 @@
-from sqlalchemy import or_, select
+from sqlalchemy import select
 
 from ..exceptions.custom_exceptions import ConnecteurExistException, ConnecteurNotFound
 from ..utils import PasswordUtils
