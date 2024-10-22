@@ -14,6 +14,8 @@ import { KeycloakAngularModule, KeycloakBearerInterceptor, KeycloakService } fro
 import { SettingsService } from 'src/environments/settings.service';
 import { UserContextService } from './core/services/user-context.service';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 
 // Provider for Keycloak Bearer Interceptor
 const keycloakBearerInterceptorProvider: Provider = {
@@ -34,6 +36,7 @@ export const appConfig: ApplicationConfig = {
     KeycloakAngularModule,
     keycloakBearerInterceptorProvider,
     KeycloakService,
+    BrowserAnimationsModule,
     importProvidersFrom(LoggerModule.forRoot({ level: NgxLoggerLevel.WARN })),
     // provideZoneChangeDetection()
     provideExperimentalZonelessChangeDetection(),
