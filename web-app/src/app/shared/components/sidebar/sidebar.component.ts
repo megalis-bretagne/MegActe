@@ -12,6 +12,7 @@ import { EntiteSelectComponent } from '../entite-select/entite-select.component'
 import { EntiteInfo } from 'src/app/core/model/user.model';
 import { Modal } from 'flowbite';
 
+
 @Component({
   selector: 'meg-sidebar',
   standalone: true,

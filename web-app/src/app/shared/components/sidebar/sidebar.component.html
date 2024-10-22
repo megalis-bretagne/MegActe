@@ -1,6 +1,7 @@
-<nav class="border border-gray-200 p-4 rounded-md" role="navigation" aria-labelledby="sidebar-title">
+<nav class="max-w-prose	 border border-gray-200 p-4 rounded-md relative" role="navigation"
+    aria-labelledby="Liste des types de documents">
 
-    <div class="mb-5">
+    <div class="mb-5 flex">
         <button (click)="showSelectEntite()" data-tooltip-target="tooltip-light" data-tooltip-placement="right"
             class=" btn-meg-primary px-4 py-2 inline-flex items-center mb-3 text-center"
             type="button">{{entiteSelected()?.denomination}}
@@ -12,6 +13,7 @@
             </svg>
             }
         </button>
+
         <div id="tooltip-light" role="tooltip"
             class="absolute z-10 invisible inline-block px-3 py-2 text font-medium bg-white border border-gray-200 rounded-lg shadow-sm opacity-0 tooltip">
             L'entité sélectionné

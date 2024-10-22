@@ -1,0 +1,15 @@
+.fade {
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out; /* transition lente sur l'opacité */
+  }
+  
+  .fade-in {
+    opacity: 1; /* l'élément devient visible */
+  }
+  
+  .fade-out {
+    opacity: 0; /* l'élément devient transparent */
+    transition: opacity 0.5s ease-in-out; /* transition lente sur l'opacité */
+    visibility: hidden; /* pour éviter les interactions avec l'élément masqué */
+  }
+  
