@@ -55,6 +55,8 @@ class ActeService(BaseService):
                 data={"url": url},
             )
 
-        return self.api_pastell.perform_post(
+        response = self.api_pastell.perform_post(
             f"/entite/{entite_id}/document/{document_id}/action/{action}"
         )
+
+        return ActionResult(**response)

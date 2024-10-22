@@ -31,6 +31,6 @@ class ActionResult(BaseModel):
         BaseModel (_type_): _description_
     """
 
-    result: bool
-    message: str
+    result: bool = True
+    message: Optional[str] = ""
     data: Optional[Dict] = None
