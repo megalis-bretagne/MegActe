@@ -10,9 +10,7 @@ from .dependencies import get_settings, get_current_user
 from fastapi import Depends
 import logging
 
-engine = create_engine(
-    get_settings().database.database_url, pool_pre_ping=True, pool_recycle=30
-)
+engine = create_engine(get_settings().database.database_url, pool_pre_ping=True, pool_recycle=30)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
@@ -25,9 +23,7 @@ def get_db():
         db.close()
 
 
-def get_user_from_db(
-    login_user: dict = Depends(get_current_user), db: Session = Depends(get_db)
-) -> UserPastell:
+def get_user_from_db(login_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> UserPastell:
     """Récupère l'utilisateur depuis la BD.
 
     Args:

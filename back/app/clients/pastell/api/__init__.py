@@ -47,9 +47,7 @@ class ApiPastell:
         response = self.perform_get(f"utilisateur/{id_u}", auth)
         return TypeAdapter(UserInfo).validate_python(response)
 
-    def count_documents_by_id_e(
-        self, id_e: int, type: str = None, auth: HTTPBasicAuth = None
-    ):
+    def count_documents_by_id_e(self, id_e: int, type: str = None, auth: HTTPBasicAuth | None = None):
         """Retourne le nombre de document sur une entite
 
         Args:
@@ -62,9 +60,7 @@ class ApiPastell:
         if type:
             query_param["type"] = type
 
-        count_response = self.perform_get(
-            "document/count", auth=auth, query_params=query_param
-        )
+        count_response = self.perform_get("document/count", auth=auth, query_params=query_param)
         total = 0
 
         for _, value in count_response[str(id_e)]["flux"].items():

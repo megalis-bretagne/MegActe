@@ -15,9 +15,7 @@ class DocumentService(BaseService):
         BaseService
     """
 
-    def __init__(
-        self, api=None, flux_action_service: FluxActionService = FluxActionService()
-    ):
+    def __init__(self, api=None, flux_action_service: FluxActionService = FluxActionService()):
         super().__init__(api)
         self.flux_action_service = flux_action_service
 
@@ -38,18 +36,12 @@ class DocumentService(BaseService):
         Returns:
             dict: Les détails du document récupéré.
         """
-        document = self.api_pastell.perform_get(
-            f"/entite/{entite_id}/document/{document_id}"
-        )
+        document = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}")
 
         for external_data in external_data_to_retrieve:
             if external_data in document["data"]:
-                logger.debug(
-                    f"Récupération des informations de {external_data} pour le document {document_id}"
-                )
-                info = self.api_pastell.perform_get(
-                    f"/entite/{entite_id}/document/{document_id}/file/{external_data}"
-                )
+                logger.debug(f"Récupération des informations de {external_data} pour le document {document_id}")
+                info = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}/file/{external_data}")
                 document["data"][external_data] = info.json()
 
         document = DocumentDetail(**document)
@@ -61,9 +53,7 @@ class DocumentService(BaseService):
 
         return document
 
-    def list_documents_paginate(
-        self, id_e: int, type=None, offset=0, limit=100, **kwargs
-    ) -> list[DocumentInfo]:
+    def list_documents_paginate(self, id_e: int, type=None, offset=0, limit=100, **kwargs) -> list[DocumentInfo]:
         """Retourne la liste des documents paginer
 
         Args:
@@ -89,33 +79,21 @@ class DocumentService(BaseService):
         query_param.update(kwargs)
         documents = []
 
-        list_documents = self.api_pastell.perform_get(
-            f"entite/{id_e}/document", query_params=query_param
-        )
+        list_documents = self.api_pastell.perform_get(f"entite/{id_e}/document", query_params=query_param)
         flux_action = None
         if type is not None:
             flux_action = self.flux_action_service.get_action_on_flux(type)
 
         for doc in list_documents:
             document_info = DocumentInfo(**doc)
-            if (
-                flux_action
-                and not document_info.action_possible
-                and document_info.last_action in flux_action.actions
-            ):
-                document_info.action_possible = self._get_action_possible(
-                    flux_action, document_info.last_action
-                )
-                document_info.last_action_message = flux_action.actions[
-                    document_info.last_action
-                ].name
+            if flux_action and not document_info.action_possible and document_info.last_action in flux_action.actions:
+                document_info.action_possible = self._get_action_possible(flux_action, document_info.last_action)
+                document_info.last_action_message = flux_action.actions[document_info.last_action].name
             documents.append(document_info)
 
         return documents
 
-    def _get_action_possible(
-        self, flux_action: FluxAction, last_action: str
-    ) -> list[ActionPossible]:
+    def _get_action_possible(self, flux_action: FluxAction, last_action: str) -> list[ActionPossible]:
         """A partir d'un status de document (champ last_action, retourne les action possibles)
 
         Args:
@@ -126,13 +104,6 @@ class DocumentService(BaseService):
             return []
         action_possible = []
         for action_name, action_details in flux_action.actions.items():
-            if (
-                last_action in action_details.rule.last_action
-                and action_details.name_action
-            ):
-                action_possible.append(
-                    ActionPossible(
-                        action=action_name, message=action_details.name_action
-                    )
-                )
+            if last_action in action_details.rule.last_action and action_details.name_action:
+                action_possible.append(ActionPossible(action=action_name, message=action_details.name_action))
         return action_possible

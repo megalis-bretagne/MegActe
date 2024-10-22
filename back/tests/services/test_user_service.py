@@ -10,9 +10,7 @@ from ..conftest import TestDatabase
 class TestUserService(TestDatabase):
     """Test du service user_service"""
 
-    user_fake = UserCreate(
-        login="test_meg@megacte.fr", id_pastell=1, pwd_pastell="fake"
-    )
+    user_fake = UserCreate(login="test_meg@megacte.fr", id_pastell=1, pwd_pastell="fake")
 
     def setUp(self):
         super().setUp()
@@ -46,9 +44,7 @@ class TestUserService(TestDatabase):
         )
         # Assert
         with pytest.raises(UserExistException):
-            UserService(self.client_api).add_user_to_db(
-                user_id_pastell_exist, self.session
-            )
+            UserService(self.client_api).add_user_to_db(user_id_pastell_exist, self.session)
 
     def test_should_add_new_user(self):
         # Given
@@ -59,9 +55,7 @@ class TestUserService(TestDatabase):
         )
 
         # assert
-        insert_user = UserService(self.client_api).add_user_to_db(
-            new_user, self.session
-        )
+        insert_user = UserService(self.client_api).add_user_to_db(new_user, self.session)
         self.client_api.perform_patch.assert_called_once_with(
             f"/utilisateur/{new_user.id_pastell}",
             {"password": new_user.pwd_pastell},

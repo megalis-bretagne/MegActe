@@ -44,9 +44,7 @@ class ApiS2low:
         if self._config.verify_host is None:
             # https://urllib3.readthedocs.io/en/1.26.x/user-guide.html#certificate-verification
             if not os.path.exists(self._config.certificate_path):
-                raise FileNotFoundError(
-                    f"Certificate file not found: {self._config.certificate_path}"
-                )
+                raise FileNotFoundError(f"Certificate file not found: {self._config.certificate_path}")
             if not os.path.exists(self._config.key_path):
                 raise FileNotFoundError(f"Key file not found: {self._config.key_path}")
             self.session_request.mount(
@@ -67,9 +65,7 @@ class ApiS2low:
         Returns:
             _type_: _description_
         """
-        response = self.session_request.get(
-            self._config.base_url + self.TEST_AUTHENTICATION_ENDPOINT, auth=auth
-        )
+        response = self.session_request.get(self._config.base_url + self.TEST_AUTHENTICATION_ENDPOINT, auth=auth)
         response.raise_for_status()
         return response.text
 
@@ -109,16 +105,13 @@ class ApiS2low:
         response.raise_for_status()
         return response.status_code, response.json()["nounce"]
 
-    def get_url_post_confirm(
-        self, auth: HTTPBasicAuth, tedetis_transaction_id: int, url_return: str = ""
-    ) -> str:
+    def get_url_post_confirm(self, auth: HTTPBasicAuth, tedetis_transaction_id: int) -> str:
         """
         Construit l'url pour confirmer l'envoi d'un acte (avec validation certificat)
 
         Args:
             auth (HTTPBasicAuth): le login/pwd du compte tech
             tedetis_transaction_id (number): l'id de transaction
-            url_return (str): l'url de retour après confirmation de la transaction
 
         Returns:
             str: l'url du service

@@ -6,6 +6,9 @@ from requests.auth import HTTPBasicAuth
 
 
 class TdtService:
+    """
+    Service pour le Tdt
+    """
 
     def __init__(self) -> None:
         self.api_s2low = get_or_make_api_s2low()
@@ -30,7 +33,6 @@ class TdtService:
         # Faire appel à GetNoune de s2low pour récupérer un nounce
         #
         # Appel au service td2t pour construire l'url
-        # Construire l'url :   <URL_SL2OW>/modules/actes/actes_transac_post_confirm_api.php?id=<tedetis_transaction_id>&nouce=<NOUNCE>&login=<LOGIN>&hash=<HASH>
         return self.api_s2low.get_url_post_confirm(
             HTTPBasicAuth(co.login_tech_tdt, co.get_decrypt_password()),
             doc.data["tedetis_transaction_id"],

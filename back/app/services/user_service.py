@@ -70,15 +70,11 @@ class UserService(BaseService):
         logger.info(f"Creation Utilisateur : {new_user}")
 
         if new_user.id is None:
-            raise UserRegistrationException(
-                "Failed to register the user in the database"
-            )
+            raise UserRegistrationException("Failed to register the user in the database")
 
         # Envoyer le pwd non chifré à PASTELL
 
-        self.api_pastell.perform_patch(
-            f"/utilisateur/{user_data.id_pastell}", {"password": user_data.pwd_pastell}
-        )
+        self.api_pastell.perform_patch(f"/utilisateur/{user_data.id_pastell}", {"password": user_data.pwd_pastell})
 
         return new_user
 

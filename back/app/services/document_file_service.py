@@ -66,9 +66,7 @@ class DocumentFileService(BaseService):
         Returns:
             dict: Les détails de l'ajout du fichier.
         """
-        existing_files = self.get_existing_files(
-            file_data.entite_id, document_id, element_id
-        )
+        existing_files = self.get_existing_files(file_data.entite_id, document_id, element_id)
         next_file_number = len(existing_files)
 
         file_content = file_data.file.file.read()
@@ -137,9 +135,7 @@ class DocumentFileService(BaseService):
             dict: Les valeurs possibles pour l'élément externalData.
         """
 
-        return self.api_pastell.perform_get(
-            f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
-        )
+        return self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}")
 
     def assign_file_typologie(
         self,
@@ -197,9 +193,7 @@ class DocumentFileService(BaseService):
         Returns:
             list: Une liste des fichiers existants.
         """
-        response = self.api_pastell.perform_get(
-            f"/entite/{entite_id}/document/{document_id}"
-        )
+        response = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}")
         document_data = response.get("data", {})
         return document_data.get(element_id, [])
 
