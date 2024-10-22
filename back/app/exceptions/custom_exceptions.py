@@ -96,9 +96,7 @@ class ConnecteurExistException(MegActeException):
         Args:
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "User already exist".
         """
-        super().__init__(
-            status_code=400, detail=f"Connecteur on {flux} / id_e {id_e} already exist"
-        )
+        super().__init__(status_code=400, detail=f"Connecteur on {flux} / id_e {id_e} already exist")
 
 
 class UserExistException(MegActeException):

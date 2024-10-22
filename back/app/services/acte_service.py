@@ -31,9 +31,7 @@ class ActeService(BaseService):
             dict: Les détails de l'action exécutée.
         """
 
-        response = self.api_pastell.perform_get(
-            f"/entite/{entite_id}/document/{document_id}"
-        )
+        response = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}")
 
         actions = response.get("action_possible", [])
         if action not in actions:
@@ -43,9 +41,7 @@ class ActeService(BaseService):
             )
 
         if action == ActionDocument.teletransmission_tdt:
-            logger.info(
-                f"Génération de l'url pour teletransmission au TDT doc {document_id} entite {entite_id}"
-            )
+            logger.info(f"Génération de l'url pour teletransmission au TDT doc {document_id} entite {entite_id}")
             document = DocumentDetail(**response)
             url = self.tdt_service.teletransmission(document, entite_id)
             logger.debug(f"Url généré : {url}")
@@ -55,8 +51,6 @@ class ActeService(BaseService):
                 data={"url": url},
             )
 
-        response = self.api_pastell.perform_post(
-            f"/entite/{entite_id}/document/{document_id}/action/{action}"
-        )
+        response = self.api_pastell.perform_post(f"/entite/{entite_id}/document/{document_id}/action/{action}")
 
         return ActionResult(**response)

@@ -34,9 +34,7 @@ def get_documents_on_entite(
 ):
     args = {}
 
-    docs = DocumentService(client).list_documents_paginate(
-        id_e, type_flux, *(offset, limit), **args
-    )
+    docs = DocumentService(client).list_documents_paginate(id_e, type_flux, *(offset, limit), **args)
     count = client.count_documents_by_id_e(id_e=id_e, type=type_flux)
 
     base_url = f"/entite/{id_e}/documents"
@@ -44,19 +42,9 @@ def get_documents_on_entite(
 
     next_offset = offset + limit
     prev_offset = offset - limit if offset - limit >= 0 else None
-    next_url = (
-        f"{base_url}?offset={next_offset}&limit={limit}{type_flux_param}"
-        if next_offset < count
-        else None
-    )
-    prev_url = (
-        f"{base_url}?offset={prev_offset}&limit={limit}{type_flux_param}"
-        if prev_offset is not None
-        else None
-    )
+    next_url = f"{base_url}?offset={next_offset}&limit={limit}{type_flux_param}" if next_offset < count else None
+    prev_url = f"{base_url}?offset={prev_offset}&limit={limit}{type_flux_param}" if prev_offset is not None else None
 
-    pagination = ResponsePagination(
-        offset=offset, limit=limit, total=count, next=next_url, prev=prev_url
-    )
+    pagination = ResponsePagination(offset=offset, limit=limit, total=count, next=next_url, prev=prev_url)
 
     return DocumentPaginate(documents=docs, pagination=pagination)

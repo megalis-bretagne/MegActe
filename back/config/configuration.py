@@ -1,4 +1,3 @@
-import os
 import pathlib
 from typing import Tuple, Type
 from pydantic import BaseModel, computed_field

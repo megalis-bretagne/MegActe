@@ -12,6 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class ConnecteurTdtService:
+    """
+    Service de gestion du connecteur Tdt
+    """
 
     def create(self, connecteur_config: ConnecteurCreateAuthTdt, db=SessionLocal):
         with db() as db:
@@ -22,12 +25,8 @@ class ConnecteurTdtService:
             ).first()
 
             if db_connecteur:
-                raise ConnecteurExistException(
-                    connecteur_config.id_e, connecteur_config.flux
-                )
-            key, encrypted_pwd = PasswordUtils.encrypt_password(
-                connecteur_config.pwd_tech_tdt
-            )
+                raise ConnecteurExistException(connecteur_config.id_e, connecteur_config.flux)
+            key, encrypted_pwd = PasswordUtils.encrypt_password(connecteur_config.pwd_tech_tdt)
 
             # Enregistrer l'user dans la BD
             new_connecteur = ConnecteurAuthTdt(
@@ -41,20 +40,12 @@ class ConnecteurTdtService:
             db.commit()
             db.refresh(new_connecteur)
 
-            logger.info(
-                f"Creation du connecteur pour id_e {new_connecteur.id_e} flux {new_connecteur.flux} "
-            )
+            logger.info(f"Creation du connecteur pour id_e {new_connecteur.id_e} flux {new_connecteur.flux} ")
             return new_connecteur
 
-    def get_connecteur(
-        self, flux: str, id_e: int, db=SessionLocal
-    ) -> ConnecteurAuthTdt:
+    def get_connecteur(self, flux: str, id_e: int, db=SessionLocal) -> ConnecteurAuthTdt:
         with db() as db:
-            result = db.execute(
-                select(ConnecteurAuthTdt)
-                .where(ConnecteurAuthTdt.id_e == id_e)
-                .where(ConnecteurAuthTdt.flux == flux)
-            ).first()
+            result = db.execute(select(ConnecteurAuthTdt).where(ConnecteurAuthTdt.id_e == id_e).where(ConnecteurAuthTdt.flux == flux)).first()
 
             if not result:
                 raise ConnecteurNotFound(id_e, flux)

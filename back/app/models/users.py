@@ -31,9 +31,7 @@ class UserPastell(Base):
             str: le mot de passe
         """
         if self._cached_password is None:
-            self._cached_password = PasswordUtils().decrypt_password(
-                self.pwd_pastell, self.pwd_key
-            )
+            self._cached_password = PasswordUtils().decrypt_password(self.pwd_pastell, self.pwd_key)
         return self._cached_password
 
     def __eq__(self, other):

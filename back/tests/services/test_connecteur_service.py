@@ -49,14 +49,10 @@ class TesterConnecteurService(TestDatabase):
         )
 
         # assert
-        insert_connecteur = ConnecteurTdtService().create(
-            new_connecteur, self._sessionLocal
-        )
+        insert_connecteur = ConnecteurTdtService().create(new_connecteur, self._sessionLocal)
 
         self.assertEqual(insert_connecteur.flux, new_connecteur.flux)
-        self.assertEqual(
-            insert_connecteur.login_tech_tdt, new_connecteur.login_tech_tdt
-        )
+        self.assertEqual(insert_connecteur.login_tech_tdt, new_connecteur.login_tech_tdt)
         self.assertEqual(insert_connecteur.id_e, new_connecteur.id_e)
 
     def _insert_one_fake_connecteur(self, co: ConnecteurAuthTdt):

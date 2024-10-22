@@ -34,13 +34,7 @@ class FluxService(BaseService):
 
         with SessionLocal.begin() as db:
             flux_enable = (
-                db.execute(
-                    select(FluxAvailable.flux_id_pastell).where(
-                        FluxAvailable.enable == True
-                    )
-                )
-                .scalars()
-                .all()
+                db.execute(select(FluxAvailable.flux_id_pastell).where(FluxAvailable.enable == True)).scalars().all()
             )
         for flux_id, value in flux.items():
             value["enable"] = flux_id in flux_enable

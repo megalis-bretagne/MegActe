@@ -16,24 +16,18 @@ class TestDocumentService(TestDatabase):
     def test_sould_raise_error_when_list_document_bad_id_e(self):
         # Assert id_e is None
         with pytest.raises(EntiteIdException):
-            DocumentService(
-                self.client_api, FluxActionServiceMock()
-            ).list_documents_paginate(None)
+            DocumentService(self.client_api, FluxActionServiceMock()).list_documents_paginate(None)
 
         # Assert id_e < 0
         with pytest.raises(EntiteIdException):
-            DocumentService(
-                self.client_api, FluxActionServiceMock()
-            ).list_documents_paginate(-1)
+            DocumentService(self.client_api, FluxActionServiceMock()).list_documents_paginate(-1)
 
     def test_sould_list_document_with_no_param(self):
         # GIVEN
         id_e = 1
 
         # DO
-        DocumentService(
-            self.client_api, FluxActionServiceMock()
-        ).list_documents_paginate(id_e)
+        DocumentService(self.client_api, FluxActionServiceMock()).list_documents_paginate(id_e)
 
         # ASSERT
         self.client_api.perform_get.assert_called_once()
@@ -53,9 +47,9 @@ class TestDocumentService(TestDatabase):
         limit = 10
 
         # DO
-        DocumentService(
-            self.client_api, FluxActionServiceMock()
-        ).list_documents_paginate(id_e, type=flux, offset=offset, limit=limit)
+        DocumentService(self.client_api, FluxActionServiceMock()).list_documents_paginate(
+            id_e, type=flux, offset=offset, limit=limit
+        )
 
         # ASSERT
         self.client_api.perform_get.assert_called_once()

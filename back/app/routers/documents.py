@@ -35,9 +35,7 @@ def add_acte_doc(
     doc: DocCreateInfo,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return client.perform_post(
-        f"/entite/{entite_id}/document", data={"type": doc.flux_type}
-    )
+    return client.perform_post(f"/entite/{entite_id}/document", data={"type": doc.flux_type})
 
 
 # Update doc
@@ -92,9 +90,7 @@ def delete_document(
 
 
 # Ajouter des fichiers à un document
-@router.post(
-    "/entite/{entite_id}/document/{document_id}/file/{element_id}", tags=["document"]
-)
+@router.post("/entite/{entite_id}/document/{document_id}/file/{element_id}", tags=["document"])
 def add_files_to_document(
     document_id: str,
     element_id: str,
@@ -103,15 +99,11 @@ def add_files_to_document(
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     file_data = AddFilesToDoc(entite_id=entite_id, files=files)
-    return DocumentFileService(client).add_multiple_files(
-        document_id, element_id, file_data
-    )
+    return DocumentFileService(client).add_multiple_files(document_id, element_id, file_data)
 
 
 # Supprimer un fichier appartenant à un document
-@router.delete(
-    "/entite/{entite_id}/document/{document_id}/file/{element_id}", tags=["document"]
-)
+@router.delete("/entite/{entite_id}/document/{document_id}/file/{element_id}", tags=["document"])
 def delete_file_from_document(
     entite_id: int,
     document_id: str,
@@ -119,9 +111,7 @@ def delete_file_from_document(
     request_data: DeleteFileFromDoc,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentFileService(client).delete_file(
-        entite_id, document_id, element_id, request_data
-    )
+    return DocumentFileService(client).delete_file(entite_id, document_id, element_id, request_data)
 
 
 # Récupérer les fichiers liés à un document
@@ -136,9 +126,7 @@ def get_file_for_document(
     file_name: str,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentFileService(client).get_file_by_name(
-        entite_id, document_id, element_id, file_name
-    )
+    return DocumentFileService(client).get_file_by_name(entite_id, document_id, element_id, file_name)
 
 
 # Attribuer un type à un fichier
@@ -155,9 +143,7 @@ def patch_external_data(
 ):
 
     if element_id == "type_piece":
-        return DocumentFileService(client).assign_file_typologie(
-            entite_id, document_id, element_id, data
-        )
+        return DocumentFileService(client).assign_file_typologie(entite_id, document_id, element_id, data)
     return 200
 
 
@@ -172,9 +158,7 @@ def get_external_data(
     element_id: str,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentFileService(client).get_external_data(
-        entite_id, document_id, element_id
-    )
+    return DocumentFileService(client).get_external_data(entite_id, document_id, element_id)
 
 
 # transmettre le document
@@ -190,6 +174,4 @@ def perform_action_on_document(
     action: str,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return ActeService(client).check_and_perform_action_service(
-        entite_id, document_id, action
-    )
+    return ActeService(client).check_and_perform_action_service(entite_id, document_id, action)

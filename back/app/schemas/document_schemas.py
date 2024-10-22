@@ -70,6 +70,12 @@ class AddFilesToDoc(BaseModel):
 
 
 class ActionDocument(str, Enum):
+    """Liste non définitive des Action possible sur un document
+
+    Args:
+        str (_type_): _description_
+        Enum (_type_): _description_
+    """
 
     teletransmission_tdt = "teletransmission-tdt"
     verif_tdt = "verif-tdt"
@@ -93,12 +99,21 @@ class ActionDocument(str, Enum):
 
 
 class LastActionDocument(BaseModel):
+    """Dernière action effectué sur un document"""
+
     action: ActionDocument | str
     message: Optional[str] = None
     date: Optional[str] = None
 
 
 class ActionPossible(BaseModel):
+    """
+        Action Possible sur les documents
+
+    Args:
+        BaseModel (_type_): _description_
+    """
+
     action: str
     message: Optional[str] = None
 
@@ -171,9 +186,7 @@ class DocumentInfo(BaseModelDocument):
             self.action_possible = [
                 ActionPossible(action=ActionDocument.modification, message="modifier"),
                 ActionPossible(action=ActionDocument.supression, message="supprimer"),
-                ActionPossible(
-                    action=ActionDocument.orientation, message="Envoyer Document"
-                ),
+                ActionPossible(action=ActionDocument.orientation, message="Envoyer Document"),
             ]
 
 
@@ -190,13 +203,20 @@ class DocumentPaginate(BaseModel):
 
 
 class DocumentDetail(BaseModel):
+    """Le detail d'un document
+
+    Args:
+        BaseModel (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+
     info: BaseModelDocument
     data: Dict[str, Any]
 
     last_action: str = Field(validation_alias=AliasPath("last_action", "action"))
-    last_action_message: str = Field(
-        validation_alias=AliasPath("last_action", "message")
-    )
+    last_action_message: str = Field(validation_alias=AliasPath("last_action", "message"))
     last_action_date: str = Field(validation_alias=AliasPath("last_action", "date"))
     action_possible: list[ActionPossible] = []
 
@@ -204,7 +224,5 @@ class DocumentDetail(BaseModel):
     def convert_action_possible(cls, values):
         # Si la clé 'action_possible' existe et contient une liste de chaînes de caractères
         if "action_possible" in values and isinstance(values["action_possible"], list):
-            values["action_possible"] = [
-                ActionPossible(action=item) for item in values["action_possible"]
-            ]
+            values["action_possible"] = [ActionPossible(action=item) for item in values["action_possible"]]
         return values
