@@ -99,3 +99,4 @@ jobs:
           severity: CRITICAL
         env:
           TRIVY_TIMEOUT: 10m
+          TRIVY_DB_REPOSITORY: public.ecr.aws/aquasecurity/trivy-db:2
