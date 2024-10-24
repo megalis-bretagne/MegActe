@@ -94,6 +94,8 @@ export default [{
       ignoreRestSiblings: true,
       argsIgnorePattern: "^_",
     }],
+    "@typescript-eslint/no-unsafe-call": "error",
+    "@typescript-eslint/no-explicit-any": "off",
   },
 },
 ...compat.extends("plugin:@angular-eslint/template/recommended").map(config => ({
@@ -112,7 +114,6 @@ export default [{
   },
 }, {
   rules: {
-    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-ts-comment": ["off",
       {
         'ts-check': 'allow-with-description',

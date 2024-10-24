@@ -49,7 +49,7 @@ export class PaginationComponent {
  * @param page 
  * @param event 
  */
-  changePage(page: number, event: any = null) {
+  changePage(page: number, event: Event = null) {
     if (event != null)
       event.preventDefault();
 
