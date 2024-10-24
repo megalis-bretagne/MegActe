@@ -21,7 +21,7 @@ export class TextInputComponent extends BaseInputComponent {
     return 'text';
   }
 
-  override getDefaultValue(): any {
+  override getDefaultValue(): string {
     return '';
   }
 

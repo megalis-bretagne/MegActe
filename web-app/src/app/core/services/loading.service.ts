@@ -10,7 +10,7 @@ export class LoadingService {
     status$ = toObservable(this._status);
 
     // Method to show the modal with a custom message
-    showSuccess(message: string, redirect: string[] = null, callback: (result: any) => void = () => { }): void {
+    showSuccess(message: string, redirect: string[] = null, callback: (result: unknown) => void = () => { }): void {
         this._status.set({ message: message, type: TypeModal.Success, redirect_on_close: redirect, callbackClose: callback } as InfoModal);
     }
 
@@ -23,7 +23,7 @@ export class LoadingService {
         this._status.set({ message: message, type: TypeModal.Loading, redirect_on_close: null } as InfoModal);
     }
 
-    showError(error: string, redirect: string[] = null, callback: (result: any) => void = () => { }) {
+    showError(error: string, redirect: string[] = null, callback: (result: unknown) => void = () => { }) {
         this._status.set({ message: error, type: TypeModal.Error, redirect_on_close: redirect, callbackClose: callback } as InfoModal);
     }
 }

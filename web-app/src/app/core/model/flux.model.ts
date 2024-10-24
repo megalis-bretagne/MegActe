@@ -1,5 +1,5 @@
 export interface Flux {
-    id: string;
+    id?: string;
     type: string;
     nom: string;
     enable: boolean;

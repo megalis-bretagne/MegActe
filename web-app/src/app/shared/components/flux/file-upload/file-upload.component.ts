@@ -48,7 +48,7 @@ export class FileUploadComponent extends BaseInputComponent {
     return 'file';
   }
 
-  override getDefaultValue(): any {
+  override getDefaultValue(): [] {
     return [];
   }
 

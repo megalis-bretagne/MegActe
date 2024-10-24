@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BaseInputComponent } from '../BaseInput.component';
 import { UserContextService } from 'src/app/core/services/user-context.service';
-import { HttpFluxService } from 'src/app/core/services/http/http-flux.service';
+import { ExternalDataObject, HttpFluxService } from 'src/app/core/services/http/http-flux.service';
 
 @Component({
   selector: 'meg-external-data-input',
@@ -46,7 +46,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
     return 'externalData';
   }
 
-  override getDefaultValue(): any {
+  override getDefaultValue(): string {
     return '';
   }
 
@@ -75,7 +75,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
   }
 
   // Filtrer les données en éliminant les titres du premier niveau
-  private _filterExternalData(data: any): string[] {
+  private _filterExternalData(data: ExternalDataObject): string[] {
     return Object.keys(data).filter(idField => idField.split('.').length > 1);
   }
 }

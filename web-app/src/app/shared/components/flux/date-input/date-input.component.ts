@@ -51,7 +51,7 @@ export class DateInputComponent extends BaseInputComponent {
 
   // Interdire les dates passées
   noPastDateValidator(): ValidatorFn {
-    return (control: AbstractControl): { [idField: string]: any } | null => {
+    return (control: AbstractControl): { [idField: string]: unknown } | null => {
       const currentDate = new Date();
       currentDate.setHours(0, 0, 0, 0);
       const selectedDate = new Date(control.value);

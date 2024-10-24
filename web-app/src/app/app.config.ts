@@ -49,6 +49,6 @@ export const appConfig: ApplicationConfig = {
   ]
 };
 
-function appInit(appInitService: AppInitService): () => Promise<any> {
+function appInit(appInitService: AppInitService): () => Promise<unknown> {
   return () => appInitService.initializeApp();
 }

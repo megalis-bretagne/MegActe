@@ -6,12 +6,13 @@ import { UserContextService } from '../services/user-context.service';
 import { DocumentDetail } from '../model/document.model';
 import { LoadingService } from '../services/loading.service';
 import { HttpFluxService } from '../services/http/http-flux.service';
+import { Flux } from '../model/flux.model';
 
 
 
-export const documentDetailResolver: ResolveFn<any> = (
+export const documentDetailResolver: ResolveFn<{ document: DocumentDetail, flux: { [key: string]: Flux } } | null> = (
     route
-): Observable<{ document: DocumentDetail, flux: any } | null> => {
+): Observable<{ document: DocumentDetail, flux: { [key: string]: Flux } } | null> => {
     const userContexteService = inject(UserContextService);
     const fluxService = inject(HttpFluxService);
     const documentService = inject(HttpDocumentService);

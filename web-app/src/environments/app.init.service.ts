@@ -15,7 +15,7 @@ export class AppInitService {
     }
 
 
-    initializeApp(): Promise<any> {
+    initializeApp(): Promise<unknown> {
         return new Promise((resolve, reject) => {
             firstValueFrom(this._http.get('assets/settings.json'))
                 .then((response) => {

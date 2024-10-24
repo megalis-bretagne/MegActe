@@ -4,7 +4,7 @@ import { HttpDocumentService } from './http/http-document.service';
 import { NGXLogger } from 'ngx-logger';
 import { LoadingService } from './loading.service';
 import { catchError, concatMap, Observable, of, tap } from 'rxjs';
-import { HttpFluxService } from './http/http-flux.service';
+import { ExternalDataObject, HttpFluxService } from './http/http-flux.service';
 import { ActionResult } from '../model/flux-action.model';
 
 
@@ -55,7 +55,7 @@ export class DocumentService {
      * @param docUpdateInfo 
      * @returns 
      */
-    updateDocument(id_e: number, id_d: string, docUpdateInfo: DocUpdateInfo): Observable<any> {
+    updateDocument(id_e: number, id_d: string, docUpdateInfo: DocUpdateInfo): Observable<ExternalDataObject> {
         this._loadingService.showLoading("Sauvegarde en cours ...");
         // Création d'un observable pour la mise à jour du document
         const updateDocument$ = this._httpDocumentService.updateDocument(id_e, id_d, docUpdateInfo).pipe(
@@ -119,7 +119,7 @@ export class DocumentService {
      * @param params autre paramètre pour gérer les actions éventuelles
      * 
      */
-    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible, ...params: Record<string, any>[]): void {
+    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible, ...params: Record<string, string>[]): void {
         this._loadingService.showLoading(`Action \`${action.message}\` en cours ...`);
         this._httpDocumentService.performAction(document.id_d, id_e, action.action).subscribe({
             next: (result: ActionResult) => {
