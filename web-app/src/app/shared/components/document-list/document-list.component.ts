@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
-import { ActionPossible, DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/core/model/document.model';
+import { ActionPossible, ActionPossibleEnum, DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/core/model/document.model';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 import { StateDocumentPipe } from '../../pipes/state-document.pipe';
 import { LoadingComponent } from '../loading-component/loading.component';
@@ -38,6 +38,9 @@ export class DocumentListComponent implements OnInit {
   documents_to_delete = signal<DocumentInfo[]>([]);
   documentsPaginate = signal<DocumentPaginate | null>(null);
 
+  // liste des action en masses
+  multiAction = signal<ActionPossible[]>([]);
+
   /**
    * Liste des documents
    */
@@ -75,6 +78,34 @@ export class DocumentListComponent implements OnInit {
   }
 
   /**
+   * Calcul les actions possible quand on sélectionne plusieurs documents
+   */
+  selectAction(doc: DocumentInfo): void {
+    if (doc.action_possible.length === 0) {
+      this.multiAction.set([]);
+      return; // si aucune actions sur le document, on passe
+    }
+
+    // récupération des tableaux d'action possible de chaque document sélectionné
+    const actions = this.document_selected
+      .map(d => d.action_possible.filter(ap => this.documentService.getActionMultiAuthorize().includes(ap.action as ActionPossibleEnum)));
+
+    if (actions.length === 0) { // si aucune action
+      this.multiAction.set([])
+    } else {
+      let commonElements = new Set(actions[0]);
+
+      // Parcours de tous les tableaux d'actions pour ne conserver que les éléments en commun
+      for (let i = 1; i < actions.length; i++) {
+        commonElements = new Set(
+          [...commonElements].filter(element => actions[i].some(ai => ai.action === element.action))
+        );
+      }
+      this.multiAction.set(Array.from(commonElements));
+    }
+  }
+
+  /**
    * Controle le changement de page de la pagination
    * @param page 
    * @param event 
@@ -84,8 +115,6 @@ export class DocumentListComponent implements OnInit {
     const idFlux = this.fluxSelected() !== null ? this.fluxSelected().id : null
     this._loadDataPage(idFlux, page)
   }
-
-
 
 
   get document_selected(): DocumentInfo[] {
@@ -148,11 +177,21 @@ export class DocumentListComponent implements OnInit {
   }
 
   /**
-   * Check si au moins un document est sélectionné
+   * Check si au moins un document est sélectionné et que tous les documents sélectionné peuvent être supprimé
    * @returns 
    */
-  anySelected() {
-    return this.documents().some(doc => doc.selected);
+  canDeleteMulti(): boolean {
+    return this.multiAction().some(action => action.action === ActionPossibleEnum.Suppression);
+  }
+
+
+  /**
+   * Check si une checkbox de multi selection peut être disponible pour le document
+   * @param doc le document
+   * @returns 
+   */
+  displayCheckBox(doc: DocumentInfo): boolean {
+    return this.documentService.canDelete(doc) || this.documentService.canSendToTdt(doc);
   }
 
   /**
@@ -161,8 +200,19 @@ export class DocumentListComponent implements OnInit {
    * @param action le nom de laction
    */
   runAction(document: DocumentInfo, action: ActionPossible) {
-    console.log(this._router);
-    this.documentService.launchActionOnDocument(this.entiteSelected().id_e, document, action)
+
+    if (action.action === ActionPossibleEnum.Suppression) {
+      this.confirmDeleteDocuments([document]);
+    } else if (action.action === ActionPossibleEnum.Modification) {
+      this.goUpdateDoc(document);
+    }
+    else {
+      this.documentService.launchActionOnDocument(this.entiteSelected().id_e, document, action)
+    }
+  }
+
+  runActionMulti(document: DocumentInfo[], action: ActionPossible) {
+    // @TODO
   }
 
   private _loadDataPage(idflux: string, page: number = 1) {
