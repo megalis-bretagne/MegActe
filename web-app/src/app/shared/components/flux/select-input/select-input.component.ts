@@ -28,7 +28,7 @@ export class SelectInputComponent extends BaseInputComponent {
   }
 
 
-  override getDefaultValue(): any {
+  override getDefaultValue(): string {
     return '';
   }
 

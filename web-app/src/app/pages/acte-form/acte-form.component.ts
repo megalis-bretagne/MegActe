@@ -50,7 +50,7 @@ export class ActeFormComponent implements OnInit {
   globalErrorMessage: string;
   fileFields: Field[] = [];
 
-  formValues: { [idField: string]: any } = {};
+  formValues: { [idField: string]: string } = {};
 
   // Formulaire de la step 1
   form: FormGroup = new FormGroup({});
@@ -110,7 +110,7 @@ export class ActeFormComponent implements OnInit {
     }
   }
 
-  private _retrieveInfo(): any {
+  private _retrieveInfo(): { [key: string]: boolean | string | number | Date } {
     const docInfo = this.form.getRawValue();
     Object.keys(docInfo).forEach(key => {
       // Conditions pour supprimer une clé :
@@ -182,10 +182,10 @@ export class ActeFormComponent implements OnInit {
 
     this.documentService.updateDocument(this.entiteSelected().id_e, this.documentInfo.info.id_d, docUpdateInfo).subscribe({
       next: (response) => {
-        this.fileTypes = response.actes_type_pj_list;
+        this.fileTypes = response['actes_type_pj_list'] as { [key: string]: string };
         this.currentStep.set(2);
-        this._buildFormExternalDataForFile(response.pieces, response.actes_type_pj_list)
-        this.pieces.set(response.pieces);
+        this._buildFormExternalDataForFile(response['pieces'] as string[], response['actes_type_pj_list'] as { [key: string]: string })
+        this.pieces.set(response['pieces'] as string[]);
       },
       error: (error) => {
         this._logger.error('Error updating document', error);

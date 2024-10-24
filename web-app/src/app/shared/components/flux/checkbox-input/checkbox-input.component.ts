@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { BaseInputComponent } from '../BaseInput.component';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -21,7 +21,7 @@ export class CheckboxInputComponent extends BaseInputComponent {
     return this.defaultChecked;
   }
 
-  override getValidators(): any[] {
+  override getValidators(): ValidatorFn[] {
     return [];
   }
 }

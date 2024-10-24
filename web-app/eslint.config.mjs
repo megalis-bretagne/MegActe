@@ -95,7 +95,8 @@ export default [{
       argsIgnorePattern: "^_",
     }],
     "@typescript-eslint/no-unsafe-call": "error",
-    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unsafe-member-access": "off",
+    "@typescript-eslint/no-explicit-any": "error",
   },
 },
 ...compat.extends("plugin:@angular-eslint/template/recommended").map(config => ({

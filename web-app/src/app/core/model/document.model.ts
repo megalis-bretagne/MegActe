@@ -2,11 +2,11 @@ import { Pagination } from "./pagination.model";
 
 export interface DocCreateInfo {
     flux_type: string;
-    doc_info: any;
+    doc_info: { [key: string]: string | number | boolean | Date };
 }
 
 export interface DocUpdateInfo {
-    doc_info: any;
+    doc_info: { [key: string]: string | number | boolean | Date };
 }
 
 export interface ActionPossible {
@@ -80,6 +80,6 @@ export interface DocumentDetail extends DocumentActionDetails {
         type_acte?: string;
         type_pj?: string;
         type_piece_fichier?: TypePieceFichier[];
-        [key: string]: any;
+        [key: string]: string | number | TypePieceFichier[] | string[]
     };
 }

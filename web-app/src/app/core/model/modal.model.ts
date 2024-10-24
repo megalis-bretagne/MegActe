@@ -9,5 +9,5 @@ export interface InfoModal {
     message: string,
     type: TypeModal,
     redirect_on_close: string[] | null,
-    callbackClose: (result?: any) => void,
+    callbackClose: (result?: unknown) => void,
 }

@@ -1,5 +1,5 @@
 import { Directive, Input, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, ValidatorFn } from '@angular/forms';
 import { FieldFluxService } from 'src/app/core/services/field-flux.service';
 
 @Directive()
@@ -39,7 +39,7 @@ export abstract class BaseInputComponent implements OnInit {
 
     abstract getControlType(): string;
 
-    abstract getDefaultValue(): any;
+    abstract getDefaultValue(): unknown;
 
-    abstract getValidators(): any[];
+    abstract getValidators(): ValidatorFn[];
 }

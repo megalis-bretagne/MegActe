@@ -1,8 +1,18 @@
 export interface Field {
     idField: string;
     type: string;
+    name?: string;
     preg_match?: string;
-    [prop: string]: any;
+    preg_match_error?: string;
+    value?: { [key: string]: string };
+    multiple?: boolean;
+    requis?: boolean;
+    commentaire?: string;
+    index?: boolean;
+    link_name?: string;
+    default?: string;
+    "read-only"?: boolean;
+    "no-show"?: boolean;
 }
 
 export interface Data {

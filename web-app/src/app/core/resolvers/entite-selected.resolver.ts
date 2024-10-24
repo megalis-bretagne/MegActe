@@ -2,7 +2,7 @@ import { inject } from "@angular/core";
 import { ActivatedRouteSnapshot, ResolveFn } from "@angular/router";
 import { UserContextService } from "../services/user-context.service";
 
-export const entiteSelectedResolver: ResolveFn<any> = (_route, tmpRoute): any => {
+export const entiteSelectedResolver: ResolveFn<void> = (_route, tmpRoute): void => {
     const userContexteService = inject(UserContextService);
     const allParams = getAllRouteParams(tmpRoute.root);
     const ide = allParams['ide'] || null; // Récupère le paramètre :ide
@@ -15,7 +15,7 @@ export const entiteSelectedResolver: ResolveFn<any> = (_route, tmpRoute): any =>
     }
 }
 
-export const getAllRouteParams = (route: ActivatedRouteSnapshot): any => {
+export const getAllRouteParams = (route: ActivatedRouteSnapshot): { [key: string]: string } | null => {
     let params = { ...route.params };
 
     // Parcours récursif des enfants pour récupérer les paramètres des routes enfants

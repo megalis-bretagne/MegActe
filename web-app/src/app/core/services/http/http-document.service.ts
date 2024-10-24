@@ -14,8 +14,8 @@ export class HttpDocumentService {
     private readonly _logger = inject(NGXLogger);
     private readonly _settingsService = inject(SettingsService);
 
-    createDocument(entiteId: number, docCreateInfo: DocCreateInfo): Observable<any> {
-        return this._http.post<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document`, docCreateInfo).pipe(
+    createDocument(entiteId: number, docCreateInfo: DocCreateInfo): Observable<DocumentDetail> {
+        return this._http.post<DocumentDetail>(`${this._settingsService.apiUrl}/entite/${entiteId}/document`, docCreateInfo).pipe(
             tap(() => this._logger.info('Document created successfully')),
             catchError((error) => {
                 this._logger.error('Failed to create document:', error);
@@ -24,8 +24,8 @@ export class HttpDocumentService {
         );
     }
 
-    updateDocument(entiteId: number, documentId: string, docUpdateInfo: DocUpdateInfo): Observable<any> {
-        return this._http.patch<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}`, docUpdateInfo).pipe(
+    updateDocument(entiteId: number, documentId: string, docUpdateInfo: DocUpdateInfo): Observable<{ content: DocumentDetail }> {
+        return this._http.patch<{ content: DocumentDetail }>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}`, docUpdateInfo).pipe(
             catchError((error) => {
                 this._logger.error('Error updating document', error);
                 return throwError(() => error);
@@ -43,13 +43,13 @@ export class HttpDocumentService {
         );
     }
 
-    uploadFiles(documentId: string, elementId: string, entiteId: number, files: File[]): Observable<any> {
+    uploadFiles(documentId: string, elementId: string, entiteId: number, files: File[]): Observable<void> {
         const formData: FormData = new FormData();
         files.forEach(file => {
             formData.append('files', file, file.name);
         });
 
-        return this._http.post<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}`, formData).pipe(
+        return this._http.post<void>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}`, formData).pipe(
             catchError((error) => {
                 this._logger.error('Error uploading files', error);
                 return of(null);
@@ -58,7 +58,7 @@ export class HttpDocumentService {
     }
 
     getDocumentById(documentId: string, entiteId: number | string): Observable<DocumentDetail> {
-        return this._http.get<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}`).pipe(
+        return this._http.get<DocumentDetail>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}`).pipe(
             catchError((error) => {
                 this._logger.error('Error get document', error);
                 return of(null);
@@ -66,8 +66,8 @@ export class HttpDocumentService {
         );
     }
 
-    patchExternalData(entiteId: number, documentId: string, elementId: string, fileTypes: string[]): Observable<any> {
-        return this._http.patch<any>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/externalData/${elementId}`, fileTypes).pipe(
+    patchExternalData(entiteId: number, documentId: string, elementId: string, fileTypes: string[]): Observable<void> {
+        return this._http.patch<void>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/externalData/${elementId}`, fileTypes).pipe(
             catchError((error) => {
                 this._logger.error('Error assigning file types', error);
                 return throwError(() => error);
@@ -90,9 +90,9 @@ export class HttpDocumentService {
         );
     }
 
-    deleteFileFromDocument(documentId: string, elementId: string, entiteId: number, fileName: string): Observable<any> {
+    deleteFileFromDocument(documentId: string, elementId: string, entiteId: number, fileName: string): Observable<void> {
         const body = { file_name: fileName };
-        return this._http.request<any>('delete', `${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}`, { body }).pipe(
+        return this._http.request<void>('delete', `${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}`, { body }).pipe(
             catchError((error) => {
                 this._logger.error('Error deleting file from document', error);
                 return throwError(() => error);
