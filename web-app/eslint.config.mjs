@@ -46,9 +46,6 @@ export default [{
 })), {
   files: ["**/*.ts"],
 
-  plugins: {
-    "@typescript-eslint": typescriptEslint,
-  },
   languageOptions: {
     sourceType: "script",
 
