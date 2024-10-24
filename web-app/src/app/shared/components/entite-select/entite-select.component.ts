@@ -58,7 +58,7 @@ export class EntiteSelectComponent {
 
 
 
-  public selectEntite(event: any, e: EntiteInfo): void {
+  public selectEntite(event: Event, e: EntiteInfo): void {
     event.preventDefault();
     this._addToPath(e);
     this.entitesToDisplay = sortEntiteInfo(e.child);
@@ -68,7 +68,7 @@ export class EntiteSelectComponent {
   /**
    * Affiche les enfants de l'entité sélectionné et l'ajoute au path
    */
-  public showChild(event: any, e: EntiteInfo): void {
+  public showChild(event: Event, e: EntiteInfo): void {
     event.preventDefault();
     this.entitesToDisplay = e.child;
     this._addToPath(e);
@@ -86,7 +86,7 @@ export class EntiteSelectComponent {
    * Permet de revenir dans l'arbre des entités
    * @param eniteParent 
    */
-  backToParent(event: any, entiteParent: EntiteInfo | null = null): void {
+  backToParent(event: Event, entiteParent: EntiteInfo | null = null): void {
     event.preventDefault();
     if (entiteParent === null) { // si l'entité parent est null, on revient un cran en arrière (donc pop)
       this.pathEntite.pop();

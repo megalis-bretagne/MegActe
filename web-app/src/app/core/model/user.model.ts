@@ -22,6 +22,6 @@ export interface UserContext {
     entites: EntiteInfo[];
 }
 
-export function sortEntiteInfo(entities: any[]): any[] {
+export function sortEntiteInfo(entities: EntiteInfo[]): any[] {
     return entities.sort((e1, e2) => e1.denomination.localeCompare(e2.denomination));
 }
