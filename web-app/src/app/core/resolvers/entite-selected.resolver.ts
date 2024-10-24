@@ -2,7 +2,7 @@ import { inject } from "@angular/core";
 import { ActivatedRouteSnapshot, ResolveFn } from "@angular/router";
 import { UserContextService } from "../services/user-context.service";
 
-export const entiteSelectedResolver: ResolveFn<any> = (route, tmpRoute): any => {
+export const entiteSelectedResolver: ResolveFn<any> = (_route, tmpRoute): any => {
     const userContexteService = inject(UserContextService);
     const allParams = getAllRouteParams(tmpRoute.root);
     const ide = allParams['ide'] || null; // Récupère le paramètre :ide

@@ -88,11 +88,11 @@ export default [{
     }],
     "@typescript-eslint/prefer-readonly": "error",
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": ["off", {
-      vars: "all",
-      args: "none",
+    "@typescript-eslint/no-unused-vars": ["error", {
+      args: "all",
+      caughtErrors: "all",
       ignoreRestSiblings: true,
-      argsIgnorePattern: "(^_)|(^http$)",
+      argsIgnorePattern: "^_",
     }],
   },
 },
