@@ -53,14 +53,14 @@ export class AppInitService {
                     // être redirigé vers la page de login de keycloak
                 });
             } catch (error) {
-                throw new Error("Une erreur s'est déroulée durant l'initialisation de keycloak");
+                throw new Error("Une erreur s'est déroulée durant l'initialisation de keycloak", error);
             }
         }).then(async () => { // chargement des infos de l'utilisateur et de son contexte
             try {
                 await firstValueFrom(this._userContextService.fetchUser());
                 await firstValueFrom(this._userContextService.fetchUserFlux());
             } catch (error) {
-                throw new Error("Une erreur s'est déroulée durant la récupération de l'utilisateur et des flux");
+                throw new Error("Une erreur s'est déroulée durant la récupération de l'utilisateur et des flux", error);
             }
         });
     }
