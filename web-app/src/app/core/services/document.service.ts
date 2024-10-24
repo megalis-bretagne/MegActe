@@ -151,8 +151,24 @@ export class DocumentService {
      * indique si le document peut être supprimé
      * @param document 
      */
-    canDelete(document: DocumentDetail): boolean {
+    canDelete(document: DocumentDetail | DocumentInfo): boolean {
         return document.action_possible.some(a => a.action == ActionPossibleEnum.Suppression);
+    }
+
+    /**
+     * Donne la liste d'actions possible multiple
+     */
+    getActionMultiAuthorize(): ActionPossibleEnum[] {
+        return [ActionPossibleEnum.Suppression, ActionPossibleEnum.Orientation, ActionPossibleEnum.Teletransmission_TDT];
+    }
+
+    /**
+     * indique si le document peut être transmis au TDT
+     * @param document 
+     * @returns 
+     */
+    canSendToTdt(document: DocumentDetail | DocumentInfo): boolean {
+        return document.action_possible.some(a => a.action == ActionPossibleEnum.Teletransmission_TDT);
     }
 
     /**
