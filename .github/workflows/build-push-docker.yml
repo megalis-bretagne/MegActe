@@ -97,3 +97,5 @@ jobs:
           dockerfile: ${{ inputs.dockerfile }}
           annotations: true
           severity: CRITICAL
+        env:
+          TRIVY_TIMEOUT: 10m
