@@ -7,6 +7,7 @@ from pydantic_settings import (
     SettingsConfigDict,
     YamlConfigSettingsSource,
 )
+from app.schemas.document_schemas import ActionDocument
 
 
 class S2low(BaseModel):
@@ -34,6 +35,12 @@ class DocumentConfig(BaseModel):
 
     # La liste des external Data à récupérer au get des Documents
     external_data_to_retrieve: list[str] = ["type_piece_fichier"]
+    # liste des états finaux des documents.
+    final_state: list[ActionDocument] = [
+        ActionDocument.termine,
+        ActionDocument.accepter_sae,
+        ActionDocument.ar_recu_sae,
+    ]
 
 
 class Pastell(BaseModel):

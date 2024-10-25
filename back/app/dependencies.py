@@ -2,12 +2,12 @@ from functools import lru_cache
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
 import jwt
-from config import configuration as config
+from config.configuration import Settings
 
 
 @lru_cache
-def get_settings() -> config.Settings:
-    return config.Settings()
+def get_settings() -> Settings:
+    return Settings()
 
 
 settings = get_settings()
@@ -30,7 +30,7 @@ oauth_2_scheme = OAuth2AuthorizationCodeBearer(
 
 def validate_token(
     token: str = Depends(oauth_2_scheme),
-    settings: config.Settings = Depends(get_settings),
+    settings: Settings = Depends(get_settings),
 ):
     """
         Valide un token JWT en utilisant les clés publiques de Keycloak et retourne le payload décodé.
