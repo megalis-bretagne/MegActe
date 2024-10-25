@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { ActionPossible, ActionPossibleEnum, BaseDocumentInfo, DocCreateInfo, DocumentDetail, DocumentInfo, DocumentPaginate, DocUpdateInfo } from '../model/document.model';
+import { ActionPossible, ActionPossibleEnum, BaseDocumentInfo, DocCreateInfo, DocumentDetail, DocumentInfo, DocumentPaginate, DocumentRequestAction, DocUpdateInfo } from '../model/document.model';
 import { HttpDocumentService } from './http/http-document.service';
 import { NGXLogger } from 'ngx-logger';
 import { LoadingService } from './loading.service';
@@ -20,7 +20,8 @@ export class DocumentService {
 
     sendActe(id_e: number, document: DocumentDetail): void {
         this._loadingService.showLoading("Envoi de l'acte en cours ...");
-        this._httpDocumentService.performAction(document.info.id_d, id_e, ActionPossibleEnum.Orientation).subscribe({
+        const actionRequest: DocumentRequestAction = { document_ids: document.info.id_d, action: ActionPossibleEnum.Orientation };
+        this._httpDocumentService.performAction(id_e, actionRequest).subscribe({
             next: () => this._loadingService.showSuccess("Le document a bien été transmis.", ['/org', id_e.toString()])
         })
     }
@@ -119,16 +120,34 @@ export class DocumentService {
      * @param params autre paramètre pour gérer les actions éventuelles
      * 
      */
-    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible, ...params: Record<string, string>[]): void {
+    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible): void {
         this._loadingService.showLoading(`Action \`${action.message}\` en cours ...`);
-        this._httpDocumentService.performAction(document.id_d, id_e, action.action).subscribe({
+        const actionRequest: DocumentRequestAction = { document_ids: document.id_d, action: action.action };
+        this._httpDocumentService.performAction(id_e, actionRequest).subscribe({
             next: (result: ActionResult) => {
                 if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
-                    const url = params.find(d => d['url']);
-                    let url_return = `/retour-tdt?id_e=${id_e}&id_d=${document.id_d}&error=%%ERROR%%&message=%%MESSAGE%%`;
-                    if (url) {
-                        url_return = url['url'];
-                    }
+                    const url_return = `/retour-tdt?id_e=${id_e}&id_d=${document.id_d}&error=%%ERROR%%&message=%%MESSAGE%%`;
+                    this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
+                } else {
+                    this._loadingService.showSuccess("Action terminé", ['/org', id_e.toString()])
+                }
+            },
+        })
+    }
+
+    /**
+     * Lance une action sur plusieurs documents
+     * @param id_e 
+     * @param documents 
+     * @param action 
+     */
+    launchActionOnMultiDocuments(id_e: number, documents: BaseDocumentInfo[], action: ActionPossible): void {
+        this._loadingService.showLoading(`Action \`${action.message}\` multiple en cours ...`);
+        const actionRequest: DocumentRequestAction = { document_ids: documents.map(d => d.id_d), action: action.action };
+        this._httpDocumentService.performAction(id_e, actionRequest).subscribe({
+            next: (result: ActionResult) => {
+                if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
+                    const url_return = `/retour-tdt?id_e=${id_e}&id_d[]=${documents.map(d => d.id_d).join('&id_d[]=')}`;
                     this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
                 } else {
                     this._loadingService.showSuccess("Action terminé", ['/org', id_e.toString()])
@@ -143,8 +162,9 @@ export class DocumentService {
      * @param id_d id du document
      * @returns 
      */
-    retourTdt(id_e: number, id_d: string): Observable<ActionResult> {
-        return this._httpDocumentService.performAction(id_d, id_e, ActionPossibleEnum.Verification_TDT);
+    retourTdt(id_e: number, id_d: string | string[]): Observable<ActionResult> {
+        const actionRequest: DocumentRequestAction = { document_ids: id_d, action: ActionPossibleEnum.Verification_TDT };
+        return this._httpDocumentService.performAction(id_e, actionRequest);
     }
 
     /**

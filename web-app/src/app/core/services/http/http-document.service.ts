@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { ActionPossibleEnum, DocCreateInfo, DocumentDetail, DocumentInfo, DocumentPaginate, DocUpdateInfo } from "../../model/document.model";
+import { DocCreateInfo, DocumentDetail, DocumentInfo, DocumentPaginate, DocUpdateInfo, DocumentRequestAction } from "../../model/document.model";
 import { Observable, catchError, of, tap, throwError } from "rxjs";
 import { NGXLogger } from "ngx-logger";
 import { SettingsService } from "src/environments/settings.service";
@@ -100,8 +100,8 @@ export class HttpDocumentService {
         );
     }
 
-    performAction(documentId: string, entiteId: number, action: ActionPossibleEnum | string): Observable<ActionResult> {
-        return this._http.post<ActionResult>(`${this._settingsService.apiUrl}/entite/${entiteId}/document/${documentId}/${action}`, {}).pipe(
+    performAction(entiteId: number, actionRequest: DocumentRequestAction): Observable<ActionResult> {
+        return this._http.post<ActionResult>(`${this._settingsService.apiUrl}/entite/${entiteId}/documents/perform_action`, actionRequest).pipe(
             catchError((error) => {
                 this._logger.error('Error when perform Action on document', error);
                 return throwError(() => error);

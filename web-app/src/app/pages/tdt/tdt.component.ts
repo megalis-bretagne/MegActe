@@ -19,14 +19,18 @@ export class TdtComponent implements OnInit {
 
 
     id_e: number | null = null;
-    id_d: string | null = null;
+    id_d: string[] = [];
 
 
 
     ngOnInit(): void {
         this._route.queryParams.subscribe(params => {
             this.id_e = params['id_e'];
-            this.id_d = params['id_d'];
+            if (params['id_d']) {
+                this.id_d = [params['id_d']]
+            } else if (params['id_d[]']) {
+                this.id_d = params['id_d[]'];
+            }
         })
     }
 
