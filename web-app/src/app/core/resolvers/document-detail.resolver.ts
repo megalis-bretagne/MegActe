@@ -25,12 +25,11 @@ export const documentDetailResolver: ResolveFn<{ document: DocumentDetail, flux:
                 const idFlux = docDetail.info.type;
                 if (idFlux) {
                     // on sélectionner le flux courant en fonction du document
-                    userContexteService.selectCurrentFlux(idFlux);
                     return forkJoin({
                         document: of(docDetail),
                         flux: fluxService.get_flux_detail(idFlux)
                     }).pipe(
-                        tap(() => loadingService.hideLoading())
+                        tap(() => { loadingService.hideLoading(); userContexteService.selectCurrentFlux(idFlux); })
                     );
                 }
                 return of(null);

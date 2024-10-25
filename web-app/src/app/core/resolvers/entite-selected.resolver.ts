@@ -15,7 +15,7 @@ export const entiteSelectedResolver: ResolveFn<void> = (route, tmpRoute): void =
     }
 
     const type_flux = route.queryParams['type'] || null;
-    userContexteService.selectCurrentFlux(type_flux);
+    if (type_flux) userContexteService.selectCurrentFlux(type_flux);
 }
 
 export const getAllRouteParams = (route: ActivatedRouteSnapshot): { [key: string]: string } | null => {

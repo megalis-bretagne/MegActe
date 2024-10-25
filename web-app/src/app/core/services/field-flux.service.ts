@@ -24,19 +24,27 @@ export class FieldFluxService {
 
 
     filterFields(fields: Field[], flowId: string): Field[] {
+
+        // on applique les règles suivantes dans l'ordre:
+        // - no-show = true => exclue
+        // - si type non présent => exclue
+        // - si requis => garde
+        //          - si type = file && read_only => exclue
+        // - si lecte seule => exclue
+        // - si type date ou file et sans commentaire => exclue
+        // 
         const filteredFields = fields.filter(field => {
-            return !field['read-only'] && !field['no-show'] && field['requis']
-        });
-
-        const additionalFields = this._settingsService.getFlowType(flowId) || [];
-
-        additionalFields.forEach(fieldId => {
-            const field = fields.find(f => f.idField === fieldId);
-            if (field) {
-                filteredFields.push(field);
+            if (field['no-show']) return false;
+            if (!field.type) return false;
+            if (field.requis) {
+                if (field.type === 'file' && field['read-only']) return false;
+                return true;
             }
-        });
+            if (field['read-only'] && field['read-only'] === true) return false
+            if ((field.type === 'date' || field.type === 'file') && !field.commentaire) return false
 
+            return true;
+        });
         return filteredFields.sort((f1, f2) => {
             if (f1['requis'] === f2['requis']) return 0
             if (f1['requis']) return -1

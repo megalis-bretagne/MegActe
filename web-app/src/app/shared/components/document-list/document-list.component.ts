@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { ActionPossible, ActionPossibleEnum, DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/core/model/document.model';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 import { StateDocumentPipe } from '../../pipes/state-document.pipe';
@@ -28,6 +28,8 @@ export class DocumentListComponent implements OnInit {
   documentService = inject(DocumentService);
   userContextService = inject(UserContextService);
   fluxSelected = this.userContextService.fluxSelected
+
+  private _destroyRef = inject(DestroyRef);
 
 
   userCurrent = this.userContextService.userCurrent;
@@ -61,10 +63,14 @@ export class DocumentListComponent implements OnInit {
 
   constructor(private readonly _router: Router) {
     // effect sur le changement de flux
-    effect(() => {
+    const monEffect = effect(() => {
       this.pageActive.set(1);
       this._loadDataPage(this.fluxSelected() !== null ? this.fluxSelected().id : null);
     }, { allowSignalWrites: true })
+
+    this._destroyRef.onDestroy(() => {
+      monEffect.destroy();
+    })
   }
 
   /**
