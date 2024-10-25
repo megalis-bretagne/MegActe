@@ -37,6 +37,10 @@ export interface DocumentInfo extends BaseDocumentInfo, DocumentActionDetails {
     selected: boolean;
 }
 
+export interface DocumentRequestAction {
+    document_ids: string | string[],
+    action: ActionPossibleEnum | string,
+}
 
 
 export interface DocumentPaginate {

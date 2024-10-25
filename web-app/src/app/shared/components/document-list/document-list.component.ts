@@ -211,8 +211,13 @@ export class DocumentListComponent implements OnInit {
     }
   }
 
-  runActionMulti(document: DocumentInfo[], action: ActionPossible) {
-    // @TODO
+  runActionMulti(documents: DocumentInfo[], action: ActionPossible) {
+
+    if (action.action === ActionPossibleEnum.Suppression) {
+      this.confirmDeleteDocuments(documents);
+    } else {
+      this.documentService.launchActionOnMultiDocuments(this.entiteSelected().id_e, documents, action)
+    }
   }
 
   private _loadDataPage(idflux: string, page: number = 1) {
