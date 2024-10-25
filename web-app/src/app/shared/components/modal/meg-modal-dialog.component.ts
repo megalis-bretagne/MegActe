@@ -72,7 +72,8 @@ export class ModalDialogComponent implements OnInit {
         }
 
         if (this.status()?.redirect_on_close) {
-            this._router.navigate(this.status().redirect_on_close);
+            const extras = this.status().redirect_on_close.params ? { queryParams: this.status().redirect_on_close.params } : {};
+            this._router.navigate(this.status().redirect_on_close.route, extras);
         }
     }
 }

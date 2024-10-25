@@ -6,6 +6,8 @@ import { LoadingService } from './loading.service';
 import { catchError, concatMap, Observable, of, tap } from 'rxjs';
 import { ExternalDataObject, HttpFluxService } from './http/http-flux.service';
 import { ActionResult } from '../model/flux-action.model';
+import { RedirectModal } from '../model/modal.model';
+import { UserContextService } from './user-context.service';
 
 
 @Injectable({
@@ -17,12 +19,16 @@ export class DocumentService {
     private readonly _httpFluxService = inject(HttpFluxService);
     private readonly _logger = inject(NGXLogger);
     private readonly _loadingService = inject(LoadingService);
+    private readonly _userContextService = inject(UserContextService)
 
     sendActe(id_e: number, document: DocumentDetail): void {
         this._loadingService.showLoading("Envoi de l'acte en cours ...");
         const actionRequest: DocumentRequestAction = { document_ids: document.info.id_d, action: ActionPossibleEnum.Orientation };
+        const redirect = { route: ['/org', id_e.toString()] } as RedirectModal;
+        if (this._userContextService.fluxSelected())
+            redirect.params = { type: this._userContextService.fluxSelected()?.id };
         this._httpDocumentService.performAction(id_e, actionRequest).subscribe({
-            next: () => this._loadingService.showSuccess("Le document a bien été transmis.", ['/org', id_e.toString()])
+            next: () => this._loadingService.showSuccess("Le document a bien été transmis.", redirect)
         })
     }
 
@@ -92,8 +98,11 @@ export class DocumentService {
      */
     updateTypePiece(id_e: number, id_d: string, data: string[], _showSuccess = true): Observable<void> {
         this._loadingService.showLoading("Sauvegarde de l'acte en cours ...");
+        const redirect = { route: ['/org', id_e.toString()] } as RedirectModal;
+        if (this._userContextService.fluxSelected())
+            redirect.params = { type: this._userContextService.fluxSelected()?.id };
         return this._httpDocumentService.patchExternalData(id_e, id_d, 'type_piece', data).pipe(
-            tap(() => { if (_showSuccess) this._loadingService.showSuccess('Le document a été créé et mis à jour avec succès.', ['/org', id_e.toString()]) }),
+            tap(() => { if (_showSuccess) this._loadingService.showSuccess('Le document a été créé et mis à jour avec succès.', redirect) }),
             catchError(error => {
                 this._loadingService.showError(error.error.detail || 'Une erreur est survenue lors de la création ou de la mise à jour du document.');
                 this._logger.error('Error fetching file types and files', error);
@@ -129,7 +138,8 @@ export class DocumentService {
                     const url_return = `/retour-tdt?id_e=${id_e}&id_d=${document.id_d}&error=%%ERROR%%&message=%%MESSAGE%%`;
                     this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
                 } else {
-                    this._loadingService.showSuccess("Action terminé", ['/org', id_e.toString()])
+                    const redirect = { route: ['/org', id_e.toString()], params: { type: document.type } } as RedirectModal;
+                    this._loadingService.showSuccess("Action terminé", redirect)
                 }
             },
         })
@@ -150,7 +160,8 @@ export class DocumentService {
                     const url_return = `/retour-tdt?id_e=${id_e}&id_d[]=${documents.map(d => d.id_d).join('&id_d[]=')}`;
                     this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
                 } else {
-                    this._loadingService.showSuccess("Action terminé", ['/org', id_e.toString()])
+                    const redirect = { route: ['/org', id_e.toString()], params: { type: documents[0].type } } as RedirectModal;
+                    this._loadingService.showSuccess("Action terminé", redirect)
                 }
             },
         })

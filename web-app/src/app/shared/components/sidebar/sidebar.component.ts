@@ -40,7 +40,7 @@ export class SidebarComponent implements OnInit {
   isGroupByType: boolean = false;
   constructor(private readonly _logger: NGXLogger, private readonly _router: Router) {
     effect(() => {
-      this.flux = Object.values(this.userFlux());
+      this.flux = this.userFlux();
       this.sortFlux();
       this.groupFluxByType();
     });
@@ -70,9 +70,6 @@ export class SidebarComponent implements OnInit {
     })
   }
 
-  selectFlux(flux: Flux) {
-    this.fluxSelected.set(flux);
-  }
 
   groupFluxByType(): void {
     this.groupedFlux = this.flux.reduce((acc, acte) => {

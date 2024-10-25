@@ -49,6 +49,7 @@
 
 
     <div class="space-y-4">
+        @if (flux.length > 4) {
         <div class="flex items-center justify-between">
             <label class="inline-flex items-center cursor-pointer">
                 <input type="checkbox" value="" class="sr-only peer" [(ngModel)]="isGroupByType">
@@ -58,6 +59,7 @@
                 <span class="ms-3 font-bold text dark:text">Grouper par type</span>
             </label>
         </div>
+        }
         <!-- partie groupée -->
         <ul class="mt-4 space-y-2" [ngClass]="isGroupByType ? 'block' : 'hidden'" id="group-element">
             @for(type of listType; track type; let idx = $index) {
@@ -79,7 +81,7 @@
 
                     <li class="flex justify-between items-center">
                         <a class="text font-medium ml-2 p-2 rounded w-full inline-flex items-center "
-                            [routerLink]="['/org',entiteSelected().id_e]" (click)="selectFlux(f)"
+                            [routerLink]="['/org',entiteSelected().id_e]" [queryParams]="{type: f.id}"
                             [ngClass]="fluxSelected() !== null && f.id === fluxSelected().id ? 'bg-gray-hover' : ' hover:bg-gray-hover'">
                             {{ f.nom }}
                         </a>
@@ -103,11 +105,17 @@
         </ul>
         <!-- partie non groupé -->
         <ul class="mt-4 space-y-2" [ngClass]="!isGroupByType ? 'block' : 'hidden'" id="list-element">
-
+            <li class="flex w-full items-center">
+                <a class="rounded w-full inline-flex text items-center p-2 font-medium"
+                    [routerLink]="['/org',entiteSelected().id_e]"
+                    [ngClass]="fluxSelected() === null ? 'bg-gray-hover' : 'hover:bg-gray-hover'">
+                    Tous les documents
+                </a>
+            </li>
             @for (f of flux; track f.id ) {
             <li class="flex w-full items-center">
                 <a class="rounded w-full inline-flex text items-center p-2 font-medium"
-                    [routerLink]="['/org',entiteSelected().id_e]" (click)="selectFlux(f)"
+                    [routerLink]="['/org',entiteSelected().id_e]" [queryParams]="{type: f.id}"
                     [ngClass]="fluxSelected() !== null && f.id === fluxSelected().id ? 'bg-gray-hover' : 'hover:bg-gray-hover'">
                     {{ f.nom }}
                 </a>
