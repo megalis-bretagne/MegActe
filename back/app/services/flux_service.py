@@ -29,14 +29,17 @@ class FluxService(BaseService):
 
         return flux_detail
 
-    def get_flux(self) -> FluxResponseModel:
+    def get_flux(self, only_enable: bool = True) -> FluxResponseModel:
         flux = self.api_pastell.perform_get("/flux")
 
         with SessionLocal.begin() as db:
             flux_enable = (
                 db.execute(select(FluxAvailable.flux_id_pastell).where(FluxAvailable.enable == True)).scalars().all()
             )
-        for flux_id, value in flux.items():
-            value["enable"] = flux_id in flux_enable
 
-        return flux
+        filtered_flux = {
+            flux_id: {**value, "enable": flux_id in flux_enable}
+            for flux_id, value in flux.items()
+            if not only_enable or flux_id in flux_enable
+        }
+        return filtered_flux

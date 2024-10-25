@@ -51,5 +51,5 @@ def add_user(
     description="Récupère les flux de l'utilisateur connecté.",
     response_model=FluxResponseModel,
 )
-def get_user_flux_available(client: ApiPastell = Depends(get_or_make_api_pastell)):
-    return FluxService(client).get_flux()
+def get_user_flux_available(only_enable: bool = True, client: ApiPastell = Depends(get_or_make_api_pastell)):
+    return FluxService(client).get_flux(only_enable)
