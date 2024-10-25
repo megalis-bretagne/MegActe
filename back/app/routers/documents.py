@@ -2,10 +2,8 @@ from typing_extensions import Annotated
 from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from typing import List
 
-from app.dependencies import get_settings
 from ..schemas.flux_action import ActionResult
 from ..services.acte_service import ActeService
-from config.configuration import Settings
 
 from ..clients.pastell.api import ApiPastell
 
@@ -57,12 +55,9 @@ def update_document(
 def get_document(
     document_id: str,
     entite_id: int,
-    settings: Annotated[Settings, Depends(get_settings)],
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentService(client).get_single_document(
-        entite_id, document_id, settings.document.external_data_to_retrieve
-    )
+    return DocumentService(client).get_single_document(entite_id, document_id)
 
 
 # Delete Document

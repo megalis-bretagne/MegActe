@@ -114,7 +114,7 @@ class ActionPossible(BaseModel):
         BaseModel (_type_): _description_
     """
 
-    action: str
+    action: ActionDocument | str
     message: Optional[str] = None
 
 

@@ -2,8 +2,10 @@ from ..schemas.flux_action import FluxAction
 from ..services.flux_action_service import FluxActionService
 from . import BaseService
 from ..exceptions.custom_exceptions import EntiteIdException
-from ..schemas.document_schemas import ActionPossible, DocumentDetail, DocumentInfo
+from ..schemas.document_schemas import ActionDocument, ActionPossible, DocumentDetail, DocumentInfo
 import logging
+from app.dependencies import get_settings
+
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +21,7 @@ class DocumentService(BaseService):
         super().__init__(api)
         self.flux_action_service = flux_action_service
 
-    def get_single_document(
-        self,
-        entite_id: int,
-        document_id: str,
-        external_data_to_retrieve: list[str] = None,
-    ):
+    def get_single_document(self, entite_id: int, document_id: str):
         """Récupère les infos d'un document dans Pastell.
 
         Args:
@@ -36,6 +33,7 @@ class DocumentService(BaseService):
         Returns:
             dict: Les détails du document récupéré.
         """
+        external_data_to_retrieve = get_settings().document.external_data_to_retrieve
         if external_data_to_retrieve is None:
             external_data_to_retrieve = []
 
@@ -84,19 +82,26 @@ class DocumentService(BaseService):
 
         list_documents = self.api_pastell.perform_get(f"entite/{id_e}/document", query_params=query_param)
         flux_action = None
+        final_state = get_settings().document.final_state
         if doc_type is not None:
             flux_action = self.flux_action_service.get_action_on_flux(doc_type)
 
         for doc in list_documents:
             document_info = DocumentInfo(**doc)
-            if flux_action and not document_info.action_possible and document_info.last_action in flux_action.actions:
+            if (
+                document_info.last_action not in final_state  # si l'état courant n'est pas un état finale
+                and flux_action  # si le flux est non vide
+                and not document_info.action_possible  # si les action possible du document ne sont pas renseigné
+                and document_info.last_action
+                in flux_action.actions  # si l'état courant est bien dans la liste des flux actions
+            ):
                 document_info.action_possible = self._get_action_possible(flux_action, document_info.last_action)
                 document_info.last_action_message = flux_action.actions[document_info.last_action].name
             documents.append(document_info)
 
         return documents
 
-    def _get_action_possible(self, flux_action: FluxAction, last_action: str) -> list[ActionPossible]:
+    def _get_action_possible(self, flux_action: FluxAction, last_action: ActionDocument | str) -> list[ActionPossible]:
         """A partir d'un status de document (champ last_action, retourne les action possibles)
 
         Args:
