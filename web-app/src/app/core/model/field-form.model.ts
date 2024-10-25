@@ -1,6 +1,6 @@
 export interface Field {
     idField: string;
-    type: string;
+    type?: string;
     name?: string;
     preg_match?: string;
     preg_match_error?: string;
