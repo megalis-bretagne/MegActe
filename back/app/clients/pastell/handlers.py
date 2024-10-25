@@ -22,7 +22,7 @@ def _handle_httperr_40X(f):
             logger.debug(
                 f"L'API pastell retourne une erreur {e.response.status_code}, message {api_error_response.error_message}, request {e.request.url}"
             )
-            if e.response.status_code == 404 or e.response.status_code == 403:
+            if e.response.status_code >= 400 and e.response.status_code < 500:
                 raise ApiHttp40XError(e.response.status_code, api_error_response)
             else:
                 raise e

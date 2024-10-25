@@ -25,6 +25,7 @@ class ApiS2low:
     INFO_CONNEXION_ENDPOINT = "api/info-connexion.php"
     GET_NOUNCE_ENDPOINT = "api/get-nounce.php?api=1"
     ACTES_TRANSAC_POST_CONFIRME = "modules/actes/actes_transac_post_confirm_api.php"
+    ACTES_TRANSAC_POST_CONFIRME_MULTI = "modules/actes/actes_transac_post_confirm_api_multi.php"
 
     def __init__(self, conf: Config):
         """
@@ -111,7 +112,7 @@ class ApiS2low:
 
         Args:
             auth (HTTPBasicAuth): le login/pwd du compte tech
-            tedetis_transaction_id (number): l'id de transaction
+            tedetis_transaction_id (list[number]): liste id de transaction
 
         Returns:
             str: l'url du service
@@ -123,3 +124,19 @@ class ApiS2low:
         hash_pass = sha256(str.encode(to_hash)).hexdigest()
         base_url = f"{self._config.base_url}{self.ACTES_TRANSAC_POST_CONFIRME}"
         return f"{base_url}?id={tedetis_transaction_id}&nounce={nounce}&login={auth.username}&hash={hash_pass}"
+
+    def get_url_post_confirm_multi(self, auth: HTTPBasicAuth, tedetis_transaction_id: list[int]) -> str:
+        """
+        Construit l'url pour confirmer l'envoi d'un acte (avec validation certificat)
+
+        Returns:
+            str: _description_
+        """
+        _code, nounce = self.get_nounce(auth)
+
+        to_hash = f"{auth.password}:{nounce}"
+        hash_pass = sha256(str.encode(to_hash)).hexdigest()
+        base_url = f"{self._config.base_url}{self.ACTES_TRANSAC_POST_CONFIRME_MULTI}"
+        query_params = f"nounce={nounce}&login={auth.username}&hash={hash_pass}"
+        ids = "&".join([f"id[]={t_id}" for t_id in tedetis_transaction_id])
+        return f"{base_url}?{query_params}&{ids}"
