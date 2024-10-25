@@ -55,15 +55,16 @@ export class UserContextService {
   public fetchUserFlux(): Observable<void> {
     return this._httpUserService.getUserFlux().pipe(
       map((data: { [key: string]: Flux }) => {
-        const actes = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
+        const actes: Flux[] = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
         this.userFlux.set(actes);
       }
       )
     );
   }
 
-  public selectCurrentFlux(flux: Flux) {
-    this.fluxSelected.set(flux);
+  public selectCurrentFlux(id_flux: string | null) {
+    if (id_flux) this.fluxSelected.set(this.userFlux().find(acte => acte.id === id_flux));
+    else this.fluxSelected.set(null)
   }
 
   /**

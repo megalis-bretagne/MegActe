@@ -5,9 +5,14 @@ export enum TypeModal {
     Loading = 'LOADING'
 }
 
+export interface RedirectModal {
+    route: string[] | null;
+    params?: { [key: string]: string }
+}
+
 export interface InfoModal {
     message: string,
     type: TypeModal,
-    redirect_on_close: string[] | null,
+    redirect_on_close: RedirectModal | null,
     callbackClose: (result?: unknown) => void,
 }

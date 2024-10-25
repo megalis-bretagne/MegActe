@@ -16,7 +16,6 @@ export const documentDetailResolver: ResolveFn<{ document: DocumentDetail, flux:
     const userContexteService = inject(UserContextService);
     const fluxService = inject(HttpFluxService);
     const documentService = inject(HttpDocumentService);
-    const userFlux = userContexteService.userFlux();
     const docId = route.paramMap.get('documentId');
     const id_e = route.paramMap.get('ide');
     const loadingService = inject(LoadingService);
@@ -26,7 +25,7 @@ export const documentDetailResolver: ResolveFn<{ document: DocumentDetail, flux:
                 const idFlux = docDetail.info.type;
                 if (idFlux) {
                     // on sélectionner le flux courant en fonction du document
-                    userContexteService.selectCurrentFlux(userFlux.find(acte => acte.id === idFlux));
+                    userContexteService.selectCurrentFlux(idFlux);
                     return forkJoin({
                         document: of(docDetail),
                         flux: fluxService.get_flux_detail(idFlux)
