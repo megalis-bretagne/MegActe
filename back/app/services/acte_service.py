@@ -19,7 +19,7 @@ class ActeService(BaseService):
         super().__init__(api)
         self.tdt_service = TdtService()
 
-    def check_and_perform_action_service(self, entite_id: int, document_id: str, action: ActionDocument) -> ActionResult:
+    def check_and_perform_action(self, entite_id: int, document_id: str, action: ActionDocument) -> ActionResult:
         """Vérifie si une action est possible et l'exécute pour un document donné.
 
         Args:
@@ -31,7 +31,7 @@ class ActeService(BaseService):
             PastellException: Si l'action n'est pas possible ou ne peut pas être exécutée dans Pastell.
 
         Returns:
-            dict: Les détails de l'action exécutée.
+            ActionResult: Les détails de l'action exécutée.
         """
 
         response = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}")
@@ -57,3 +57,46 @@ class ActeService(BaseService):
         response = self.api_pastell.perform_post(f"/entite/{entite_id}/document/{document_id}/action/{action}")
 
         return ActionResult(**response)
+
+    def perform_action_on_documents(
+        self, entite_id: int, documents_id: list[str], action: ActionDocument
+    ) -> ActionResult:
+        """Lance une action multiple pour plusieurs documents
+
+        Args:
+            entite_id (int): L'ID de l'entité.
+            documents_id (list[str]): L'ID du document.
+            action (ActionDocument): L'action  à exécuter.
+
+        Returns:
+            ActionResult: Les détails de l'action exécutée.
+        """
+
+        if action == ActionDocument.teletransmission_tdt:
+            logger.info(
+                f"Génération de l'url pour teletransmission au TDT des documents {documents_id} entite {entite_id}"
+            )
+            url = ""
+            documents = []
+            for doc_id in documents_id:
+                response = self.api_pastell.perform_get(
+                    f"/entite/{entite_id}/document/{doc_id}"
+                )  # récupération des infos du documents
+                documents.append(DocumentDetail(**response))
+            url = self.tdt_service.teletransmission_multi(documents, entite_id)
+            logger.debug(f"Url généré : {url}")
+
+            return ActionResult(
+                result=True,
+                message="",
+                data={"url": url},
+            )
+
+        for doc_id in documents_id:
+            logger.info(f"Action multiple {action} sur le document {doc_id} entite {entite_id}")
+            self.api_pastell.perform_post(f"/entite/{entite_id}/document/{doc_id}/action/{action}")
+
+        return ActionResult(
+            result=True,
+            message="",
+        )

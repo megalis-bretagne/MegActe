@@ -2,9 +2,21 @@ from enum import Enum
 from pydantic import BaseModel, Field, AliasPath, model_validator
 from typing import Dict, Any
 from fastapi import UploadFile
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from .pagination import ResponsePagination
+
+
+class DocumentActionRequest(BaseModel):
+    """
+    Modèle pour envoyer une action sur plusieurs documents
+
+    Args:
+        BaseModel (_type_): _description_
+    """
+
+    document_ids: Union[str, List[str]]
+    action: str
 
 
 class DocUpdateInfo(BaseModel):

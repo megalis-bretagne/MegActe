@@ -21,6 +21,7 @@ from ..schemas.document_schemas import (
     DocUpdateInfo,
     DeleteFileFromDoc,
     AddFilesToDoc,
+    DocumentActionRequest,
 )
 
 router = APIRouter()
@@ -158,17 +159,22 @@ def get_external_data(
     return DocumentFileService(client).get_external_data(entite_id, document_id, element_id)
 
 
-# transmettre le document
 @router.post(
-    "/entite/{entite_id}/document/{document_id}/{action}",
+    "/entite/{entite_id}/documents/perform_action",
     tags=["document"],
-    response_model=ActionResult,
-    description="Envoi le document dans le flux pastell",
+    response_model=ActionResult,  # On renvoie une liste de résultats
+    description="Envoi les documents dans le flux pastell",
 )
-def perform_action_on_document(
-    document_id: str,
+def perform_action_on_documents(
     entite_id: int,
-    action: str,
+    document_action_request: DocumentActionRequest,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return ActeService(client).check_and_perform_action_service(entite_id, document_id, action)
+    if isinstance(document_action_request.document_ids, str):
+        return ActeService(client).check_and_perform_action(
+            entite_id, document_action_request.document_ids, document_action_request.action
+        )
+
+    return ActeService(client).perform_action_on_documents(
+        entite_id, document_action_request.document_ids, document_action_request.action
+    )

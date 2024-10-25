@@ -22,7 +22,7 @@ class TdtService:
             id_e (int): l'entité
 
         Returns:
-            str: l'url
+            str: l'url de télétransmission
         """
         logging.debug("Demande de teletransmission")
 
@@ -36,4 +36,22 @@ class TdtService:
         return self.api_s2low.get_url_post_confirm(
             HTTPBasicAuth(co.login_tech_tdt, co.get_decrypt_password()),
             doc.data["tedetis_transaction_id"],
+        )
+
+    def teletransmission_multi(self, docs: list[DocumentDetail], id_e: int) -> str:
+        """Retourne l'url de télétransmission pour plusieurs documents
+
+        Args:
+            docs (DocumentDetail[]): les documents à télétransmettre
+            id_e (int): l'entité
+        Returns:
+            str: l'url de télétransmission
+        """
+        # Avoir en paramètre le Document (id,e, flux, id tedetis_transaction_id)
+        co = self.connecteur_service.get_connecteur(docs[0].info.type, id_e)
+        list_tedetis = [d.data["tedetis_transaction_id"] for d in docs]
+
+        return self.api_s2low.get_url_post_confirm_multi(
+            HTTPBasicAuth(co.login_tech_tdt, co.get_decrypt_password()),
+            list_tedetis,
         )
