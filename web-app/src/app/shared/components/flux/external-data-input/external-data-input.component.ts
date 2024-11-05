@@ -23,7 +23,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
   @Input() link_name: string = '';
   @Input() documentId: string = '';
 
-  currentUser = inject(UserContextService).userCurrent
+  entiteSelected = inject(UserContextService).entiteSelected
 
   externalDataOptions: string[] = [];
   filteredOptions = signal<string[]>([]);
@@ -56,7 +56,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
 
   // Récupérer les données du champ
   private _fetchExternalData(): void {
-    const id_e = this.currentUser().user_info.id_e;
+    const id_e = this.entiteSelected().id_e;
 
     this._fluxService.get_externalData(id_e, this.documentId, this.idField).subscribe({
       next: (data) => {
