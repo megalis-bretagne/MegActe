@@ -65,11 +65,11 @@ jobs:
         pip install -r requirements_dev.txt
         pytest -Werror --junitxml=junit/test-result.xml --cov=app --cov-report=xml --cov-report=html
 
-    - name: Report coverage to Codacy
-      uses: codacy/codacy-coverage-reporter-action@v1.3.0
-      with:
-        project-token: ${{ secrets.NEW_CODACY }}
-        coverage-reports: back/coverage.xml
+    # - name: Report coverage to Codacy
+    #   uses: codacy/codacy-coverage-reporter-action@v1.3.0
+    #   with:
+    #     project-token: ${{ secrets.NEW_CODACY }}
+    #     coverage-reports: back/coverage.xml
 
 
   build-angular :
