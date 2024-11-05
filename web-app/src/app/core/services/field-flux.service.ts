@@ -23,7 +23,7 @@ export class FieldFluxService {
 
 
 
-    filterFields(fields: Field[], flowId: string): Field[] {
+    filterFields(fields: Field[]): Field[] {
 
         // on applique les règles suivantes dans l'ordre:
         // - no-show = true => exclue

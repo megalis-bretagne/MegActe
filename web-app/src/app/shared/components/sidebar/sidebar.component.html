@@ -3,8 +3,11 @@
 
     <div class="mb-5 flex">
         <button (click)="showSelectEntite()" data-tooltip-target="tooltip-light" data-tooltip-placement="right"
-            class=" btn-meg-primary px-4 py-2 inline-flex items-center mb-3 text-center"
-            type="button">{{entiteSelected()?.denomination}}
+            class=" btn-meg-primary px-4 py-2 flex sm:w-full lg:w-auto  items-center justify-between mb-3"
+            type="button">
+            <span class="truncate sm:max-w-[85%] lg:max-w-[95%]">
+                {{ entiteSelected()?.denomination }}
+            </span>
             @if (userCurrent().entites.length > 1 || userCurrent().entites[0].child.length > 0) {
             <svg class="w-2.5 h-2.5 ms-3 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                 fill="none" viewBox="0 0 6 10">
@@ -16,7 +19,7 @@
 
         <div id="tooltip-light" role="tooltip"
             class="absolute z-10 invisible inline-block px-3 py-2 text font-medium bg-white border border-gray-200 rounded-lg shadow-sm opacity-0 tooltip">
-            L'entité sélectionné
+            L'entité sélectionné : {{ entiteSelected()?.denomination }}
             <div class="tooltip-arrow" data-popper-arrow></div>
         </div>
         <!-- Main modal -->
@@ -49,7 +52,7 @@
 
 
     <div class="space-y-4">
-        @if (flux.length > 4) {
+        @if (flux().length > 4) {
         <div class="flex items-center justify-between">
             <label class="inline-flex items-center cursor-pointer">
                 <input type="checkbox" value="" class="sr-only peer" [(ngModel)]="isGroupByType">
@@ -112,7 +115,7 @@
                     Tous les documents
                 </a>
             </li>
-            @for (f of flux; track f.id ) {
+            @for (f of flux(); track f.id ) {
             <li class="flex w-full items-center">
                 <a class="rounded w-full inline-flex text items-center p-2 font-medium"
                     [routerLink]="['/org',entiteSelected().id_e]" [queryParams]="{type: f.id}"
