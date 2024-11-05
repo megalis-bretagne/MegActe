@@ -44,7 +44,7 @@ export interface DocumentRequestAction {
 
 
 export interface DocumentPaginate {
-    pagination: Pagination,
+    pagination: Pagination | null,
     documents: DocumentInfo[]
 }
 

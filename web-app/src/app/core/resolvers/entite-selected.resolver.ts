@@ -11,7 +11,7 @@ export const entiteSelectedResolver: ResolveFn<void> = (route, tmpRoute): void =
     if (entite) {
         userContexteService.setEntiteSelected(entite);
     } else {
-        userContexteService.setEntiteSelected(userContexteService.userCurrent().entites[0]);
+        userContexteService.setEntiteSelected(userContexteService.userCurrent().entite);
     }
 
     const type_flux = route.queryParams['type'] || null;

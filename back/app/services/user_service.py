@@ -106,8 +106,6 @@ class UserService(BaseService):
 
         # Récupérer les infos du user depuis Pastell
         user_info = self.api_pastell.get_user_by_id_u(user.id_pastell)
-        if user_info.id_e == 0:
-            return {"user_info": user_info}
 
         # Récupérer les entités du user depuis Pastell
         user_entites = self.api_pastell.get_entite_with_child(only_active=True)

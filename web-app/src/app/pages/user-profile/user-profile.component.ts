@@ -8,11 +8,14 @@ import { UserContextService } from 'src/app/core/services/user-context.service';
   styleUrls: []
 })
 export class UserProfileComponent {
-  currentUser = inject(UserContextService).userCurrent;
-  entiteBase = computed(() => {
+  private readonly _contexteService = inject(UserContextService)
+  currentUser = this._contexteService.userCurrent;
 
-    if (this.currentUser()?.entites.length > 0) {
-      return this.currentUser().entites.find(e => e.id_e === this.currentUser().user_info.id_e) || null;
+  isSuperAdmin = this._contexteService.isSuperAdmin();
+
+  entiteBase = computed(() => {
+    if (!this.isSuperAdmin) {
+      return this.currentUser().entite;
     }
     return null;
   })

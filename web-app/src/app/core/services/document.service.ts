@@ -42,6 +42,7 @@ export class DocumentService {
     }
 
     getDocuments(entiteId: number, idFlux: string = null, offset: number = 0, limit: number = 10): Observable<DocumentPaginate> {
+        if (entiteId === UserContextService.ID_E_MERE) return of({ documents: [] } as DocumentPaginate);
         return this._httpDocumentService.getDocuments(entiteId, idFlux, offset, limit);
     }
 
