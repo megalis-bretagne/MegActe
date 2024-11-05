@@ -50,7 +50,7 @@ class ApiS2low:
                 raise FileNotFoundError(f"Key file not found: {self._config.key_path}")
             self.session_request.mount(
                 self._config.base_url,
-                SSLAdapter(self._config.certificate_path, self._config.key_path),
+                SSLAdapter(self._config.certificate_path, self._config.key_path, self._config.key_password),
             )
             # disable warning for insecure request since its use self signed certificate
             urllib3.disable_warnings(category=InsecureRequestWarning)

@@ -23,6 +23,7 @@ class S2low(BaseModel):
     url: str
     path_certificate: str
     path_key: str
+    key_password: str
 
 
 class DocumentConfig(BaseModel):

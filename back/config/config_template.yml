@@ -21,3 +21,4 @@ s2low:
   url: <urm>
   path_certificate: <certificat .pem>
   path_key: <private_key.pem>
+  key_password: <password>
