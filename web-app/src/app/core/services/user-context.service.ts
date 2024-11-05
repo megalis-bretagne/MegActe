@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
 import { Observable, map } from 'rxjs';
-import { EntiteInfo, UserContext } from 'src/app/core/model/user.model';
+import { EntiteInfo, UserContext, UserHttpResponse } from 'src/app/core/model/user.model';
 import { Flux } from '../model/flux.model';
 import { HttpUserService } from './http/http-user.service';
 
@@ -21,7 +21,7 @@ export class UserContextService {
 
   private readonly _logger = inject(NGXLogger);
   private readonly _httpUserService = inject(HttpUserService);
-
+  static readonly ID_E_MERE = -1;
 
   /**
    * L'utilisateur connecté
@@ -45,11 +45,20 @@ export class UserContextService {
 
   public fetchUser(): Observable<void> {
     return this._httpUserService.getUser().pipe(
-      map((res: UserContext) => {
+      map((res: UserHttpResponse) => {
         this._logger.info('Successfully fetched user context');
-        this.userCurrent.set(res);
+        if (res.entites.length > 1) { // si plus d'une entité, on ajoute une racine fictive
+          const entite_mere = { id_e: UserContextService.ID_E_MERE, denomination: "Sélectionner une entité", entite_mere: 0, siren: "", type: "", child: res.entites } as EntiteInfo;
+          this.userCurrent.set({ user_info: res.user_info, entite: entite_mere } as UserContext);
+        } else {
+          this.userCurrent.set({ user_info: res.user_info, entite: res.entites[0] ?? undefined } as UserContext);
+        }
       }),
     )
+  }
+
+  public isSuperAdmin(): boolean {
+    return this.userCurrent().user_info.id_e === 0;
   }
 
   public fetchUserFlux(): Observable<void> {
@@ -76,7 +85,8 @@ export class UserContextService {
   }
 
   public findEntiteById(id_e: number): EntiteInfo | null {
-    return this._findEntiteInPath(id_e, this.userCurrent().entites)?.entite || null;
+    if (id_e === UserContextService.ID_E_MERE) return null;
+    return this._findEntiteInPath(id_e, this.userCurrent().entite.child)?.entite || null;
   }
 
   /**
@@ -84,7 +94,9 @@ export class UserContextService {
    * @param entite 
    */
   public getParentPathEntite(entite: EntiteInfo): EntiteInfo[] {
-    return this._findEntiteInPath(entite.id_e, this.userCurrent().entites).parents || [];
+    if (entite.id_e === UserContextService.ID_E_MERE) return [];
+    if (entite.id_e === this.userCurrent().entite.id_e) return [];
+    return this._findEntiteInPath(entite.id_e, this.userCurrent().entite.child).parents || [];
   }
 
   /**

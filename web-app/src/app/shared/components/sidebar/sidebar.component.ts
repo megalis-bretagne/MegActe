@@ -23,11 +23,14 @@ import { Modal } from 'flowbite';
 export class SidebarComponent implements OnInit {
   private readonly _userContextService = inject(UserContextService);
   private readonly _documentService = inject(HttpDocumentService);
+  private readonly _logger = inject(NGXLogger);
+  private readonly _router = inject(Router);
+  private _modal: Modal | undefined;
 
+  loadingService = inject(LoadingService);
   entiteSelected = this._userContextService.entiteSelected;
   userFlux = this._userContextService.userFlux
   userCurrent = this._userContextService.userCurrent;
-  loadingService = inject(LoadingService);
 
   fluxSelected = this._userContextService.fluxSelected /** contient le flux sélectionné */
 
@@ -36,13 +39,11 @@ export class SidebarComponent implements OnInit {
       return this.userFlux().sort((a1: Flux, a2: Flux) => a1.nom.localeCompare(a2.nom));
     return []
   });
-  private _modal: Modal | undefined;
 
   groupedFlux: { [key: string]: Flux[]; };
   listType: string[];
   isGroupByType: boolean = false;
-  constructor(private readonly _logger: NGXLogger, private readonly _router: Router) {
-  }
+
 
   ngOnInit(): void {
     const modalElement = document.getElementById('modal-select-entite');

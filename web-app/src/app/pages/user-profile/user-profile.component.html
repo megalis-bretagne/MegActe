@@ -8,10 +8,12 @@
         <p class="text-gray-600">{{currentUser.user_info.nom}} {{currentUser.user_info.prenom}}</p>
     </div>
 
+    @if(!isSuperAdmin && entiteBase()) {
     <div class="mb-4">
         <span class="block text-gray-700 font-semibold">Entité de Base :</span>
         <p class="text">{{entiteBase()?.denomination}} (siren : {{entiteBase()?.siren}})</p>
     </div>
+    }
 
     <div class="mb-4">
         <span class="block text-gray-700 font-semibold">Email :</span>

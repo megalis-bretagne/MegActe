@@ -3,12 +3,11 @@
 
     <div class="mb-5 flex">
         <button (click)="showSelectEntite()" data-tooltip-target="tooltip-light" data-tooltip-placement="right"
-            class=" btn-meg-primary px-4 py-2 flex sm:w-full lg:w-auto  items-center justify-between mb-3"
-            type="button">
-            <span class="truncate sm:max-w-[85%] lg:max-w-[95%]">
+            class=" btn-meg-primary px-4 py-2 flex sm:w-full items-center justify-between mb-3 mr-3" type="button">
+            <span class="truncate sm:max-w-[85%] lg:max-w-[90%]">
                 {{ entiteSelected()?.denomination }}
             </span>
-            @if (userCurrent().entites.length > 1 || userCurrent().entites[0].child.length > 0) {
+            @if (userCurrent().entite && userCurrent().entite.child.length > 0) {
             <svg class="w-2.5 h-2.5 ms-3 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                 fill="none" viewBox="0 0 6 10">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -19,7 +18,11 @@
 
         <div id="tooltip-light" role="tooltip"
             class="absolute z-10 invisible inline-block px-3 py-2 text font-medium bg-white border border-gray-200 rounded-lg shadow-sm opacity-0 tooltip">
-            L'entité sélectionné : {{ entiteSelected()?.denomination }}
+            @if( entiteSelected().id_e === -1) {
+            {{ entiteSelected().denomination }}
+            } @else {
+            Changer l'entité {{ entiteSelected()?.denomination }}
+            }
             <div class="tooltip-arrow" data-popper-arrow></div>
         </div>
         <!-- Main modal -->
@@ -88,7 +91,7 @@
                             [ngClass]="fluxSelected() !== null && f.id === fluxSelected().id ? 'bg-gray-hover' : ' hover:bg-gray-hover'">
                             {{ f.nom }}
                         </a>
-                        @if(f.enable) {
+                        @if(f.enable && entiteSelected().id_e > 0) {
                         <a (click)="createDoc(f)" title="Créer un  document de type {{f.nom}}">
                             <svg class="w-6 h-6 text-blue hover:text-blue-hover hover:cursor-pointer dark:text-white"
                                 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -109,8 +112,7 @@
         <!-- partie non groupé -->
         <ul class="mt-4 space-y-2" [ngClass]="!isGroupByType ? 'block' : 'hidden'" id="list-element">
             <li class="flex w-full items-center">
-                <a class="rounded w-full inline-flex text items-center p-2 font-medium"
-                    [routerLink]="['/org',entiteSelected().id_e]"
+                <a class="rounded w-full inline-flex text items-center p-2 font-medium" [routerLink]="['/org']"
                     [ngClass]="fluxSelected() === null ? 'bg-gray-hover' : 'hover:bg-gray-hover'">
                     Tous les documents
                 </a>
@@ -124,7 +126,7 @@
                 </a>
 
 
-                @if(f.enable) {
+                @if(f.enable && entiteSelected().id_e > 0) {
                 <a (click)="createDoc(f)" title="Créer un document {{f.nom}}">
                     <svg class="w-6 h-6 text-blue hover:text-blue-hover hover:cursor-pointer dark:text-white"
                         aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"

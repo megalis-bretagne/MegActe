@@ -2,7 +2,7 @@
     <div class="flex justify-between items-center mb-4">
         @if (fluxSelected(); as fluxSelected) {
         <h1>Liste des {{fluxSelected.nom}}</h1>
-        @if(fluxSelected.enable) {
+        @if(fluxSelected.enable && entiteSelected().id_e > 0) {
         <div class="space-x-4">
             <button [attr.aria-label]="'Créer un document de type '+ fluxSelected.nom" class="btn-meg-primary px-4 py-2"
                 [attr.title]="'Créer un document de type '+ fluxSelected.nom" (click)="createDoc()">

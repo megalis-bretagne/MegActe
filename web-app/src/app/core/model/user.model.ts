@@ -16,12 +16,22 @@ export interface EntiteInfo {
     centre_de_gestion: string;
     child: EntiteInfo[]
 }
-
-export interface UserContext {
+/**
+ * Interface de réception des infos de l'utilisateur
+ */
+export interface UserHttpResponse {
     user_info: UserInfo;
     entites: EntiteInfo[];
 }
 
+/**
+ * Interface model au seins de l'application
+ */
+export interface UserContext {
+    user_info: UserInfo;
+    entite: EntiteInfo;
+}
+
 export function sortEntiteInfo(entities: EntiteInfo[]): EntiteInfo[] {
-    return entities.sort((e1, e2) => e1.denomination.localeCompare(e2.denomination));
+    return entities.sort((e1, e2) => e1.denomination.trim().localeCompare(e2.denomination.trim()));
 }

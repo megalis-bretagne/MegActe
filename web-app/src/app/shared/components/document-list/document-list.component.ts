@@ -53,7 +53,7 @@ export class DocumentListComponent implements OnInit {
   });
 
   totalPages = computed(() => {
-    if (this.documentsPaginate() != null)
+    if (this.documentsPaginate()?.pagination != null)
       return Math.ceil(this.documentsPaginate().pagination.total / this.itemPerPage);
     return 0;
   })
