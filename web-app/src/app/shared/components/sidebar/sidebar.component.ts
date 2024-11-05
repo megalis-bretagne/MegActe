@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { Flux } from 'src/app/core/model/flux.model';
 import { DocCreateInfo } from 'src/app/core/model/document.model';
 import { HttpDocumentService } from 'src/app/core/services/http/http-document.service';
@@ -31,20 +31,19 @@ export class SidebarComponent implements OnInit {
 
   fluxSelected = this._userContextService.fluxSelected /** contient le flux sélectionné */
 
-  flux: Flux[] = [];
+  flux = computed(() => {
+    if (this.userFlux() != null)
+      return this.userFlux().sort((a1: Flux, a2: Flux) => a1.nom.localeCompare(a2.nom));
+    return []
+  });
   private _modal: Modal | undefined;
-
 
   groupedFlux: { [key: string]: Flux[]; };
   listType: string[];
   isGroupByType: boolean = false;
   constructor(private readonly _logger: NGXLogger, private readonly _router: Router) {
-    effect(() => {
-      this.flux = this.userFlux();
-      this.sortFlux();
-      this.groupFluxByType();
-    });
   }
+
   ngOnInit(): void {
     const modalElement = document.getElementById('modal-select-entite');
 
@@ -72,7 +71,7 @@ export class SidebarComponent implements OnInit {
 
 
   groupFluxByType(): void {
-    this.groupedFlux = this.flux.reduce((acc, acte) => {
+    this.groupedFlux = this.flux().reduce((acc, acte) => {
       if (!acc[acte.type]) {
         acc[acte.type] = [];
       }
@@ -82,11 +81,6 @@ export class SidebarComponent implements OnInit {
 
     this.listType = Object.keys(this.groupedFlux);
 
-  }
-
-
-  sortFlux(): void {
-    this.flux.sort((a1: Flux, a2: Flux) => a1.nom.localeCompare(a2.nom));
   }
 
   showSelectEntite(): void {

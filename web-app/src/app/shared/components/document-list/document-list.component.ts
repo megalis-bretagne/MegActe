@@ -29,7 +29,7 @@ export class DocumentListComponent implements OnInit {
   userContextService = inject(UserContextService);
   fluxSelected = this.userContextService.fluxSelected
 
-  private _destroyRef = inject(DestroyRef);
+  private readonly _destroyRef = inject(DestroyRef);
 
 
   userCurrent = this.userContextService.userCurrent;

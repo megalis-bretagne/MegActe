@@ -1,12 +1,12 @@
 <div class="container mx-auto">
     <div class="flex justify-between items-center mb-4">
         @if (fluxSelected(); as fluxSelected) {
-        <h1>Liste des documents {{fluxSelected.nom}}</h1>
+        <h1>Liste des {{fluxSelected.nom}}</h1>
         @if(fluxSelected.enable) {
         <div class="space-x-4">
             <button [attr.aria-label]="'Créer un document de type '+ fluxSelected.nom" class="btn-meg-primary px-4 py-2"
-                (click)="createDoc()">
-                Créer
+                [attr.title]="'Créer un document de type '+ fluxSelected.nom" (click)="createDoc()">
+                <span class="md:inline hidden">Créer</span>
                 <svg class="w-5 h-5 inline-block ml-1" xmlns="http://www.w3.org/2000/svg" fill="none"
                     viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

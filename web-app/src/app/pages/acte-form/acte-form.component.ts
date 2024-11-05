@@ -66,12 +66,11 @@ export class ActeFormComponent implements OnInit {
     this._route.data.subscribe(data => {
       this.fluxDetail = data['docDetail'].flux;
       this.documentInfo = data['docDetail'].document as DocumentDetail;
-      const flowId = this.documentInfo.info.type;
 
       if (this.fluxDetail) {
         this.fields = this._fieldFluxService.extractFields(this.fluxDetail);
         this.filteredFields =
-          this._fieldFluxService.filterFields(this.fields, flowId)
+          this._fieldFluxService.filterFields(this.fields)
             .filter(field => field.idField !== 'type_piece');
         this.fileFields = this.filteredFields.filter(field => field.type === 'file');
 
