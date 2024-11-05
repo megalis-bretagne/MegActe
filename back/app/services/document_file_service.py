@@ -165,9 +165,10 @@ class DocumentFileService(BaseService):
 
         # Vérifier que le nombre de types de fichiers correspond au nombre de fichiers existants
         if len(file_types) != len(existing_files):
+            detail = f"Le nombre de type_pj fourni «{len(file_types)}» ne correspond pas au nombre de documents «{len(existing_files)}»"
             raise HTTPException(
                 status_code=400,
-                detail=f"Le nombre de type_pj fourni «{len(file_types)}» ne correspond pas au nombre de documents (acte et annexes) «{len(existing_files)}»",
+                detail=detail,
             )
 
         data = {f"type_pj[{i}]": file_type for i, file_type in enumerate(file_types)}

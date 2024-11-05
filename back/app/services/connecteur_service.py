@@ -45,7 +45,9 @@ class ConnecteurTdtService:
 
     def get_connecteur(self, flux: str, id_e: int, db=SessionLocal) -> ConnecteurAuthTdt:
         with db() as db:
-            result = db.execute(select(ConnecteurAuthTdt).where(ConnecteurAuthTdt.id_e == id_e).where(ConnecteurAuthTdt.flux == flux)).first()
+            result = db.execute(
+                select(ConnecteurAuthTdt).where(ConnecteurAuthTdt.id_e == id_e).where(ConnecteurAuthTdt.flux == flux)
+            ).first()
 
             if not result:
                 raise ConnecteurNotFound(id_e, flux)
