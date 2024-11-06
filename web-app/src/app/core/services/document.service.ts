@@ -3,7 +3,7 @@ import { ActionPossible, ActionPossibleEnum, BaseDocumentInfo, DocCreateInfo, Do
 import { HttpDocumentService } from './http/http-document.service';
 import { NGXLogger } from 'ngx-logger';
 import { LoadingService } from './loading.service';
-import { catchError, concatMap, Observable, of, tap } from 'rxjs';
+import { catchError, concatMap, Observable, of, switchMap, tap, timer } from 'rxjs';
 import { ExternalDataObject, HttpFluxService } from './http/http-flux.service';
 import { ActionResult } from '../model/flux-action.model';
 import { RedirectModal } from '../model/modal.model';
@@ -177,6 +177,24 @@ export class DocumentService {
     retourTdt(id_e: number, id_d: string | string[]): Observable<ActionResult> {
         const actionRequest: DocumentRequestAction = { document_ids: id_d, action: ActionPossibleEnum.Verification_TDT };
         return this._httpDocumentService.performAction(id_e, actionRequest);
+    }
+
+    /**
+     * Lance l'action de verification après un retour Tdt avec un délai
+     * @param id_e 
+     * @param id_d 
+     * @param delay 
+     */
+    retourTdtWithDelay(id_e: number, id_d: string | string[], delay: number = 5000): void {
+        const actionRequest: DocumentRequestAction = { document_ids: id_d, action: ActionPossibleEnum.Verification_TDT };
+        timer(delay).pipe(
+            switchMap(() => this._httpDocumentService.performAction(id_e, actionRequest))
+        ).subscribe(
+            {
+                next: () => { this._logger.info('Retour Tdt OK') },
+                error: () => { this._logger.error('Erreur retour TDT') }
+            }
+        );
     }
 
     /**

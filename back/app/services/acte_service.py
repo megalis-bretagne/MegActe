@@ -93,8 +93,8 @@ class ActeService(BaseService):
             )
 
         for doc_id in documents_id:
-            logger.info(f"Action multiple {action} sur le document {doc_id} entite {entite_id}")
-            self.api_pastell.perform_post(f"/entite/{entite_id}/document/{doc_id}/action/{action}")
+            response = self.api_pastell.perform_post(f"/entite/{entite_id}/document/{doc_id}/action/{action}")
+            logger.info(f"Action multiple {action} sur le document {doc_id} entite {entite_id}, response {response}")
 
         return ActionResult(
             result=True,
