@@ -84,6 +84,10 @@ export class SidebarComponent implements OnInit {
 
   }
 
+  // go() {
+  //   this._router.navigate(['/org', this.entiteSelected().id_e], );
+  // }
+
   showSelectEntite(): void {
     this._modal.show();
   }
