@@ -31,20 +31,12 @@ export class TdtComponent implements OnInit {
             } else if (params['id_d[]']) {
                 this.id_d = params['id_d[]'];
             }
+            this._documentservice.retourTdtWithDelay(this.id_e, this.id_d);
         })
     }
 
 
     backToDocument() {
-        this._loadingService.showLoading('Retour à la liste des documents');
-        this._documentservice.retourTdt(this.id_e, this.id_d).subscribe(
-            {
-                next: () => { this._router.navigate(['/org', this.id_e]) },
-                complete: () => this._loadingService.hideLoading()
-            }
-        )
-
+        this._router.navigate(['/org', this.id_e])
     }
-
-
 }
