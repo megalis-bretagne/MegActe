@@ -112,7 +112,8 @@
         <!-- partie non groupé -->
         <ul class="mt-4 space-y-2" [ngClass]="!isGroupByType ? 'block' : 'hidden'" id="list-element">
             <li class="flex w-full items-center">
-                <a class="rounded w-full inline-flex text items-center p-2 font-medium" [routerLink]="['/org']"
+                <a class="rounded w-full inline-flex text items-center p-2 font-medium"
+                    [routerLink]="['/org', entiteSelected().id_e]"
                     [ngClass]="fluxSelected() === null ? 'bg-gray-hover' : 'hover:bg-gray-hover'">
                     Tous les documents
                 </a>

@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpErrorCustom } from 'src/app/core/model/http-error-custom.model';
 import { ActionDocumentComponent } from '../action-document/action-document.component';
 import { DocumentService } from 'src/app/core/services/document.service';
+import { FlowbiteService } from 'src/app/core/services/flowbite.service';
 
 
 @Component({
@@ -27,6 +28,7 @@ export class DocumentListComponent implements OnInit {
   loadingService = inject(LoadingService);
   documentService = inject(DocumentService);
   userContextService = inject(UserContextService);
+  flowbiteService = inject(FlowbiteService);
   fluxSelected = this.userContextService.fluxSelected
 
   private readonly _destroyRef = inject(DestroyRef);
@@ -65,6 +67,7 @@ export class DocumentListComponent implements OnInit {
     // effect sur le changement de flux
     const monEffect = effect(() => {
       this.pageActive.set(1);
+      this.multiAction.set([]);
       this._loadDataPage(this.fluxSelected() !== null ? this.fluxSelected().id : null);
     }, { allowSignalWrites: true })
 
@@ -77,10 +80,14 @@ export class DocumentListComponent implements OnInit {
    * Permet d'initialiser la modale
    */
   ngOnInit(): void {
-    const modalElement = document.getElementById('confirmDelete');
-    if (modalElement) {
-      this.modal_confirm_delete = new Modal(modalElement);
-    }
+    //necessaire si on change de route
+    this.flowbiteService.loadFlowbite(() => {
+      const modalElement = document.getElementById('confirmDelete');
+      if (modalElement) {
+        this.modal_confirm_delete = new Modal(modalElement);
+      }
+    })
+
   }
 
   /**
@@ -109,6 +116,7 @@ export class DocumentListComponent implements OnInit {
       }
       this.multiAction.set(Array.from(commonElements));
     }
+
   }
 
   /**
@@ -118,6 +126,7 @@ export class DocumentListComponent implements OnInit {
    */
   changePage(page: number) {
     this.pageActive.set(page);
+    this.multiAction.set([]);
     const idFlux = this.fluxSelected() !== null ? this.fluxSelected().id : null
     this._loadDataPage(idFlux, page)
   }
