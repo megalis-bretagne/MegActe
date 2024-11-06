@@ -12,7 +12,8 @@ export class ActionConfig {
         [ActionPossibleEnum.Modification]: {
             style: 'text-blue hover:text-blue-hover hover:cursor-pointer',
             svg: 'M10.779 17.779 4.36 19.918 6.5 13.5m4.279 4.279 8.364-8.643a3.027 3.027 0 0 0-2.14-5.165 3.03 3.03 0 0 0-2.14.886L6.5 13.5m4.279 4.279L6.499 13.5m2.14 2.14 6.213-6.504M12.75 7.04 17 11.28'
-        }
+        },
+        [ActionPossibleEnum.Orientation]: { svg: 'M13.5 8H4m4 6h8m0 0-2-2m2 2-2 2M4 6v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-5.032a1 1 0 0 1-.768-.36l-1.9-2.28a1 1 0 0 0-.768-.36H5a1 1 0 0 0-1 1Z' },
     };
 }
 @Component({
