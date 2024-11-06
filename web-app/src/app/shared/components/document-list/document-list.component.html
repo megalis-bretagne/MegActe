@@ -43,7 +43,7 @@
             <tbody>
                 @for (doc of documents(); track doc.id_d) {
                 <tr>
-                    <td class="">
+                    <td>
                         @if(displayCheckBox(doc)) {
                         <div class="flex items-center">
                             <input [id]="'checkbox-'+ doc.id_d" type="checkbox" [(ngModel)]="doc.selected"
@@ -74,16 +74,6 @@
             <tfoot>
                 <tr>
                     <td colspan="1">
-                        <a (click)="confirmDeleteDocuments(document_selected)"
-                            title="Supprimer les documents sélectionnés" [class.hidden]="!canDeleteMulti()"
-                            class="text-red-500 hover:text-red-800 hover:cursor-pointer">
-                            <svg class="w-5 h-5 " xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" aria-hidden="true">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z" />
-                            </svg>
-                        </a>
                         @for(action of multiAction(); track $index) {
                         <meg-action-document class="mr-2" [action]="action.action" [message]="action.message"
                             (action$)="runActionMulti(document_selected, action)" />
