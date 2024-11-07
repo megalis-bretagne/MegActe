@@ -133,7 +133,7 @@ export class DocumentService {
     launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible): Observable<ActionResult | null> {
         this._loadingService.showLoading(`Action \`${action.message}\` en cours ...`);
         const actionRequest: DocumentRequestAction = { document_ids: document.id_d, action: action.action };
-        const t = this._httpDocumentService.performAction(id_e, actionRequest).pipe(
+        return this._httpDocumentService.performAction(id_e, actionRequest).pipe(
             map((result: ActionResult) => {
                 console.log("dans le map de launch");
                 if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
@@ -145,21 +145,6 @@ export class DocumentService {
             })
 
         )
-        return t;
-
-
-
-        // this._httpDocumentService.performAction(id_e, actionRequest).subscribe({
-        //     next: (result: ActionResult) => {
-        //         if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
-        //             const url_return = `/retour-tdt?id_e=${id_e}&id_d=${document.id_d}&error=%%ERROR%%&message=%%MESSAGE%%`;
-        //             this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
-        //         } else {
-        //             const redirect = { route: ['/org', id_e.toString()], params: { type: document.type } } as RedirectModal;
-        //             this._loadingService.showSuccess("Action terminé", redirect)
-        //         }
-        //     },
-        // })
     }
 
     /**
@@ -172,7 +157,7 @@ export class DocumentService {
         this._loadingService.showLoading(`Action \`${action.message}\` multiple en cours ...`);
         const actionRequest: DocumentRequestAction = { document_ids: documents.map(d => d.id_d), action: action.action };
 
-        const t = this._httpDocumentService.performAction(id_e, actionRequest).pipe(
+        return this._httpDocumentService.performAction(id_e, actionRequest).pipe(
             map((result: ActionResult) => {
                 if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
                     const url_return = `/retour-tdt?id_e=${id_e}&id_d[]=${documents.map(d => d.id_d).join('&id_d[]=')}`;
@@ -183,19 +168,6 @@ export class DocumentService {
             })
 
         )
-        return t;
-
-        // this._httpDocumentService.performAction(id_e, actionRequest).subscribe({
-        //     next: (result: ActionResult) => {
-        //         if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
-        //             const url_return = `/retour-tdt?id_e=${id_e}&id_d[]=${documents.map(d => d.id_d).join('&id_d[]=')}`;
-        //             this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
-        //         } else {
-        //             const redirect = { route: ['/org', id_e.toString()], params: { type: documents[0].type } } as RedirectModal;
-        //             this._loadingService.showSuccess("Action terminé", redirect)
-        //         }
-        //     },
-        // })
     }
 
     /**
