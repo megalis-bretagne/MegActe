@@ -162,9 +162,17 @@ export class DocumentListComponent implements OnInit {
         this.loadingService.showLoading("Chargement du document en cours");
         this._router.navigate(['/org', this.entiteSelected().id_e, 'acte', document.id_d]);
       } else {
-        this.documentService.redirectEditToPastell(document);
+        this.documentService.redirectToPastell(document);
       }
     }
+  }
+
+  canNotEdit(document: DocumentInfo): boolean {
+    return !this.documentService.canEdit(document);
+  }
+
+  consultDoc(document: DocumentInfo): void {
+    this.documentService.redirectToPastell(document);
   }
 
 

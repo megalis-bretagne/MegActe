@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { ActionPossible, ActionPossibleEnum, BaseDocumentInfo, DocCreateInfo, DocumentDetail, DocumentInfo, DocumentPaginate, DocumentRequestAction, DocUpdateInfo } from '../model/document.model';
+import { ActionPossible, ActionPossibleEnum, BaseDocumentInfo, DocCreateInfo, DocumentActionDetails, DocumentDetail, DocumentInfo, DocumentPaginate, DocumentRequestAction, DocUpdateInfo } from '../model/document.model';
 import { HttpDocumentService } from './http/http-document.service';
 import { NGXLogger } from 'ngx-logger';
 import { LoadingService } from './loading.service';
@@ -50,8 +50,8 @@ export class DocumentService {
     /**
     * Redirige l'edition du document vers Pastell
     */
-    redirectEditToPastell(document: DocumentInfo): void {
-        this._httpDocumentService.redirectEditToPastell(document)
+    redirectToPastell(document: DocumentInfo): void {
+        this._httpDocumentService.redirectToPastell(document)
     }
 
 
@@ -254,7 +254,7 @@ export class DocumentService {
     /**
      * Indique si le document est modifiable
      */
-    canEdit(document: DocumentDetail): boolean {
+    canEdit(document: DocumentActionDetails): boolean {
         return (document.last_action === ActionPossibleEnum.Modification || document.last_action === ActionPossibleEnum.Creation);
     }
 
