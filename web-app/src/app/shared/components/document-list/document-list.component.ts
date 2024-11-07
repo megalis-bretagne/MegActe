@@ -220,9 +220,10 @@ export class DocumentListComponent implements OnInit {
       this.confirmDeleteDocuments([document]);
     } else if (action.action === ActionPossibleEnum.Modification) {
       this.goUpdateDoc(document);
-    }
-    else {
-      this.documentService.launchActionOnDocument(this.entiteSelected().id_e, document, action)
+    } else {
+      this.documentService.launchActionOnDocument(this.entiteSelected().id_e, document, action).subscribe({
+        complete: () => { this.loadingService.hideLoading(); this._refreshPage(); }
+      })
     }
   }
 
@@ -231,8 +232,16 @@ export class DocumentListComponent implements OnInit {
     if (action.action === ActionPossibleEnum.Suppression) {
       this.confirmDeleteDocuments(documents);
     } else {
-      this.documentService.launchActionOnMultiDocuments(this.entiteSelected().id_e, documents, action)
+      this.documentService.launchActionOnMultiDocuments(this.entiteSelected().id_e, documents, action).subscribe({
+        complete: () => { this.loadingService.hideLoading(); this._refreshPage(); }
+      })
     }
+  }
+
+  private _refreshPage() {
+    const idFlux = this.fluxSelected() !== null ? this.fluxSelected().id : null;
+    this.multiAction.set([]);
+    this._loadDataPage(idFlux, this.pageActive())
   }
 
   private _loadDataPage(idflux: string, page: number = 1) {
