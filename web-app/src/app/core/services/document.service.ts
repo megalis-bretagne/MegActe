@@ -3,7 +3,7 @@ import { ActionPossible, ActionPossibleEnum, BaseDocumentInfo, DocCreateInfo, Do
 import { HttpDocumentService } from './http/http-document.service';
 import { NGXLogger } from 'ngx-logger';
 import { LoadingService } from './loading.service';
-import { catchError, concatMap, Observable, of, switchMap, tap, timer } from 'rxjs';
+import { catchError, concatMap, map, Observable, of, switchMap, tap, timer } from 'rxjs';
 import { ExternalDataObject, HttpFluxService } from './http/http-flux.service';
 import { ActionResult } from '../model/flux-action.model';
 import { RedirectModal } from '../model/modal.model';
@@ -130,20 +130,36 @@ export class DocumentService {
      * @param params autre paramètre pour gérer les actions éventuelles
      * 
      */
-    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible): void {
+    launchActionOnDocument(id_e: number, document: BaseDocumentInfo, action: ActionPossible): Observable<ActionResult | null> {
         this._loadingService.showLoading(`Action \`${action.message}\` en cours ...`);
         const actionRequest: DocumentRequestAction = { document_ids: document.id_d, action: action.action };
-        this._httpDocumentService.performAction(id_e, actionRequest).subscribe({
-            next: (result: ActionResult) => {
+        const t = this._httpDocumentService.performAction(id_e, actionRequest).pipe(
+            map((result: ActionResult) => {
+                console.log("dans le map de launch");
                 if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
                     const url_return = `/retour-tdt?id_e=${id_e}&id_d=${document.id_d}&error=%%ERROR%%&message=%%MESSAGE%%`;
                     this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
-                } else {
-                    const redirect = { route: ['/org', id_e.toString()], params: { type: document.type } } as RedirectModal;
-                    this._loadingService.showSuccess("Action terminé", redirect)
+                    return null;
                 }
-            },
-        })
+                return result
+            })
+
+        )
+        return t;
+
+
+
+        // this._httpDocumentService.performAction(id_e, actionRequest).subscribe({
+        //     next: (result: ActionResult) => {
+        //         if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
+        //             const url_return = `/retour-tdt?id_e=${id_e}&id_d=${document.id_d}&error=%%ERROR%%&message=%%MESSAGE%%`;
+        //             this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
+        //         } else {
+        //             const redirect = { route: ['/org', id_e.toString()], params: { type: document.type } } as RedirectModal;
+        //             this._loadingService.showSuccess("Action terminé", redirect)
+        //         }
+        //     },
+        // })
     }
 
     /**
@@ -152,20 +168,34 @@ export class DocumentService {
      * @param documents 
      * @param action 
      */
-    launchActionOnMultiDocuments(id_e: number, documents: BaseDocumentInfo[], action: ActionPossible): void {
+    launchActionOnMultiDocuments(id_e: number, documents: BaseDocumentInfo[], action: ActionPossible): Observable<ActionResult | null> {
         this._loadingService.showLoading(`Action \`${action.message}\` multiple en cours ...`);
         const actionRequest: DocumentRequestAction = { document_ids: documents.map(d => d.id_d), action: action.action };
-        this._httpDocumentService.performAction(id_e, actionRequest).subscribe({
-            next: (result: ActionResult) => {
+
+        const t = this._httpDocumentService.performAction(id_e, actionRequest).pipe(
+            map((result: ActionResult) => {
                 if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
                     const url_return = `/retour-tdt?id_e=${id_e}&id_d[]=${documents.map(d => d.id_d).join('&id_d[]=')}`;
                     this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
-                } else {
-                    const redirect = { route: ['/org', id_e.toString()], params: { type: documents[0].type } } as RedirectModal;
-                    this._loadingService.showSuccess("Action terminé", redirect)
+                    return null;
                 }
-            },
-        })
+                return result
+            })
+
+        )
+        return t;
+
+        // this._httpDocumentService.performAction(id_e, actionRequest).subscribe({
+        //     next: (result: ActionResult) => {
+        //         if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
+        //             const url_return = `/retour-tdt?id_e=${id_e}&id_d[]=${documents.map(d => d.id_d).join('&id_d[]=')}`;
+        //             this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);
+        //         } else {
+        //             const redirect = { route: ['/org', id_e.toString()], params: { type: documents[0].type } } as RedirectModal;
+        //             this._loadingService.showSuccess("Action terminé", redirect)
+        //         }
+        //     },
+        // })
     }
 
     /**

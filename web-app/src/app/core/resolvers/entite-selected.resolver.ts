@@ -2,7 +2,7 @@ import { inject } from "@angular/core";
 import { ActivatedRouteSnapshot, ResolveFn } from "@angular/router";
 import { UserContextService } from "../services/user-context.service";
 
-export const entiteSelectedResolver: ResolveFn<void> = (route, tmpRoute): void => {
+export const entiteSelectedResolver: ResolveFn<void> = (_route, tmpRoute): void => {
     const userContexteService = inject(UserContextService);
     const allParams = getAllRouteParams(tmpRoute.root);
     const ide = allParams['ide'] || null; // Récupère le paramètre :ide
@@ -12,9 +12,6 @@ export const entiteSelectedResolver: ResolveFn<void> = (route, tmpRoute): void =
     } else {
         userContexteService.setEntiteSelected(userContexteService.userCurrent().entite);
     }
-
-    const type_flux = route.queryParams['type'] || null;
-    userContexteService.selectCurrentFlux(type_flux);
 }
 
 export const getAllRouteParams = (route: ActivatedRouteSnapshot): { [key: string]: string } | null => {
