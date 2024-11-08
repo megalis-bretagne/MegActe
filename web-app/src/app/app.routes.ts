@@ -12,6 +12,7 @@ export const routes: Routes = [
         path: '',
         canActivate: [AuthGuardService],  // Applique la guard à toutes les routes enfants
         resolve: { entiteSelected: entiteSelectedResolver },
+        runGuardsAndResolvers: 'always',
         children: [
             {
                 path: '',

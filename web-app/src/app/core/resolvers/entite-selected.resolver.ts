@@ -6,6 +6,16 @@ export const entiteSelectedResolver: ResolveFn<void> = (_route, tmpRoute): void 
     const userContexteService = inject(UserContextService);
     const allParams = getAllRouteParams(tmpRoute.root);
     const ide = allParams['ide'] || null; // Récupère le paramètre :ide
+    console.log("entiteSelectedResolver");
+
+    if (ide === null || Number(ide) <= 0) { // si ide est null ou < 0
+        userContexteService.setEntiteSelected(userContexteService.userCurrent().entite);
+        return;
+    }
+    const actualEntiteSelected = userContexteService.entiteSelected();
+
+    if (actualEntiteSelected && actualEntiteSelected.id_e === Number(ide)) return; // si pas de changement on sort
+
     const entite = userContexteService.findEntiteById(Number(ide));
     if (entite) {
         userContexteService.setEntiteSelected(entite);
