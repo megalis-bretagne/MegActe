@@ -116,6 +116,4 @@ export class HttpDocumentService {
     redirectToPastell(document: DocumentInfo): void {
         window.open(`${this._settingsService.settings.pastellUrl}/Document/detail?id_d=${document.id_d}&id_e=${document.id_e}`, '_blank')
     }
-
-
 }
