@@ -158,7 +158,7 @@ export class DocumentListComponent implements OnInit {
     const flux = this.userContextService.userFlux();
     if (document.type) {
       const acte = flux.find(f => f.id === document.type);
-      if (acte.enable) { // si le flux est activé dans megacte
+      if (acte?.enable) { // si le flux est activé dans megacte
         this.loadingService.showLoading("Chargement du document en cours");
         this._router.navigate(['/org', this.entiteSelected().id_e, 'acte', document.id_d]);
       } else {
