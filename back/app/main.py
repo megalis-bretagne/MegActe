@@ -23,6 +23,4 @@ app.include_router(flux.router, dependencies=[Depends(validate_token)])
 app.include_router(documents.router, dependencies=[Depends(validate_token)])
 app.include_router(entite.router, dependencies=[Depends(validate_token)])
 app.include_router(connecteurs.router, dependencies=[Depends(validate_token)])
-
-
 app.include_router(health.router)
