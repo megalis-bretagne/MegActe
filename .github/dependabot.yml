@@ -2,10 +2,10 @@ version: 2
 updates:
   # Mise à jour des dépendances Python
   - package-ecosystem: "pip"
-    directory: "/"
+    directory: "/back"
     open-pull-requests-limit: 20
     schedule:
-      interval: "daily"
+      interval: "weekly"
     labels:
       - "dependencies"
       - "python"
