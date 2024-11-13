@@ -58,7 +58,7 @@ alembic upgrade head
 
 Dans le dossier back :
 ``` 
-uvicorn app.main:app --host <HOST> --port <PORT> --reload
+fastapi run app/maing.py --port <PORT>
 ```
 
 ## Accès au swagger
