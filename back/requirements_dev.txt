@@ -16,5 +16,5 @@ pytest==8.3.2
     # via
     #   -r requirements_dev.in
     #   pytest-cov
-pytest-cov==5.0.0
+pytest-cov==6.0.0
     # via -r requirements_dev.in
