@@ -2,27 +2,26 @@ version: 2
 updates:
   # Mise à jour des dépendances Python
   - package-ecosystem: "pip"
-    directory: "/"
-    open-pull-requests-limit: 20
+    directory: "/back"
+    open-pull-requests-limit: 5
     schedule:
-      interval: "daily"
+      interval: "weekly"
     labels:
       - "dependencies"
       - "python"
-    groups:
-      all-python-packages:
-        patterns:
-          - "*"
+      - "backend"
+      - "dependabot"
 
   # Mise à jour des dépendances npm
   - package-ecosystem: "npm"
     directory: "/web-app"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 20
+    open-pull-requests-limit: 3
     labels:
       - "dependencies"
       - "javascript"
+      - "dependabot"
     ignore: 
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
