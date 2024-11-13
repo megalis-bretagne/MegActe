@@ -1,4 +1,4 @@
-fastapi~=0.111.0
+fastapi~=0.115.5
 PyJWT~=2.8.0
 uvicorn~=0.30.6
 pyyaml~=6.0.2
