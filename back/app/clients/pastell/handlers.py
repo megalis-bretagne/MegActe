@@ -17,15 +17,15 @@ def _handle_httperr_40X(f):
         try:
             return f(*args, **kwargs)
         except HTTPError as e:
-            data = e.response.json()
-            api_error_response = ApiErrorResponse.from_json(data)
-            logger.debug(
-                f"L'API pastell retourne une erreur {e.response.status_code}, message {api_error_response.error_message}, request {e.request.url}"
-            )
             if e.response.status_code >= 400 and e.response.status_code < 500:
+                data = e.response.json()
+                api_error_response = ApiErrorResponse.from_json(data)
+                logger.debug(
+                    f"L'API pastell retourne une erreur {e.response.status_code}, message {api_error_response.error_message}, request {e.request.url}"
+                )
                 raise ApiHttp40XError(e.response.status_code, api_error_response)
             else:
-                raise e
+                raise
 
     return inner
 
