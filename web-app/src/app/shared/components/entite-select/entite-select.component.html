@@ -46,7 +46,12 @@
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M5 12h14M5 12l4-4m-4 4 4 4" />
             </svg>
+
+            @if(parent.id_e > 0) {
             Revenir à l'entité {{parent.denomination}}
+            } @else {
+            Revenir à la liste de toutes les entités
+            }
         </a>
         }
         }

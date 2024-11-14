@@ -96,7 +96,7 @@ export class UserContextService {
   public getParentPathEntite(entite: EntiteInfo): EntiteInfo[] {
     if (entite.id_e === UserContextService.ID_E_MERE) return [];
     if (entite.id_e === this.userCurrent().entite.id_e) return [];
-    return this._findEntiteInPath(entite.id_e, this.userCurrent().entite.child).parents || [];
+    return this._findEntiteInPath(entite.id_e, this.userCurrent().entite.child, [this.userCurrent().entite]).parents || [];
   }
 
   /**
