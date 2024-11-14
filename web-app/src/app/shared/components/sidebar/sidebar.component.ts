@@ -61,7 +61,7 @@ export class SidebarComponent implements OnInit {
       doc_info: {}
     };
 
-    this._documentService.createDocument(this.userCurrent().user_info.id_e, docCreateInfo).subscribe({
+    this._documentService.createDocument(this.entiteSelected().id_e, docCreateInfo).subscribe({
       next: (response) => {
         const documentId = response.info.id_d;
         this._router.navigate(['/org', this.entiteSelected().id_e, 'acte', documentId]);
@@ -83,10 +83,6 @@ export class SidebarComponent implements OnInit {
     this.listType = Object.keys(this.groupedFlux);
 
   }
-
-  // go() {
-  //   this._router.navigate(['/org', this.entiteSelected().id_e], );
-  // }
 
   showSelectEntite(): void {
     this._modal.show();
