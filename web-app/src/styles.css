@@ -73,10 +73,10 @@ body {
        focus:border-blue-500 block w-full p-2.5;
     }
 
-    input.meg-text.invalid, select.meg-select.invalid {
+    input.meg-text.invalid, select.meg-select.invalid, button.meg.invalid {
         @apply bg-red-50 border border-red-500 text-alert rounded-lg focus:ring-red-500
     }
-    input.meg-text.valid, select.meg-select.valid {
+    input.meg-text.valid, select.meg-select.valid, button.meg.valid {
         @apply bg-green-50 border border-green-500 text-success rounded-lg focus:ring-green-500
     }
 
