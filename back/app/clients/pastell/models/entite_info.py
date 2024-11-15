@@ -21,7 +21,7 @@ class EntiteInfo(BaseModel):
     type: str
     entite_mere: int
     centre_de_gestion: str
-    is_active: bool
+    is_active: Optional[bool] = True
 
     @field_validator("id_e", "entite_mere", mode="before")
     def parse_int(cls, v: str):
