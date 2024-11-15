@@ -228,7 +228,7 @@ class DocumentDetail(BaseModel):
     data: Dict[str, Any]
 
     last_action: str = Field(validation_alias=AliasPath("last_action", "action"))
-    last_action_message: str = Field(validation_alias=AliasPath("last_action", "message"))
+    last_action_message: Optional[str] = Field(validation_alias=AliasPath("last_action", "message"), default="")
     last_action_date: str = Field(validation_alias=AliasPath("last_action", "date"))
     action_possible: list[ActionPossible] = []
 
