@@ -58,7 +58,7 @@
                     }
                     @case ('date') {
                     <meg-date-input [idField]="field.idField" [name]="field['name']" [required]="field['requis']"
-                        [default]="field['default']" [comment]="field['commentaire']"
+                        [default]="field['default'] ?? 'now'" [comment]="field['commentaire']"
                         [control]="getFormControl(field.idField)" />
                     }
                     @case ('file') {

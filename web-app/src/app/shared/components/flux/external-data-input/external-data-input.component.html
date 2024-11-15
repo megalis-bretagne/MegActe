@@ -12,18 +12,54 @@
     <p id="tooltip-helper-text" class="mt-0.5 text-xs text text-ellipsis whitespace-nowrap overflow-hidden"
         title="{{link_name}}">{{ link_name }}</p>
     }
-    <input class="meg-text" [ngClass]="{
-        'invalid': formControl.invalid && (formControl.dirty || formControl.touched),
-        'valid': formControl.valid && (formControl.dirty || formControl.touched)
-      }" [id]="controlId" type="text" [formControl]="formControl" [matAutocomplete]="auto" (input)="filter()"
-        (focus)="filter()" #autoCompleteInput />
-    <mat-autocomplete #auto="matAutocomplete" requireSelection class="fr-select">
-        @for (option of filteredOptions(); track $index) {
-        <mat-option [value]="option">
-            {{ option }}
-        </mat-option>
-        }
-    </mat-autocomplete>
+
+    <div class="relative">
+        <button [id]="controlId" [ngClass]="{
+            'invalid': formControl.invalid && (formControl.dirty || formControl.touched),
+            'valid': formControl.valid && (formControl.dirty || formControl.touched)
+          }"
+            class="meg bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg w-full px-3 py-2.5 text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
+            [attr.data-dropdown-toggle]="idMenu" type="button">
+            {{ formControl.value ? formControl.value : 'Sélectionnez une option' }}
+            <svg class="w-4 h-4 float-right" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+
+        <!-- Menu déroulant -->
+        <div [id]="idMenu"
+            class="hidden absolute z-10 w-full bg-white rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto">
+
+            <!-- Champ de recherche -->
+            <div class="p-2 relative">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                            d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+
+                    </svg>
+                </div>
+                <input #autoCompleteInput type="text" placeholder="Rechercher..." (input)="filter()" [title]="title"
+                    class="block w-full pl-10 px-3 py-2 text-sm text-gray-900 bg-gray-50 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+            </div>
+
+            <!-- Liste des options -->
+            <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
+                @for (option of filteredOptions(); track $index) {
+                <li>
+                    <button type="button"
+                        class="block w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600"
+                        (click)="selectOption(option)">
+                        {{ option }}
+                    </button>
+                </li>
+                }
+            </ul>
+        </div>
+    </div>
+
     @if (formControl.invalid && (formControl.dirty || formControl.touched)) {
     <p class="meg-error">
         Ce champ est requis.
