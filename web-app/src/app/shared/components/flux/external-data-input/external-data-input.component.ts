@@ -71,6 +71,7 @@ export class ExternalDataInputComponent extends BaseInputComponent implements On
 
   public filter(): void {
     const filterValue = this.input.nativeElement.value.toLowerCase();
+    console.log(filterValue);
     this.filteredOptions.set(this.externalDataOptions.filter(o => o.toLowerCase().includes(filterValue)));
   }
 
