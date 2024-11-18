@@ -1,27 +1,44 @@
+from enum import Enum
 from fastapi import HTTPException
 import logging
+from fastapi.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
 
 
-class MegActeException(HTTPException):
-    """Exception pour les erreurs de l'application.
+class ErrorCode(str, Enum):
+    """Liste des code d'erreurs
 
     Args:
-        HTTPException (HTTPException):  Classe de base pour les exceptions HTTP
+        Enum (_type_): _description_
     """
 
+    PASTELL_UNAVAILABLE = "PASTELL_UNAVAILABLE"
+    NO_RIGHT = "NO_RIGHT"
+    PASTELL_ERROR = "PASTELL_ERROR"
+    MEGACTE_ERROR = "MEGACTE_ERROR"
+    USER_NOT_REGISTER = "USER_NOT_REGISTER"
+
+
+class MegActeException(Exception):
+    """Exception pour les erreurs de l'application."""
+
     detail: str
+    code: ErrorCode
     status_code: int
 
-    def __init__(self, status_code: int = 400, detail: str = "Megacte Exception"):
+    def __init__(
+        self, status_code: int = 400, detail: str = "Megacte Exception", code: ErrorCode = ErrorCode.MEGACTE_ERROR
+    ):
         """Initialise une MegActeException.
 
         Args:
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "Decryption failed".
         """
         logging.error(f"{self.__class__.__name__} : {detail}")
-        super().__init__(status_code=status_code, detail=detail)
+        self.code = code
+        self.status_code = status_code
+        self.detail = detail
 
 
 class PastellException(MegActeException):
@@ -128,13 +145,13 @@ class UserNotFoundException(MegActeException):
         HTTPException (HTTPException): Classe de base pour les exceptions HTTP.
     """
 
-    def __init__(self, detail: str = "User not found"):
+    def __init__(self):
         """Initialise une UserNotFoundException.
 
         Args:
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "User not found".
         """
-        super().__init__(status_code=404, detail=detail)
+        super().__init__(status_code=404, detail="User not found", code=ErrorCode.USER_NOT_REGISTER)
 
 
 class UserRegistrationException(MegActeException):
@@ -167,3 +184,14 @@ class UserPasswordNullException(MegActeException):
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "User password is null".
         """
         super().__init__(status_code=400, detail=detail)
+
+
+class MegacteErrorResponse(JSONResponse):
+    """Modele de response en cas d'erreur
+
+    Args:
+        JSONResponse (_type_): _description_
+    """
+
+    def __init__(self, detail: str, code: ErrorCode, status_code: int):
+        super().__init__(status_code=status_code, content={"detail": detail, "code": code})

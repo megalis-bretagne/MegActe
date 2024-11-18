@@ -90,7 +90,7 @@ class UserService(BaseService):
         return {"message": "User deleted successfully"}
 
     # Get user context
-    def get_user_context_service(self, user: UserPastell):
+    def get_user_context_service(self, user: UserPastell) -> dict:
         """Récupère le contexte du user à partir de Pastell en utilisant le jeton Keycloak réceptionner côté API
 
         Args:

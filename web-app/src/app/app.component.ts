@@ -39,6 +39,7 @@ export class AppComponent implements OnInit {
 
   title = 'Megacte';
   userContexteService = inject(UserContextService);
+  currentUser = this.userContexteService.userCurrent;
   entiteSelected = this.userContexteService.entiteSelected;
   isSidebarVisible = true
 

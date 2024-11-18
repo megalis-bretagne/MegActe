@@ -57,10 +57,10 @@ export class AppInitService {
             }
         }).then(async () => { // chargement des infos de l'utilisateur et de son contexte
             try {
-                await firstValueFrom(this._userContextService.fetchUser());
-                await firstValueFrom(this._userContextService.fetchUserFlux());
+                await firstValueFrom(this._userContextService.initUserConnected());
             } catch (error) {
-                throw new Error("Une erreur s'est déroulée durant la récupération de l'utilisateur et des flux", error);
+                console.log(error);
+                // TODO display erreur chargement application
             }
         });
     }

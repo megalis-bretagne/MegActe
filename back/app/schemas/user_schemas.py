@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from ..clients.pastell.models.user_info import UserInfo
+
 
 class UserCreate(BaseModel):
     """

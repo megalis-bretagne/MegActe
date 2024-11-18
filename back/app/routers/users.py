@@ -24,7 +24,6 @@ router = APIRouter()
 @router.get(
     "/user",
     tags=["users"],
-    response_model=dict,
     description="Récupère les informations de l'utilisateur connecté",
 )
 def get_user(
