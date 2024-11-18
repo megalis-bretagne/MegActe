@@ -4,6 +4,10 @@ import { UserContextService } from "../services/user-context.service";
 
 export const entiteSelectedResolver: ResolveFn<void> = (_route, tmpRoute): void => {
     const userContexteService = inject(UserContextService);
+
+    if (userContexteService.userCurrent() === null)
+        return;
+
     const allParams = getAllRouteParams(tmpRoute.root);
     const ide = allParams['ide'] || null; // Récupère le paramètre :ide
 

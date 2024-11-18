@@ -1,7 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { NGXLogger } from 'ngx-logger';
-import { Observable, catchError, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { UserHttpResponse } from 'src/app/core/model/user.model';
 import { SettingsService } from 'src/environments/settings.service';
 import { Flux } from '../../model/flux.model';
@@ -20,27 +19,16 @@ import { Flux } from '../../model/flux.model';
 })
 export class HttpUserService {
 
-    private readonly _logger = inject(NGXLogger);
     private readonly _http = inject(HttpClient);
     private readonly _settingsService = inject(SettingsService);
 
 
     public getUser(): Observable<UserHttpResponse> {
-        return this._http.get<UserHttpResponse>(this._settingsService.apiUrl + '/user').pipe(
-            catchError((error) => {
-                this._logger.error('Error fetching user context' + error);
-                return of(void 0);
-            })
-        )
+        return this._http.get<UserHttpResponse>(this._settingsService.apiUrl + '/user')
     }
 
     public getUserFlux(): Observable<{ [key: string]: Flux }> {
-        return this._http.get<{ [key: string]: Flux }>(this._settingsService.apiUrl + '/user/flux').pipe(
-            catchError((error) => {
-                this._logger.error('Error fetching user flux', error);
-                return of(void 0);
-            })
-        );
+        return this._http.get<{ [key: string]: Flux }>(this._settingsService.apiUrl + '/user/flux')
     }
 
 }

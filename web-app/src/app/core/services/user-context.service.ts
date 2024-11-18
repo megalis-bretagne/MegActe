@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of } from 'rxjs';
 import { EntiteInfo, UserContext, UserHttpResponse } from 'src/app/core/model/user.model';
 import { Flux } from '../model/flux.model';
 import { HttpUserService } from './http/http-user.service';
@@ -42,18 +42,24 @@ export class UserContextService {
    */
   fluxSelected = signal<Flux | null>(null)
 
-
-  public fetchUser(): Observable<void> {
-    return this._httpUserService.getUser().pipe(
-      map((res: UserHttpResponse) => {
+  /**
+   * Service qui lance l'initialisation des informations de l'utilisateur connecté
+   * @returns 
+   */
+  public initUserConnected(): Observable<void> {
+    return forkJoin({ user: this._httpUserService.getUser(), flux: this._httpUserService.getUserFlux() }).pipe(
+      map((res: { user: UserHttpResponse, flux: { [key: string]: Flux } }) => {
         this._logger.info('Successfully fetched user context');
-        if (res.entites.length > 1) { // si plus d'une entité, on ajoute une racine fictive
-          const entite_mere = { id_e: UserContextService.ID_E_MERE, denomination: "Sélectionner une entité", entite_mere: 0, siren: "", type: "", child: res.entites } as EntiteInfo;
-          this.userCurrent.set({ user_info: res.user_info, entite: entite_mere } as UserContext);
+        if (res.user.entites.length > 1) { // si plus d'une entité, on ajoute une racine fictive
+          const entite_mere = { id_e: UserContextService.ID_E_MERE, denomination: "Sélectionner une entité", entite_mere: 0, siren: "", type: "", child: res.user.entites } as EntiteInfo;
+          this.userCurrent.set({ user_info: res.user.user_info, entite: entite_mere } as UserContext);
         } else {
-          this.userCurrent.set({ user_info: res.user_info, entite: res.entites[0] ?? undefined } as UserContext);
+          this.userCurrent.set({ user_info: res.user.user_info, entite: res.user.entites[0] ?? undefined } as UserContext);
         }
-      }),
+        const actes: Flux[] = Object.entries(res.flux).map(([key, value]) => ({ id: key, ...value }));
+        this.userFlux.set(actes);
+
+      })
     )
   }
 
@@ -61,15 +67,6 @@ export class UserContextService {
     return this.userCurrent().user_info.id_e === 0;
   }
 
-  public fetchUserFlux(): Observable<void> {
-    return this._httpUserService.getUserFlux().pipe(
-      map((data: { [key: string]: Flux }) => {
-        const actes: Flux[] = Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
-        this.userFlux.set(actes);
-      }
-      )
-    );
-  }
 
   public selectCurrentFlux(id_flux: string | null) {
     if (id_flux) this.fluxSelected.set(this.userFlux().find(acte => acte.id === id_flux));

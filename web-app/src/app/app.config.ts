@@ -8,13 +8,14 @@ import {
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from "@angular/platform-browser/animations/async";
-import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptors, withInterceptorsFromDi } from "@angular/common/http";
 import { AppInitService } from 'src/environments/app.init.service';
 import { KeycloakAngularModule, KeycloakBearerInterceptor, KeycloakService } from 'keycloak-angular';
 import { SettingsService } from 'src/environments/settings.service';
 import { UserContextService } from './core/services/user-context.service';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpErrorInterceptor } from './core/interceptors/http_error.interceptor';
 
 
 // Provider for Keycloak Bearer Interceptor
@@ -32,7 +33,7 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
     ),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withInterceptorsFromDi(), withInterceptors([HttpErrorInterceptor])),
     KeycloakAngularModule,
     keycloakBearerInterceptorProvider,
     KeycloakService,

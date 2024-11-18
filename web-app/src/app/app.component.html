@@ -1,6 +1,7 @@
 <meg-navbar />
 <main role="main">
     <div class="w-full overflow-hidden px-1">
+        @if(currentUser()) {
         <div class="flex relative">
             @if(isSidebarVisible && entiteSelected()) {
             <div class="md:w-3/12  sm:2/12 relative" @slideInOut>
@@ -32,6 +33,7 @@
                 <router-outlet />
             </div>
         </div>
+        }
 
     </div>
 </main>
