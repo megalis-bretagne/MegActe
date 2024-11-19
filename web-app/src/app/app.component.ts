@@ -7,12 +7,13 @@ import { ModalDialogComponent } from './shared/components/modal/meg-modal-dialog
 import { UserContextService } from './core/services/user-context.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { CommonModule } from '@angular/common';
+import { ErrorDisplayComponent } from './shared/components/error-component/error-display.component';
 
 
 @Component({
   selector: 'meg-root',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, NavbarComponent, RouterModule, ModalDialogComponent, CommonModule],
+  imports: [RouterOutlet, SidebarComponent, NavbarComponent, RouterModule, ModalDialogComponent, CommonModule, ErrorDisplayComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   animations: [
