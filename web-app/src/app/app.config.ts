@@ -15,7 +15,7 @@ import { SettingsService } from 'src/environments/settings.service';
 import { UserContextService } from './core/services/user-context.service';
 import { LoggerModule, NgxLoggerLevel } from 'ngx-logger';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpErrorInterceptor } from './core/interceptors/http_error.interceptor';
+import { httpErrorInterceptor } from './core/interceptors/http-error.interceptor';
 
 
 // Provider for Keycloak Bearer Interceptor
@@ -33,7 +33,7 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
     ),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptorsFromDi(), withInterceptors([HttpErrorInterceptor])),
+    provideHttpClient(withInterceptorsFromDi(), withInterceptors([httpErrorInterceptor])),
     KeycloakAngularModule,
     keycloakBearerInterceptorProvider,
     KeycloakService,

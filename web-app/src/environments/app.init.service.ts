@@ -58,9 +58,8 @@ export class AppInitService {
         }).then(async () => { // chargement des infos de l'utilisateur et de son contexte
             try {
                 await firstValueFrom(this._userContextService.initUserConnected());
-            } catch (error) {
-                console.log(error);
-                // TODO display erreur chargement application
+            } catch {
+                this._userContextService.userCurrent.set(null);
             }
         });
     }

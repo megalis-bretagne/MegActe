@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { NGXLogger } from 'ngx-logger';
-import { Observable, catchError, forkJoin, map, of } from 'rxjs';
+import { Observable, forkJoin, map } from 'rxjs';
 import { EntiteInfo, UserContext, UserHttpResponse } from 'src/app/core/model/user.model';
 import { Flux } from '../model/flux.model';
 import { HttpUserService } from './http/http-user.service';
@@ -58,7 +58,6 @@ export class UserContextService {
         }
         const actes: Flux[] = Object.entries(res.flux).map(([key, value]) => ({ id: key, ...value }));
         this.userFlux.set(actes);
-
       })
     )
   }

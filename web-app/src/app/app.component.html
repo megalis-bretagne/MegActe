@@ -1,6 +1,7 @@
 <meg-navbar />
 <main role="main">
     <div class="w-full overflow-hidden px-1">
+        <meg-error-display />
         @if(currentUser()) {
         <div class="flex relative">
             @if(isSidebarVisible && entiteSelected()) {
