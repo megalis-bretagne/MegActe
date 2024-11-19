@@ -37,6 +37,9 @@ class FluxService(BaseService):
                 db.execute(select(FluxAvailable.flux_id_pastell).where(FluxAvailable.enable == True)).scalars().all()
             )
 
+        if len(flux) == 0:
+            return {}
+
         filtered_flux = {
             flux_id: {**value, "enable": flux_id in flux_enable}
             for flux_id, value in flux.items()

@@ -14,22 +14,28 @@ class ApiError(Exception):
         self.errors = api_error_response.error_message
 
 
-class ApiHttp50XError(ApiError):
+class ApiPastellHttp50XError(ApiError):
     """Exception pour les 50X"""
 
     def __init__(self, api_error_response: ApiErrorResponse) -> None:
         super().__init__(HTTPStatus.INTERNAL_SERVER_ERROR, api_error_response)
 
 
-class ApiHttpForbidden(ApiError):
+class ApiPastellHttpForbidden(ApiError):
+    """Exception pour les problèmes d'accès"""
+
+    def __init__(self, api_error_response: ApiErrorResponse) -> None:
+        super().__init__(HTTPStatus.FORBIDDEN, api_error_response)
+
+
+class ApiPastellHttpNotAuthorized(ApiError):
     """Exception pour les problèmes de droits"""
 
     def __init__(self, api_error_response: ApiErrorResponse) -> None:
-        self.status_code = HTTPStatus.FORBIDDEN
-        super().__init__(api_error_response)
+        super().__init__(HTTPStatus.UNAUTHORIZED, api_error_response)
 
 
-class ApiHttp40XError(ApiError):
+class ApiPastellHttp40XError(ApiError):
     """Exception pour les 40X"""
 
     def __init__(self, status, api_error_response: ApiErrorResponse) -> None:

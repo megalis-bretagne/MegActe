@@ -4,7 +4,8 @@
         <meg-error-display />
         @if(currentUser()) {
         <div class="flex relative">
-            @if(isSidebarVisible && entiteSelected()) {
+            @if(entiteSelected()) {
+            @if(isSidebarVisible) {
             <div class="md:w-3/12  sm:2/12 relative" @slideInOut>
                 <button type="button" (click)="toogleNavBar()" aria-label="Masquer la navigation"
                     title="Masquer la navigation"
@@ -33,9 +34,13 @@
                 [ngClass]="{'w-full': !isSidebarVisible, 'md:w-9/12': isSidebarVisible, 'sm:w-10/12': isSidebarVisible}">
                 <router-outlet />
             </div>
+            }
+            @else {
+            <meg-error-display [closable]="false"
+                [message]="'Aucune entité n\'est rattaché à votre compte. Merci de contacter votre administrateur Pastell'" />
+            }
         </div>
         }
-
     </div>
 </main>
 <meg-modal-dialog />

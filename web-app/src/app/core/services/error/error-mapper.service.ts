@@ -10,6 +10,15 @@ export class ErrorMapperService {
             translatedMessage: 'L’utilisateur n’est pas enregistré ou n’a pas les droits d’utiliser le service.',
             closable: false,
         },
+        PASTELL_NO_RIGHT: {
+            translatedMessage: 'Vous n’avez pas l’autorisation pour effectuer cette action dans Pastell.',
+            closable: true,
+            formatMessage: (detail: string) => `Vous n’avez pas les droits pour effectuer l'action : ${detail}`,
+        },
+        MEGACTE_CREATE_DOCUMENT_NO_RIGHT: {
+            translatedMessage: 'Vous n’avez pas l’autorisation de créer de document dans Pastell.',
+            closable: true,
+        },
         DEFAULT: {
             translatedMessage: 'Une erreur inattendue est survenue. Merci de contacter votre administrateur.',
             closable: true,

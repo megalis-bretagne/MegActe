@@ -34,7 +34,7 @@ def add_acte_doc(
     doc: DocCreateInfo,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return client.perform_post(f"/entite/{entite_id}/document", data={"type": doc.flux_type})
+    return DocumentService(client).create_document(entite_id, doc.flux_type)
 
 
 # Update doc
