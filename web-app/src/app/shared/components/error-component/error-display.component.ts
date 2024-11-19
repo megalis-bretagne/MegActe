@@ -1,5 +1,6 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import { ErrorHandlerService } from 'src/app/core/services/error/error-handler.service';
+import { UserContextService } from 'src/app/core/services/user-context.service';
 
 @Component({
     selector: 'meg-error-display',
@@ -28,12 +29,25 @@ import { ErrorHandlerService } from 'src/app/core/services/error/error-handler.s
 })
 export class ErrorDisplayComponent {
     private readonly _errorHandler = inject(ErrorHandlerService);
+    private readonly _userService = inject(UserContextService);
+
+    message = input<string | null>(null);
+    closable = input<boolean | null>(null);
+
 
     errorMessage = computed(() => {
+        if (this.message())
+            return this.message();
         return this._errorHandler.error$();
     })
 
     isClosable = computed(() => {
+        if (this._userService.userCurrent() === null)
+            return false;
+
+        if (this.closable() !== null)
+            return this.closable();
+
         return this._errorHandler.isClosable$();
     })
 

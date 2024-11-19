@@ -1,7 +1,8 @@
+from ..clients.pastell.exeptions import ApiPastellHttpForbidden
 from ..schemas.flux_action import FluxAction
 from ..services.flux_action_service import FluxActionService
 from . import BaseService
-from ..exceptions.custom_exceptions import EntiteIdException
+from ..exceptions.custom_exceptions import EntiteIdException, ErrorCode, MegActeException
 from ..schemas.document_schemas import ActionDocument, ActionPossible, DocumentDetail, DocumentInfo
 import logging
 from app.dependencies import get_settings
@@ -53,6 +54,14 @@ class DocumentService(BaseService):
                 action.message = flux_action.actions[action.action].name_action
 
         return document
+
+    def create_document(self, id_e: int, flux: str):
+        try:
+            return self.api_pastell.perform_post(f"/entite/{id_e}/document", data={"type": flux})
+        except ApiPastellHttpForbidden as e:
+            raise MegActeException(
+                e.status_code, detail="Can not create document", code=ErrorCode.MEGACTE_CREATE_DOCUMENT_NO_RIGHT
+            )
 
     def list_documents_paginate(self, id_e: int, doc_type=None, offset=0, limit=100, **kwargs) -> list[DocumentInfo]:
         """Retourne la liste des documents paginer

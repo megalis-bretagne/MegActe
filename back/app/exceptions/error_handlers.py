@@ -1,21 +1,27 @@
 from fastapi import Request, FastAPI
-from ..clients.pastell.exeptions import ApiHttp40XError, ApiHttp50XError, ApiHttpForbidden
+from ..clients.pastell.exeptions import (
+    ApiPastellHttp40XError,
+    ApiPastellHttp50XError,
+    ApiPastellHttpForbidden,
+    ApiPastellHttpNotAuthorized,
+)
 
 from .custom_exceptions import MegActeException, ErrorCode, MegacteErrorResponse
 
 
 def add_exception_handlers(app: FastAPI):
 
-    @app.exception_handler(ApiHttp40XError)
-    async def api_pastell_exception(request: Request, exc: ApiHttp40XError):
+    @app.exception_handler(ApiPastellHttp40XError)
+    async def api_pastell_exception(request: Request, exc: ApiPastellHttp40XError):
         return MegacteErrorResponse(exc.errors, ErrorCode.PASTELL_ERROR, exc.status_code)
 
-    @app.exception_handler(ApiHttpForbidden)
-    async def api_pastell_exception(request: Request, exc: ApiHttpForbidden):
-        return MegacteErrorResponse(exc.errors, ErrorCode.NO_RIGHT, exc.status_code)
+    @app.exception_handler(ApiPastellHttpForbidden)
+    @app.exception_handler(ApiPastellHttpNotAuthorized)
+    async def api_pastell_exception(request: Request, exc: ApiPastellHttpForbidden | ApiPastellHttpNotAuthorized):
+        return MegacteErrorResponse(exc.errors, ErrorCode.PASTELL_NO_RIGHT, exc.status_code)
 
-    @app.exception_handler(ApiHttp50XError)
-    async def api_pastell_exception(request: Request, exc: ApiHttp50XError):
+    @app.exception_handler(ApiPastellHttp50XError)
+    async def api_pastell_exception(request: Request, exc: ApiPastellHttp50XError):
         return MegacteErrorResponse(exc.errors, ErrorCode.PASTELL_UNAVAILABLE, exc.status_code)
 
     @app.exception_handler(MegActeException)

@@ -77,7 +77,8 @@ export class UserContextService {
    * @param newEntite
    */
   public setEntiteSelected(newEntite: EntiteInfo): void {
-    this.entiteSelected.set(newEntite);
+    if (newEntite) this.entiteSelected.set(newEntite);
+    else this.entiteSelected.set(null);
   }
 
   public findEntiteById(id_e: number): EntiteInfo | null {

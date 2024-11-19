@@ -7,7 +7,12 @@ from . import logger
 from requests import HTTPError
 
 
-from .exeptions import ApiHttp40XError, ApiHttp50XError, ApiHttpForbidden
+from .exeptions import (
+    ApiPastellHttp40XError,
+    ApiPastellHttp50XError,
+    ApiPastellHttpForbidden,
+    ApiPastellHttpNotAuthorized,
+)
 
 
 def _handle_httperr_40X(f):
@@ -25,9 +30,12 @@ def _handle_httperr_40X(f):
                     f"L'API pastell retourne une erreur {e.response.status_code}, message {api_error_response.error_message}, request {e.request.url}"
                 )
                 if e.response.status_code == HTTPStatus.FORBIDDEN:
-                    raise ApiHttpForbidden(api_error_response)
+                    raise ApiPastellHttpForbidden(api_error_response)
 
-                raise ApiHttp40XError(e.response.status_code, api_error_response)
+                if e.response.status_code == HTTPStatus.UNAUTHORIZED:
+                    raise ApiPastellHttpNotAuthorized(api_error_response)
+
+                raise ApiPastellHttp40XError(e.response.status_code, api_error_response)
             else:
                 raise
 
@@ -42,10 +50,10 @@ def _handle_httperr_50X(f):
         try:
             return f(*args, **kwargs)
         except HTTPError as e:
-            if e.response.status_code >= 500:
+            if e.response.status_code >= HTTPStatus.INTERNAL_SERVER_ERROR:
                 error_response = ApiErrorResponse(status=HTTPError, error_message=e.response.text)
                 logger.error(f"L'API pastell retourne une erreur {e.response.status_code}, request {e.request.url}")
-                raise ApiHttp50XError(e.response.status_code, error_response)
+                raise ApiPastellHttp50XError(e.response.status_code, error_response)
             else:
                 raise
 

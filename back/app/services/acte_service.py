@@ -1,8 +1,9 @@
+from http import HTTPStatus
 from ..schemas.flux_action import ActionResult
 from ..services.tdt_service import TdtService
 from ..schemas.document_schemas import ActionDocument, DocumentDetail
 from . import BaseService
-from ..exceptions.custom_exceptions import PastellException
+from ..exceptions.custom_exceptions import ErrorCode, MegActeException, PastellException
 import logging
 
 logger = logging.getLogger(__name__)
@@ -38,9 +39,10 @@ class ActeService(BaseService):
 
         actions = response.get("action_possible", [])
         if action not in actions:
-            raise PastellException(
-                status_code=400,
-                detail=f"Action '{action}' not possible for document {document_id}",
+            raise MegActeException(
+                status_code=HTTPStatus.FORBIDDEN,
+                code=ErrorCode.PASTELL_NO_RIGHT,
+                detail=f"Action '{action}' impossible pour le document {document_id}",
             )
 
         if action == ActionDocument.teletransmission_tdt:

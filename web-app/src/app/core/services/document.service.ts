@@ -135,7 +135,6 @@ export class DocumentService {
         const actionRequest: DocumentRequestAction = { document_ids: document.id_d, action: action.action };
         return this._httpDocumentService.performAction(id_e, actionRequest).pipe(
             map((result: ActionResult) => {
-                console.log("dans le map de launch");
                 if (action.action === ActionPossibleEnum.Teletransmission_TDT && result.data.url) {
                     const url_return = `/retour-tdt?id_e=${id_e}&id_d=${document.id_d}&error=%%ERROR%%&message=%%MESSAGE%%`;
                     this._redirectTdt(`${result.data.url}&url_return=${window.location.protocol}//${window.location.host}${encodeURIComponent(url_return)}`);

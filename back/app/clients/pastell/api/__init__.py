@@ -63,6 +63,9 @@ class ApiPastell:
         count_response = self.perform_get("document/count", auth=auth, query_params=query_param)
         total = 0
 
+        if len(count_response) == 0:
+            return 0
+
         for _, value in count_response[str(id_e)]["flux"].items():
             if not isinstance(value, list):
                 try:

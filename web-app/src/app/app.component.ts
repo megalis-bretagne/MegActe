@@ -9,7 +9,6 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { CommonModule } from '@angular/common';
 import { ErrorDisplayComponent } from './shared/components/error-component/error-display.component';
 
-
 @Component({
   selector: 'meg-root',
   standalone: true,
@@ -43,6 +42,7 @@ export class AppComponent implements OnInit {
   currentUser = this.userContexteService.userCurrent;
   entiteSelected = this.userContexteService.entiteSelected;
   isSidebarVisible = true
+
 
 
   ngOnInit() {
