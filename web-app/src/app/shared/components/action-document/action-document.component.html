@@ -1,7 +1,7 @@
 @if(isEnable()) {
 @if(modeIcon()) {
 <a [title]="message()" (click)="runAction()" [ngClass]="getStyle()">
-    <svg class="w-5 h-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    <svg class="w-6 h-6 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
         stroke="currentColor" aria-hidden="true">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             [attr.d]="getSvg()" />
