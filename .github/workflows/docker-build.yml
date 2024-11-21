@@ -1,0 +1,39 @@
+name: Build docker
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+    workflow_run:
+      workflows: [Build app]
+      branches: [main,'v*.*.*' ]
+      types: [completed] # se lance uniquement sur la default branch
+
+permissions:
+  contents: read
+  id-token: write
+  packages: write
+
+
+jobs:
+
+  build-docker-web-app :
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/build-push-docker.yml
+    with:
+      context: .
+      dockerfile: ./docker/web/Dockerfile
+      image-name: ${{ github.repository_owner }}/megacte-web
+      artifact: web-app-dist
+      path-artifact: web-app/dist
+      run-id : ${{ github.event.workflow_run.id }}
+
+  build-docker-back:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    uses: ./.github/workflows/build-push-docker.yml
+    with:
+      context: back
+      dockerfile: ./docker/back/Dockerfile
+      image-name: ${{ github.repository_owner }}/megacte-back

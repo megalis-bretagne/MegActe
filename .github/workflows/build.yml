@@ -7,34 +7,19 @@ name: Build app
 
 on:
   push:
-    branches: ["main"]
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
+    paths:
+      - ".github/workflows/**"
+      - "back/**"
+      - "web-app/**"
+      - "docker/**"
   pull_request:
-      # The branches below must be a subset of the branches above
-      branches: [ "main"]
-
-permissions:
-  contents: read
-  id-token: write
-  packages: write
-
+    paths:
+      - ".github/workflows/**"
+      - "back/**"
+      - "web-app/**"
+      - "docker/**"
 
 jobs:
-  Analyse-code:
-    name: Analyse Code
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@main
-
-      - name: Run Codacy Analysis CLI
-        uses: codacy/codacy-analysis-cli-action@v4.4.5
-        with:
-          project-token: ${{ secrets.NEW_CODACY }}
-          upload: true
-          max-allowed-issues: 1000
-          verbose: true
   
   unit-test-py:
     name: Unit Test Python
@@ -119,20 +104,20 @@ jobs:
           path: web-app/dist
 
 
-  build-docker-web-app :
-    uses: ./.github/workflows/build-push-docker.yml
-    needs: build-angular
-    with:
-      context: .
-      dockerfile: ./docker/web/Dockerfile
-      image-name: ${{ github.repository_owner }}/megacte-web
-      artifact: web-app-dist
-      path-artifact: web-app/dist
+  # build-docker-web-app :
+  #   uses: ./.github/workflows/templates/build-push-docker.yml
+  #   needs: build-angular
+  #   with:
+  #     context: .
+  #     dockerfile: ./docker/web/Dockerfile
+  #     image-name: ${{ github.repository_owner }}/megacte-web
+  #     artifact: web-app-dist
+  #     path-artifact: web-app/dist
 
-  build-docker-back:
-    uses: ./.github/workflows/build-push-docker.yml
-    needs: unit-test-py
-    with:
-      context: back
-      dockerfile: ./docker/back/Dockerfile
-      image-name: ${{ github.repository_owner }}/megacte-back
+  # build-docker-back:
+  #   uses: ./.github/workflows/templates/build-push-docker.yml
+  #   needs: unit-test-py
+  #   with:
+  #     context: back
+  #     dockerfile: ./docker/back/Dockerfile
+  #     image-name: ${{ github.repository_owner }}/megacte-back

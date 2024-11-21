@@ -12,12 +12,15 @@ on:
       dockerfile: #chemin du dockerfile
         type: string
         required: true
-      artifact: # si renseigné, indique qu'on télécharge un artifact avec actions/download-artifact@v3
+      artifact: # si renseigné, indique qu'on télécharge un artifact avec actions/download-artifact@v4
         type: string
         required: false
-      path-artifact: # si renseigné, indique qu'on télécharge un artifact avec actions/download-artifact@v3
+      path-artifact: # si renseigné, indique qu'on télécharge un artifact avec actions/download-artifact@v4
         type: string
         required: false
+      run-id: # si renseigné, indique qu'on télécharge un artifact avec actions/download-artifact@v4
+        type: string
+        required : false
 
 
 env:
@@ -48,7 +51,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{inputs.artifact}}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           path: ${{inputs.path-artifact}}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.run-id }}
 
       # Extract metadata (tags, labels) for Docker
       - name: Extract Docker metadata
