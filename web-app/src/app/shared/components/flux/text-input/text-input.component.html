@@ -15,7 +15,7 @@
     <input [id]="controlId" aria-describedby="helper-text-explanation" [ngClass]="{
            'invalid': formControl.invalid && (formControl.dirty || formControl.touched),
            'valid': formControl.valid && (formControl.dirty || formControl.touched)
-         }" [formControl]="formControl" type="text" class="meg-text" />
+         }" [formControl]="formControl" type="text" class="meg-text" autofocus />
     @if(formControl.dirty || formControl.touched ) {
     @if (formControl.invalid) {
     <p class="meg-error">
