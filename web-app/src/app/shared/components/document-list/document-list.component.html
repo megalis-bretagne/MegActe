@@ -33,7 +33,9 @@
                 <tr>
                     <th scope="col"></th>
                     <th scope="col">Objet</th>
+                    @if(!fluxSelected()) {
                     <th scope="col" class="md:w-1/6 hidden sm:table-cell">Type</th>
+                    }
                     <!-- colonne masqué sur les écran type tablette-->
                     <th scope="col">État</th>
                     <th scope="col" class="md:w-1/5 hidden sm:table-cell">Date de modification</th>
@@ -47,19 +49,24 @@
                         @if(displayCheckBox(doc)) {
                         <div class="flex items-center">
                             <input [id]="'checkbox-'+ doc.id_d" type="checkbox" [(ngModel)]="doc.selected"
-                                (change)="selectAction(doc)"
+                                (change)="selectAction(doc)" title="Sélectionner le document {{doc.titre || doc.id_d}}"
                                 class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                            <label [for]="'checkbox-'+ doc.id_d" class="sr-only">Sélectionner document
+                            <label [for]="'checkbox-'+ doc.id_d" class="sr-only">Sélectionner le document
                                 {{doc.titre || doc.id_d}}</label>
                         </div>
                         }
                     </td>
                     <td class="whitespace-normal">
-                        {{doc.titre || doc.id_d}}
-                        <!-- <a (click)="consultDoc(doc)" class="text underline hover:text-blue-hover hover:cursor-pointer">
-                           </a> -->
+                        @if(doc.titre) {
+                        <span class="font-bold"> {{doc.titre}}</span>
+
+                        } @else {
+                        <span class="italic">Non renseigné</span>
+                        }
                     </td>
+                    @if(!fluxSelected()) {
                     <td class="hidden sm:table-cell">{{doc.type}}</td>
+                    }
                     <td>{{ doc.last_action_message ?? doc.last_action | stateDocument}}</td>
                     <td class="hidden sm:table-cell">{{doc.last_action_date | date:'dd/MM/yyyy HH:mm'}}</td>
                     <td>
