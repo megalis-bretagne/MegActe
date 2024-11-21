@@ -120,7 +120,7 @@
             </li>
             @for (f of flux(); track f.id ) {
             <li class="flex w-full items-center">
-                <a class="rounded w-full inline-flex text items-center p-2 font-medium"
+                <a class="rounded w-full inline-flex text items-center p-2 mr-2 font-medium"
                     [routerLink]="['/org',entiteSelected().id_e]" [queryParams]="{type: f.id}"
                     [ngClass]="fluxSelected() !== null && f.id === fluxSelected().id ? 'bg-gray-hover' : 'hover:bg-gray-hover'">
                     {{ f.nom }}
@@ -128,7 +128,7 @@
 
 
                 @if(f.enable && entiteSelected().id_e > 0) {
-                <a (click)="createDoc(f)" title="Créer un document {{f.nom}}">
+                <button (click)="createDoc(f)" title="Créer un document {{f.nom}}">
                     <svg class="w-6 h-6 text-blue hover:text-blue-hover hover:cursor-pointer dark:text-white"
                         aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                         viewBox="0 0 24 24">
@@ -136,7 +136,7 @@
                             d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4.243a1 1 0 1 0-2 0V11H7.757a1 1 0 1 0 0 2H11v3.243a1 1 0 1 0 2 0V13h3.243a1 1 0 1 0 0-2H13V7.757Z"
                             clip-rule="evenodd" />
                     </svg>
-                </a>
+                </button>
                 }
             </li>
             }
