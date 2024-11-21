@@ -114,7 +114,7 @@
     }
 </div>
 
-<div id="confirmDelete" tabindex="-1"
+<div id="confirmDelete" tabindex="-1" aria-label="Confirmer la suppression"
     class="fixed top-0 left-0 right-0 z-50  items-center justify-center hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
     <div class="relative w-full max-w-md max-h-full">
         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
@@ -125,15 +125,16 @@
                         d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
                 @if(documents_to_delete()?.length === 1 ) {
-                <h3 class="mb-5 text-lg text dark:text-gray-400">Confirmer la suppression du document {{
-                    documents_to_delete()[0].titre || documents_to_delete()[0].id_d }} ?</h3>
+                <p class="mb-5 text-lg text dark:text-gray-400">Confirmer la suppression du document {{
+                    documents_to_delete()[0].titre || documents_to_delete()[0].id_d }} ?</p>
                 } @else {
-                <h3 class="mb-5 text-lg text dark:text-gray-400">Confirmer la suppression de
-                    {{documents_to_delete().length}} documents ?</h3>
+                <p class="mb-5 text-lg text dark:text-gray-400">Confirmer la suppression de
+                    {{documents_to_delete().length}} documents ?</p>
                 }
                 <button type="button" (click)="cancelDeleteDocuments()"
                     class="btn-meg-secondary px-2 py-2 inline-flex ">Annuler</button>
-                <button type="button" (click)="doDeleteDocuments()" class="btn-meg-delete px-2 py-2 inline-flex ml-6">
+                <button type="button" (click)="doDeleteDocuments()" class="btn-meg-delete px-2 py-2 inline-flex ml-6"
+                    #confirmeDeleteButton>
                     Supprimer
                 </button>
             </div>
