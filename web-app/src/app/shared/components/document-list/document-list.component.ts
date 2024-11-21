@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ActionPossible, ActionPossibleEnum, DocCreateInfo, DocumentInfo, DocumentPaginate } from 'src/app/core/model/document.model';
 import { UserContextService } from 'src/app/core/services/user-context.service';
 import { StateDocumentPipe } from '../../pipes/state-document.pipe';
@@ -62,6 +62,9 @@ export class DocumentListComponent implements OnInit {
 
   is_loading = signal<boolean>(true);
   pageActive = signal(1);
+
+  @ViewChild('confirmeDeleteButton') deleteButton!: ElementRef<HTMLButtonElement>;
+
 
   constructor(private readonly _router: Router) {
     // effect sur le changement de flux
@@ -180,6 +183,10 @@ export class DocumentListComponent implements OnInit {
     if (documents.length > 0) {
       this.documents_to_delete.set(documents);
       this.modal_confirm_delete.show();
+      setTimeout(() => {
+        // Appliquer le focus sur le bouton "Supprimer"
+        this.deleteButton.nativeElement.focus();
+      }, 0); // Timeout pour garantir que le DOM est rendu
     }
   }
 

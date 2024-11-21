@@ -22,7 +22,7 @@ body {
     }
     
     .btn-meg-delete {
-        @apply text-alert border border-red hover:bg-red hover:text-white focus:outline-none rounded-full;
+        @apply text-alert border border-red hover:bg-red hover:text-white  focus-visible:outline-offset-2 focus:outline-none rounded-full focus-visible:outline-blue-hover;
     }
 
     .meg-toggle {
