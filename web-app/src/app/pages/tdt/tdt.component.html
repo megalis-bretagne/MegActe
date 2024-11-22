@@ -1,9 +1,17 @@
 <div class="p-2 text-center flex items-center justify-center">
+
+    @if(error) {
+    <p class="text-alert">
+        <span>Erreur lors de la transmission</span>
+        <span class="block">Message de la préfecture : {{message}}</span>
+    </p>
+    } @else{
     <svg aria-hidden="true" class="mx-2 w-14 h-14 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2l4 -4" />
     </svg>
     <p class="text-success">Transmission effectué.</p>
+    }
 </div>
 <div class="flex p-2 justify-center">
     <button type="button" class="btn-meg-secondary px-2 py-2 inline-flex" (click)="backToDocument()">

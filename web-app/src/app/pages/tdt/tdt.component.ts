@@ -1,7 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DocumentService } from 'src/app/core/services/document.service';
-import { LoadingService } from 'src/app/core/services/loading.service';
 
 
 @Component({
@@ -13,13 +12,14 @@ import { LoadingService } from 'src/app/core/services/loading.service';
 export class TdtComponent implements OnInit {
 
     private readonly _documentservice = inject(DocumentService);
-    private readonly _loadingService = inject(LoadingService);
     private readonly _route = inject(ActivatedRoute);
     private readonly _router = inject(Router);
 
 
     id_e: number | null = null;
     id_d: string[] = [];
+    error: Boolean | null = null;
+    message: string = "";
 
 
 
@@ -31,7 +31,12 @@ export class TdtComponent implements OnInit {
             } else if (params['id_d[]']) {
                 this.id_d = params['id_d[]'];
             }
-            this._documentservice.retourTdtWithDelay(this.id_e, this.id_d);
+
+            this.error = Boolean(params['error']) ?? false;
+            this.message = params['message'];
+            if (this.error === false) {
+                this._documentservice.retourTdtWithDelay(this.id_e, this.id_d);
+            }
         })
     }
 
