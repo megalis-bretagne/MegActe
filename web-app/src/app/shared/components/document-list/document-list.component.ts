@@ -13,6 +13,7 @@ import { HttpErrorCustom } from 'src/app/core/model/http-error-custom.model';
 import { ActionDocumentComponent } from '../action-document/action-document.component';
 import { DocumentService } from 'src/app/core/services/document.service';
 import { FlowbiteService } from 'src/app/core/services/flowbite.service';
+import { ActionResult } from 'src/app/core/model/flux-action.model';
 
 
 @Component({
@@ -237,7 +238,11 @@ export class DocumentListComponent implements OnInit {
       this.goUpdateDoc(document);
     } else {
       this.documentService.launchActionOnDocument(this.entiteSelected().id_e, document, action).subscribe({
-        complete: () => { this.loadingService.hideLoading(); this._refreshPage(); }
+        next: (result: ActionResult | null) => {
+          this.loadingService.hideLoading();
+          if (result != null)
+            this._refreshPage();
+        }
       })
     }
   }
