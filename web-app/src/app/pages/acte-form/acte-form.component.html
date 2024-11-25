@@ -64,7 +64,8 @@
                     @case ('file') {
                     <meg-file-upload [idField]="field.idField" [name]="field['name']" [id_d]="documentInfo.info.id_d"
                         [id_e]="entiteSelected().id_e" [required]="field['requis']" [multiple]="field['multiple']"
-                        [comment]="field['commentaire']" [control]="getFormControl(field.idField)" />
+                        [comment]="field['commentaire']" [control]="getFormControl(field.idField)"
+                        [contentType]="field['content-type']" />
                     }
                     @case ('externalData') {
                     <meg-external-data-input [idField]="field.idField" [name]="field['name']"

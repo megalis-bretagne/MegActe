@@ -49,8 +49,12 @@ export class SettingsService {
         return this.settings.fileUpload.maxTotalFileSize;
     }
 
-    public get allowedFileType(): string {
-        return this.settings.fileUpload.allowedFileType;
+    public get defaultAllowedFileType(): string {
+        return this.settings.fileUpload.allowedFileType.accept;
+    }
+
+    public get defaultAllowedMimeType(): string {
+        return this.settings.fileUpload.allowedFileType['mime-type'];
     }
 
     public getFlowType(flowId: string): string[] | undefined {

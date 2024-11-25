@@ -8,15 +8,21 @@ export class FileUploadValidationService {
 
     private readonly _settingsService = inject(SettingsService);
 
-    validateFiles(files: FileList, existingFiles: File[], multiple: boolean): string | null {
+    validateFiles(files: FileList, existingFiles: File[], multiple: boolean, typeAllowed: string | null | undefined = null): string | null {
+        if (!typeAllowed) typeAllowed = this.getDefaultTypeAllowed();
+
         if (!multiple) {
-            return this._validateSingleFile(files, existingFiles);
+            return this._validateSingleFile(files, existingFiles, typeAllowed);
         } else {
-            return this._validateMultipleFiles(files, existingFiles);
+            return this._validateMultipleFiles(files, existingFiles, typeAllowed);
         }
     }
 
-    private _validateSingleFile(files: FileList, existingFiles: File[]): string | null {
+    public getDefaultTypeAllowed(): string {
+        return this._settingsService.defaultAllowedMimeType;
+    }
+
+    private _validateSingleFile(files: FileList, existingFiles: File[], typeAllowed: string): string | null {
         if (existingFiles.length > 0) {
             return "Un fichier est déjà déposé.";
         }
@@ -26,8 +32,14 @@ export class FileUploadValidationService {
         }
 
         const file = files[0];
-        if (!this._isFileTypeAllowed(file)) {
-            return `Seuls les fichiers ${this._getAllowedFileType()} sont autorisés.`;
+        if (!this._isFileTypeAllowed(file, typeAllowed)) {
+            const allowedFormat = this._getAllowedFileType(typeAllowed);
+
+            if (allowedFormat.split(',').length <= 1) {
+                return `Seul le type ${allowedFormat} est autorisé.`;
+            } else {
+                return `Seuls les fichiers ${allowedFormat} sont autorisés.`;
+            }
         }
 
         if (!this._isFileSizeAllowed(file.size)) {
@@ -37,9 +49,11 @@ export class FileUploadValidationService {
         return null;
     }
 
-    private _validateMultipleFiles(files: FileList, existingFiles: File[]): string | null {
-        if (!Array.from(files).every(file => this._isFileTypeAllowed(file))) {
-            return `Seuls les fichiers ${this._getAllowedFileType()} sont autorisés.`;
+    private _validateMultipleFiles(files: FileList, existingFiles: File[], typeAllowed: string): string | null {
+        const allowedFormat = this._getAllowedFileType(typeAllowed);
+
+        if (!Array.from(files).every(file => this._isFileTypeAllowed(file, typeAllowed))) {
+            return `Seuls les fichiers ${allowedFormat} sont autorisés.`;
         }
 
         if (Array.from(files).some(file => this._isDuplicateFile(file, existingFiles))) {
@@ -54,8 +68,23 @@ export class FileUploadValidationService {
         return null;
     }
 
-    private _isFileTypeAllowed(file: File): boolean {
-        return file.type === this._settingsService.getSetting().fileUpload.allowedFileType;
+    private _isFileTypeAllowed(file: File, typeAllowed: string): boolean {
+        // TODO améliorer la détection du type coté back également
+        let typeToCheck = file.type
+
+        return typeAllowed.split(',').some(contentType => {
+
+            if (typeToCheck === contentType) return true;
+            // si le typeToCheck est different du contentType, on check quand même l'extension.
+            // utile pour les type XML, où typeAllowed = 'application/xml' et contentType = 'text/xml'
+            const contentTypeParts = contentType.split('/');
+            const typeToCheckParts = typeToCheck.split('/');
+
+            if (contentTypeParts.length > 1 && typeToCheckParts.length > 1) {
+                return contentTypeParts[1] === typeToCheckParts[1];
+            }
+            return false;
+        })
     }
 
     private _isFileSizeAllowed(size: number): boolean {
@@ -80,7 +109,7 @@ export class FileUploadValidationService {
         return this._settingsService.getSetting().fileUpload.maxTotalFileSize / (1024 * 1024);
     }
     //Récupèrer le type de fichier autorisé
-    private _getAllowedFileType(): string {
-        return this._settingsService.getSetting().fileUpload.allowedFileType.split('/')[1];
+    private _getAllowedFileType(typeAllowed: string): string {
+        return typeAllowed.split(',').map(mime => mime.split('/')[1]).join(',')
     }
 }
