@@ -14,13 +14,13 @@
     }
     <div class="flex">
         <div class="upload-section" [ngClass]="files.length === 0 && action_one_file() === null ? 'w-full' : 'w-1/2'"
-            megDragAndDrop (filesDropped)=" onFilesDropped($event)">
+            megDragAndDrop (filesDropped)="onFilesDropped($event)">
             <p class="text">Glissez/déposez le(s) fichier(s) ici ou cliquez sur "Parcourir les fichiers".</p>
             <button mat-raised-button class="btn-meg-primary px-4 py-2" (click)="fileInput.click()"
                 [disabled]="action_one_file() !== null">Parcourir les
                 fichiers</button>
             <input type="file" (change)="onFileSelected($event)" [multiple]="multiple" hidden #fileInput
-                [id]="controlId">
+                [id]="controlId" [accept]="contentType">
             <input type="hidden" [formControl]="formControl" />
         </div>
 

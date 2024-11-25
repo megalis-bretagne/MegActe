@@ -8,7 +8,7 @@ export class Keycloak {
 export class FileUpload {
     maxSingleFileSize = 1 * 1024 * 1024; // 1 Mo
     maxTotalFileSize = 10 * 1024 * 1024; // 10 Mo
-    allowedFileType = "application/pdf";
+    allowedFileType = { accept: ".pdf, .doc, .docx, .odt", "mime-type": "application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.oasis.opendocument.text" }
 }
 
 export class FlowType {

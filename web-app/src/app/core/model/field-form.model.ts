@@ -11,6 +11,7 @@ export interface Field {
     index?: boolean;
     link_name?: string;
     default?: string;
+    "content-type"?: string;
     "read-only"?: boolean;
     "no-show"?: boolean;
 }

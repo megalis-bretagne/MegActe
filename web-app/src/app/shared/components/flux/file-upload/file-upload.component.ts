@@ -24,6 +24,7 @@ export class FileUploadComponent extends BaseInputComponent {
   private readonly _documentService = inject(HttpDocumentService);
 
   @Input() multiple: boolean = false;
+  @Input() contentType: string | undefined = undefined; // si plusieurs typle, séparé par une virgule
   id_d = input.required<string>();
   id_e = input.required<number>();
 
@@ -42,6 +43,7 @@ export class FileUploadComponent extends BaseInputComponent {
   override initInput(): void {
     this.formControl.setValidators(this.getValidators());
     this._setFiles();
+    if (this.contentType === undefined) this.contentType = this._validationService.getDefaultTypeAllowed();
   }
 
   override getControlType(): string {
@@ -57,7 +59,7 @@ export class FileUploadComponent extends BaseInputComponent {
   }
 
   onFilesDropped(files: FileList): void {
-    const error = this._validationService.validateFiles(files, this.files, this.multiple);
+    const error = this._validationService.validateFiles(files, this.files, this.multiple, this.contentType);
     if (error) {
       this.errorMessage = error;
       this.formControl.setErrors({ incorrect: true });
