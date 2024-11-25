@@ -100,11 +100,10 @@ export class HttpDocumentService {
         );
     }
 
-    performAction(entiteId: number, actionRequest: DocumentRequestAction): Observable<ActionResult> {
-        return this._http.post<ActionResult>(`${this._settingsService.apiUrl}/entite/${entiteId}/documents/perform_action`, actionRequest).pipe(
-            catchError((error) => {
-                this._logger.error('Error when perform Action on document', error);
-                return throwError(() => error);
+    performAction(entiteId: number, actionRequest: DocumentRequestAction, headers = {}): Observable<ActionResult> {
+        return this._http.post<ActionResult>(`${this._settingsService.apiUrl}/entite/${entiteId}/documents/perform_action`, actionRequest, headers).pipe(
+            catchError(() => {
+                return of();
             })
         );
     }

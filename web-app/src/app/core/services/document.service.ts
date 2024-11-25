@@ -9,7 +9,6 @@ import { ActionResult } from '../model/flux-action.model';
 import { RedirectModal } from '../model/modal.model';
 import { UserContextService } from './user-context.service';
 
-
 @Injectable({
     providedIn: 'root'
 })
@@ -189,7 +188,9 @@ export class DocumentService {
     retourTdtWithDelay(id_e: number, id_d: string | string[], delay: number = 5000): void {
         const actionRequest: DocumentRequestAction = { document_ids: id_d, action: ActionPossibleEnum.Verification_TDT };
         timer(delay).pipe(
-            switchMap(() => this._httpDocumentService.performAction(id_e, actionRequest))
+            switchMap(() => this._httpDocumentService.performAction(id_e, actionRequest, {
+                headers: { 'X-Skip-Error-Handling': 'true' },
+            }))
         ).subscribe(
             {
                 next: () => { this._logger.info('Retour Tdt OK') },

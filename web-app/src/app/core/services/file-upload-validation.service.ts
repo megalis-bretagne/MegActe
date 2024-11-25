@@ -70,7 +70,7 @@ export class FileUploadValidationService {
 
     private _isFileTypeAllowed(file: File, typeAllowed: string): boolean {
         // TODO améliorer la détection du type coté back également
-        let typeToCheck = file.type
+        const typeToCheck = file.type
 
         return typeAllowed.split(',').some(contentType => {
 

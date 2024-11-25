@@ -1,4 +1,3 @@
-
 import { tap } from 'rxjs/operators';
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
@@ -17,6 +16,9 @@ export const httpErrorInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req).pipe(
         tap({
             error: (error) => {
+                const skipErrorHandling = req.headers.get('X-Skip-Error-Handling');
+                if (skipErrorHandling) return;
+
                 _logger.error('Erreur détectée :', {
                     status: error.status,
                     message: error.message,

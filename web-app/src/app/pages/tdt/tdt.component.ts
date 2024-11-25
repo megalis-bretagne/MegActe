@@ -18,7 +18,7 @@ export class TdtComponent implements OnInit {
 
     id_e: number | null = null;
     id_d: string[] = [];
-    error: Boolean | null = null;
+    error: number | null = null;
     message: string = "";
 
 
@@ -32,9 +32,9 @@ export class TdtComponent implements OnInit {
                 this.id_d = params['id_d[]'];
             }
 
-            this.error = Boolean(params['error']) ?? false;
+            this.error = params['error'] ?? 0;
             this.message = params['message'];
-            if (this.error === false) {
+            if (this.error < 1) {
                 this._documentservice.retourTdtWithDelay(this.id_e, this.id_d);
             }
         })
