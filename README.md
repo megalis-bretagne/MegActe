@@ -5,9 +5,14 @@
 [![FastApi](https://img.shields.io/badge/FastAPI-0.115.5-blue?logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Angular](https://img.shields.io/badge/Angular-18-%23DD0031?logo=angular)](https://angular.io/)
 [![Docker build](https://img.shields.io/badge/docker-automated-informational?logo=docker)](https://docs.docker.com/compose/)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/12e095a61451497db3b82b0042b78da9)](https://app.codacy.com/gh/megalis-bretagne/MegActe/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=megalis-bretagne_MegActe) <br>
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=megalis-bretagne_MegActe&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=megalis-bretagne_MegActe)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=megalis-bretagne_MegActe&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=megalis-bretagne_MegActe)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=megalis-bretagne_MegActe&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=megalis-bretagne_MegActe)
+<br/>
 
 Outils d'interfacage à l'outils Pastell<br/>
 
@@ -32,3 +37,5 @@ Outils développer avec la version 4.X de Pastell.
 ## Documentation techniques
 
 * [Architecture](docs/architecture.md)
+
+
