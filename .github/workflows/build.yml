@@ -27,18 +27,18 @@ jobs:
     name: Unit Test Python
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        python-version: [3.11.2]
+    # strategy:
+    #   matrix:
+    #     python-version: [3.11.2]
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@main
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.11.2'
 
     - name: Install dependencies
       run: |
@@ -50,14 +50,18 @@ jobs:
       run: |
         cd back/
         pip install -r requirements_dev.txt
-        pytest -Werror --junitxml=junit/test-result.xml --cov=app --cov-report=xml --cov-report=html
+        pytest -Werror --cov=app --cov-report=xml --cov-branch
+    
+    - name: fix coverage paths for sonar
+      run: |
+        sed -i 's|<source>/home/runner/work/MegActe/MegActe/back/app</source>|<source>/github/workspace/back/app</source>|' back/coverage.xml
 
-    - name: Report coverage to Codacy
-      uses: codacy/codacy-coverage-reporter-action@v1.3.0
+    - uses: actions/upload-artifact@v4
+      name: cache-artifact
       with:
-        project-token: ${{ secrets.NEW_CODACY }}
-        coverage-reports: back/coverage.xml
-
+          name: coverage
+          path: back/coverage.xml
+  
 
   build-angular :
     runs-on: ubuntu-latest
@@ -106,20 +110,22 @@ jobs:
           path: web-app/dist
 
 
-  # build-docker-web-app :
-  #   uses: ./.github/workflows/templates/build-push-docker.yml
-  #   needs: build-angular
-  #   with:
-  #     context: .
-  #     dockerfile: ./docker/web/Dockerfile
-  #     image-name: ${{ github.repository_owner }}/megacte-web
-  #     artifact: web-app-dist
-  #     path-artifact: web-app/dist
+  analyse:
+    runs-on: ubuntu-latest
+    needs: [unit-test-py] 
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: download test report
+      uses: actions/download-artifact@v4
+      with:
+        name: coverage
+        path: back/coverage.xml
 
-  # build-docker-back:
-  #   uses: ./.github/workflows/templates/build-push-docker.yml
-  #   needs: unit-test-py
-  #   with:
-  #     context: back
-  #     dockerfile: ./docker/back/Dockerfile
-  #     image-name: ${{ github.repository_owner }}/megacte-back
+    - name: SonarCloud Scan
+      uses: sonarsource/sonarcloud-github-action@v3 # Ex: v2.1.0, See the latest version at https://github.com/marketplace/actions/sonarcloud-scan
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
