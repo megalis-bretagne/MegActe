@@ -52,6 +52,7 @@ export class SidebarComponent implements OnInit {
     if (modalElement) {
       this._modal = new Modal(modalElement, { backdrop: 'dynamic' }, { override: true });
     }
+    this.groupFluxByType();
   }
 
   createDoc(flux: Flux): void {
@@ -81,7 +82,6 @@ export class SidebarComponent implements OnInit {
     }, {} as { [key: string]: Flux[] });
 
     this.listType = Object.keys(this.groupedFlux);
-
   }
 
   showSelectEntite(): void {
