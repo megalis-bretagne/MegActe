@@ -6,6 +6,9 @@ updates:
     open-pull-requests-limit: 5
     schedule:
       interval: "weekly"
+    ignore: 
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
     labels:
       - "dependencies"
       - "python"
@@ -21,6 +24,7 @@ updates:
     labels:
       - "dependencies"
       - "javascript"
+      - "frontend"
       - "dependabot"
     ignore: 
       - dependency-name: "*"
