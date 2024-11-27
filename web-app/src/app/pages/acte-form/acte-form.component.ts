@@ -44,11 +44,13 @@ export class ActeFormComponent implements OnInit {
   filteredFields: Field[] = [];
   fileTypes: { [key: string]: string } = {};
   pieces = signal<string[]>([]);
-  fileTypeField: Field;
+  fileTypeField: Field | undefined = undefined;
 
   currentStep = signal<number>(1);
   globalErrorMessage: string;
   fileFields: Field[] = [];
+
+  hasStepTdt: boolean = false;
 
   formValues: { [idField: string]: string } = {};
 
@@ -74,7 +76,7 @@ export class ActeFormComponent implements OnInit {
             .filter(field => field.idField !== 'type_piece');
         this.fileFields = this.filteredFields.filter(field => field.type === 'file');
 
-        this.fileTypeField = this.fields.find(field => field.idField === 'type_piece');
+        this.fileTypeField = this._fieldFluxService.getFieldTdt(this.fields);
       } else {
         this._logger.error('Flux detail not found for the given acte');
       }
@@ -89,6 +91,8 @@ export class ActeFormComponent implements OnInit {
       const value = this.documentInfo.data[field.idField] ?? null;
       this.form.addControl(field.idField, new FormControl(value));
     })
+
+    this.hasStepTdt = this.fileTypeField !== undefined;
   }
 
   getFormControl(name: string): FormControl {

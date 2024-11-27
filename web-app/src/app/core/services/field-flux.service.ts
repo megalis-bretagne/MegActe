@@ -1,15 +1,12 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Data } from '@angular/router';
 import { Field } from '../model/field-form.model';
-import { SettingsService } from 'src/environments/settings.service';
 
 
 @Injectable({
     providedIn: 'root'
 })
 export class FieldFluxService {
-    private readonly _settingsService = inject(SettingsService);
-
 
     // Générer un id unique pour chaque champs 
     generateUniqueId(prefix: string = 'id'): string {
@@ -19,6 +16,14 @@ export class FieldFluxService {
     // Extraire les champs selon leur type et dans l'ordre de réception
     extractFields(data: Data): Field[] {
         return Object.entries(data).map(([idField, value]) => ({ idField, ...value }));
+    }
+
+    /**
+     * retourne le champ specifique Tdt
+     * @param fields 
+     */
+    getFieldTdt(fields: Field[]): Field | undefined {
+        return fields.find(field => field.idField === 'type_piece');
     }
 
 

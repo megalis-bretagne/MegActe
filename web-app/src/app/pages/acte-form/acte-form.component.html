@@ -6,7 +6,11 @@
     </div>
 
     <div class="meg-container p-4 border rounded-sm">
+        <!-- mode édition-->
         @if(documentService.canEdit(documentInfo)){
+
+        <!-- entete du composant (les steps)-->
+        @if(hasStepTdt) {
         <ol class="flex items-center w-full p-3 space-x-2 text-center text">
             <li class="flex items-center" [ngClass]="{'text-blue': currentStep() === 1}">
                 <span [ngClass]="{'border-blue': currentStep() === 1}"
@@ -28,8 +32,16 @@
                 Envoyer l'acte
             </li>
         </ol>
+        } @else {
+        <div class="flex items-center" class="text-blue">
+            Préparation et envoie de l'Acte
+        </div>
+        }
+        <!-- FIN entete composant steps-->
 
-        @if (currentStep() === 1) {
+
+        <!-- le formulaire en fonction de l'étape -->
+        @if (!hasStepTdt || currentStep() === 1) {
         <div class="mt-4">
             @if (globalErrorMessage && !form.valid) {
             <div class="text-alert m-4" role="alert">
@@ -78,20 +90,8 @@
                 </div>
             </form>
 
-            <div class="flex flex-row-reverse w-full">
-                <button type="submit" (click)="onNextStep()" aria-label="Passer à l'étape suivante"
-                    class="btn-meg-primary px-4 py-2">
-                    Etape Suivante
-                    <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                        fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 12H5m14 0-4 4m4-4-4-4" />
-                    </svg>
-                </button>
-            </div>
         </div>
-        }
-        @if (currentStep() === 2) {
+        } @else if (hasStepTdt && currentStep() === 2) {
         <div class="mt-4">
             <h3 class="text-lg font-semibold mb-4">{{fileTypeField['name']}}</h3>
             @if (globalErrorMessage) {
@@ -105,44 +105,72 @@
                     [control]="getFormControlExternal(idx)" />
                 }
 
-                <div class="flex flex-row justify-between">
-                    <div>
-                        <button class="btn-meg-secondary px-4 py-2" type="button" (click)="onPreviousStep()">
-                            <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                                fill="none" viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="M5 12h14M5 12l4-4m-4 4 4 4" />
-                            </svg>
-                            Précédent
-                        </button>
-                    </div>
-                    <div>
-                        <button class="btn-meg-secondary px-4 py-2 inline-flex items-center justify-center"
-                            type="button" (click)="onAssignFileTypesAndSave()">
-                            <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M5 13l4 4L19 7" />
-                            </svg>
-                            Enregistrer</button>
-                        @if (documentService.canSendActe(documentInfo) ) {
-
-                        <button class="btn-meg-primary px-4 py-2 ml-2" type="button" (click)="sendActe()">
-                            <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
-                                height="24" fill="none" viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M13.5 8H4m4 6h8m0 0-2-2m2 2-2 2M4 6v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-5.032a1 1 0 0 1-.768-.36l-1.9-2.28a1 1 0 0 0-.768-.36H5a1 1 0 0 0-1 1Z" />
-                            </svg>
-                            Envoyer l'acte</button>
-                        }
-                    </div>
-                </div>
             </form>
         </div>
         }
+        <!-- fin formulaire en fonction de l'étape-->
 
-        }@else{
+        <!-- boutons actions du formulaire -->
+        <div class="flex" [ngClass]="{'justify-end': !hasStepTdt, 'justify-between': hasStepTdt}">
+            @if(hasStepTdt && currentStep() === 1) {
+            <div class="flex flex-row-reverse w-full">
+                <button type="submit" (click)="onNextStep()" aria-label="Passer à l'étape suivante"
+                    class="btn-meg-primary px-4 py-2">
+                    Etape Suivante
+                    <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                        fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 12H5m14 0-4 4m4-4-4-4" />
+                    </svg>
+                </button>
+            </div>
+
+            }
+
+
+            @if (currentStep() === 2) {
+            <div>
+                <button class="btn-meg-secondary px-4 py-2" type="button" (click)="onPreviousStep()">
+                    <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                        fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 12h14M5 12l4-4m-4 4 4 4" />
+                    </svg>
+                    Précédent
+                </button>
+            </div>
+            }
+
+            @if(!hasStepTdt || currentStep() === 2) {
+            <div>
+                <button class="btn-meg-secondary px-4 py-2 inline-flex items-center justify-center" type="button"
+                    (click)="onAssignFileTypesAndSave()">
+                    <svg class="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Enregistrer</button>
+                @if (documentService.canSendActe(documentInfo) ) {
+
+                <button class="btn-meg-primary px-4 py-2 ml-2 inline-flex items-center justify-center" type="button"
+                    (click)="sendActe()">
+                    <svg class="w-5 h-5 inline" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                        height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13.5 8H4m4 6h8m0 0-2-2m2 2-2 2M4 6v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-5.032a1 1 0 0 1-.768-.36l-1.9-2.28a1 1 0 0 0-.768-.36H5a1 1 0 0 0-1 1Z" />
+                    </svg>
+                    Envoyer l'acte</button>
+                }
+            </div>
+            }
+        </div>
+
+        <!-- fin bouton actions formulaire-->
+        }
+        <!-- fin mode edition-->
+
+        <!-- mode consultation (TODO a refaire)-->
+        @else{
         <!-- TODO - faire un composant à part-->
         <div class="fr-table fr-table--bordered fr-table--no-caption">
             <table id="table-md" class="fr-text--sm">
