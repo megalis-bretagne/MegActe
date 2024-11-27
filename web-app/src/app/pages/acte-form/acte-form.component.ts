@@ -15,6 +15,7 @@ import { UserContextService } from 'src/app/core/services/user-context.service';
 import { CommonModule } from '@angular/common';
 import { DocumentDetail } from 'src/app/core/model/document.model';
 import { DocumentService } from 'src/app/core/services/document.service';
+import { ExternalDataObject } from 'src/app/core/services/http/http-flux.service';
 
 @Component({
   selector: 'meg-acte-form',
@@ -126,8 +127,16 @@ export class ActeFormComponent implements OnInit {
   }
 
 
+  /**
+   * Action du bouton save
+   * @returns
+   */
+  save(): void {
+    if (!this.hasStepTdt) { // si on est pas d'étape TDT, même action que le bouton Next
+      this.onNextStep();
+      return;
+    }
 
-  onAssignFileTypesAndSave(): void {
     if (this._checkFormValid(this.formExternalData)) {
       const info = this.formExternalData.getRawValue();
       this.documentService.updateTypePiece(this.entiteSelected().id_e, this.documentInfo.info.id_d, Object.values(info)).subscribe();
@@ -136,20 +145,37 @@ export class ActeFormComponent implements OnInit {
     }
   }
 
+  /**
+   * Action du bouton d'envoi de l'acte
+   */
   sendActe(): void {
-    if (this._checkFormValid(this.formExternalData)) {
-      const info = this.formExternalData.getRawValue();
-      const updateTypePiece$ = this.documentService.updateTypePiece(this.entiteSelected().id_e, this.documentInfo.info.id_d, Object.values(info), false);
+    if (this.hasStepTdt) { // si étape TDT
+      if (this._checkFormValid(this.formExternalData)) { // update des type de pièces
+        const info = this.formExternalData.getRawValue();
+        const updateTypePiece$ = this.documentService.updateTypePiece(this.entiteSelected().id_e, this.documentInfo.info.id_d, Object.values(info), false);
 
-      updateTypePiece$.subscribe({
+        updateTypePiece$.subscribe({
+          next: () => {
+            this.documentService.sendActe(this.entiteSelected().id_e, this.documentInfo);
+          }
+        })
+      }
+      else {
+        this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
+      }
+    } else if (this.validateForm()) {
+      // pas d'étape TDT
+      const docUpdateInfo = {
+        entite_id: this.entiteSelected().id_e,
+        doc_info: this._retrieveInfo()
+      };
+      this.documentService.updateDocument(this.entiteSelected().id_e, this.documentInfo.info.id_d, docUpdateInfo, this.hasStepTdt).subscribe({
         next: () => {
           this.documentService.sendActe(this.entiteSelected().id_e, this.documentInfo);
         }
       })
     }
-    else {
-      this.globalErrorMessage = 'Veuillez sélectionner tous les types de fichiers requis.';
-    }
+
   }
 
   onPreviousStep() {
@@ -183,12 +209,16 @@ export class ActeFormComponent implements OnInit {
       doc_info: this._retrieveInfo()
     };
 
-    this.documentService.updateDocument(this.entiteSelected().id_e, this.documentInfo.info.id_d, docUpdateInfo).subscribe({
-      next: (response) => {
-        this.fileTypes = response['actes_type_pj_list'] as { [key: string]: string };
-        this.currentStep.set(2);
-        this._buildFormExternalDataForFile(response['pieces'] as string[], response['actes_type_pj_list'] as { [key: string]: string })
-        this.pieces.set(response['pieces'] as string[]);
+    this.documentService.updateDocument(this.entiteSelected().id_e, this.documentInfo.info.id_d, docUpdateInfo, this.hasStepTdt).subscribe({
+      next: (response: ExternalDataObject) => {
+        if (this.hasStepTdt) {
+          this.fileTypes = response['actes_type_pj_list'] as { [key: string]: string };
+          this.currentStep.set(2);
+          this._buildFormExternalDataForFile(response['pieces'] as string[], response['actes_type_pj_list'] as { [key: string]: string })
+          this.pieces.set(response['pieces'] as string[]);
+        } else {
+          this._router.navigate(['/org', this.entiteSelected().id_e.toString()], { queryParams: { type: this.userContextService.fluxSelected()?.id } })
+        }
       },
       error: (error) => {
         this._logger.error('Error updating document', error);

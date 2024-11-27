@@ -62,27 +62,40 @@ export class DocumentService {
      * @param docUpdateInfo 
      * @returns 
      */
-    updateDocument(id_e: number, id_d: string, docUpdateInfo: DocUpdateInfo): Observable<ExternalDataObject> {
+    updateDocument(id_e: number, id_d: string, docUpdateInfo: DocUpdateInfo, nextStepTdt: boolean): Observable<{ content: DocumentDetail } | ExternalDataObject> {
         this._loadingService.showLoading("Sauvegarde en cours ...");
         // Création d'un observable pour la mise à jour du document
+
         const updateDocument$ = this._httpDocumentService.updateDocument(id_e, id_d, docUpdateInfo).pipe(
             catchError(error => {
                 this._logger.error('Error updating document', error);
                 return of(null);
             })
         );
+        if (!nextStepTdt) {
+            return updateDocument$.pipe(tap(() => this._loadingService.hideLoading()));
+        }
         //@TODO type_piece pour les delib .. voir pour retirer en dur
-        const fetchTypePiece$ = this._httpFluxService.get_externalData(id_e, id_d, 'type_piece').pipe(
+        return updateDocument$.pipe(
+            concatMap(() => {
+                // Appel de la deuxième requête
+                return this.getTypePiece(id_e, id_d);
+            })
+        );
+    }
+
+    /**
+     * Retourne les type de pièce
+     * @param id_e 
+     * @param id_d 
+     * @returns 
+     */
+    getTypePiece(id_e: number, id_d: string): Observable<ExternalDataObject> {
+        return this._httpFluxService.get_externalData(id_e, id_d, 'type_piece').pipe(
             tap(() => this._loadingService.hideLoading()),
             catchError(error => {
                 this._logger.error('Error fetching file types and files', error);
                 return of(null);
-            })
-        );
-        return updateDocument$.pipe(
-            concatMap(() => {
-                // Appel de la deuxième requête
-                return fetchTypePiece$;
             })
         );
     }
