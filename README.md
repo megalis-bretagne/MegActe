@@ -12,6 +12,7 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=megalis-bretagne_MegActe&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=megalis-bretagne_MegActe)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=megalis-bretagne_MegActe&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=megalis-bretagne_MegActe)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=megalis-bretagne_MegActe&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=megalis-bretagne_MegActe)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=megalis-bretagne_MegActe&metric=coverage)](https://sonarcloud.io/summary/new_code?id=megalis-bretagne_MegActe)
 <br/>
 
 Outils d'interfacage à l'outils Pastell<br/>

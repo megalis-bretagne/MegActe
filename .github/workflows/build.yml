@@ -49,10 +49,12 @@ jobs:
         pytest -Werror --cov=app --cov-report=xml --cov-branch
     
     - name: fix coverage paths for sonar
+      if: ${{ github.actor != 'dependabot[bot]' }}
       run: |
         sed -i 's|<source>/home/runner/work/MegActe/MegActe/back/app</source>|<source>/github/workspace/back/app</source>|' back/coverage.xml
   
     - name: SonarCloud Scan
+      if: ${{ github.actor != 'dependabot[bot]' }}
       uses: sonarsource/sonarcloud-github-action@v3 # Ex: v2.1.0, See the latest version at https://github.com/marketplace/actions/sonarcloud-scan
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
