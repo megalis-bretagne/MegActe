@@ -133,7 +133,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# dev config
 config
+config_local
 back/config/config.yml
 back/config/s2low
 web-app/src/assets/settings.json
