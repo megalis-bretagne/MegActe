@@ -1,6 +1,6 @@
 import pathlib
 from typing import Tuple, Type
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, computed_field, Field
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -112,12 +112,12 @@ class Settings(BaseSettings):
     keycloak: Keycloak
     database: Database
     request_timeout: int = 5
-    log_level: str = "INFO"  # ["debug", "info", "warning", "error", "critical"],
+    log_level: str = Field(default="INFO", validation_alias="MEGACTE_LOGLEVEL")  # ["debug", "info", "warning", "error", "critical"],
 
     if pathlib.Path("config/config.yml").is_file():
-        model_config = SettingsConfigDict(yaml_file="config/config.yml", case_sensitive=False)
+        model_config = SettingsConfigDict(yaml_file="config/config.yml", env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=False)
     else:
-        model_config = SettingsConfigDict(yaml_file="config/config_template.yml", case_sensitive=False)
+        model_config = SettingsConfigDict(yaml_file="config/config_template.yml", env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=False)
 
     @classmethod
     def settings_customise_sources(
@@ -128,4 +128,4 @@ class Settings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
-        return (YamlConfigSettingsSource(settings_cls),)
+        return (init_settings, YamlConfigSettingsSource(settings_cls), env_settings, dotenv_settings)
