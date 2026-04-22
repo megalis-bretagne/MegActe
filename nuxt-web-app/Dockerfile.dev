@@ -1,0 +1,10 @@
+FROM node:24-trixie-slim
+
+WORKDIR /nuxt-app
+
+COPY package.json .
+COPY nuxt.config.ts .
+COPY tsconfig.json .
+
+RUN npm install
+

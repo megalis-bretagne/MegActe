@@ -1,0 +1,36 @@
+<script setup>
+import { ref, computed } from 'vue'
+
+// Composable pour gérer l'utilisateur (à créer ensuite)
+const { currentUser, isSuperAdmin, entiteBase } = useUserContext()
+</script>
+
+<template>
+  <div v-if="currentUser" class="bg-white shadow-md rounded-lg p-6 max-w-lg w-full">
+    <h2 class="text-2xl font-bold mb-4 text-center">Informations de l'Utilisateur</h2>
+
+    <div class="mb-4">
+      <span class="block text-gray-700 font-semibold">Nom / Prénom :</span>
+      <p class="text-gray-600">{{ currentUser.user_info.nom }} {{ currentUser.user_info.prenom }}</p>
+    </div>
+
+    <div v-if="!isSuperAdmin && entiteBase" class="mb-4">
+      <span class="block text-gray-700 font-semibold">Entité de Base :</span>
+      <p class="text">{{ entiteBase.denomination }} (siren : {{ entiteBase.siren }})</p>
+    </div>
+
+    <div class="mb-4">
+      <span class="block text-gray-700 font-semibold">Email :</span>
+      <p class="text">{{ currentUser.user_info.email }}</p>
+    </div>
+
+    <div class="mb-4">
+      <span class="block text-gray-700 font-semibold">Login :</span>
+      <p class="text-nowrap">{{ currentUser.user_info.login }}</p>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+/* Styles spécifiques si nécessaire */
+</style>

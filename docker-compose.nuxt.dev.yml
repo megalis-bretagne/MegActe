@@ -1,0 +1,83 @@
+name: megacte
+
+configs:
+  api-config:
+    file: ./config_local/api-config.yml
+  settings:
+    file: ./config_local/settings.json
+  private-key:
+    file: ./config_local/private_key.pem
+  public-certificate:
+    file: ./config_local/publicCertificate_tech.pem
+
+services:
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.dev
+    configs:
+      - source: api-config
+        target: /megacte-back/config/config.yml
+      - source: private-key
+        target: /megacte-back/config/private_key.pem
+      - source: public-certificate
+        target: /megacte-back/config/publicCertificate_tech.pem
+    depends_on:
+      - db
+    environment:
+      MEGACTE_LOGLEVEL: "DEBUG"
+    ports:
+      - "8080:8080"
+    networks:
+      - megacte-front-tier
+      - megacte-back-tier
+
+    volumes:
+      - type: bind
+        source: ./back/app
+        target: /megacte-back/app
+
+  frontend:
+    image: nuxt-frontend
+    build:
+      context: ./nuxt-web-app
+      dockerfile: Dockerfile.dev
+    command: npm run dev -- --host 0.0.0.0
+    environment:
+      KEYCLOAK_ISSUER: https://sso-preprod.megalis.bretagne.bzh/auth/
+      KEYCLOAK_REALM: megalis
+      KEYCLOAK_CLIENT_ID: megacte
+      API_BASE_URL: http://localhost:8080
+    ipc: host
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - megacte-front-tier
+    volumes:
+      - type: bind
+        source: ./nuxt-web-app/app
+        target: /nuxt-app/app
+
+  db:
+    image: postgres:18.3-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - megacte-db-data:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    networks:
+      megacte-back-tier:
+        aliases:
+          - megacte-db
+
+volumes:
+  megacte-db-data:
+
+networks:
+  megacte-back-tier:
+  megacte-front-tier:
