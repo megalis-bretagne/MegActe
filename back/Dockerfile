@@ -1,19 +1,22 @@
-FROM python:3.11.2-alpine
+FROM python:3.13-slim-trixie
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
-WORKDIR /appli
+ARG APP_PATH=/megacte-back
 
-COPY requirements.txt .
-
-RUN pip install --no-cache-dir --upgrade -r requirements.txt
+WORKDIR $APP_PATH
 
 COPY app/ ./app/
-COPY config/ ./config/
+COPY pyproject.toml uv.lock ./
 COPY alembic.ini .
 COPY migrations ./migrations
+COPY config ./config
+COPY --chmod=+x docker-backend-start.sh .
 
-RUN rm /appli/config/config_template.yml
+RUN  uv sync --frozen
 
-EXPOSE 80
+ENV PATH="${APP_PATH}/.venv/bin:$PATH"
 
-CMD ["fastapi", "run", "app/main.py", "--port", "80"]
+EXPOSE 8080
+
+CMD ["./docker-backend-start.sh"]
