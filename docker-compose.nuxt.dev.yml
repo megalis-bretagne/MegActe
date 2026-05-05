@@ -2,13 +2,11 @@ name: megacte
 
 configs:
   api-config:
-    file: ./config_local/api-config.yml
-  settings:
-    file: ./config_local/settings.json
+    file: ./config_local_nuxt_kc_xp/api-config.yml
   private-key:
-    file: ./config_local/private_key.pem
+    file: ./config_local_nuxt_kc_xp/private_key.pem
   public-certificate:
-    file: ./config_local/publicCertificate_tech.pem
+    file: ./config_local_nuxt_kc_xp/publicCertificate_tech.pem
 
 services:
   backend:

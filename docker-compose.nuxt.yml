@@ -2,19 +2,18 @@ name: megacte
 
 configs:
   api-config:
-    file: ./config_local/api-config.yml
-  settings:
-    file: ./config_local/settings.json
+    file: ./config_local_nuxt_kc_xp/api-config.yml
   private-key:
-    file: ./config_local/private_key.pem
+    file: ./config_local_nuxt_kc_xp/private_key.pem
   public-certificate:
-    file: ./config_local/publicCertificate_tech.pem
+    file: ./config_local_nuxt_kc_xp/publicCertificate_tech.pem
 
 services:
   backend:
+    image: megacte-backend
     build:
       context: ./back
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     configs:
       - source: api-config
         target: /megacte-back/config/config.yml
@@ -32,13 +31,8 @@ services:
       - megacte-front-tier
       - megacte-back-tier
 
-    volumes:
-      - type: bind
-        source: ./back/app
-        target: /megacte-back/app
-
   frontend:
-    image: nuxt-frontend
+    image: megacte-frontend-nuxt
     build:
       context: ./nuxt-web-app
       dockerfile: Dockerfile
