@@ -3,34 +3,36 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   nitro: {
-    preset: 'node-server',
+    preset: "node-server",
   },
-  
+
   // Configuration des variables d'environnement publiques
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.API_URL || 'http://localhost:8000',
+      apiBaseUrl: process.env.API_URL || "http://localhost:8080",
     },
   },
-  
+
   modules: [
- //   '@nuxtjs/tailwindcss',
- //   '@pinia/nuxt',        // gestion d'état
-    '@sidebase/nuxt-auth', // Module d'authentification
+    //   '@nuxtjs/tailwindcss',
+    //   '@pinia/nuxt',        // gestion d'état
+    // Module d'authentification
+    "@sidebase/nuxt-auth",
+    "@nuxt/eslint",
   ],
-  
+
   // Configuration de nuxt-auth
   auth: {
     isEnabled: true,
     globalAppMiddleware: true,
     disableServerSideAuth: false,
-    originEnvKey: 'AUTH_ORIGIN',
-    baseURL: process.env.APP_URL + '/auth',
+    originEnvKey: "AUTH_ORIGIN",
+    baseURL: process.env.APP_URL + "/auth",
     //baseURL: 'http://localhost:3000/auth',
     provider: {
-      type: 'authjs',
+      type: "authjs",
       trustHost: false,
-      defaultProvider: 'keycloak',
+      defaultProvider: "keycloak",
       addDefaultCallbackUrl: true,
     },
     sessionRefresh: {
@@ -38,29 +40,35 @@ export default defineNuxtConfig({
       enableOnWindowFocus: true,
     },
   },
-    
-   
+
+  eslint: {
+    // options here
+  },
+
   // Configuration Tailwind (si utilisé)
-//  tailwindcss: {
-//    cssPath: '~/assets/css/tailwind.css',
-//  },
-  
+  //  tailwindcss: {
+  //    cssPath: '~/assets/css/tailwind.css',
+  //  },
+
   // Options de rendu
   ssr: true, // Active le Server-Side Rendering
-  
+
   // Configuration des routes (optionnel)
   routeRules: {
     // Exemple : Cache statique pour certaines pages
-    '/': { static: true },
+    "/": { static: true },
   },
-  
+
   // Suppress the module-preload-polyfill sourcemap warning
   vite: {
     build: {
       rollupOptions: {
         onLog(level, log, handler) {
           // Filter out the specific module-preload-polyfill warning
-          if (log.plugin === 'nuxt:module-preload-polyfill' && log.message?.includes('Sourcemap is likely to be incorrect')) {
+          if (
+            log.plugin === "nuxt:module-preload-polyfill" &&
+            log.message?.includes("Sourcemap is likely to be incorrect")
+          ) {
             return;
           }
           handler(level, log);

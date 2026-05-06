@@ -1,11 +1,16 @@
-<template>
-  <div>Welcome to MegActe!</div>
-</template>
-
 <script setup>
-// You can add logic here if needed
+import { onMounted } from "vue";
+
+// Authenticated user composable
+const { user, initUserFromAuth, initPastellUser } = useUserContext();
+
+// Initialize user from auth when component mounts
+onMounted(() => {
+  initUserFromAuth();
+  initPastellUser();
+});
 </script>
 
-<style scoped>
-/* Add styles here if needed */
-</style>
+<template>
+  <div>Welcome {{ user?.name }} ({{ user?.email }}) to MegActe!</div>
+</template>

@@ -7,7 +7,12 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:fix2": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts -fix --ignore-pattern .gitignore --ignore-pattern .nuxt --ignore-pattern .output --ignore-pattern node_modules",
+    "format": "prettier . --check",
+    "format:fix": "prettier . --write"
   },
   "dependencies": {
     "next-auth": "^4.21.1",
@@ -17,6 +22,11 @@
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
-    "@sidebase/nuxt-auth": "^1.2.0"
+    "@nuxt/eslint": "^1.15.2",
+    "@sidebase/nuxt-auth": "^1.2.0",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "3.8.3",
+    "typescript": "^6.0.3"
   }
 }
