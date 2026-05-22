@@ -1,12 +1,20 @@
 <script setup lang="ts">
-console.log("C'est la page app.vue !!");
+import { onMounted } from "vue";
+
+const { initUserFromAuth, initPastellUser, user } = useUserContext();
+
+// Initialize user from auth when app mounts
+onMounted(async () => {
+  await initUserFromAuth();
+  // Only fetch Pastell user if we have a token from auth
+  if (user.value?.token) {
+    await initPastellUser();
+  }
+});
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col">
-    <main class="flex-grow container mx-auto p-4">
-      <NuxtRouteAnnouncer />
-      <NuxtPage />
-    </main>
-  </div>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
 </template>

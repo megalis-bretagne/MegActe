@@ -1,6 +1,8 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+import Aura from '@primeuix/themes/aura';
+import PrimeUI from 'tailwindcss-primeui';
+
 export default defineNuxtConfig({
-  devtools: { enabled: true },
+  devtools: { enabled: false },
 
   nitro: {
     preset: "node-server",
@@ -14,9 +16,9 @@ export default defineNuxtConfig({
   },
 
   modules: [
-    //   '@nuxtjs/tailwindcss',
     //   '@pinia/nuxt',        // gestion d'état
-    // Module d'authentification
+    '@nuxtjs/tailwindcss',
+    "@primevue/nuxt-module",
     "@sidebase/nuxt-auth",
     "@nuxt/eslint",
   ],
@@ -28,7 +30,6 @@ export default defineNuxtConfig({
     disableServerSideAuth: false,
     originEnvKey: "AUTH_ORIGIN",
     baseURL: process.env.APP_URL + "/auth",
-    //baseURL: 'http://localhost:3000/auth',
     provider: {
       type: "authjs",
       trustHost: false,
@@ -41,23 +42,39 @@ export default defineNuxtConfig({
     },
   },
 
+  primevue: {
+    options: {
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: ".p-dark",
+        }
+      },
+      ripple: true,
+    },
+    autoImport: false,
+  },
+
+  css: ["primeicons/primeicons.css"],
+  tailwindcss: {
+    config: {
+      plugins: [PrimeUI],
+      darkMode: ["class", ".p-dark"],
+    },
+  },
+
   eslint: {
     // options here
   },
-
-  // Configuration Tailwind (si utilisé)
-  //  tailwindcss: {
-  //    cssPath: '~/assets/css/tailwind.css',
-  //  },
 
   // Options de rendu
   ssr: true, // Active le Server-Side Rendering
 
   // Configuration des routes (optionnel)
-  routeRules: {
-    // Exemple : Cache statique pour certaines pages
-    "/": { static: true },
-  },
+  // routeRules: {
+  //   // Exemple : Cache statique pour certaines pages
+  //   "/": { static: true },
+  // },
 
   // Suppress the module-preload-polyfill sourcemap warning
   vite: {

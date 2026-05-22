@@ -1,9 +1,9 @@
 import { ref, computed } from "vue";
 
-export const useUserContext = () => {
-  // Reactive object for authenticated user
-  const user = ref<any>(null);
+// Reactive object for authenticated user
+const user = ref<any>(null);
 
+export const useUserContext = () => {
   // Vérifie si l'utilisateur est super admin
   // const isSuperAdmin = computed(() => {
   //   return currentUser.value?.user_info?.id_e === 0
@@ -44,7 +44,7 @@ export const useUserContext = () => {
           Authorization: `Bearer ${user.value?.token}`,
         },
       });
-      user.value = { ...user, pastell: pastellUser };
+      user.value = { ...user.value, pastell: pastellUser };
     } catch (error) {
       console.error("Failed to fetch related Pastell user data:", error);
     }
