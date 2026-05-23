@@ -12,6 +12,7 @@ configs:
 
 services:
   backend:
+    image: megacte-backend
     build:
       context: ./back
       dockerfile: Dockerfile.dev
@@ -38,6 +39,7 @@ services:
         target: /megacte-back/app
 
   frontend:
+    image: megacte-frontend
     build:
       context: ./web-app
       dockerfile: Dockerfile.dev
