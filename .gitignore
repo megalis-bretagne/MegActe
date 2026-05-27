@@ -135,8 +135,7 @@ dmypy.json
 .pyre/
 
 # dev config
-config
-config_local
+config*
 back/config/config.yml
 back/config/s2low
 web-app/src/assets/settings.json
