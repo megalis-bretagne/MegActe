@@ -15,7 +15,7 @@ services:
     image: megacte-backend
     build:
       context: ./back
-      dockerfile: Dockerfile.dev
+    command: ["./docker-backend-start.sh", "--dev"]
     configs:
       - source: api-config
         target: /megacte-back/config/config.yml
@@ -27,6 +27,7 @@ services:
       - db
     environment:
       MEGACTE_LOGLEVEL: "DEBUG"
+      PYTHONDONTWRITEBYTECODE: 1
     ports:
       - "8080:8080"
     networks:
