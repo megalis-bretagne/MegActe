@@ -13,7 +13,6 @@ services:
     image: megacte-backend
     build:
       context: ./back
-      dockerfile: Dockerfile
     configs:
       - source: api-config
         target: /megacte-back/config/config.yml
@@ -35,7 +34,6 @@ services:
     image: megacte-frontend-nuxt
     build:
       context: ./nuxt-web-app
-      dockerfile: Dockerfile
     environment:
       APP_URL: ${APP_URL}
       API_URL: ${API_URL}
