@@ -37,3 +37,7 @@ Tailwindcss is integrated to Primevue in styled mode. So @nuxtjs/tailwindcss and
 - Tailwindcss MCP
 
 Please use those MCP servers to get up-to-date documentation when you generate code.
+
+## Searching for files (find command)
+
+When you search for files using for instance find command, don't search into @./node_modules/ directory
