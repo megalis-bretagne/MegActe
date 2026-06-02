@@ -1,5 +1,5 @@
-import Aura from '@primeuix/themes/aura';
-import PrimeUI from 'tailwindcss-primeui';
+import Aura from "@primeuix/themes/aura";
+import PrimeUI from "tailwindcss-primeui";
 
 export default defineNuxtConfig({
   devtools: { enabled: false },
@@ -17,7 +17,7 @@ export default defineNuxtConfig({
 
   modules: [
     //   '@pinia/nuxt',        // gestion d'état
-    '@nuxtjs/tailwindcss',
+    "@nuxtjs/tailwindcss",
     "@primevue/nuxt-module",
     "@sidebase/nuxt-auth",
     "@nuxt/eslint",
@@ -37,7 +37,7 @@ export default defineNuxtConfig({
       addDefaultCallbackUrl: true,
     },
     sessionRefresh: {
-      enablePeriodically: true,
+      enablePeriodically: 3000,
       enableOnWindowFocus: true,
     },
   },
@@ -48,7 +48,7 @@ export default defineNuxtConfig({
         preset: Aura,
         options: {
           darkModeSelector: ".p-dark",
-        }
+        },
       },
       ripple: true,
     },
