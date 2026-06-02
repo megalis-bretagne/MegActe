@@ -1,6 +1,5 @@
 <script setup lang="ts">
 const { user } = useUserContext();
-
 </script>
 
 <template>
@@ -9,18 +8,31 @@ const { user } = useUserContext();
       <div class="flex items-center justify-between gap-4">
         <!-- Left side: Logo and text -->
         <div class="flex items-center space-x-3 flex-shrink-0">
-          <img src="/img/megalis_logo.png" alt="Megacte Logo" class="h-20 w-auto">
+          <img
+            src="/img/megalis_logo.png"
+            alt="Megacte Logo"
+            class="h-20 w-auto"
+          />
           <div>
-            <NuxtLink to="/" title="Accueil Megactes" class="text-lg font-bold text-gray-900">
+            <NuxtLink
+              to="/"
+              title="Accueil Megactes"
+              class="text-lg font-bold text-gray-900"
+            >
               Megactes
             </NuxtLink>
-            <p class="text-sm text-gray-500">Gestion des actes administratifs</p>
+            <p class="text-sm text-gray-500">
+              Gestion des actes administratifs
+            </p>
           </div>
         </div>
 
         <!-- Right side: User Avatar -->
         <div class="flex items-center flex-shrink-0">
-          <span v-if="user?.name" class="text-sm text-gray-600 hidden md:inline mr-2">
+          <span
+            v-if="user?.name"
+            class="text-sm text-gray-600 hidden md:inline mr-2"
+          >
             {{ user.name }}
           </span>
           <Avatar :label="user?.name?.charAt(0)" />
