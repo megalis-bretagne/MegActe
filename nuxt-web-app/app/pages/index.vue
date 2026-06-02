@@ -1,6 +1,5 @@
-<script setup>
-</script>
+<script setup></script>
 
 <template>
-  <div> Formulaires ici </div>
+  <div>Formulaires ici</div>
 </template>
