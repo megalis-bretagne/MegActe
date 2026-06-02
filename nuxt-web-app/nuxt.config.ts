@@ -29,7 +29,7 @@ export default defineNuxtConfig({
     globalAppMiddleware: true,
     disableServerSideAuth: false,
     originEnvKey: "AUTH_ORIGIN",
-    baseURL: process.env.APP_URL + "/auth",
+    baseURL: "/auth",
     provider: {
       type: "authjs",
       trustHost: false,
@@ -83,8 +83,8 @@ export default defineNuxtConfig({
         onLog(level, log, handler) {
           // Filter out the specific module-preload-polyfill warning
           if (
-            log.plugin === "nuxt:module-preload-polyfill" &&
-            log.message?.includes("Sourcemap is likely to be incorrect")
+              log.plugin === "nuxt:module-preload-polyfill" &&
+              log.message?.includes("Sourcemap is likely to be incorrect")
           ) {
             return;
           }

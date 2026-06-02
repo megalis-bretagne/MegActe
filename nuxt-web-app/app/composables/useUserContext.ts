@@ -22,6 +22,8 @@ export const useUserContext = () => {
     try {
       const { data, status } = useAuth();
 
+      console.log("[auth] data brut:", JSON.stringify(data.value));
+
       if (status.value === "authenticated" && data.value) {
         console.log("user is authenticated");
         user.value = { ...data.value?.user, token: data.value?.accessToken };
