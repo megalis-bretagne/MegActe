@@ -8,22 +8,20 @@ export default defineNuxtConfig({
     preset: "node-server",
   },
 
-  // Configuration des variables d'environnement publiques
   runtimeConfig: {
     public: {
       apiBaseUrl: process.env.API_URL || "http://localhost:8080",
+      pastellUrl: process.env.PASTELL_URL || "http://localhost:8080",
     },
   },
 
   modules: [
-    //   '@pinia/nuxt',        // gestion d'état
     "@nuxtjs/tailwindcss",
     "@primevue/nuxt-module",
     "@sidebase/nuxt-auth",
     "@nuxt/eslint",
   ],
 
-  // Configuration de nuxt-auth
   auth: {
     isEnabled: true,
     globalAppMiddleware: true,
@@ -37,8 +35,8 @@ export default defineNuxtConfig({
       addDefaultCallbackUrl: true,
     },
     sessionRefresh: {
-      enablePeriodically: 3000,
-      enableOnWindowFocus: true,
+      enablePeriodically: false,
+      enableOnWindowFocus: false,
     },
   },
 
@@ -63,25 +61,17 @@ export default defineNuxtConfig({
     },
   },
 
-  eslint: {
-    // options here
-  },
+  eslint: {},
 
-  // Options de rendu
-  ssr: true, // Active le Server-Side Rendering
+  ssr: true,
 
-  // Configuration des routes (optionnel)
-  // routeRules: {
-  //   // Exemple : Cache statique pour certaines pages
-  //   "/": { static: true },
-  // },
-
-  // Suppress the module-preload-polyfill sourcemap warning
   vite: {
+    optimizeDeps: {
+      include: ['@tanstack/vue-query'],
+    },
     build: {
       rollupOptions: {
         onLog(level, log, handler) {
-          // Filter out the specific module-preload-polyfill warning
           if (
               log.plugin === "nuxt:module-preload-polyfill" &&
               log.message?.includes("Sourcemap is likely to be incorrect")
