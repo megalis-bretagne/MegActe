@@ -59,7 +59,7 @@ function canEdit(doc: any): boolean {
 }
 
 function openDoc(doc: any) {
-  openPastell(doc);
+  router.push(`/org/${doc.id_e}/document/${doc.id_d}`);
 }
 
 function openPastell(doc: any) {
@@ -140,7 +140,6 @@ function actionColor(action: string): string {
           <td class="px-4 py-2 hidden sm:table-cell"><div class="h-3 w-36 bg-gray-100 rounded animate-pulse" /></td>
           <td class="px-4 py-2"><div class="h-3 w-28 bg-gray-100 rounded animate-pulse" /></td>
           <td class="px-4 py-2 hidden sm:table-cell"><div class="h-3 w-32 bg-gray-100 rounded animate-pulse" /></td>
-          <td class="px-4 py-2"><div class="h-3 w-16 bg-gray-100 rounded animate-pulse" /></td>
         </tr>
         </tbody>
       </table>
@@ -169,12 +168,11 @@ function actionColor(action: string): string {
             Dernier changement d'état
             <span class="ml-1 text-gray-400 text-xs">{{ sortKey === 'last_action_date' ? (sortAsc ? '↑' : '↓') : '↓' }}</span>
           </th>
-          <th class="px-4 py-3 font-semibold text-gray-700 whitespace-nowrap">Actions</th>
         </tr>
         </thead>
         <tbody>
         <tr v-if="sorted.length === 0">
-          <td :colspan="idFlux ? 4 : 5" class="text-center py-8 text-gray-400 italic">Aucun document</td>
+          <td :colspan="idFlux ? 3 : 4" class="text-center py-8 text-gray-400 italic">Aucun document</td>
         </tr>
         <tr
             v-for="(doc, index) in sorted"
@@ -201,46 +199,7 @@ function actionColor(action: string): string {
           <!-- Date -->
           <td class="px-4 py-2 text-gray-600 hidden sm:table-cell tabular-nums">{{ formatDate(doc.last_action_date) }}</td>
 
-          <!-- Actions -->
-          <td class="px-4 py-2">
-            <div class="flex items-center gap-2">
 
-              <!-- Boutons action_possible -->
-              <button
-                  v-for="action in doc.action_possible"
-                  :key="action.action"
-                  :title="action.message"
-                  :disabled="actionLoading === doc.id_d"
-                  :class="actionColor(action.action)"
-                  class="inline-flex items-center justify-center w-7 h-7 rounded hover:bg-gray-100 transition-colors disabled:opacity-40"
-                  @click="runAction(doc, action)"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" :d="actionIcon(action.action)" />
-                </svg>
-              </button>
-
-              <!-- Bouton consulter (œil) si non éditable -->
-              <button
-                  v-if="!canEdit(doc)"
-                  title="Consulter dans Pastell"
-                  class="inline-flex items-center justify-center w-7 h-7 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                  @click="openPastell(doc)"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-
-              <!-- Spinner pendant action -->
-              <svg v-if="actionLoading === doc.id_d" class="w-4 h-4 animate-spin text-blue-500" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
-
-            </div>
-          </td>
         </tr>
         </tbody>
       </table>

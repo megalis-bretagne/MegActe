@@ -2,6 +2,7 @@ import { ref } from "vue";
 
 const user = ref<any>(null);
 const pastellReady = ref(false);
+const selectedFlux = ref<string | null>(null);
 
 export const useUserContext = () => {
 
@@ -33,5 +34,5 @@ export const useUserContext = () => {
     }
   };
 
-  return { user, pastellReady, initUserFromAuth, initPastellUser };
+  return { user, pastellReady, initUserFromAuth, initPastellUser, selectedFlux };
 };

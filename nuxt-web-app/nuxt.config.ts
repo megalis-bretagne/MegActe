@@ -11,7 +11,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl: process.env.API_URL || "http://localhost:8080",
-      pastellUrl: process.env.PASTELL_URL || "http://localhost:8080",
+      pastellUrl: process.env.PASTEL_URL || "https://pastell.megalis.bretagne.bzh",
     },
   },
 
@@ -66,9 +66,6 @@ export default defineNuxtConfig({
   ssr: true,
 
   vite: {
-    optimizeDeps: {
-      include: ['@tanstack/vue-query'],
-    },
     build: {
       rollupOptions: {
         onLog(level, log, handler) {

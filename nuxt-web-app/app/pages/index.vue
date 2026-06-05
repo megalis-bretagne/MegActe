@@ -1,11 +1,16 @@
 <script setup lang="ts">
-const { user, pastellReady } = useUserContext();
+const { user, pastellReady, selectedFlux } = useUserContext();
+
 const entiteId = computed(() => user.value?.pastell?.user_info?.id_e);
 </script>
 
 <template>
   <div class="p-6">
-    <DocumentList v-if="entiteId" :entite-id="entiteId" />
+    <DocumentList
+        v-if="entiteId"
+        :entite-id="entiteId"
+        :id-flux="selectedFlux"
+    />
 
     <div v-else-if="!pastellReady" class="space-y-3 mt-2">
       <div class="h-6 w-48 bg-gray-200 rounded animate-pulse" />
