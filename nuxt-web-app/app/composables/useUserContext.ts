@@ -1,5 +1,4 @@
-import { ref, computed } from "vue";
-
+//const { logger } = useAppLogger();
 // Reactive object for authenticated user
 const user = ref<any>(null);
 
@@ -23,30 +22,17 @@ export const useUserContext = () => {
       const { data, status } = useAuth();
 
       if (status.value === "authenticated" && data.value) {
+        user.value = {
+          ...data.value?.user,
+          pastell: data.value?.pastellUser
+        };
         console.log("user is authenticated");
-        user.value = { ...data.value?.user, token: data.value?.accessToken };
-        console.log(user.value);
         console.log("user name = ", user.value?.name);
+        console.log("user object: ");
+        console.log(user.value);
       }
     } catch (error) {
-      console.error("Failed to initialize user from auth:", error);
-    }
-  };
-
-  //Get related pastell user from backend
-  const initPastellUser = async () => {
-    try {
-      const config = useRuntimeConfig();
-      console.log("initPastellUser: token:" + user.value?.token);
-      const pastellUser = await $fetch("/user", {
-        baseURL: config.public.apiBaseUrl,
-        headers: {
-          Authorization: `Bearer ${user.value?.token}`,
-        },
-      });
-      user.value = { ...user.value, pastell: pastellUser };
-    } catch (error) {
-      console.error("Failed to fetch related Pastell user data:", error);
+      console.log("Failed to initialize user from auth:", error);
     }
   };
 
@@ -55,6 +41,5 @@ export const useUserContext = () => {
     //isSuperAdmin,
     //entiteBase,
     initUserFromAuth,
-    initPastellUser,
   };
 };
