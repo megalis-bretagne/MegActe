@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AppPagination from '~/components/AppPagination.vue';
 import { ITEMS_PER_PAGE } from '~/composables/useDocuments';
 
 const props = defineProps<{
@@ -10,18 +9,23 @@ const props = defineProps<{
 const config = useRuntimeConfig();
 const router = useRouter();
 
-const pageActive = ref(1);
+const pageActive = ref(1);   // pilote la requête API
+const searchPage = ref(1);   // pilote la pagination des résultats filtrés
 const entiteIdRef = computed(() => props.entiteId);
 const idFluxRef = computed(() => props.idFlux ?? null);
+
+const search = ref('');
 
 const { documents, pagination, totalPages, isFetching, isError, error, invalidate } = useDocuments(
     entiteIdRef,
     idFluxRef,
-    pageActive
+    pageActive,
+    search,
 );
 
-watch(() => props.entiteId, () => { pageActive.value = 1; });
-watch(() => props.idFlux,   () => { pageActive.value = 1; });
+watch(() => props.entiteId, () => { pageActive.value = 1; search.value = ''; });
+watch(() => props.idFlux,   () => { pageActive.value = 1; search.value = ''; });
+watch(search,               () => { searchPage.value = 1; }, { flush: 'sync' });
 
 // Tri
 type SortKey = 'titre' | 'type' | 'last_action_message' | 'last_action_date';
@@ -29,13 +33,40 @@ const sortKey = ref<SortKey>('last_action_date');
 const sortAsc = ref(false);
 
 const sorted = computed(() => {
-  return [...documents.value].sort((a, b) => {
+  const term = search.value.trim().toLowerCase();
+  const base = term
+    ? documents.value.filter((doc) =>
+        [doc.titre, doc.type, doc.last_action_message, doc.last_action]
+          .some((v) => v?.toLowerCase().includes(term))
+      )
+    : documents.value;
+
+  return [...base].sort((a, b) => {
     const va = a[sortKey.value] ?? '';
     const vb = b[sortKey.value] ?? '';
     const cmp = va < vb ? -1 : va > vb ? 1 : 0;
     return sortAsc.value ? cmp : -cmp;
   });
 });
+
+const displayTotal = computed(() =>
+  search.value.trim() ? sorted.value.length : (pagination.value?.total ?? 0)
+);
+const displayTotalPages = computed(() =>
+  search.value.trim() ? Math.ceil(sorted.value.length / ITEMS_PER_PAGE) : totalPages.value
+);
+const displayedDocs = computed(() => {
+  if (!search.value.trim()) return sorted.value;
+  const start = (searchPage.value - 1) * ITEMS_PER_PAGE;
+  return sorted.value.slice(start, start + ITEMS_PER_PAGE);
+});
+
+const activePage = computed(() => search.value.trim() ? searchPage.value : pageActive.value);
+
+function onChangePage(p: number) {
+  if (search.value.trim()) searchPage.value = p;
+  else pageActive.value = p;
+}
 
 function toggleSort(key: SortKey) {
   if (sortKey.value === key) sortAsc.value = !sortAsc.value;
@@ -120,6 +151,7 @@ function actionColor(action: string): string {
       <h1 class="text-xl font-semibold text-gray-900">
         {{ idFlux ? `Liste des ${idFlux}` : 'Liste des documents' }}
       </h1>
+      <DocumentSearch v-model="search" />
     </div>
 
     <!-- Skeleton premier chargement -->
@@ -171,11 +203,11 @@ function actionColor(action: string): string {
         </tr>
         </thead>
         <tbody>
-        <tr v-if="sorted.length === 0">
+        <tr v-if="displayedDocs.length === 0">
           <td :colspan="idFlux ? 3 : 4" class="text-center py-8 text-gray-400 italic">Aucun document</td>
         </tr>
         <tr
-            v-for="(doc, index) in sorted"
+            v-for="(doc, index) in displayedDocs"
             :key="doc.id_d"
             :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
             class="hover:bg-blue-50 transition-colors"
@@ -204,14 +236,14 @@ function actionColor(action: string): string {
         </tbody>
       </table>
 
-      <div v-if="totalPages > 1" class="border-t border-gray-200 px-4 py-2 bg-white">
-        <AppPagination :total-pages="totalPages" :page-active="pageActive" @change-page="(p) => pageActive = p" />
+      <div v-if="displayTotalPages > 1" class="border-t border-gray-200 px-4 py-2 bg-white">
+        <AppPagination :total-pages="displayTotalPages" :page-active="activePage" @change-page="onChangePage" />
       </div>
     </div>
 
-    <div v-if="pagination && pagination.total > 0" class="mt-2 text-xs text-gray-400 text-right">
-      {{ (pageActive - 1) * ITEMS_PER_PAGE + 1 }}–{{ Math.min(pageActive * ITEMS_PER_PAGE, pagination.total) }}
-      sur {{ pagination.total }} documents
+    <div v-if="displayTotal > 0" class="mt-2 text-xs text-gray-400 text-right">
+      {{ (activePage - 1) * ITEMS_PER_PAGE + 1 }}–{{ Math.min(activePage * ITEMS_PER_PAGE, displayTotal) }}
+      sur {{ displayTotal }} document{{ displayTotal !== 1 ? 's' : '' }}
     </div>
 
   </div>

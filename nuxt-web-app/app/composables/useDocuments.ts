@@ -65,18 +65,27 @@ const fetchPage = async (
 export const useDocuments = (
     entiteId: Ref<number | undefined>,
     idFlux: Ref<string | null | undefined>,
-    page: Ref<number>
+    page: Ref<number>,
+    search: Ref<string>,
 ) => {
     const { user } = useUserContext();
     const queryClient = useQueryClient();
 
-    const offset = computed(() => (page.value - 1) * ITEMS_PER_PAGE);
+    // Mémorisé après le premier chargement normal
+    const knownTotal = ref(0);
+
+    const isSearching = computed(() => !!search.value.trim());
+
+    // En recherche : tout fetcher en une requête ; sinon pagination normale
+    const effectiveOffset = computed(() => isSearching.value ? 0 : (page.value - 1) * ITEMS_PER_PAGE);
+    const effectiveLimit  = computed(() => isSearching.value ? (knownTotal.value || ITEMS_PER_PAGE) : ITEMS_PER_PAGE);
 
     const queryKey = computed(() => [
         'documents',
         entiteId.value,
         idFlux.value ?? null,
-        offset.value,
+        effectiveOffset.value,
+        effectiveLimit.value,
     ]);
 
     const { data, isFetching, isError, error } = useQuery({
@@ -84,9 +93,9 @@ export const useDocuments = (
         queryFn: () => fetchPage(
             entiteId.value!,
             idFlux.value ?? null,
-            offset.value,
-            ITEMS_PER_PAGE,
-            user.value?.token
+            effectiveOffset.value,
+            effectiveLimit.value,
+            user.value?.token,
         ),
         enabled: computed(() => !!entiteId.value && !!user.value?.token),
         staleTime: 60_000,
@@ -101,10 +110,8 @@ export const useDocuments = (
         if (!entiteId.value || !user.value?.token) return;
         if (prefetchOffset < 0 || prefetchOffset >= total) return;
 
-        const key = ['documents', entiteId.value, idFlux.value ?? null, prefetchOffset];
-        // Ne prefetch que si pas déjà en cache
-        const cached = queryClient.getQueryData(key);
-        if (cached) return;
+        const key = ['documents', entiteId.value, idFlux.value ?? null, prefetchOffset, ITEMS_PER_PAGE];
+        if (queryClient.getQueryData(key)) return;
 
         queryClient.prefetchQuery({
             queryKey: key,
@@ -113,20 +120,19 @@ export const useDocuments = (
                 idFlux.value ?? null,
                 prefetchOffset,
                 ITEMS_PER_PAGE,
-                user.value?.token
+                user.value?.token,
             ),
             staleTime: 60_000,
+            retry: false,
         });
     };
 
-    // Prefetch pages adjacentes dès que total est connu
     watch(data, (d) => {
         const total = d?.pagination?.total ?? 0;
-        if (!total) return;
-        // Page suivante
-        doPrefetch(offset.value + ITEMS_PER_PAGE, total);
-        // Page précédente (utile si l'utilisateur revient en arrière)
-        doPrefetch(offset.value - ITEMS_PER_PAGE, total);
+        if (!total || isSearching.value) return;
+        knownTotal.value = total;
+        doPrefetch(effectiveOffset.value + ITEMS_PER_PAGE, total);
+        doPrefetch(effectiveOffset.value - ITEMS_PER_PAGE, total);
     }, { immediate: true });
 
     const documents = computed(() =>
