@@ -1,6 +1,6 @@
 //const { logger } = useAppLogger();
 // Reactive object for authenticated user
-const user = ref<any>(null);
+const user = ref<userSession>(null);
 
 export const useUserContext = () => {
   // Vérifie si l'utilisateur est super admin
@@ -24,7 +24,7 @@ export const useUserContext = () => {
       if (status.value === "authenticated" && data.value) {
         user.value = {
           ...data.value?.user,
-          pastell: data.value?.pastellUser
+          pastellUser: data.value?.pastellUser
         };
         console.log("user is authenticated");
         console.log("user name = ", user.value?.name);

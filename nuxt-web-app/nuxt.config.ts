@@ -37,7 +37,7 @@ export default defineNuxtConfig({
       addDefaultCallbackUrl: true,
     },
     sessionRefresh: {
-      enablePeriodically: 10000,
+      enablePeriodically: 30000,
       enableOnWindowFocus: true,
     },
   },
@@ -64,7 +64,6 @@ export default defineNuxtConfig({
   },
 
   eslint: {
-    // options here
   },
 
   // Options de rendu

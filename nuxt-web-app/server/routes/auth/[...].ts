@@ -26,7 +26,6 @@ async function refreshAccessToken(token: JWT) {
       accessToken: res.access_token,
       accessTokenExpiresAt: Date.now() + res.expires_in * 1000,
       refreshToken: res.refresh_token ?? token.refreshToken, // Fall back to old refresh token
-      getPastellUser: true,
     };
   } catch (error) {
     console.error(error);
@@ -56,7 +55,6 @@ export default NuxtAuthHandler({
         token.refreshToken = account.refresh_token;
         token.refreshTokenExpiresAt =
           Date.now() + (account.refresh_expires_in as number) * 1000;
-        token.getPastellUser = true;
       }
 
       // If the access token has not expired we return it
@@ -69,10 +67,7 @@ export default NuxtAuthHandler({
       return refreshAccessToken(token);
     },
     async session({ session, token }) {
-      if (token.getPastellUser) {
-        session.pastellUser = await getPastellUser(token.accessToken);
-        token.getPastellUser = false;
-      }
+      session.pastellUser = await getPastellUser(token.accessToken);
       console.log("returned session object");
       console.log(session);
       return session;
