@@ -1,7 +1,10 @@
 <script setup lang="ts">
 const { user, pastellReady, selectedFlux } = useUserContext();
 
-const entiteId = computed(() => user.value?.pastell?.user_info?.id_e);
+
+const entiteId = computed(() => user.value?.pastellUser?.user_info?.id_e);
+console.log("tester ", entiteId.value);
+console.log("tester_2", selectedFlux);
 </script>
 
 <template>

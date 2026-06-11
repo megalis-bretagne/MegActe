@@ -12,13 +12,17 @@ export const useUserContext = () => {
 
       const { data, status } = useAuth();
 
+
       if (status.value === "authenticated" && data.value) {
         user.value = {
           ...data.value?.user,
-          pastellUser: data.value?.pastellUser
+          pastellUser: data.value?.pastellUser,
+          token: data.value?.accessToken,
         };
+
         console.log("user is authenticated");
         console.log("user name = ", user.value?.name);
+        console.log("acces token = ", user.value?.token);
         console.log("user object: ");
         console.log(user.value);
       }

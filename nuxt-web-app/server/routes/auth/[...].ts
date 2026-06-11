@@ -67,6 +67,7 @@ export default NuxtAuthHandler({
     },
     async session({ session, token }) {
       session.pastellUser = await getPastellUser(token.accessToken);
+      session.accessToken = token.accessToken;
       console.log("returned session object");
       console.log(session);
       return session;

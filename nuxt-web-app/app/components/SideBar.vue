@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <script setup lang="ts">
 const props = defineProps<{
   entiteId?: number;
@@ -13,6 +12,7 @@ const { user } = useUserContext();
 const fluxList = ref<Record<string, any>>({});
 
 async function fetchFlux() {
+  console.log("fetchFlux");
   if (!user.value?.token) return;
   try {
     fluxList.value = await $fetch<Record<string, any>>("/flux", {
