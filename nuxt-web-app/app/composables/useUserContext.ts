@@ -5,13 +5,10 @@ const selectedFlux = ref<string | null>(null);
 //const { logger } = useAppLogger();
 // Reactive object for authenticated user
 
-
 export const useUserContext = () => {
   const initUserFromAuth = async () => {
     try {
-
       const { data, status } = useAuth();
-
 
       if (status.value === "authenticated" && data.value) {
         user.value = {
@@ -34,6 +31,6 @@ export const useUserContext = () => {
   return {
     user,
     pastellReady,
-    initUserFromAuth
+    initUserFromAuth,
   };
 };
