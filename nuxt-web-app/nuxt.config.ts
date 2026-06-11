@@ -11,7 +11,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       apiBaseUrl: process.env.API_URL || "http://localhost:8080",
-      pastellUrl: process.env.PASTEL_URL || "https://pastell.megalis.bretagne.bzh",
+      pastellUrl:
+        process.env.PASTEL_URL || "https://pastell.megalis.bretagne.bzh",
     },
   },
 
@@ -70,8 +71,8 @@ export default defineNuxtConfig({
       rollupOptions: {
         onLog(level, log, handler) {
           if (
-              log.plugin === "nuxt:module-preload-polyfill" &&
-              log.message?.includes("Sourcemap is likely to be incorrect")
+            log.plugin === "nuxt:module-preload-polyfill" &&
+            log.message?.includes("Sourcemap is likely to be incorrect")
           ) {
             return;
           }

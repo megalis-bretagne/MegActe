@@ -5,7 +5,6 @@ const pastellReady = ref(false);
 const selectedFlux = ref<string | null>(null);
 
 export const useUserContext = () => {
-
   const initUserFromAuth = async () => {
     try {
       // Appel unique via getSession plutôt que useAuth() qui crée des watchers réactifs
@@ -34,5 +33,11 @@ export const useUserContext = () => {
     }
   };
 
-  return { user, pastellReady, initUserFromAuth, initPastellUser, selectedFlux };
+  return {
+    user,
+    pastellReady,
+    initUserFromAuth,
+    initPastellUser,
+    selectedFlux,
+  };
 };

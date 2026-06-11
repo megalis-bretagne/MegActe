@@ -62,7 +62,7 @@ def get_document(
     return DocumentService(client).get_single_document(entite_id, document_id)
 
 
-# Journal d'un document
+# Journal doc
 @router.get(
     "/entite/{entite_id}/document/{document_id}/journal",
     tags=["document"],

@@ -8,8 +8,8 @@ const { selectedFlux } = useUserContext();
 
     <div class="flex flex-1 overflow-hidden">
       <SideBar
-          :selected-flux="selectedFlux"
-          @select-flux="selectedFlux = $event"
+        :selected-flux="selectedFlux"
+        @select-flux="selectedFlux = $event"
       />
 
       <main class="flex-1 overflow-y-auto">
