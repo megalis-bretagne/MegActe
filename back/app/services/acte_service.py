@@ -57,8 +57,16 @@ class ActeService(BaseService):
             )
 
         response = self.api_pastell.perform_post(f"/entite/{entite_id}/document/{document_id}/action/{action}")
+        action_result = ActionResult(**response)
 
-        return ActionResult(**response)
+        if not action_result.result:
+            raise MegActeException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail=action_result.message or "Action impossible",
+                code=ErrorCode.PASTELL_ERROR,
+            )
+
+        return action_result
 
     def perform_action_on_documents(
         self, entite_id: int, documents_id: list[str], action: ActionDocument
@@ -97,8 +105,12 @@ class ActeService(BaseService):
         for doc_id in documents_id:
             response = self.api_pastell.perform_post(f"/entite/{entite_id}/document/{doc_id}/action/{action}")
             logger.info(f"Action multiple {action} sur le document {doc_id} entite {entite_id}, response {response}")
+            action_result = ActionResult(**response)
+            if not action_result.result:
+                raise MegActeException(
+                    status_code=HTTPStatus.BAD_REQUEST,
+                    detail=action_result.message or "Action impossible",
+                    code=ErrorCode.PASTELL_ERROR,
+                )
 
-        return ActionResult(
-            result=True,
-            message="",
-        )
+        return ActionResult(result=True, message="")

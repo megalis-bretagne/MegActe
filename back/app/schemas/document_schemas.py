@@ -214,6 +214,17 @@ class DocumentPaginate(BaseModel):
     pagination: ResponsePagination
 
 
+class JournalEntry(BaseModel):
+    id_j: Optional[str] = None
+    type: Optional[str] = None
+    action: Optional[str] = None
+    message: Optional[str] = None
+    date: Optional[str] = None
+    nom: Optional[str] = None
+    prenom: Optional[str] = None
+    action_libelle: Optional[str] = None
+
+
 class DocumentDetail(BaseModel):
     """Le detail d'un document
 
@@ -231,6 +242,7 @@ class DocumentDetail(BaseModel):
     last_action_message: Optional[str] = Field(validation_alias=AliasPath("last_action", "message"), default="")
     last_action_date: str = Field(validation_alias=AliasPath("last_action", "date"))
     action_possible: list[ActionPossible] = []
+    log: list[Dict[str, Any]] = []
 
     @model_validator(mode="before")
     def convert_action_possible(cls, values):

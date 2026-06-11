@@ -22,6 +22,7 @@ from ..schemas.document_schemas import (
     DeleteFileFromDoc,
     AddFilesToDoc,
     DocumentActionRequest,
+    JournalEntry,
 )
 
 router = APIRouter()
@@ -59,6 +60,20 @@ def get_document(
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     return DocumentService(client).get_single_document(entite_id, document_id)
+
+
+# Journal d'un document
+@router.get(
+    "/entite/{entite_id}/document/{document_id}/journal",
+    tags=["document"],
+    response_model=list[JournalEntry],
+)
+def get_document_journal(
+    document_id: str,
+    entite_id: int,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return DocumentService(client).get_document_journal(entite_id, document_id)
 
 
 # Delete Document

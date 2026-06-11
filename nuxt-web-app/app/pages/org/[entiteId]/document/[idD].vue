@@ -6,6 +6,8 @@ const idD = route.params.idD as string;
 
 <template>
   <div class="p-6">
-    <DocumentDetail :entite-id="entiteId" :id-d="idD" />
+    <ClientOnly>
+      <DocumentDetail :entite-id="entiteId" :id-d="idD" />
+    </ClientOnly>
   </div>
 </template>

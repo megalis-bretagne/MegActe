@@ -35,7 +35,7 @@ class DocumentConfig(BaseModel):
     """
 
     # La liste des external Data à récupérer au get des Documents
-    external_data_to_retrieve: list[str] = ["type_piece_fichier"]
+    external_data_to_retrieve: list[str] = ["type_piece_fichier", "ged_document_id_file"]
     # liste des états finaux des documents.
     final_state: list[ActionDocument] = [
         ActionDocument.termine,
