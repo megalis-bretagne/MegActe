@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <script setup lang="ts">
 const props = defineProps<{
   entiteId?: number;
@@ -38,7 +39,6 @@ const fluxItems = computed(() => {
     .sort((a, b) => a.nom.localeCompare(b.nom));
 });
 </script>
-
 <template>
   <aside class="w-64 shrink-0 bg-white border-r border-gray-200 min-h-screen">
     <!-- Tous les documents -->

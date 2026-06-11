@@ -10,7 +10,6 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "lint:fix2": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts -fix --ignore-pattern .gitignore --ignore-pattern .nuxt --ignore-pattern .output --ignore-pattern node_modules",
     "format": "prettier . --check",
     "format:fix": "prettier . --write"
   },
