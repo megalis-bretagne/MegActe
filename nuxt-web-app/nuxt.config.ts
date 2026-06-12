@@ -8,28 +8,27 @@ export default defineNuxtConfig({
     preset: "node-server",
   },
 
-  // Configuration des variables d'environnement publiques
   runtimeConfig: {
     public: {
       apiBaseUrl: process.env.API_URL || "http://localhost:8080",
+      pastellUrl:
+        process.env.PASTEL_URL || "https://pastell.megalis.bretagne.bzh",
     },
   },
 
   modules: [
-    //   '@pinia/nuxt',        // gestion d'état
     "@nuxtjs/tailwindcss",
     "@primevue/nuxt-module",
     "@sidebase/nuxt-auth",
     "@nuxt/eslint",
   ],
 
-  // Configuration de nuxt-auth
   auth: {
     isEnabled: true,
     globalAppMiddleware: true,
     disableServerSideAuth: false,
     originEnvKey: "AUTH_ORIGIN",
-    baseURL: process.env.APP_URL + "/auth",
+    baseURL: "/auth",
     provider: {
       type: "authjs",
       trustHost: false,
@@ -63,24 +62,14 @@ export default defineNuxtConfig({
     },
   },
 
-  eslint: {
-  },
+  eslint: {},
 
-  // Options de rendu
-  ssr: true, // Active le Server-Side Rendering
+  ssr: true,
 
-  // Configuration des routes (optionnel)
-  // routeRules: {
-  //   // Exemple : Cache statique pour certaines pages
-  //   "/": { static: true },
-  // },
-
-  // Suppress the module-preload-polyfill sourcemap warning
   vite: {
     build: {
       rollupOptions: {
         onLog(level, log, handler) {
-          // Filter out the specific module-preload-polyfill warning
           if (
             log.plugin === "nuxt:module-preload-polyfill" &&
             log.message?.includes("Sourcemap is likely to be incorrect")

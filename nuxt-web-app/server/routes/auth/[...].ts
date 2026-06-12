@@ -63,11 +63,11 @@ export default NuxtAuthHandler({
         return token;
       }
 
-      // refresh the access token if it has expired
       return refreshAccessToken(token);
     },
     async session({ session, token }) {
       session.pastellUser = await getPastellUser(token.accessToken);
+      session.accessToken = token.accessToken;
       console.log("returned session object");
       console.log(session);
       return session;

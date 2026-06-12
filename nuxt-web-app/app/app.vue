@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
+import { useUserContext } from "./composables/useUserContext";
 
 const { initUserFromAuth } = useUserContext();
 
 onMounted(async () => {
   await initUserFromAuth();
-
-  //const { initAppLogger } = useAppLogger();
-
-  //initAppLogger(process.env.LOGGER_PREFIX);
 });
 </script>
 

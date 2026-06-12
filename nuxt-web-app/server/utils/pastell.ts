@@ -13,4 +13,4 @@ export async function getPastellUser(accessToken: string): Promise<Void> {
   } catch (error) {
     console.log("Failed to fetch related Pastell user data:", error);
   }
-};
+}

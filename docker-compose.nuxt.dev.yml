@@ -22,7 +22,8 @@ services:
       - source: public-certificate
         target: /megacte-back/config/publicCertificate_tech.pem
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       MEGACTE_LOGLEVEL: "DEBUG"
       PYTHONDONTWRITEBYTECODE: 1
@@ -31,7 +32,6 @@ services:
     networks:
       - megacte-front-tier
       - megacte-back-tier
-
     volumes:
       - type: bind
         source: ./back/app
@@ -43,11 +43,14 @@ services:
       context: ./nuxt-web-app
       dockerfile: Dockerfile.dev
     command: npm run dev -- --host 0.0.0.0
+    env_file:
+      - .env
     environment:
-      KEYCLOAK_ISSUER: https://sso-preprod.megalis.bretagne.bzh/auth/
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
       KEYCLOAK_REALM: megalis
-      KEYCLOAK_CLIENT_ID: megacte
-      API_BASE_URL: http://localhost:8080
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      API_BASE_URL: ${API_URL}
+      AUTH_ORIGIN: ${AUTH_ORIGIN}
     ports:
       - "3000:3000"
     depends_on:
@@ -58,6 +61,12 @@ services:
       - type: bind
         source: ./nuxt-web-app/app
         target: /nuxt-app/app
+      - type: bind
+        source: ./nuxt-web-app/server
+        target: /nuxt-app/server
+      - type: bind # Ajout du volume public
+        source: ./nuxt-web-app/public
+        target: /nuxt-app/public
 
   db:
     image: postgres:18.3-alpine
@@ -73,6 +82,11 @@ services:
       megacte-back-tier:
         aliases:
           - megacte-db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   megacte-db-data:

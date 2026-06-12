@@ -55,6 +55,12 @@ class DocumentService(BaseService):
 
         return document
 
+    def get_document_journal(self, entite_id: int, document_id: str) -> list:
+        return self.api_pastell.perform_get(
+            "journal",
+            query_params={"id_e": entite_id, "id_d": document_id},
+        )
+
     def create_document(self, id_e: int, flux: str):
         try:
             return self.api_pastell.perform_post(f"/entite/{id_e}/document", data={"type": flux})
