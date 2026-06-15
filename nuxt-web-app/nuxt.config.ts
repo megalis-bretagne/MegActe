@@ -20,6 +20,7 @@ export default defineNuxtConfig({
     "@nuxtjs/tailwindcss",
     "@primevue/nuxt-module",
     "@sidebase/nuxt-auth",
+    "@peterbud/nuxt-query",
     "@nuxt/eslint",
   ],
 
@@ -38,6 +39,37 @@ export default defineNuxtConfig({
     sessionRefresh: {
       enablePeriodically: 30000,
       enableOnWindowFocus: true,
+    },
+  },
+
+  nuxtQuery: {
+    /**
+     * Specify which Vue Query composables to auto-import
+     * Default: `false`, set to `true` to auto-import all Vue Query composables
+     */
+    autoImports: ['useQueryClient', 'useQuery', 'usePrefetchQuery'],
+
+    // Enable/disable Nuxt DevTools integration (default: true)
+    devtools: false,
+
+    /**
+     * These are the same options as the QueryClient
+     * from @tanstack/vue-query, which will be passed
+     * to the QueryClient constructor
+     * More details: https://tanstack.com/query/v5/docs/reference/QueryClient
+     *
+     * queryClient options described here:
+     * https://tanstack.com/query/latest/docs/framework/react/reference/useQuery
+     */
+
+    queryClientOptions: {
+      defaultOptions: {
+        queries: {
+          refetchOnWindowFocus: false,
+          staleTime: 60_000,
+          //refetchInterval: 5000,
+        },
+      },
     },
   },
 

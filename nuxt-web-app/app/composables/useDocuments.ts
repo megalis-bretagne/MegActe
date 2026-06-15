@@ -1,5 +1,3 @@
-import { useQuery, useQueryClient } from "@tanstack/vue-query";
-
 export interface DocumentInfo {
   id_d: string;
   id_e: string;
@@ -105,7 +103,6 @@ export const useDocuments = (
         user.value?.token,
       ),
     enabled: computed(() => !!entiteId.value && !!user.value?.token),
-    staleTime: 60_000,
     placeholderData: (prev) => prev,
     retry: (failureCount, error: any) => {
       if (error?.status === 403 || error?.response?.status === 403)
@@ -125,7 +122,6 @@ export const useDocuments = (
       prefetchOffset,
       ITEMS_PER_PAGE,
     ];
-    if (queryClient.getQueryData(key)) return;
 
     queryClient.prefetchQuery({
       queryKey: key,
@@ -137,8 +133,6 @@ export const useDocuments = (
           ITEMS_PER_PAGE,
           user.value?.token,
         ),
-      staleTime: 60_000,
-      retry: false,
     });
   };
 
