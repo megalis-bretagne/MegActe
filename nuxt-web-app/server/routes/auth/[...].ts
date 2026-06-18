@@ -55,8 +55,20 @@ export default NuxtAuthHandler({
         token.refreshToken = account.refresh_token;
         token.refreshTokenExpiresAt =
           Date.now() + (account.refresh_expires_in as number) * 1000;
+        token.userId = account.providerAccountId;
+        try {
+          console.log("primary call to jwt callback: prefetching data");
+          const pastellUser = await getPastellUser(token.accessToken);
+          const prefetchStorage = useStorage(token.userId);
+          await prefetchStorage.setItem("pastellUser", pastellUser);
+        } catch (error) {
+          token.pastellUser = null;
+          console.error("Error while prefetching user", error);
+        }
+        return token;
       }
 
+      console.log("jwt callback: token = ", token);
       // If the access token has not expired we return it
       if (Date.now() < (token.accessTokenExpiresAt as number)) {
         console.log("returning token", token.accessToken);
@@ -66,7 +78,12 @@ export default NuxtAuthHandler({
       return refreshAccessToken(token);
     },
     async session({ session, token }) {
-      session.pastellUser = await getPastellUser(token.accessToken);
+      if (token.userId) {
+        const prefetchStorage = useStorage(token.userId);
+        session.pastellUser = await prefetchStorage.getItem("pastellUser");
+      } else {
+        session.pastellUser = null;
+      }
       session.accessToken = token.accessToken;
       console.log("returned session object");
       console.log(session);
