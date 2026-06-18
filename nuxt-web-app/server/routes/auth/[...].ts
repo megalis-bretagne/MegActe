@@ -5,7 +5,7 @@ async function refreshAccessToken(token: JWT) {
   try {
     console.log("refreshAccessToken called");
     const url = `${process.env.KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
-    const req = await fetch(url, {
+    const res = await $fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -15,9 +15,9 @@ async function refreshAccessToken(token: JWT) {
         `&client_id=${process.env.KEYCLOAK_CLIENT_ID}` +
         `&client_secret=${process.env.KEYCLOAK_CLIENT_SECRET}` +
         `&refresh_token=${token.refreshToken}`,
+      timeout: 1000,
     });
 
-    const res = await req.json();
     console.log("res object");
     console.log(res);
     console.log("new access token", res.access_token);
