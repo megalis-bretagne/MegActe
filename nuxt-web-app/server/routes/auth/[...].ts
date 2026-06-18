@@ -51,7 +51,7 @@ export default NuxtAuthHandler({
       if (account) {
         console.log({ token, user, account });
         token.accessToken = account.access_token;
-        token.accessTokenExpiresAt = account.expires_at;
+        token.accessTokenExpiresAt = account.expires_at * 1000;
         token.refreshToken = account.refresh_token;
         token.refreshTokenExpiresAt =
           Date.now() + (account.refresh_expires_in as number) * 1000;
