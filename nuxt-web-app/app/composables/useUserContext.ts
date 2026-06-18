@@ -2,16 +2,10 @@ const user = ref<userSession>(null);
 const pastellReady = ref(false);
 const selectedFlux = ref<string | null>(null);
 
-//const { logger } = useAppLogger();
-// Reactive object for authenticated user
-
-
 export const useUserContext = () => {
   const initUserFromAuth = async () => {
     try {
-
       const { data, status } = useAuth();
-
 
       if (status.value === "authenticated" && data.value) {
         user.value = {
@@ -20,11 +14,15 @@ export const useUserContext = () => {
           token: data.value?.accessToken,
         };
 
-        console.log("user is authenticated");
-        console.log("user name = ", user.value?.name);
-        console.log("acces token = ", user.value?.token);
-        console.log("user object: ");
-        console.log(user.value);
+        // Synchronise le token à chaque refresh de session nuxt-auth
+        watch(
+          () => data.value?.accessToken,
+          (newToken) => {
+            if (newToken && user.value) {
+              user.value = { ...user.value, token: newToken };
+            }
+          },
+        );
       }
     } catch (error) {
       console.log("Failed to initialize user from auth:", error);
@@ -34,6 +32,7 @@ export const useUserContext = () => {
   return {
     user,
     pastellReady,
-    initUserFromAuth
+    selectedFlux,
+    initUserFromAuth,
   };
 };

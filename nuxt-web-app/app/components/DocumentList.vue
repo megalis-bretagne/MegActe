@@ -8,6 +8,10 @@ const props = defineProps<{
 
 const config = useRuntimeConfig();
 const router = useRouter();
+function createDoc() {
+  if (!props.idFlux) return;
+  router.push(`/org/${props.entiteId}/document/new/edit?type=${props.idFlux}`);
+}
 
 const pageActive = ref(1); // pilote la requête API
 const searchPage = ref(1); // pilote la pagination des résultats filtrés
@@ -123,18 +127,8 @@ function canEdit(doc: any): boolean {
 }
 
 function openDoc(doc: any) {
-  router.push(`/org/${doc.id_e}/document/${doc.id_d}`);
-}
-
-function openPastell(doc: any) {
-  if (!import.meta.client) return;
-  const pastellUrl = config.public.pastellUrl;
-  if (!pastellUrl) {
-    console.error("pastellUrl non défini");
-    return;
-  }
-  const url = `${pastellUrl}/Document/detail?id_d=${doc.id_d}&id_e=${doc.id_e}`;
-  window.open(url, "_blank", "noopener,noreferrer");
+  console.log("doc",doc);
+  router.push(`/org/${doc.id_e}/document/${doc.id_d}?type=${doc.type}`);
 }
 
 // Actions dynamiques (perform_action)
@@ -197,7 +191,17 @@ function actionColor(action: string): string {
       <h1 class="text-xl font-semibold text-gray-900">
         {{ idFlux ? `Liste des ${idFlux}` : "Liste des documents" }}
       </h1>
-      <DocumentSearch v-model="search" />
+      <div class="flex items-center gap-3">
+        <Button
+          v-if="idFlux"
+          label="Créer un document"
+          icon="pi pi-plus"
+          severity="secondary"
+          class="shrink-0"
+          @click="createDoc"
+        />
+        <DocumentSearch v-model="search" />
+      </div>
     </div>
 
     <!-- Skeleton premier chargement -->
