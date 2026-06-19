@@ -6,34 +6,12 @@ const props = defineProps<{
 
 const emit = defineEmits<{ selectFlux: [flux: string | null] }>();
 
-const config = useRuntimeConfig();
 const { user } = useUserContext();
 
-const fluxList = ref<Record<string, any>>({});
-
-async function fetchFlux() {
-  console.log("fetchFlux");
-  if (!user.value?.token) return;
-  try {
-    fluxList.value = await $fetch<Record<string, any>>("/flux", {
-      baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${user.value.token}` },
-    });
-  } catch {
-    fluxList.value = {};
-  }
-}
-
-watch(
-  () => user.value?.token,
-  (token) => {
-    if (token) fetchFlux();
-  },
-  { immediate: true },
-);
+console.log("user.value.flux: ", user.value.flux);
 
 const fluxItems = computed(() => {
-  return Object.entries(fluxList.value)
+  return Object.entries(user.value.flux)
     .filter(([, f]) => f.enable !== false)
     .map(([id, f]: [string, any]) => ({ id, nom: f.nom ?? id }))
     .sort((a, b) => a.nom.localeCompare(b.nom));

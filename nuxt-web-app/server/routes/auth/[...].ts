@@ -1,6 +1,7 @@
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { NuxtAuthHandler } from "#auth";
 import { fetchUser } from "~/utils/fetchUser";
+import { fetchUserFlux } from "~/utils/fetchUserFlux";
 
 async function refreshAccessToken(token: JWT) {
   try {
@@ -60,8 +61,10 @@ export default NuxtAuthHandler({
         try {
           console.log("primary call to jwt callback: prefetching data");
           const pastellUser = await fetchUser(token.accessToken);
+          const pastellUserFlux = await fetchUserFlux(token.accessToken);
           const prefetchStorage = useStorage(token.userId);
           await prefetchStorage.setItem("pastellUser", pastellUser);
+          await prefetchStorage.setItem("pastellUserFlux", pastellUserFlux);
         } catch (error) {
           token.pastellUser = null;
           console.error("Error while prefetching user", error);
@@ -82,8 +85,10 @@ export default NuxtAuthHandler({
       if (token.userId) {
         const prefetchStorage = useStorage(token.userId);
         session.pastellUser = await prefetchStorage.getItem("pastellUser");
+        session.pastellUserFlux = await prefetchStorage.getItem("pastellUserFlux");
       } else {
         session.pastellUser = null;
+        session.pastellUserFlux = null;
       }
       session.accessToken = token.accessToken;
       console.log("returned session object");
