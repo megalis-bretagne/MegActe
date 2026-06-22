@@ -17,20 +17,6 @@ export interface DocumentPaginate {
 
 export const ITEMS_PER_PAGE = 20;
 
-const refreshToken = async (): Promise<string | null> => {
-  try {
-    const session = await $fetch<any>("/auth/session");
-    if (session?.accessToken) {
-      const { user } = useUserContext();
-      user.value = { ...user.value, token: session.accessToken };
-      return session.accessToken;
-    }
-  } catch {
-    /* ignore */
-  }
-  return null;
-};
-
 const fetchPage = async (
   entiteId: number,
   idFlux: string | null,
@@ -48,16 +34,8 @@ const fetchPage = async (
       baseURL: config.public.apiBaseUrl,
       headers: { Authorization: `Bearer ${token}` },
     });
-  } catch (e: any) {
-    if (e?.status === 403 || e?.response?.status === 403) {
-      const newToken = await refreshToken();
-      if (newToken) {
-        return await $fetch<DocumentPaginate>(url, {
-          baseURL: config.public.apiBaseUrl,
-          headers: { Authorization: `Bearer ${newToken}` },
-        });
-      }
-    }
+  } catch (e) {
+    console.error("fetchPage error", e)
     throw e;
   }
 };
