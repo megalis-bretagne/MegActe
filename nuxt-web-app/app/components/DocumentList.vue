@@ -6,7 +6,6 @@ const props = defineProps<{
   idFlux?: string | null;
 }>();
 
-const config = useRuntimeConfig();
 const router = useRouter();
 
 const pageActive = ref(1); // pilote la requête API
@@ -23,18 +22,17 @@ const {
   isFetching,
   isError,
   error,
-  invalidate,
 } = useDocuments(entiteIdRef, idFluxRef, pageActive, search);
 
 watch(
-  () => props.entiteId,
+  entiteIdRef,
   () => {
     pageActive.value = 1;
     search.value = "";
   },
 );
 watch(
-  () => props.idFlux,
+  idFluxRef,
   () => {
     pageActive.value = 1;
     search.value = "";
@@ -116,79 +114,10 @@ const formatDate = (dateStr: string) => {
 
 // ── Actions ──────────────────────────────────────────────────────────────────
 
-const EDITABLE_STATES = ["modification", "creation"];
-
-function canEdit(doc: any): boolean {
-  return EDITABLE_STATES.includes(doc.last_action?.toLowerCase());
-}
-
 function openDoc(doc: any) {
   router.push(`/org/${doc.id_e}/document/${doc.id_d}`);
 }
 
-function openPastell(doc: any) {
-  if (!import.meta.client) return;
-  const pastellUrl = config.public.pastellUrl;
-  if (!pastellUrl) {
-    console.error("pastellUrl non défini");
-    return;
-  }
-  const url = `${pastellUrl}/Document/detail?id_d=${doc.id_d}&id_e=${doc.id_e}`;
-  window.open(url, "_blank", "noopener,noreferrer");
-}
-
-// Actions dynamiques (perform_action)
-const actionLoading = ref<string | null>(null); // id_d en cours
-
-async function runAction(
-  doc: any,
-  action: { action: string; message: string },
-) {
-  const { user } = useUserContext();
-  actionLoading.value = doc.id_d;
-  try {
-    await $fetch(`/entite/${props.entiteId}/documents/perform_action`, {
-      method: "POST",
-      baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${user.value?.token}` },
-      body: { document_ids: doc.id_d, action: action.action },
-    });
-    invalidate(); // rafraîchit la liste
-  } catch (e: any) {
-    console.error("Action failed", e);
-  } finally {
-    actionLoading.value = null;
-  }
-}
-
-// Icônes par action
-const ACTION_ICONS: Record<string, string> = {
-  modification:
-    "M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z",
-  orientation: "M5 12h14M12 5l7 7-7 7",
-  suppression:
-    "M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16",
-  teletransmission_tdt: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
-  verification_tdt:
-    "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2",
-};
-
-const ACTION_COLORS: Record<string, string> = {
-  suppression: "text-red-500 hover:text-red-700",
-};
-
-function actionIcon(action: string): string {
-  return (
-    ACTION_ICONS[action.toLowerCase()] ??
-    "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-  );
-}
-
-function actionColor(action: string): string {
-  return (
-    ACTION_COLORS[action.toLowerCase()] ?? "text-blue-500 hover:text-blue-700"
-  );
-}
 </script>
 
 <template>
