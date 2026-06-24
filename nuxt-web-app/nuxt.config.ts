@@ -2,6 +2,7 @@ import Aura from "@primeuix/themes/aura";
 import PrimeUI from "tailwindcss-primeui";
 
 export default defineNuxtConfig({
+  compatibilityDate: '2026-06-24',
   devtools: { enabled: false },
 
   nitro: {
