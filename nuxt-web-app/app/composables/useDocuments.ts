@@ -1,28 +1,5 @@
 export const ITEMS_PER_PAGE = 20;
 
-const fetchPage = async (
-  entiteId: number,
-  idFlux: string | null,
-  offset: number,
-  limit: number,
-  token: string,
-): Promise<DocumentPaginate> => {
-  const config = useRuntimeConfig();
-  let queryParams = `offset=${offset}&limit=${limit}`;
-  if (idFlux) queryParams += `&type_flux=${idFlux}`;
-  const url = `/entite/${entiteId}/documents?${queryParams}`;
-
-  try {
-    return await $fetch<DocumentPaginate>(url, {
-      baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  } catch (e) {
-    console.error("fetchPage error", e)
-    throw e;
-  }
-};
-
 export const useDocuments = (
   entiteId: Ref<number | undefined>,
   idFlux: Ref<string | null | undefined>,
@@ -56,7 +33,7 @@ export const useDocuments = (
   const { data, isFetching, isError, error } = useQuery({
     queryKey,
     queryFn: () =>
-      fetchPage(
+      fetchDocumentPage(
         entiteId.value!,
         idFlux.value ?? null,
         effectiveOffset.value,
