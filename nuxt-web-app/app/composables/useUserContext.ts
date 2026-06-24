@@ -72,6 +72,17 @@ export const useUserContext = () => {
 
   }
 
+  // Keep user.token fresh when the auth provider refreshes the token
+  watch(
+    () => authData.value?.accessToken,
+    (token) => {
+      if (token) {
+        user.value = { ...user.value, token };
+      }
+    },
+    { immediate: true }
+  );
+
   console.log("user name = ", user.value?.name);
   console.log("acces token = ", user.value?.token);
   console.log("user object: ");
