@@ -1,4 +1,4 @@
-export const fetchDocumentPage = async (
+export const fetchDocumentsPage = async (
   entiteId: number,
   idFlux: string | null,
   offset: number,

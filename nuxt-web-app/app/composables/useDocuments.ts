@@ -33,7 +33,7 @@ export const useDocuments = (
   const { data, isFetching, isError, error } = useQuery({
     queryKey,
     queryFn: () =>
-      fetchDocumentPage(
+      fetchDocumentsPage(
         entiteId.value!,
         idFlux.value ?? null,
         effectiveOffset.value,
