@@ -16,7 +16,9 @@ enum ActionPossibleEnum {
   Suppression = 'supression',
   Modification = 'modification',
   Teletransmission_TDT = 'teletransmission-tdt',
+  Annulation_TDT = "annulation-tdt",
   Creation = "creation",
+  Duplicate = "duplicate",
   Verification_TDT = 'verif-tdt'
 }
 
