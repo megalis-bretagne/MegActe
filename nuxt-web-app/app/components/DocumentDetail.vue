@@ -29,18 +29,8 @@ const { data: journal, refresh: refreshJournal } = useAsyncData(
 // ── Fetch définition du flux (déclenché dès que le type du document est connu) ─
 const { data: fluxDefData } = useAsyncData(
   `flux-${props.entiteId}-${props.idD}`,
-  async () => {
-    if (!document.value?.info?.type) return {};
-    try {
-      return await $fetch<any>(`/flux/${document.value.info.type}`, {
-        baseURL: config.public.apiBaseUrl,
-        headers: headers.value,
-      });
-    } catch {
-      return {};
-    }
-  },
-  { server: false, watch: [() => document.value?.info?.type] },
+  () => fetchFluxDetails(document.value?.info?.type, user.value?.token),
+  { server: false, immediate: false, watch: [() => document.value?.info?.type] },
 );
 
 const fluxDef = computed(() => fluxDefData.value ?? {});
