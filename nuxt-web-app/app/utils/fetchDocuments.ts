@@ -25,12 +25,12 @@ export const fetchDocument = async (
   entiteId: number,
   documentId: string,
   token: string,
-): Promise<any> => {
+): Promise<DocumentDetail> => {
   const config = useRuntimeConfig();
   const url = `/entite/${entiteId}/document/${documentId}`;
 
   try {
-    const doc = await $fetch<any>(url, {
+    const doc: DocumentDetail = await $fetch<DocumentDetail>(url, {
       baseURL: config.public.apiBaseUrl,
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -46,12 +46,12 @@ export const fetchDocumentJournal = async (
   entiteId: number,
   documentId: string,
   token: string,
-): Promise<any> => {
+): Promise<Journal> => {
   const config = useRuntimeConfig();
   const url = `/entite/${entiteId}/document/${documentId}/journal`;
 
   try {
-    return await $fetch<any>(url, {
+    return await $fetch<Journal>(url, {
       baseURL: config.public.apiBaseUrl,
       headers: { Authorization: `Bearer ${token}` },
     });
