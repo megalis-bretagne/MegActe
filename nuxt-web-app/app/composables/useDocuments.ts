@@ -3,6 +3,7 @@ export const ITEMS_PER_PAGE = 20;
 export const useDocuments = (
   entiteId: Ref<number | undefined>,
   idFlux: Ref<string | null | undefined>,
+  firstPage: Ref<DocumentPaginate | undefined>,
   page: Ref<number>,
   search: Ref<string>,
 ) => {
@@ -41,11 +42,12 @@ export const useDocuments = (
         user.value?.token,
       ),
     enabled: computed(() => !!entiteId.value && !!user.value?.token),
-    placeholderData: (prev) => prev,
-    retry: (failureCount, error: any) => {
+    initialData: firstPage,
+    placeholderdata: (prev) => prev,
+    retry: (failurecount, error: any) => {
       if (error?.status === 403 || error?.response?.status === 403)
         return false;
-      return failureCount < 1;
+      return failurecount < 1;
     },
   });
 
@@ -64,7 +66,7 @@ export const useDocuments = (
     queryClient.prefetchQuery({
       queryKey: key,
       queryFn: () =>
-        fetchPage(
+        fetchDocumentsPage(
           entiteId.value!,
           idFlux.value ?? null,
           prefetchOffset,

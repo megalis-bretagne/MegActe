@@ -6,6 +6,11 @@ const props = defineProps<{
   idFlux?: string | null;
 }>();
 
+const { data: firstPage } = await useFetch('/api/documents/firstpage',
+  {
+    params: { entiteId: props.entiteId, idFlux: props.idFlux, docsPerPage: ITEMS_PER_PAGE },
+  });
+
 const router = useRouter();
 
 const pageActive = ref(1); // pilote la requête API
@@ -22,7 +27,7 @@ const {
   isFetching,
   isError,
   error,
-} = useDocuments(entiteIdRef, idFluxRef, pageActive, search);
+} = useDocuments(entiteIdRef, idFluxRef, firstPage, pageActive, search);
 
 watch(
   entiteIdRef,
