@@ -1,7 +1,7 @@
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { NuxtAuthHandler } from "#auth";
 import { fetchUser } from "~/utils/fetchUser";
-import { fetchUserFlux } from "~/utils/fetchUserFlux";
+import { fetchUserFlux } from "~/utils/fetchFlux";
 
 async function refreshAccessToken(token: JWT) {
   try {
