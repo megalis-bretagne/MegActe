@@ -1,12 +1,36 @@
-interface DocumentInfo {
+interface BaseDocumentInfo {
   id_d: string;
-  id_e: string;
-  titre: string;
   type: string;
+  titre: string;
+  creation: string;
+  modification: string;
+}
+
+interface ActionPossible {
+  action: ActionPossibleEnum | string;
+  message: string
+}
+
+enum ActionPossibleEnum {
+  Orientation = 'orientation',
+  Suppression = 'supression',
+  Modification = 'modification',
+  Teletransmission_TDT = 'teletransmission-tdt',
+  Creation = "creation",
+  Verification_TDT = 'verif-tdt'
+}
+
+interface DocumentActionDetails {
   last_action: string;
   last_action_date: string;
   last_action_message: string;
-  action_possible: { action: string; message: string }[];
+  action_possible: ActionPossible[];
+}
+
+interface DocumentInfo extends BaseDocumentInfo, DocumentActionDetails {
+  id_e: string;
+  role: string;
+  siren: string;
   selected: boolean;
 }
 
@@ -15,3 +39,30 @@ export interface DocumentPaginate {
   pagination: { offset: number; limit: number; total: number; next: string; prev: string } | null;
 }
 
+interface TypePieceFichier {
+  filename: string,
+  typologie: string
+}
+
+export interface DocumentDetail extends DocumentActionDetails {
+  info: BaseDocumentInfo;
+  data: {
+    envoi_tdt_actes?: string;
+    envoi_depot?: string;
+    envoi_sae?: string;
+    numero_de_lacte?: string;
+    objet?: string;
+    document_papier?: string;
+    acte_nature?: string;
+    publication_open_data?: string;
+    date_de_lacte?: string;
+    classification?: string;
+    arrete?: string[];
+    autre_document_attache?: string[];
+    type_piece?: string;
+    type_acte?: string;
+    type_pj?: string;
+    type_piece_fichier?: TypePieceFichier[];
+    //[key: string]: string | number | TypePieceFichier[] | string[]
+  };
+}
