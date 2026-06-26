@@ -13,45 +13,16 @@ const headers = computed(() => ({
 }));
 
 // ── Fetch document ────────────────────────────────────────────────────────────
-const {
-  data: document,
-  pending,
-  error,
-  refresh,
-} = useAsyncData(
+const { data: document, pending, error, refresh } = useAsyncData(
   `document-${props.entiteId}-${props.idD}`,
-  async () => {
-    if (!user.value?.token) return null;
-    const result = await $fetch<any>(
-      `/entite/${props.entiteId}/document/${props.idD}`,
-      {
-        baseURL: config.public.apiBaseUrl,
-        headers: headers.value,
-      },
-    );
-    console.log("[DocumentDetail]", JSON.stringify(result, null, 2));
-    return result;
-  },
+  () => fetchDocument(props.entiteId, props.idD, user.value.token),
   { server: false, watch: [() => user.value?.token] },
 );
 
 // ── Fetch journal ─────────────────────────────────────────────────────────────
 const { data: journal, refresh: refreshJournal } = useAsyncData(
   `journal-${props.entiteId}-${props.idD}`,
-  async () => {
-    if (!user.value?.token || !props.idD) return [];
-    try {
-      return await $fetch<any[]>(
-        `/entite/${props.entiteId}/document/${props.idD}/journal`,
-        {
-          baseURL: config.public.apiBaseUrl,
-          headers: headers.value,
-        },
-      );
-    } catch {
-      return [];
-    }
-  },
+  () => fetchDocumentJournal(props.entiteId, props.idD, user.value.token),
   { server: false, watch: [() => user.value?.token] },
 );
 

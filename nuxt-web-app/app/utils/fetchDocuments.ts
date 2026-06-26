@@ -16,9 +16,48 @@ export const fetchDocumentsPage = async (
       headers: { Authorization: `Bearer ${token}` },
     });
   } catch (e) {
-    console.error("fetchPage error", e)
+    console.error("fetchDocumentsPage error", e)
     throw e;
   }
 };
 
+export const fetchDocument = async (
+  entiteId: number,
+  documentId: string,
+  token: string,
+): Promise<any> => {
+  const config = useRuntimeConfig();
+  const url = `/entite/${entiteId}/document/${documentId}`;
+
+  try {
+    const doc = await $fetch<any>(url, {
+      baseURL: config.public.apiBaseUrl,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log("[DocumentDetail]", JSON.stringify(doc, null, 2));
+    return doc;
+  } catch (e) {
+    console.error("fetchDocument error", e)
+    throw e;
+  }
+};
+
+export const fetchDocumentJournal = async (
+  entiteId: number,
+  documentId: string,
+  token: string,
+): Promise<any> => {
+  const config = useRuntimeConfig();
+  const url = `/entite/${entiteId}/document/${documentId}/journal`;
+
+  try {
+    return await $fetch<any>(url, {
+      baseURL: config.public.apiBaseUrl,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch (e) {
+    console.error("fetchDocumentJournal error", e)
+    throw e;
+  }
+};
 
