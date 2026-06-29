@@ -1,16 +1,15 @@
-export async function fetchUser(token: string): Promise<UserSession> {
+export async function fetchUser(token: string, baseURL: string): Promise<pastellUser> {
   try {
-    const config = useRuntimeConfig();
     console.log("Fetch user with token: " + token);
-    const user = await $fetch("/user", {
-      baseURL: config.public.apiBaseUrl,
+    return await $fetch("/user", {
+      baseURL: baseURL,
       headers: {
         Authorization: `Bearer ${token}`,
       },
       timeout: 1000,
     });
-    return user;
   } catch (error) {
     console.log("Failed to fetch related Pastell user data:", error);
+    return null;
   }
 }

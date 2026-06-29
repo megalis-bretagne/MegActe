@@ -1,17 +1,16 @@
-export async function fetchUserFlux(token: string): Promise<Record<string, Flux>> {
+export async function fetchUserFlux(token: string, baseURL: string): Promise<Record<string, Flux>> {
   try {
-    const config = useRuntimeConfig();
     console.log("Fetch user flux with token: " + token);
-    const flux: Record<string, Flux> = await $fetch("/user/flux", {
-      baseURL: config.public.apiBaseUrl,
+    return await $fetch("/user/flux", {
+      baseURL: baseURL,
       headers: {
         Authorization: `Bearer ${token}`,
       },
       timeout: 1000,
     });
-    return flux;
   } catch (error) {
     console.log("Failed to fetch user flux: ", error);
+    return null;
   }
 }
 
