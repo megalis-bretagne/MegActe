@@ -13,7 +13,7 @@ type pastellUserInfo = {
   id_e: number
 }
 
-type pastellUser = {
+export type pastellUser = {
   userinfo: pastellUserInfo
   entites: [[object]]
 }
