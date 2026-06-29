@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { data: user } = useAuth();
+const { data } = useAuth();
 </script>
 
 <template>
@@ -29,19 +29,12 @@ const { data: user } = useAuth();
 
         <!-- Right side: User Avatar -->
         <div class="flex items-center flex-shrink-0">
-          <span
-            v-if="user?.name"
-            class="text-sm text-gray-600 hidden md:inline mr-2"
-          >
-            {{ user.name }}
+          <span v-if="data?.user?.name" class="text-sm text-gray-600 hidden md:inline mr-2">
+            {{ data.user.name }}
           </span>
-          <Avatar :label="user?.name?.charAt(0)" />
+          <Avatar :label="data?.user?.name?.charAt(0)" />
         </div>
       </div>
     </div>
   </header>
 </template>
-
-<style scoped>
-/* Custom styles can be added here if needed */
-</style>
