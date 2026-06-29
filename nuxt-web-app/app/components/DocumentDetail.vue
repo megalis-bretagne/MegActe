@@ -47,68 +47,6 @@ watch(tabs, () => {
   activeTab.value = "preparer";
 });
 
-// ── Champs d'un onglet ────────────────────────────────────────────────────────
-function getTabFields(tab: { id: string; fields: string[] }) {
-  if (!document.value?.data) return [];
-
-  // Si pas de config pour ce flux, fallback sur filterFields
-  const fluxType = document.value?.info?.type;
-  if (!TABS_CONFIG[fluxType] && tab.id === "preparer") {
-    return getFilteredFields();
-  }
-
-  return tab.fields
-    .map((key) => {
-      const def = fluxDef.value[key];
-      const val = document.value.data[key];
-      if (val === undefined || val === null || val === "" || val === "[]")
-        return null;
-      if (Array.isArray(val) && val.length === 0) return null;
-      return {
-        key,
-        val,
-        label: def?.name ?? key.replace(/_/g, " "),
-        type: def?.type ?? "text",
-        selectValues: def?.value ?? null,
-        commentaire: def?.commentaire ?? null,
-      };
-    })
-    .filter(Boolean);
-}
-
-// filterFields pour flux sans config
-function getFilteredFields() {
-  return Object.entries(fluxDef.value)
-    .filter(([key, def]: [string, any]) => {
-      if (def?.["no-show"]) return false;
-      if (!def?.type) return false;
-      if (def?.requis) {
-        if (def.type === "file" && def["read-only"]) return false;
-        return true;
-      }
-      if (def?.["read-only"] === true) return false;
-      if ((def?.type === "date" || def?.type === "file") && !def?.commentaire)
-        return false;
-      return true;
-    })
-    .filter(([key]) => key !== "type_piece")
-    .map(([key, def]: [string, any]) => ({
-      key,
-      val: document.value.data[key] ?? null,
-      label: def?.name ?? key.replace(/_/g, " "),
-      type: def?.type ?? "text",
-      selectValues: def?.value ?? null,
-      commentaire: def?.commentaire ?? null,
-    }))
-    .filter(
-      ({ val }) =>
-        val !== null &&
-        val !== "" &&
-        val !== "[]" &&
-        !(Array.isArray(val) && val.length === 0),
-    );
-}
-
 // ── Actions ───────────────────────────────────────────────────────────────────
 const actionLoading = ref<string | null>(null);
 const actionError = ref<string | null>(null);
@@ -338,29 +276,18 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
         <template v-else>
           <table class="min-w-full text-sm">
             <tbody class="divide-y divide-gray-100">
-              <tr
-                v-if="
-                  getTabFields(tabs.find((t) => t.id === activeTab)!).length ===
-                  0
-                "
-              >
-                <td
-                  colspan="2"
-                  class="px-4 py-6 text-center text-gray-400 italic"
-                >
+              <tr v-if="
+                getTabFields(document, fluxDef, tabs.find((t) => t.id === activeTab)!).length ===
+                0
+              ">
+                <td colspan="2" class="px-4 py-6 text-center text-gray-400 italic">
                   Aucun champ disponible
                 </td>
               </tr>
-              <tr
-                v-for="field in getTabFields(
-                  tabs.find((t) => t.id === activeTab)!,
-                )"
-                :key="field.key"
-                class="even:bg-gray-50"
-              >
-                <td
-                  class="px-4 py-3 font-medium text-gray-600 w-1/3 align-top whitespace-nowrap"
-                >
+              <tr v-for="field in getTabFields(document, fluxDef,
+                tabs.find((t) => t.id === activeTab)!,
+              )" :key="field.key" class="even:bg-gray-50">
+                <td class="px-4 py-3 font-medium text-gray-600 w-1/3 align-top whitespace-nowrap">
                   {{ field.label }}
                   <span
                     v-if="field.commentaire"
