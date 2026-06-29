@@ -7,7 +7,7 @@ export const useDocuments = (
   page: Ref<number>,
   search: Ref<string>,
 ) => {
-  const { user } = useUserContext();
+  const { data: user } = useAuth();
   const queryClient = useQueryClient();
 
   // Mémorisé après le premier chargement normal
@@ -39,9 +39,9 @@ export const useDocuments = (
         idFlux.value ?? null,
         effectiveOffset.value,
         effectiveLimit.value,
-        user.value?.token,
+        user.value?.accessToken,
       ),
-    enabled: computed(() => !!entiteId.value && !!user.value?.token),
+    enabled: computed(() => !!entiteId.value && !!user.value?.accessToken),
     initialData: firstPage,
     placeholderdata: (prev) => prev,
     retry: (failurecount, error: any) => {
@@ -52,7 +52,7 @@ export const useDocuments = (
   });
 
   const doPrefetch = (prefetchOffset: number, total: number) => {
-    if (!entiteId.value || !user.value?.token) return;
+    if (!entiteId.value || !user.value?.accessToken) return;
     if (prefetchOffset < 0 || prefetchOffset >= total) return;
 
     const key = [
@@ -71,7 +71,7 @@ export const useDocuments = (
           idFlux.value ?? null,
           prefetchOffset,
           ITEMS_PER_PAGE,
-          user.value?.token,
+          user.value?.accessToken,
         ),
     });
   };

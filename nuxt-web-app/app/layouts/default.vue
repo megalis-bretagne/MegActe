@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { selectedFlux } = useUserContext();
+const selectedFlux = ref(undefined);
 </script>
 
 <template>

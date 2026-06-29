@@ -1,7 +1,5 @@
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { NuxtAuthHandler } from "#auth";
-import { fetchUser } from "~/utils/fetchUser";
-import { fetchUserFlux } from "~/utils/fetchFlux";
 
 async function refreshAccessToken(token: JWT) {
   try {
@@ -20,8 +18,6 @@ async function refreshAccessToken(token: JWT) {
       timeout: 1000,
     });
 
-    console.log("res object");
-    console.log(res);
     console.log("new access token", res.access_token);
     return {
       ...token,
@@ -57,39 +53,18 @@ export default NuxtAuthHandler({
         token.refreshToken = account.refresh_token;
         token.refreshTokenExpiresAt =
           Date.now() + (account.refresh_expires_in as number) * 1000;
-        token.userId = account.providerAccountId;
-        try {
-          console.log("primary call to jwt callback: prefetching data");
-          const pastellUser = await fetchUser(token.accessToken);
-          const pastellUserFlux = await fetchUserFlux(token.accessToken);
-          const prefetchStorage = useStorage(token.userId);
-          await prefetchStorage.setItem("pastellUser", pastellUser);
-          await prefetchStorage.setItem("pastellUserFlux", pastellUserFlux);
-        } catch (error) {
-          token.pastellUser = null;
-          console.error("Error while prefetching user", error);
-        }
         return token;
       }
 
-      console.log("jwt callback: token = ", token);
       // If the access token has not expired we return it
       if (Date.now() < (token.accessTokenExpiresAt as number)) {
-        console.log("returning token", token.accessToken);
+        console.log("Token still valid returning it: ", token.accessToken);
         return token;
       }
 
       return refreshAccessToken(token);
     },
     async session({ session, token }) {
-      if (token.userId) {
-        const prefetchStorage = useStorage(token.userId);
-        session.pastellUser = await prefetchStorage.getItem("pastellUser");
-        session.pastellUserFlux = await prefetchStorage.getItem("pastellUserFlux");
-      } else {
-        session.pastellUser = null;
-        session.pastellUserFlux = null;
-      }
       session.accessToken = token.accessToken;
       console.log("returned session object");
       console.log(session);

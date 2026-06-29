@@ -6,30 +6,26 @@ const props = defineProps<{
 
 const config = useRuntimeConfig();
 const router = useRouter();
-const { user } = useUserContext();
-
-const headers = computed(() => ({
-  Authorization: `Bearer ${user.value?.token}`,
-}));
+const { data: user } = useAuth();
 
 // ── Fetch document ────────────────────────────────────────────────────────────
 const { data: document, pending, error, refresh } = useAsyncData(
   `document-${props.entiteId}-${props.idD}`,
-  () => fetchDocument(props.entiteId, props.idD, user.value.token),
-  { server: false, watch: [() => user.value?.token] },
+  () => fetchDocument(props.entiteId, props.idD, user.value.accessToken),
+  { server: false, watch: [() => user.value?.accessToken] },
 );
 
 // ── Fetch journal ─────────────────────────────────────────────────────────────
 const { data: journal, refresh: refreshJournal } = useAsyncData(
   `journal-${props.entiteId}-${props.idD}`,
-  () => fetchDocumentJournal(props.entiteId, props.idD, user.value.token),
-  { server: false, watch: [() => user.value?.token] },
+  () => fetchDocumentJournal(props.entiteId, props.idD, user.value.accessToken),
+  { server: false, watch: [() => user.value?.accessToken] },
 );
 
 // ── Fetch définition du flux (déclenché dès que le type du document est connu) ─
 const { data: fluxDefData } = useAsyncData(
   `flux-${props.entiteId}-${props.idD}`,
-  () => fetchFluxDetails(document.value?.info?.type, user.value?.token),
+  () => fetchFluxDetails(document.value?.info?.type, user.value?.accessToken),
   { server: false, immediate: false, watch: [() => document.value?.info?.type] },
 );
 
@@ -123,7 +119,7 @@ async function runAction(action: { action: string; message: string }) {
   actionError.value = null;
   console.log("[runAction] déclenchée :", action);
   try {
-    const result = await postDocumentAction(props.entiteId, props.idD, action.action, user.value.token);
+    const result = await postDocumentAction(props.entiteId, props.idD, action.action, user.value.accessToken);
     console.log("[runAction] succès :", result);
     await Promise.all([refresh(), refreshJournal()]);
   } catch (e: ActionResult) {

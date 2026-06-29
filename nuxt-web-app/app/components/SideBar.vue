@@ -6,12 +6,11 @@ const props = defineProps<{
 
 const emit = defineEmits<{ selectFlux: [flux: string | null] }>();
 
-const { user } = useUserContext();
-
-console.log("user.value.flux: ", user.value.flux);
+const { data: userFlux } = await useFetch('/api/user/flux');
+console.log("userFlux: ", userFlux.value);
 
 const fluxItems = computed(() => {
-  return Object.entries(user.value.flux)
+  return Object.entries(userFlux.value || {})
     .filter(([, f]) => f.enable !== false)
     .map(([id, f]: [string, any]) => ({ id, nom: f.nom ?? id }))
     .sort((a, b) => a.nom.localeCompare(b.nom));
