@@ -9,7 +9,6 @@ export interface DocumentInfo {
   last_action_date: string;
   last_action_message: string;
   action_possible: { action: string; message: string }[];
-  selected: boolean;
 }
 
 export interface DocumentPaginate {
@@ -19,19 +18,6 @@ export interface DocumentPaginate {
 
 export const ITEMS_PER_PAGE = 20;
 
-const refreshToken = async (): Promise<string | null> => {
-  try {
-    const session = await $fetch<any>("/auth/session");
-    if (session?.accessToken) {
-      const { user } = useUserContext();
-      user.value = { ...user.value, token: session.accessToken };
-      return session.accessToken;
-    }
-  } catch {
-    /* ignore */
-  }
-  return null;
-};
 
 const fetchPage = async (
   entiteId: number,
@@ -52,7 +38,7 @@ const fetchPage = async (
     });
   } catch (e: any) {
     if (e?.status === 403 || e?.response?.status === 403) {
-      const newToken = await refreshToken();
+      const newToken = await tryRefreshToken();
       if (newToken) {
         return await $fetch<DocumentPaginate>(url, {
           baseURL: config.public.apiBaseUrl,
@@ -69,6 +55,7 @@ export const useDocuments = (
   idFlux: Ref<string | null | undefined>,
   page: Ref<number>,
   search: Ref<string>,
+  limit: Ref<number> = ref(ITEMS_PER_PAGE),
 ) => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
@@ -80,10 +67,10 @@ export const useDocuments = (
 
   // En recherche : tout fetcher en une requête ; sinon pagination normale
   const effectiveOffset = computed(() =>
-    isSearching.value ? 0 : (page.value - 1) * ITEMS_PER_PAGE,
+    isSearching.value ? 0 : (page.value - 1) * limit.value,
   );
   const effectiveLimit = computed(() =>
-    isSearching.value ? knownTotal.value || ITEMS_PER_PAGE : ITEMS_PER_PAGE,
+    isSearching.value ? knownTotal.value || limit.value : limit.value,
   );
 
   const queryKey = computed(() => [
@@ -123,7 +110,7 @@ export const useDocuments = (
       entiteId.value,
       idFlux.value ?? null,
       prefetchOffset,
-      ITEMS_PER_PAGE,
+      limit.value,
     ];
     if (queryClient.getQueryData(key)) return;
 
@@ -134,7 +121,7 @@ export const useDocuments = (
           entiteId.value!,
           idFlux.value ?? null,
           prefetchOffset,
-          ITEMS_PER_PAGE,
+          limit.value,
           user.value?.token,
         ),
       staleTime: 60_000,
@@ -148,30 +135,20 @@ export const useDocuments = (
       const total = d?.pagination?.total ?? 0;
       if (!total || isSearching.value) return;
       knownTotal.value = total;
-      doPrefetch(effectiveOffset.value + ITEMS_PER_PAGE, total);
-      doPrefetch(effectiveOffset.value - ITEMS_PER_PAGE, total);
+      doPrefetch(effectiveOffset.value + limit.value, total);
+      doPrefetch(effectiveOffset.value - limit.value, total);
     },
     { immediate: true },
   );
 
-  const documents = computed(() =>
-    (data.value?.documents ?? []).map((d) => ({ ...d, selected: false })),
-  );
+  const documents = computed(() => data.value?.documents ?? []);
   const pagination = computed(() => data.value?.pagination ?? null);
-  const totalPages = computed(() =>
-    pagination.value ? Math.ceil(pagination.value.total / ITEMS_PER_PAGE) : 0,
-  );
-
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ["documents", entiteId.value] });
 
   return {
     documents,
     pagination,
-    totalPages,
     isFetching,
     isError,
     error,
-    invalidate,
   };
 };

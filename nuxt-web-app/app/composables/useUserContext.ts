@@ -1,8 +1,10 @@
 const user = ref<userSession>(null);
 const pastellReady = ref(false);
 const selectedFlux = ref<string | null>(null);
+const selectedEntiteId = ref<number | null>(null);
 
 export const useUserContext = () => {
+
   const initUserFromAuth = async () => {
     try {
       const { data, status } = useAuth();
@@ -29,10 +31,16 @@ export const useUserContext = () => {
     }
   };
 
+  const authHeaders = computed(() => ({
+    Authorization: `Bearer ${user.value?.token}`,
+  }));
+
   return {
     user,
     pastellReady,
     selectedFlux,
+    selectedEntiteId,
+    authHeaders,
     initUserFromAuth,
   };
 };

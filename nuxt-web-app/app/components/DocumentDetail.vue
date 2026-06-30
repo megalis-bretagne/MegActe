@@ -1,83 +1,87 @@
 <script setup lang="ts">
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
+
 const props = defineProps<{ entiteId: number; idD: string; fluxType: string; }>();
 
 const config = useRuntimeConfig();
 const router = useRouter();
-const { user } = useUserContext();
-const { getFluxDef } = useFluxDef();
+const { user, authHeaders } = useUserContext();
+const { getFluxDef, fluxDefFor } = useFluxDef();
+const queryClient = useQueryClient();
 
-const headers = computed(() => ({
-  Authorization: `Bearer ${user.value?.token}`,
-}));
 
 // ── Fetch document ────────────────────────────────────────────────────────────
-const {
-  data: document,
-  pending,
-  error,
-  refresh,
-} = useAsyncData(
-  `document-${props.entiteId}-${props.idD}`,
-  async () => {
-    if (!user.value?.token) return null;
-    const result = await $fetch<any>(
-      `/entite/${props.entiteId}/document/${props.idD}`,
-      {
-        baseURL: config.public.apiBaseUrl,
-        headers: headers.value,
-      },
-    );
-    console.log("[DocumentDetail]", JSON.stringify(result, null, 2));
-    return result;
+const { data: doc, isPending, error } = useQuery({
+  queryKey: computed(() => ['document', props.entiteId, props.idD]),
+  queryFn: async () => {
+    const url = `/entite/${props.entiteId}/document/${props.idD}`;
+    try {
+      return await $fetch<any>(url, { baseURL: config.public.apiBaseUrl, headers: authHeaders.value });
+    } catch (e: any) {
+      if (e?.status === 403) {
+        const newToken = await tryRefreshToken();
+        if (newToken) return await $fetch<any>(url, { baseURL: config.public.apiBaseUrl, headers: { Authorization: `Bearer ${newToken}` } });
+      }
+      throw e;
+    }
   },
-  { server: false, watch: [computed(() => !!user.value?.token)] },
-);
+  enabled: computed(() => !!user.value?.token),
+  staleTime: 30_000,
+  placeholderData: (prev) => prev,
+});
 
 
 // ── Fetch journal ─────────────────────────────────────────────────────────────
-const journal = ref<any[]>([]);
-const journalPending = ref(false);
-
-async function refreshJournal() {
-  if (!user.value?.token) return;
-  journalPending.value = true;
-  try {
-    journal.value = await $fetch<any[]>(
-      `/entite/${props.entiteId}/document/${props.idD}/journal`,
-      { baseURL: config.public.apiBaseUrl, headers: headers.value },
-    );
-  } catch {
-    journal.value = [];
-  } finally {
-    journalPending.value = false;
-  }
-}
-
-watch(() => user.value?.token, (token) => { if (token) refreshJournal(); }, { immediate: true });
-
-// ── Fetch définition du flux (avec cache global par type) ────────────────────
-const { data: fluxDefData } = useAsyncData(
-  `flux-${props.entiteId}-${props.idD}`,
-  async () => {
-    const type = props.fluxType ?? document.value?.info?.type;
-    if (!type || !user.value?.token) return {};
-    const def = await getFluxDef(type);
-    console.log("[DocumentDetail] fluxDef:", JSON.stringify(def, null, 2));
-    return def;
+const { data: journalData, isPending: journalPending } = useQuery({
+  queryKey: computed(() => ['journal', props.entiteId, props.idD]),
+  queryFn: async () => {
+    try {
+      return await $fetch<any[]>(
+        `/entite/${props.entiteId}/document/${props.idD}/journal`,
+        { baseURL: config.public.apiBaseUrl, headers: authHeaders.value },
+      );
+    } catch (e: any) {
+      if (e?.status === 403) {
+        const newToken = await tryRefreshToken();
+        if (newToken) {
+          try {
+            return await $fetch<any[]>(
+              `/entite/${props.entiteId}/document/${props.idD}/journal`,
+              { baseURL: config.public.apiBaseUrl, headers: { Authorization: `Bearer ${newToken}` } },
+            );
+          } catch { /* ignore */ }
+        }
+      }
+      return [];
+    }
   },
-  { server: false, watch: [computed(() => !!user.value?.token), () => document.value?.info?.type] },
-);
+  enabled: computed(() => !!user.value?.token),
+  staleTime: 30_000,
+});
 
-const fluxDef = computed(() => fluxDefData.value ?? {});
+
+const fluxDef = computed(() => {
+  const type = props.fluxType ?? doc.value?.info?.type;
+  if (!type) return {};
+  return fluxDefFor(type);
+});
+
+watch(
+  () => ({ token: user.value?.token, type: props.fluxType ?? doc.value?.info?.type }),
+  async ({ token, type }) => {
+    if (token && type) await getFluxDef(type);
+  },
+  { immediate: true },
+);
 
 // ── Définition des onglets par flux ──────────────────────────────────────────
 
 // Onglets disponibles selon le type de flux (filtrés par condition)
 const tabs = computed(() => {
-  const fluxType = document.value?.info?.type;
+  const fluxType = doc.value?.info?.type;
   const config = FLUX_TABS_CONFIG[fluxType];
   if (!config) return [{ id: "preparer", label: "Préparer", fields: [] }];
-  const data = document.value?.data ?? {};
+  const data = doc.value?.data ?? {};
   return config.filter((tab) => !tab.condition || tab.condition(data));
 });
 
@@ -90,12 +94,12 @@ watch(tabs, () => {
 
 // ── Champs de l'onglet actif ──────────────────────────────────────────────────
 const activeTabFields = computed(() => {
-  if (!document.value?.data) return [];
+  if (!doc.value?.data) return [];
 
   const tab = tabs.value.find((t) => t.id === activeTab.value);
   if (!tab) return [];
 
-  const fluxType = document.value?.info?.type;
+  const fluxType = doc.value?.info?.type;
   if (!FLUX_TABS_CONFIG[fluxType] && tab.id === "preparer") {
     return getFilteredFields();
   }
@@ -104,7 +108,7 @@ const activeTabFields = computed(() => {
   return tab.fields
     .map((key) => {
       const def = fluxDef.value[key];
-      const val = document.value.data[key];
+      const val = doc.value.data[key];
       const isEmpty =
         val === undefined ||
         val === null ||
@@ -142,7 +146,7 @@ function getFilteredFields() {
     .filter(([key]) => key !== "type_piece")
     .map(([key, def]: [string, any]) => ({
       key,
-      val: document.value.data[key] ?? null,
+      val: doc.value.data[key] ?? null,
       label: def?.name ?? key.replace(/_/g, " "),
       type: def?.type ?? "text",
       selectValues: def?.value ?? null,
@@ -161,67 +165,98 @@ function getFilteredFields() {
 const actionLoading = ref<string | null>(null);
 const actionError = ref<string | null>(null);
 
-// ── Journal filtré/dédupliqué ─────────────────────────────────────────────────
-const journalEntries = computed(() => {
-  const entries = (journal.value ?? [])
-    .filter((e: any) => e.type === "1")
-    .slice()
-    .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  const deduped: any[] = [];
-  for (let i = 0; i < entries.length; i++) {
-    if (i === entries.length - 1 || entries[i].action !== entries[i + 1].action) {
-      deduped.push(entries[i]);
+async function handlePostAction403(actionName: string, previousState: string | undefined) {
+  if (actionName === "supression") {
+    router.push(`/`);
+    return;
+  }
+  try {
+    const current = await $fetch<any>(
+      `/entite/${props.entiteId}/document/${props.idD}`,
+      { baseURL: config.public.apiBaseUrl, headers: authHeaders.value },
+    );
+    if (current?.last_action && current.last_action !== previousState) {
+      queryClient.invalidateQueries({ queryKey: ['document', props.entiteId, props.idD] });
+      queryClient.invalidateQueries({ queryKey: ['journal', props.entiteId, props.idD] });
+      return;
+    }
+  } catch (checkErr: any) {
+    if (checkErr?.status === 403) {
+      router.push(`/org/${props.entiteId}`);
+      return;
     }
   }
-  return deduped.reverse().slice(0, 13);
-});
+  actionError.value = "Une erreur est survenue lors de l'envoi";
+}
 
-const journalUser = (entry: any) => {
-  const name = [entry.prenom, entry.nom].filter(Boolean).join(" ");
-  return name || "Action automatique";
-};
-
-async function runAction(action: { action: string; message: string }) {
-  actionLoading.value = action.action;
-  actionError.value = null;
-  try {
-    await $fetch(
+const { mutateAsync: performAction } = useMutation({
+  mutationFn: async (actionName: string) => {
+    const doFetch = (token: string) => $fetch(
       `/entite/${props.entiteId}/documents/perform_action`,
       {
         method: "POST",
         baseURL: config.public.apiBaseUrl,
-        headers: headers.value,
-        body: { document_ids: props.idD, action: action.action },
+        headers: { Authorization: `Bearer ${token}` },
+        body: { document_ids: props.idD, action: actionName },
       },
     );
-    await Promise.all([refresh(), refreshJournal()]);
+    try {
+      await doFetch(user.value?.token);
+    } catch (e: any) {
+      if (e?.status !== 403) throw e;
+      const newToken = await tryRefreshToken();
+      if (newToken) {
+        try {
+          await doFetch(newToken);
+        } catch (e2: any) {
+          if (e2?.status !== 403) throw e2;
+          throw { __pastell403: true };
+        }
+      } else {
+        throw { __pastell403: true };
+      }
+    }
+  },
+  onSuccess: (_, actionName) => {
+    if (actionName === "supression") {
+      router.push(`/`);
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ['document', props.entiteId, props.idD] });
+    queryClient.invalidateQueries({ queryKey: ['journal', props.entiteId, props.idD] });
+  },
+});
+
+async function runAction(action: { action: string; message: string }) {
+  if (action.action === "modification") {
+    router.push(`/org/${props.entiteId}/document/${props.idD}/edit?type=${props.fluxType ?? doc.value?.info?.type ?? ""}`);
+    return;
+  }
+
+  actionLoading.value = action.action;
+  actionError.value = null;
+  const previousState = doc.value?.last_action;
+  try {
+    await performAction(action.action);
   } catch (e: any) {
-    if (
-      e?.status === 403 &&
-      e?.data?.detail?.toLowerCase().includes("credential")
-    ) {
-      actionError.value = "Votre session a expiré, veuillez recharger la page.";
+    if (e?.__pastell403) {
+      await handlePostAction403(action.action, previousState);
     } else {
-      actionError.value =
-        e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
+      actionError.value = e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
     }
   } finally {
     actionLoading.value = null;
   }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const formatDate = (d: string) => {
-  if (!d) return "—";
-  return new Date(d).toLocaleString("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+const journalEntries = computed(() => journalData.value ?? []);
+
+const journalUser = (entry: any) => {
+  const name = [entry.prenom, entry.nom].filter(Boolean).join(" ");
+  return name || "Action automatique";
 };
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function downloadFile(filename: string, elementId: string) {
   const url = `/api/file/${props.entiteId}/${props.idD}/${elementId}/${encodeURIComponent(filename)}`;
@@ -230,6 +265,19 @@ function downloadFile(filename: string, elementId: string) {
   a.download = filename;
   a.click();
 }
+
+const ACTION_SEVERITY: Record<string, string> = { modification: "secondary", supression: "danger" };
+const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
+
+const ACTION_ICONS: Record<string, string> = {
+  modification: "pi-pencil",
+  supression: "pi-trash",
+  orientation: "pi-send",
+  duplicate: "pi-copy",
+  reouverture: "pi-refresh",
+  "annulation-tdt": "pi-times",
+};
+const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
 
 const isFileArray = (val: any) =>
   Array.isArray(val) &&
@@ -242,27 +290,6 @@ const resolveSelectValue = (field: any) => {
   return field.selectValues[field.val] ?? field.val;
 };
 
-const shortMessage = (msg: string) => {
-  if (!msg) return "—";
-  const idx = msg.indexOf(" : ");
-  return idx !== -1 ? msg.substring(0, idx) : msg;
-};
-
-const ACTION_SEVERITY: Record<string, string> = {
-  modification: "secondary",
-  supression: "danger",
-};
-const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
-
-const ACTION_ICONS: Record<string, string> = {
-  modification: "pi-pencil",
-  supression: "pi-trash",
-  orientation: "pi-send",
-  duplicate: "pi-copy",
-  reouverture: "pi-refresh",
-  "annulation-tdt": "pi-times",
-};
-const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
 </script>
 
 <template>
@@ -276,65 +303,81 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
       Retour à la liste
     </button>
 
-    <!-- Loading -->
-    <div v-if="pending" class="space-y-4">
-      <div class="h-8 w-64 bg-gray-200 rounded animate-pulse" />
-      <div class="h-4 w-40 bg-gray-100 rounded animate-pulse" />
-      <div class="mt-6 space-y-2">
-        <div
-          v-for="i in 8"
-          :key="i"
-          class="h-10 bg-gray-100 rounded animate-pulse"
-        />
-      </div>
-    </div>
-
-    <div v-else-if="error" class="text-red-600 py-4">
+    <div v-if="error" class="text-red-600 py-4">
       Erreur lors du chargement du document.
     </div>
 
-    <template v-else-if="document">
+    <!-- Skeleton chargement -->
+    <div v-else-if="isPending" class="space-y-4">
+      <Skeleton width="66%" height="2rem" />
+      <Skeleton width="25%" height="1rem" />
+      <div class="flex gap-4 mt-2">
+        <Skeleton width="8rem" height="0.75rem" />
+        <Skeleton width="8rem" height="0.75rem" />
+      </div>
+      <div class="flex gap-2 mt-4">
+        <Skeleton width="6rem" height="2.25rem" border-radius="6px" />
+        <Skeleton width="6rem" height="2.25rem" border-radius="6px" />
+      </div>
+      <div class="border border-gray-200 rounded-lg overflow-hidden mt-6">
+        <div v-for="i in 5" :key="i" class="flex px-4 py-3 even:bg-gray-50">
+          <Skeleton width="33%" height="0.75rem" />
+          <Skeleton width="50%" height="0.75rem" class="ml-8" />
+        </div>
+      </div>
+    </div>
+
+    <template v-else-if="doc">
       <!-- Header -->
       <div class="mb-6">
         <div class="flex items-start justify-between gap-4">
           <div>
             <h1 class="text-2xl font-bold text-gray-900">
-              {{ document.info.titre || "Sans titre" }}
+              {{ doc.info.titre || "Sans titre" }}
             </h1>
-            <p class="text-sm text-gray-500 mt-1">{{ document.info.type }}</p>
+            <p class="text-sm text-gray-500 mt-1">{{ doc.info.type }}</p>
           </div>
-          <span
-            class="shrink-0 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100"
-            :title="document.last_action_message || document.last_action || ''"
-          >
-            {{
-              shortMessage(document.last_action_message || document.last_action)
-            }}
-          </span>
+
         </div>
-        <div class="flex gap-6 mt-3 text-xs text-gray-400">
-          <span>Créé le {{ formatDate(document.info.creation) }}</span>
-          <span>Modifié le {{ formatDate(document.info.modification) }}</span>
-          <span
-            >Dernier état le {{ formatDate(document.last_action_date) }}</span
-          >
+        <!-- Dates : skeleton tant que le fetch frais n'est pas terminé -->
+        <div v-if="!doc?.info?.creation" class="flex gap-4 mt-3">
+          <Skeleton width="8rem" height="0.75rem" />
+          <Skeleton width="8rem" height="0.75rem" />
+          <Skeleton width="9rem" height="0.75rem" />
+        </div>
+        <div v-else class="flex gap-6 mt-3 text-xs text-gray-400">
+          <span>Créé le {{ formatDate(doc.info.creation) }}</span>
+          <span>Modifié le {{ formatDate(doc.info.modification) }}</span>
+          <span>Dernier état le {{ formatDate(doc.last_action_date) }}</span>
         </div>
       </div>
 
-      <!-- Actions -->
+      <!-- Actions : skeleton tant que le fetch frais n'est pas terminé -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <template v-if="!doc?.info?.creation">
+          <Skeleton width="6rem" height="2.25rem" border-radius="6px" />
+          <Skeleton width="6rem" height="2.25rem" border-radius="6px" />
+          <Skeleton width="9rem" height="2.25rem" border-radius="6px" />
+        </template>
+        <template v-else-if="doc.action_possible?.length">
+          <Button
+            v-for="action in doc.action_possible.filter((a: any) => a.message && !(a.action === 'modification' && doc.last_action === 'termine'))"
+            :key="action.action"
+            :label="action.message"
+            :icon="actionLoading === action.action ? 'pi pi-spinner pi-spin' : `pi ${actionIcon(action.action)}`"
+            :severity="actionSeverity(action.action)"
+            :disabled="!!actionLoading"
+            @click="runAction(action)"
+          />
+        </template>
+      </div>
+
+      <!-- Bannière erreur formulaire : only si la partie avant ' : ' est un code action (sans espace) -->
       <div
-        v-if="document.action_possible?.length"
-        class="flex flex-wrap gap-2 mb-6"
+        v-if="doc?.last_action_message && /^[^\s]+ : /.test(doc.last_action_message)"
+        class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300 w-full"
       >
-        <Button
-          v-for="action in document.action_possible.filter((a: any) => a.message)"
-          :key="action.action"
-          :label="action.message"
-          :icon="actionLoading === action.action ? 'pi pi-spinner pi-spin' : `pi ${actionIcon(action.action)}`"
-          :severity="actionSeverity(action.action)"
-          :disabled="!!actionLoading"
-          @click="runAction(action)"
-        />
+        {{ doc.last_action_message }}
       </div>
 
       <div
@@ -369,12 +412,12 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
       >
         <!-- Skeleton flux pas encore chargé -->
         <div
-          v-if="!Object.keys(fluxDef).length"
+          v-if="!Object.keys(fluxDef).length || (isPending && !Object.keys(doc?.data ?? {}).length)"
           class="divide-y divide-gray-100"
         >
           <div v-for="i in 5" :key="i" class="flex px-4 py-3 even:bg-gray-50">
-            <div class="w-1/3 h-3 bg-gray-200 rounded animate-pulse" />
-            <div class="w-1/2 h-3 bg-gray-100 rounded animate-pulse ml-8" />
+            <Skeleton width="33%" height="0.75rem" />
+            <Skeleton width="50%" height="0.75rem" class="ml-8" />
           </div>
         </div>
 
@@ -551,9 +594,9 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
         </div>
         <div v-if="journalPending" class="divide-y divide-gray-100">
           <div v-for="i in 3" :key="i" class="flex gap-4 px-4 py-3">
-            <div class="w-1/4 h-3 bg-gray-200 rounded animate-pulse" />
-            <div class="w-1/4 h-3 bg-gray-100 rounded animate-pulse" />
-            <div class="w-1/5 h-3 bg-gray-100 rounded animate-pulse" />
+            <Skeleton width="25%" height="0.75rem" />
+            <Skeleton width="25%" height="0.75rem" />
+            <Skeleton width="20%" height="0.75rem" />
           </div>
         </div>
         <div
@@ -592,3 +635,4 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
     </template>
   </div>
 </template>
+

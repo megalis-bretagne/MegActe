@@ -7,8 +7,10 @@ export const useFluxDef = () => {
   const { user } = useUserContext();
 
   const getFluxDef = async (type: string): Promise<Record<string, any>> => {
+    // cache memoire
     if (fluxDefCache.value[type]) return fluxDefCache.value[type];
 
+    // cache dansle local storage
     if (import.meta.client) {
       try {
         const raw = localStorage.getItem(`fluxDef:${type}`);
@@ -22,6 +24,7 @@ export const useFluxDef = () => {
       } catch {}
     }
 
+    // si aucun alors on arrive ici tout en mettant en cache localstorage
     try {
       const result = await $fetch<any>(`/flux/${type}`, {
         baseURL: config.public.apiBaseUrl,
@@ -39,5 +42,7 @@ export const useFluxDef = () => {
     }
   };
 
-  return { getFluxDef, fluxDefCache };
+  const fluxDefFor = (type: string) => fluxDefCache.value[type] ?? {};
+
+  return { getFluxDef, fluxDefFor };
 };

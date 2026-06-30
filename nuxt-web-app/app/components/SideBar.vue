@@ -1,18 +1,10 @@
 <script setup lang="ts">
-const props = defineProps<{
-  entiteId?: number;
-  selectedFlux?: string | null;
-}>();
-
-const emit = defineEmits<{ selectFlux: [flux: string | null] }>();
-
 const config = useRuntimeConfig();
-const { user } = useUserContext();
+const { user, selectedFlux } = useUserContext();
 
 const fluxList = ref<Record<string, any>>({});
 
 async function fetchFlux() {
-  console.log("fetchFlux");
   if (!user.value?.token) return;
   try {
     fluxList.value = await $fetch<Record<string, any>>("/flux", {
@@ -34,7 +26,6 @@ watch(
 
 const fluxItems = computed(() => {
   return Object.entries(fluxList.value)
-    .filter(([, f]) => f.enable !== false)
     .map(([id, f]: [string, any]) => ({ id, nom: f.nom ?? id }))
     .sort((a, b) => a.nom.localeCompare(b.nom));
 });
@@ -44,13 +35,9 @@ const fluxItems = computed(() => {
     <!-- Tous les documents -->
     <div class="p-3 border-b border-gray-100">
       <button
-        :class="
-          selectedFlux === null || selectedFlux === undefined
-            ? 'bg-blue-600 text-white'
-            : 'text-gray-700 hover:bg-gray-100'
-        "
+        :class="!selectedFlux ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'"
         class="w-full text-left px-3 py-2 rounded text-sm font-medium transition-colors"
-        @click="emit('selectFlux', null)"
+        @click="selectedFlux = null"
       >
         Tous les documents
       </button>
@@ -65,11 +52,7 @@ const fluxItems = computed(() => {
       </h2>
 
       <div v-if="!fluxItems.length" class="space-y-1 px-3">
-        <div
-          v-for="i in 5"
-          :key="i"
-          class="h-8 bg-gray-100 rounded animate-pulse"
-        />
+        <Skeleton v-for="i in 5" :key="i" height="2rem" />
       </div>
 
       <ul v-else class="space-y-0.5">
@@ -81,7 +64,7 @@ const fluxItems = computed(() => {
                 : 'text-gray-700 hover:bg-gray-100'
             "
             class="w-full text-left px-3 py-2 rounded text-sm transition-colors"
-            @click="emit('selectFlux', flux.id)"
+            @click="selectedFlux = flux.id"
           >
             {{ flux.nom }}
           </button>

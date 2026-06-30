@@ -18,6 +18,7 @@ const STUDIO_TABS: TabConfig[] = [
       "autre_document_attache",
       "publication_open_data",
     ],
+    alwaysShow: ["acte_nature", "numero_de_lacte", "objet", "publication_open_data"],
   },
   {
     id: "cheminement",
@@ -86,6 +87,7 @@ const AUTRES_SANS_TDT_TABS: TabConfig[] = [
       "autre_document_attache",
       "publication_open_data",
     ],
+    alwaysShow: ["acte_nature", "nature_autre_detail", "numero_de_lacte", "objet", "date_de_lacte", "classification", "publication_open_data"],
   },
   {
     id: "cheminement",
