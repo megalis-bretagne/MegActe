@@ -165,6 +165,7 @@ function getFilteredFields() {
 const actionLoading = ref<string | null>(null);
 const actionError = ref<string | null>(null);
 
+// du bricolage pour l'instant car parfois après une action, j'ai des erreurs 403 donc j'ai ajouté ça pour
 async function handlePostAction403(actionName: string, previousState: string | undefined) {
   if (actionName === "supression") {
     router.push(`/`);
