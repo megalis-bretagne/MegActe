@@ -1,4 +1,7 @@
-export async function fetchUser(token: string, baseURL: string): Promise<pastellUser> {
+export async function fetchUser(
+  token: string,
+  baseURL: string
+): Promise<pastellUser> {
   try {
     console.log("Fetch user with token: " + token);
     return await $fetch("/user", {

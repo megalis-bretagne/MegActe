@@ -5,7 +5,7 @@ export const useDocuments = (
   idFlux: Ref<string | null | undefined>,
   firstPage: Ref<DocumentPaginate | undefined>,
   page: Ref<number>,
-  search: Ref<string>,
+  search: Ref<string>
 ) => {
   const { data: user } = useAuth();
   const queryClient = useQueryClient();
@@ -17,10 +17,10 @@ export const useDocuments = (
 
   // En recherche : tout fetcher en une requête ; sinon pagination normale
   const effectiveOffset = computed(() =>
-    isSearching.value ? 0 : (page.value - 1) * ITEMS_PER_PAGE,
+    isSearching.value ? 0 : (page.value - 1) * ITEMS_PER_PAGE
   );
   const effectiveLimit = computed(() =>
-    isSearching.value ? knownTotal.value || ITEMS_PER_PAGE : ITEMS_PER_PAGE,
+    isSearching.value ? knownTotal.value || ITEMS_PER_PAGE : ITEMS_PER_PAGE
   );
 
   const queryKey = computed(() => [
@@ -39,7 +39,7 @@ export const useDocuments = (
         idFlux.value ?? null,
         effectiveOffset.value,
         effectiveLimit.value,
-        user.value?.accessToken,
+        user.value?.accessToken
       ),
     enabled: computed(() => !!entiteId.value && !!user.value?.accessToken),
     initialData: firstPage,
@@ -71,7 +71,7 @@ export const useDocuments = (
           idFlux.value ?? null,
           prefetchOffset,
           ITEMS_PER_PAGE,
-          user.value?.accessToken,
+          user.value?.accessToken
         ),
     });
   };
@@ -85,15 +85,15 @@ export const useDocuments = (
       doPrefetch(effectiveOffset.value + ITEMS_PER_PAGE, total);
       doPrefetch(effectiveOffset.value - ITEMS_PER_PAGE, total);
     },
-    { immediate: true },
+    { immediate: true }
   );
 
   const documents = computed(() =>
-    (data.value?.documents ?? []).map((d) => ({ ...d, selected: false })),
+    (data.value?.documents ?? []).map((d) => ({ ...d, selected: false }))
   );
   const pagination = computed(() => data.value?.pagination ?? null);
   const totalPages = computed(() =>
-    pagination.value ? Math.ceil(pagination.value.total / ITEMS_PER_PAGE) : 0,
+    pagination.value ? Math.ceil(pagination.value.total / ITEMS_PER_PAGE) : 0
   );
 
   const invalidate = () =>

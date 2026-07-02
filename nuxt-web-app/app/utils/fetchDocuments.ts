@@ -3,7 +3,7 @@ export const fetchDocumentsPage = async (
   idFlux: string | null,
   offset: number,
   limit: number,
-  token: string,
+  token: string
 ): Promise<DocumentPaginate> => {
   const config = useRuntimeConfig();
   let queryParams = `offset=${offset}&limit=${limit}`;
@@ -16,7 +16,7 @@ export const fetchDocumentsPage = async (
       headers: { Authorization: `Bearer ${token}` },
     });
   } catch (e) {
-    console.error("fetchDocumentsPage error", e)
+    console.error("fetchDocumentsPage error", e);
     throw e;
   }
 };
@@ -24,7 +24,7 @@ export const fetchDocumentsPage = async (
 export const fetchDocument = async (
   entiteId: number,
   documentId: string,
-  token: string,
+  token: string
 ): Promise<DocumentDetail> => {
   const config = useRuntimeConfig();
   const url = `/entite/${entiteId}/document/${documentId}`;
@@ -37,7 +37,7 @@ export const fetchDocument = async (
     console.log("[DocumentDetail]", JSON.stringify(doc, null, 2));
     return doc;
   } catch (e) {
-    console.error("fetchDocument error", e)
+    console.error("fetchDocument error", e);
     throw e;
   }
 };
@@ -45,7 +45,7 @@ export const fetchDocument = async (
 export const fetchDocumentJournal = async (
   entiteId: number,
   documentId: string,
-  token: string,
+  token: string
 ): Promise<Journal> => {
   const config = useRuntimeConfig();
   const url = `/entite/${entiteId}/document/${documentId}/journal`;
@@ -56,8 +56,7 @@ export const fetchDocumentJournal = async (
       headers: { Authorization: `Bearer ${token}` },
     });
   } catch (e) {
-    console.error("fetchDocumentJournal error", e)
+    console.error("fetchDocumentJournal error", e);
     throw e;
   }
 };
-

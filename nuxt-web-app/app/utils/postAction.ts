@@ -1,4 +1,9 @@
-export const postDocumentAction = async (entiteId: number, documentId: string, action: string, token: string): Promise<ActionResult> => {
+export const postDocumentAction = async (
+  entiteId: number,
+  documentId: string,
+  action: string,
+  token: string
+): Promise<ActionResult> => {
   try {
     const config = useRuntimeConfig();
     const result: ActionResult = await $fetch(
@@ -11,7 +16,7 @@ export const postDocumentAction = async (entiteId: number, documentId: string, a
         },
         body: { document_ids: documentId, action: action },
         timeout: 1000,
-      },
+      }
     );
     return result;
   } catch (e: ActionError) {
@@ -21,8 +26,8 @@ export const postDocumentAction = async (entiteId: number, documentId: string, a
       "| data:",
       e?.data,
       "| message:",
-      e?.message,
+      e?.message
     );
     throw e;
   }
-}
+};

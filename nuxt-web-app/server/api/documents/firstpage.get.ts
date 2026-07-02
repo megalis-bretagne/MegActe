@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const { entiteId, idFlux, docsPerPage } = query;
 
   const config = useRuntimeConfig();
-  const url = `/entite/${entiteId}/documents?offset=0&limit=${docsPerPage}${idFlux ? `&type_flux=${idFlux}` : ''}`;
+  const url = `/entite/${entiteId}/documents?offset=0&limit=${docsPerPage}${idFlux ? `&type_flux=${idFlux}` : ""}`;
   const data = await $fetch<DocumentPaginate>(url, {
     baseURL: config.public.apiBaseUrl,
     headers: { Authorization: `Bearer ${session.accessToken}` },

@@ -82,4 +82,3 @@ export const TABS_CONFIG: Record<string, TabConfig[]> = {
   "deliberations-studio": ACTE_TABS,
   "arretes-individuels-studio": ACTE_TABS,
 };
-

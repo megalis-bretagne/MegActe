@@ -31,7 +31,7 @@ function changePage(page: number) {
 
 const showLeftEllipsis = computed(() => props.pageActive > pagesToShow / 2 + 2);
 const showRightEllipsis = computed(
-  () => props.totalPages > props.pageActive + pagesToShow / 2 + 2,
+  () => props.totalPages > props.pageActive + pagesToShow / 2 + 2
 );
 </script>
 

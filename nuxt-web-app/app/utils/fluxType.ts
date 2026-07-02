@@ -3,7 +3,7 @@ export interface Flux {
   type: string;
   nom: string;
   enable: boolean;
-};
+}
 
 /* some fields might be missing */
 export interface FluxDetails {

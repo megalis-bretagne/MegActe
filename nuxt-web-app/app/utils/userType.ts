@@ -1,24 +1,24 @@
 type User = {
-  name: string
-  email: string
-  image: string
-}
+  name: string;
+  email: string;
+  image: string;
+};
 
 type pastellUserInfo = {
-  id_u: number
-  login: string
-  nom: string
-  prenom: string
-  email: string
-  id_e: number
-}
+  id_u: number;
+  login: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  id_e: number;
+};
 
 export type pastellUser = {
-  userinfo: pastellUserInfo
-  entites: [[object]]
-}
+  userinfo: pastellUserInfo;
+  entites: [[object]];
+};
 
 export type userSession = {
-  user: User
-  pastellUser: pastellUser
-}
+  user: User;
+  pastellUser: pastellUser;
+};

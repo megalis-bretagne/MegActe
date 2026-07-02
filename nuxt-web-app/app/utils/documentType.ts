@@ -8,18 +8,18 @@ interface BaseDocumentInfo {
 
 interface ActionPossible {
   action: ActionPossibleEnum | string;
-  message: string
+  message: string;
 }
 
 enum ActionPossibleEnum {
-  Orientation = 'orientation',
-  Suppression = 'supression',
-  Modification = 'modification',
-  Teletransmission_TDT = 'teletransmission-tdt',
+  Orientation = "orientation",
+  Suppression = "supression",
+  Modification = "modification",
+  Teletransmission_TDT = "teletransmission-tdt",
   Annulation_TDT = "annulation-tdt",
   Creation = "creation",
   Duplicate = "duplicate",
-  Verification_TDT = 'verif-tdt'
+  Verification_TDT = "verif-tdt",
 }
 
 interface DocumentActionDetails {
@@ -38,12 +38,18 @@ interface DocumentInfo extends BaseDocumentInfo, DocumentActionDetails {
 
 export interface DocumentPaginate {
   documents: DocumentInfo[];
-  pagination: { offset: number; limit: number; total: number; next: string; prev: string } | null;
+  pagination: {
+    offset: number;
+    limit: number;
+    total: number;
+    next: string;
+    prev: string;
+  } | null;
 }
 
 interface TypePieceFichier {
-  filename: string,
-  typologie: string
+  filename: string;
+  typologie: string;
 }
 
 export interface DocumentDetail extends DocumentActionDetails {

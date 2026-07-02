@@ -2,7 +2,7 @@ import Aura from "@primeuix/themes/aura";
 import PrimeUI from "tailwindcss-primeui";
 
 export default defineNuxtConfig({
-  compatibilityDate: '2026-06-24',
+  compatibilityDate: "2026-06-24",
   devtools: { enabled: true },
 
   nitro: {
@@ -48,7 +48,7 @@ export default defineNuxtConfig({
      * Specify which Vue Query composables to auto-import
      * Default: `false`, set to `true` to auto-import all Vue Query composables
      */
-    autoImports: ['useQueryClient', 'useQuery', 'usePrefetchQuery'],
+    autoImports: ["useQueryClient", "useQuery", "usePrefetchQuery"],
 
     // Enable/disable Nuxt DevTools integration (default: true)
     devtools: false,
