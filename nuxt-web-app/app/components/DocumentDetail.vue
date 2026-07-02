@@ -9,24 +9,29 @@ const router = useRouter();
 const { data: user } = useAuth();
 
 // ── Fetch document ────────────────────────────────────────────────────────────
-const { data: document, pending, error, refresh } = useAsyncData(
+const {
+  data: document,
+  pending,
+  error,
+  refresh,
+} = useAsyncData(
   `document-${props.entiteId}-${props.idD}`,
   () => fetchDocument(props.entiteId, props.idD, user.value.accessToken),
-  { server: false, watch: [() => user.value?.accessToken] },
+  { server: false, watch: [() => user.value?.accessToken] }
 );
 
 // ── Fetch journal ─────────────────────────────────────────────────────────────
 const { data: journal, refresh: refreshJournal } = useAsyncData(
   `journal-${props.entiteId}-${props.idD}`,
   () => fetchDocumentJournal(props.entiteId, props.idD, user.value.accessToken),
-  { server: false, watch: [() => user.value?.accessToken] },
+  { server: false, watch: [() => user.value?.accessToken] }
 );
 
 // ── Fetch définition du flux (déclenché dès que le type du document est connu) ─
 const { data: fluxDefData } = useAsyncData(
   `flux-${props.entiteId}-${props.idD}`,
   () => fetchFluxDetails(document.value?.info?.type, user.value?.accessToken),
-  { server: false, immediate: false, watch: [() => document.value?.info?.type] },
+  { server: false, immediate: false, watch: [() => document.value?.info?.type] }
 );
 
 const fluxDef = computed(() => fluxDefData.value ?? {});
@@ -57,14 +62,18 @@ async function runAction(action: { action: string; message: string }) {
   actionError.value = null;
   console.log("[runAction] déclenchée :", action);
   try {
-    const result = await postDocumentAction(props.entiteId, props.idD, action.action, user.value.accessToken);
+    const result = await postDocumentAction(
+      props.entiteId,
+      props.idD,
+      action.action,
+      user.value.accessToken
+    );
     console.log("[runAction] succès :", result);
     await Promise.all([refresh(), refreshJournal()]);
   } catch (e: ActionResult) {
     actionError.value =
       e?.data?.detail ?? e?.message ?? "Runaction: Une erreur est survenue";
-  }
-  finally {
+  } finally {
     actionLoading.value = null;
   }
 }
@@ -76,7 +85,7 @@ const journalEntries = computed(() => {
     .slice()
     .sort(
       (a: any, b: any) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime(),
+        new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
   // Déduplique les entrées consécutives de même action (garde la dernière)
@@ -212,7 +221,7 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
       >
         <button
           v-for="action in document.action_possible.filter(
-            (a: any) => a.message,
+            (a: any) => a.message
           )"
           :key="action.action"
           :disabled="!!actionLoading"
@@ -276,18 +285,34 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
         <template v-else>
           <table class="min-w-full text-sm">
             <tbody class="divide-y divide-gray-100">
-              <tr v-if="
-                getTabFields(document, fluxDef, tabs.find((t) => t.id === activeTab)!).length ===
-                0
-              ">
-                <td colspan="2" class="px-4 py-6 text-center text-gray-400 italic">
+              <tr
+                v-if="
+                  getTabFields(
+                    document,
+                    fluxDef,
+                    tabs.find((t) => t.id === activeTab)!
+                  ).length === 0
+                "
+              >
+                <td
+                  colspan="2"
+                  class="px-4 py-6 text-center text-gray-400 italic"
+                >
                   Aucun champ disponible
                 </td>
               </tr>
-              <tr v-for="field in getTabFields(document, fluxDef,
-                tabs.find((t) => t.id === activeTab)!,
-              )" :key="field.key" class="even:bg-gray-50">
-                <td class="px-4 py-3 font-medium text-gray-600 w-1/3 align-top whitespace-nowrap">
+              <tr
+                v-for="field in getTabFields(
+                  document,
+                  fluxDef,
+                  tabs.find((t) => t.id === activeTab)!
+                )"
+                :key="field.key"
+                class="even:bg-gray-50"
+              >
+                <td
+                  class="px-4 py-3 font-medium text-gray-600 w-1/3 align-top whitespace-nowrap"
+                >
                   {{ field.label }}
                   <span
                     v-if="field.commentaire"

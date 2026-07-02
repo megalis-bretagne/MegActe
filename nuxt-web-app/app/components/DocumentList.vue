@@ -6,10 +6,13 @@ const props = defineProps<{
   idFlux?: string | null;
 }>();
 
-const { data: firstPage } = await useFetch('/api/documents/firstpage',
-  {
-    params: { entiteId: props.entiteId, idFlux: props.idFlux, docsPerPage: ITEMS_PER_PAGE },
-  });
+const { data: firstPage } = await useFetch("/api/documents/firstpage", {
+  params: {
+    entiteId: props.entiteId,
+    idFlux: props.idFlux,
+    docsPerPage: ITEMS_PER_PAGE,
+  },
+});
 
 const router = useRouter();
 
@@ -20,35 +23,23 @@ const idFluxRef = computed(() => props.idFlux ?? null);
 
 const search = ref("");
 
-const {
-  documents,
-  pagination,
-  totalPages,
-  isFetching,
-  isError,
-  error,
-} = useDocuments(entiteIdRef, idFluxRef, firstPage, pageActive, search);
+const { documents, pagination, totalPages, isFetching, isError, error } =
+  useDocuments(entiteIdRef, idFluxRef, firstPage, pageActive, search);
 
-watch(
-  entiteIdRef,
-  () => {
-    pageActive.value = 1;
-    search.value = "";
-  },
-);
-watch(
-  idFluxRef,
-  () => {
-    pageActive.value = 1;
-    search.value = "";
-  },
-);
+watch(entiteIdRef, () => {
+  pageActive.value = 1;
+  search.value = "";
+});
+watch(idFluxRef, () => {
+  pageActive.value = 1;
+  search.value = "";
+});
 watch(
   search,
   () => {
     searchPage.value = 1;
   },
-  { flush: "sync" },
+  { flush: "sync" }
 );
 
 // Tri
@@ -61,8 +52,8 @@ const sorted = computed(() => {
   const base = term
     ? documents.value.filter((doc) =>
         [doc.titre, doc.type, doc.last_action_message, doc.last_action].some(
-          (v) => v?.toLowerCase().includes(term),
-        ),
+          (v) => v?.toLowerCase().includes(term)
+        )
       )
     : documents.value;
 
@@ -75,12 +66,12 @@ const sorted = computed(() => {
 });
 
 const displayTotal = computed(() =>
-  search.value.trim() ? sorted.value.length : (pagination.value?.total ?? 0),
+  search.value.trim() ? sorted.value.length : (pagination.value?.total ?? 0)
 );
 const displayTotalPages = computed(() =>
   search.value.trim()
     ? Math.ceil(sorted.value.length / ITEMS_PER_PAGE)
-    : totalPages.value,
+    : totalPages.value
 );
 const displayedDocs = computed(() => {
   if (!search.value.trim()) return sorted.value;
@@ -89,7 +80,7 @@ const displayedDocs = computed(() => {
 });
 
 const activePage = computed(() =>
-  search.value.trim() ? searchPage.value : pageActive.value,
+  search.value.trim() ? searchPage.value : pageActive.value
 );
 
 function onChangePage(p: number) {
@@ -122,7 +113,6 @@ const formatDate = (dateStr: string) => {
 function openDoc(doc: any) {
   router.push(`/org/${doc.id_e}/document/${doc.id_d}`);
 }
-
 </script>
 
 <template>

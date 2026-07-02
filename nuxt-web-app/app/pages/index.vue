@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { data: user, pending } = await useFetch('/api/user');
+const { data: user, pending } = await useFetch("/api/user");
 const pastellReady = computed(() => !pending.value);
 const entiteId = computed(() => user.value?.user_info?.id_e);
 const selectedFlux = ref<string | null>(null);
@@ -8,7 +8,11 @@ console.log("entiteId=", entiteId.value);
 
 <template>
   <div class="p-6">
-    <DocumentList v-if="entiteId" :entite-id="entiteId" :id-flux="selectedFlux" />
+    <DocumentList
+      v-if="entiteId"
+      :entite-id="entiteId"
+      :id-flux="selectedFlux"
+    />
 
     <div v-else-if="!pastellReady" class="space-y-3 mt-2">
       <div class="h-6 w-48 bg-gray-200 rounded animate-pulse" />

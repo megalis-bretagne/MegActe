@@ -29,7 +29,10 @@ const { data } = useAuth();
 
         <!-- Right side: User Avatar -->
         <div class="flex items-center flex-shrink-0">
-          <span v-if="data?.user?.name" class="text-sm text-gray-600 hidden md:inline mr-2">
+          <span
+            v-if="data?.user?.name"
+            class="text-sm text-gray-600 hidden md:inline mr-2"
+          >
             {{ data.user.name }}
           </span>
           <Avatar :label="data?.user?.name?.charAt(0)" />
