@@ -1,11 +1,15 @@
 // ── Champs d'un onglet ────────────────────────────────────────────────────────
-export function getTabFields(document: DocumentInfo, fluxDef: FluxDetails, tab: { id: string; fields: string[] }) {
+export function getTabFields(
+  document: DocumentInfo,
+  fluxDef: FluxDetails,
+  tab: { id: string; fields: string[] }
+) {
   if (!document.data) return [];
 
   // Si pas de config pour ce flux, fallback sur filterFields
   const fluxType = document.info?.type;
   if (!TABS_CONFIG[fluxType] && tab.id === "preparer") {
-    return getFilteredFields(fluxDef);
+    return getFilteredFields(document, fluxDef);
   }
 
   return tab.fields
@@ -28,7 +32,7 @@ export function getTabFields(document: DocumentInfo, fluxDef: FluxDetails, tab: 
 }
 
 // filterFields pour flux sans config
-function getFilteredFields(fluxDef: FluxDetails) {
+function getFilteredFields(document: DocumentInfo, fluxDef: FluxDetails) {
   return Object.entries(fluxDef)
     .filter(([key, def]: [string, any]) => {
       if (def?.["no-show"]) return false;
@@ -45,7 +49,7 @@ function getFilteredFields(fluxDef: FluxDetails) {
     .filter(([key]) => key !== "type_piece")
     .map(([key, def]: [string, any]) => ({
       key,
-      val: document.value.data[key] ?? null,
+      val: document.data[key] ?? null,
       label: def?.name ?? key.replace(/_/g, " "),
       type: def?.type ?? "text",
       selectValues: def?.value ?? null,
@@ -56,7 +60,6 @@ function getFilteredFields(fluxDef: FluxDetails) {
         val !== null &&
         val !== "" &&
         val !== "[]" &&
-        !(Array.isArray(val) && val.length === 0),
+        !(Array.isArray(val) && val.length === 0)
     );
 }
-
