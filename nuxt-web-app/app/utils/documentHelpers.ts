@@ -1,5 +1,5 @@
 // ── Champs d'un onglet ────────────────────────────────────────────────────────
-export function getTabFields(
+export function getActiveTabFields(
   document: DocumentInfo,
   fluxDef: FluxDetails,
   tab: { id: string; fields: string[] }
@@ -8,20 +8,25 @@ export function getTabFields(
 
   // Si pas de config pour ce flux, fallback sur filterFields
   const fluxType = document.info?.type;
-  if (!TABS_CONFIG[fluxType] && tab.id === "preparer") {
+  if (!FLUX_TABS_CONFIG[fluxType] && tab.id === "preparer") {
     return getFilteredFields(document, fluxDef);
   }
 
+  const alwaysShow = new Set(tab.alwaysShow ?? []);
   return tab.fields
     .map((key) => {
       const def = fluxDef[key];
       const val = document.data[key];
-      if (val === undefined || val === null || val === "" || val === "[]")
-        return null;
-      if (Array.isArray(val) && val.length === 0) return null;
+      const isEmpty =
+        val === undefined ||
+        val === null ||
+        val === "" ||
+        val === "[]" ||
+        (Array.isArray(val) && val.length === 0);
+      if (isEmpty && !alwaysShow.has(key)) return null;
       return {
         key,
-        val,
+        val: isEmpty ? null : val,
         label: def?.name ?? key.replace(/_/g, " "),
         type: def?.type ?? "text",
         selectValues: def?.value ?? null,

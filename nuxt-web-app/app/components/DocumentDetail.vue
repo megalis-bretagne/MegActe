@@ -1,47 +1,60 @@
 <script setup lang="ts">
-const props = defineProps<{
-  entiteId: number;
-  idD: string;
-}>();
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
+
+const props = defineProps<{ entiteId: number; idD: string; fluxType: string; }>();
 
 const config = useRuntimeConfig();
 const router = useRouter();
 const { data: user } = useAuth();
+const { getFluxDef, fluxDefFor } = useFluxDef();
+const queryClient = useQueryClient();
+
 
 // ── Fetch document ────────────────────────────────────────────────────────────
-const {
-  data: document,
-  pending,
-  error,
-  refresh,
-} = useAsyncData(
-  `document-${props.entiteId}-${props.idD}`,
-  () => fetchDocument(props.entiteId, props.idD, user.value.accessToken),
-  { server: false, watch: [() => user.value?.accessToken] }
-);
+const { data: doc, isPending, error } = useQuery({
+  queryKey: computed(() => ['document', props.entiteId, props.idD]),
+  queryFn: async () => {
+    const url = `/entite/${props.entiteId}/document/${props.idD}`;
+    return await $fetch<any>(url, { baseURL: config.public.apiBaseUrl, headers: { Authorization: `Bearer ${user.value.accessToken}`} });
+  },
+  enabled: computed(() => !!user.value?.token),
+  staleTime: 30_000,
+  placeholderData: (prev) => prev,
+});
 
-// ── Fetch journal ─────────────────────────────────────────────────────────────
-const { data: journal, refresh: refreshJournal } = useAsyncData(
-  `journal-${props.entiteId}-${props.idD}`,
-  () => fetchDocumentJournal(props.entiteId, props.idD, user.value.accessToken),
-  { server: false, watch: [() => user.value?.accessToken] }
-);
+// ── Fetch journal ────────────────────────────────────────────────────────────
+const { data: journalData, isPending: journalPending } = useQuery({
+  queryKey: computed(() => ['journal', props.entiteId, props.idD]),
+  queryFn: async () => {
+      return await $fetch<any[]>(
+        `/entite/${props.entiteId}/document/${props.idD}/journal`,
+        { baseURL: config.public.apiBaseUrl, headers: { Authorization: `Bearer ${user.value.accessToken}` },
+      );
+  },
+  enabled: computed(() => !!user.value?.token),
+  staleTime: 30_000,
+});
 
-// ── Fetch définition du flux (déclenché dès que le type du document est connu) ─
-const { data: fluxDefData } = useAsyncData(
-  `flux-${props.entiteId}-${props.idD}`,
-  () => fetchFluxDetails(document.value?.info?.type, user.value?.accessToken),
-  { server: false, immediate: false, watch: [() => document.value?.info?.type] }
-);
+const fluxDef = computed(() => {
+  const type = props.fluxType ?? doc.value?.info?.type;
+  if (!type) return {};
+  return fluxDefFor(type);
+});
 
-const fluxDef = computed(() => fluxDefData.value ?? {});
+watch(
+  () => ({ token: user.value?.token, type: props.fluxType ?? doc.value?.info?.type }),
+  async ({ token, type }) => {
+    if (token && type) await getFluxDef(type);
+  },
+  { immediate: true },
+);
 
 // Onglets disponibles selon le type de flux (filtrés par condition)
 const tabs = computed(() => {
-  const fluxType = document.value?.info?.type;
-  const config = TABS_CONFIG[fluxType];
+  const fluxType = doc.value?.info?.type;
+  const config = FLUX_TABS_CONFIG[fluxType];
   if (!config) return [{ id: "preparer", label: "Préparer", fields: [] }];
-  const data = document.value?.data ?? {};
+  const data = doc.value?.data ?? {};
   return config.filter((tab) => !tab.condition || tab.condition(data));
 });
 
@@ -52,55 +65,58 @@ watch(tabs, () => {
   activeTab.value = "preparer";
 });
 
+// ── Champs de l'onglet actif ──────────────────────────────────────────────────
+const activeTabFields = computed(() =>
+  getActiveTabFields(document.value,
+    FluxDef.value,
+    tabs.find((t) => t.id === activeTab.value));
+);
+
 // ── Actions ───────────────────────────────────────────────────────────────────
 const actionLoading = ref<string | null>(null);
 const actionError = ref<string | null>(null);
-const expandedJournal = ref<string | null>(null);
+
+const { mutateAsync: performAction } = useMutation({
+  mutationFn: async (actionName: string) => {
+     await $fetch(
+      `/entite/${props.entiteId}/documents/perform_action`,
+      {
+        method: "POST",
+        baseURL: config.public.apiBaseUrl,
+        headers: { Authorization: `Bearer ${token}` },
+        body: { document_ids: props.idD, action: actionName },
+      },
+    );
+  },
+  onSuccess: (_, actionName) => {
+    if (actionName === "supression") {
+      router.push(`/`);
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ['document', props.entiteId, props.idD] });
+    queryClient.invalidateQueries({ queryKey: ['journal', props.entiteId, props.idD] });
+  },
+});
 
 async function runAction(action: { action: string; message: string }) {
+  if (action.action === "modification") {
+    router.push(`/org/${props.entiteId}/document/${props.idD}/edit?type=${props.fluxType ?? doc.value?.info?.type ?? ""}`);
+    return;
+  }
+
   actionLoading.value = action.action;
   actionError.value = null;
-  console.log("[runAction] déclenchée :", action);
+  const previousState = doc.value?.last_action;
   try {
-    const result = await postDocumentAction(
-      props.entiteId,
-      props.idD,
-      action.action,
-      user.value.accessToken
-    );
-    console.log("[runAction] succès :", result);
-    await Promise.all([refresh(), refreshJournal()]);
-  } catch (e: ActionResult) {
-    actionError.value =
-      e?.data?.detail ?? e?.message ?? "Runaction: Une erreur est survenue";
+    await performAction(action.action);
+  } catch (e) {
+      actionError.value = e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
   } finally {
     actionLoading.value = null;
   }
 }
 
-// ── Journal filtré/dédupliqué ─────────────────────────────────────────────────
-const journalEntries = computed(() => {
-  const entries = (journal.value ?? [])
-    .filter((e: any) => e.type === "1")
-    .slice()
-    .sort(
-      (a: any, b: any) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-
-  // Déduplique les entrées consécutives de même action (garde la dernière)
-  const deduped: any[] = [];
-  for (let i = 0; i < entries.length; i++) {
-    if (
-      i === entries.length - 1 ||
-      entries[i].action !== entries[i + 1].action
-    ) {
-      deduped.push(entries[i]);
-    }
-  }
-  // Plus récent en premier
-  return deduped.reverse().slice(0, 13);
-});
+const journalEntries = computed(() => journalData.value ?? []);
 
 const journalUser = (entry: any) => {
   const name = [entry.prenom, entry.nom].filter(Boolean).join(" ");
@@ -108,19 +124,27 @@ const journalUser = (entry: any) => {
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const formatDate = (d: string) => {
-  if (!d) return "—";
-  return new Date(d).toLocaleString("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
 
-const fileUrl = (filename: string, elementId: string) =>
-  `${config.public.apiBaseUrl}/entite/${props.entiteId}/document/${props.idD}/file/${elementId}/${filename}`;
+function downloadFile(filename: string, elementId: string) {
+  const url = `/api/file/${props.entiteId}/${props.idD}/${elementId}/${encodeURIComponent(filename)}`;
+  const a = window.document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+}
+
+const ACTION_SEVERITY: Record<string, string> = { modification: "secondary", supression: "danger" };
+const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
+
+const ACTION_ICONS: Record<string, string> = {
+  modification: "pi-pencil",
+  supression: "pi-trash",
+  orientation: "pi-send",
+  duplicate: "pi-copy",
+  reouverture: "pi-refresh",
+  "annulation-tdt": "pi-times",
+};
+const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
 
 const isFileArray = (val: any) =>
   Array.isArray(val) &&
@@ -132,30 +156,6 @@ const resolveSelectValue = (field: any) => {
   if (!field.selectValues) return field.val;
   return field.selectValues[field.val] ?? field.val;
 };
-
-const shortMessage = (msg: string) => {
-  if (!msg) return "—";
-  const idx = msg.indexOf(" : ");
-  return idx !== -1 ? msg.substring(0, idx) : msg;
-};
-
-const ACTION_COLORS: Record<string, string> = {
-  modification: "bg-blue-600 hover:bg-blue-700 text-white",
-  supression: "bg-red-600 hover:bg-red-700 text-white",
-};
-const actionColor = (action: string) =>
-  ACTION_COLORS[action] ??
-  "bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300";
-
-const ACTION_ICONS: Record<string, string> = {
-  modification: "pi-pencil",
-  supression: "pi-trash",
-  orientation: "pi-send",
-  duplicate: "pi-copy",
-  reouverture: "pi-refresh",
-  "annulation-tdt": "pi-times",
-};
-const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
 </script>
 
 <template>
@@ -169,76 +169,90 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
       Retour à la liste
     </button>
 
-    <!-- Loading -->
-    <div v-if="pending" class="space-y-4">
-      <div class="h-8 w-64 bg-gray-200 rounded animate-pulse" />
-      <div class="h-4 w-40 bg-gray-100 rounded animate-pulse" />
-      <div class="mt-6 space-y-2">
-        <div
-          v-for="i in 8"
-          :key="i"
-          class="h-10 bg-gray-100 rounded animate-pulse"
-        />
-      </div>
-    </div>
-
-    <div v-else-if="error" class="text-red-600 py-4">
+    <div v-if="error" class="text-red-600 py-4">
       Erreur lors du chargement du document.
     </div>
 
-    <template v-else-if="document">
+    <!-- Skeleton chargement -->
+    <div v-else-if="isPending" class="space-y-4">
+      <Skeleton width="66%" height="2rem" />
+      <Skeleton width="25%" height="1rem" />
+      <div class="flex gap-4 mt-2">
+        <Skeleton width="8rem" height="0.75rem" />
+        <Skeleton width="8rem" height="0.75rem" />
+      </div>
+      <div class="flex gap-2 mt-4">
+        <Skeleton width="6rem" height="2.25rem" border-radius="6px" />
+        <Skeleton width="6rem" height="2.25rem" border-radius="6px" />
+      </div>
+      <div class="border border-gray-200 rounded-lg overflow-hidden mt-6">
+        <div v-for="i in 5" :key="i" class="flex px-4 py-3 even:bg-gray-50">
+          <Skeleton width="33%" height="0.75rem" />
+          <Skeleton width="50%" height="0.75rem" class="ml-8" />
+        </div>
+      </div>
+    </div>
+
+    <template v-else-if="doc">
       <!-- Header -->
       <div class="mb-6">
         <div class="flex items-start justify-between gap-4">
           <div>
             <h1 class="text-2xl font-bold text-gray-900">
-              {{ document.info.titre || "Sans titre" }}
+              {{ doc.info.titre || "Sans titre" }}
             </h1>
-            <p class="text-sm text-gray-500 mt-1">{{ document.info.type }}</p>
+            <p class="text-sm text-gray-500 mt-1">{{ doc.info.type }}</p>
           </div>
-          <span
-            class="shrink-0 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100"
-            :title="document.last_action_message || document.last_action || ''"
-          >
-            {{
-              shortMessage(document.last_action_message || document.last_action)
-            }}
-          </span>
         </div>
-        <div class="flex gap-6 mt-3 text-xs text-gray-400">
-          <span>Créé le {{ formatDate(document.info.creation) }}</span>
-          <span>Modifié le {{ formatDate(document.info.modification) }}</span>
-          <span
-            >Dernier état le {{ formatDate(document.last_action_date) }}</span
-          >
+        <!-- Dates : skeleton tant que le fetch frais n'est pas terminé -->
+        <div v-if="!doc?.info?.creation" class="flex gap-4 mt-3">
+          <Skeleton width="8rem" height="0.75rem" />
+          <Skeleton width="8rem" height="0.75rem" />
+          <Skeleton width="9rem" height="0.75rem" />
+        </div>
+        <div v-else class="flex gap-6 mt-3 text-xs text-gray-400">
+          <span>Créé le {{ formatDate(doc.info.creation) }}</span>
+          <span>Modifié le {{ formatDate(doc.info.modification) }}</span>
+          <span>Dernier état le {{ formatDate(doc.last_action_date) }}</span>
         </div>
       </div>
 
-      <!-- Actions -->
-      <div
-        v-if="document.action_possible?.length"
-        class="flex flex-wrap gap-2 mb-6"
-      >
-        <button
-          v-for="action in document.action_possible.filter(
-            (a: any) => a.message
-          )"
-          :key="action.action"
-          :disabled="!!actionLoading"
-          :class="actionColor(action.action)"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium transition-colors disabled:opacity-50"
-          @click="runAction(action)"
-        >
-          <i
-            :class="[
-              'pi',
+      <!-- Actions : skeleton tant que le fetch frais n'est pas terminé -->
+      <div class="flex flex-wrap gap-2 mb-6">
+        <template v-if="!doc?.info?.creation">
+          <Skeleton width="6rem" height="2.25rem" border-radius="6px" />
+          <Skeleton width="6rem" height="2.25rem" border-radius="6px" />
+          <Skeleton width="9rem" height="2.25rem" border-radius="6px" />
+        </template>
+        <template v-else-if="doc.action_possible?.length">
+          <Button
+            v-for="action in doc.action_possible.filter(
+              (a: any) =>
+                a.message &&
+                !(a.action === 'modification' && doc.last_action === 'termine')
+            )"
+            :key="action.action"
+            :label="action.message"
+            :icon="
               actionLoading === action.action
-                ? 'pi-spinner pi-spin'
-                : actionIcon(action.action),
-            ]"
+                ? 'pi pi-spinner pi-spin'
+                : `pi ${actionIcon(action.action)}`
+            "
+            :severity="actionSeverity(action.action)"
+            :disabled="!!actionLoading"
+            @click="runAction(action)"
           />
-          {{ action.message }}
-        </button>
+        </template>
+      </div>
+
+      <!-- Bannière erreur formulaire : only si la partie avant ' : ' est un code action (sans espace) -->
+      <div
+        v-if="
+          doc?.last_action_message && /^[^\s]+ : /.test(doc.last_action_message)
+        "
+        class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300 w-full"
+      >
+        {{ doc.last_action_message }}
       </div>
 
       <div
@@ -273,27 +287,22 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
       >
         <!-- Skeleton flux pas encore chargé -->
         <div
-          v-if="!Object.keys(fluxDef).length"
+          v-if="
+            !Object.keys(fluxDef).length ||
+            (isPending && !Object.keys(doc?.data ?? {}).length)
+          "
           class="divide-y divide-gray-100"
         >
           <div v-for="i in 5" :key="i" class="flex px-4 py-3 even:bg-gray-50">
-            <div class="w-1/3 h-3 bg-gray-200 rounded animate-pulse" />
-            <div class="w-1/2 h-3 bg-gray-100 rounded animate-pulse ml-8" />
+            <Skeleton width="33%" height="0.75rem" />
+            <Skeleton width="50%" height="0.75rem" class="ml-8" />
           </div>
         </div>
 
         <template v-else>
           <table class="min-w-full text-sm">
             <tbody class="divide-y divide-gray-100">
-              <tr
-                v-if="
-                  getTabFields(
-                    document,
-                    fluxDef,
-                    tabs.find((t) => t.id === activeTab)!
-                  ).length === 0
-                "
-              >
+              <tr v-if="activeTabFields.length === 0">
                 <td
                   colspan="2"
                   class="px-4 py-6 text-center text-gray-400 italic"
@@ -302,11 +311,7 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
                 </td>
               </tr>
               <tr
-                v-for="field in getTabFields(
-                  document,
-                  fluxDef,
-                  tabs.find((t) => t.id === activeTab)!
-                )"
+                v-for="field in activeTabFields"
                 :key="field.key"
                 class="even:bg-gray-50"
               >
@@ -314,12 +319,6 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
                   class="px-4 py-3 font-medium text-gray-600 w-1/3 align-top whitespace-nowrap"
                 >
                   {{ field.label }}
-                  <span
-                    v-if="field.commentaire"
-                    class="block text-xs text-gray-400 font-normal max-w-xs whitespace-normal mt-0.5"
-                  >
-                    {{ field.commentaire.replace(/<[^>]*>/g, "") }}
-                  </span>
                 </td>
                 <td class="px-4 py-3 text-gray-800">
                   <!-- ged_document_id_file -->
@@ -362,13 +361,12 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
                       :key="i"
                       class="mb-1"
                     >
-                      <a
-                        :href="fileUrl(piece.filename, 'arrete')"
-                        target="_blank"
-                        class="text-blue-600 hover:underline"
+                      <button
+                        class="text-blue-600 hover:underline text-left"
+                        @click="downloadFile(piece.filename, 'arrete')"
                       >
                         {{ piece.filename }}
-                      </a>
+                      </button>
                       <span class="text-gray-400 ml-2 text-xs">{{
                         piece.typologie
                       }}</span>
@@ -383,17 +381,18 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
                     "
                   >
                     <div
-                      v-for="(filename, i) in field.val as string[]"
+                      v-for="(filename, i) in (Array.isArray(field.val)
+                        ? field.val
+                        : [field.val]) as string[]"
                       :key="i"
                       class="mb-1"
                     >
-                      <a
-                        :href="fileUrl(filename, field.key)"
-                        target="_blank"
-                        class="text-blue-600 hover:underline"
+                      <button
+                        class="text-blue-600 hover:underline text-left"
+                        @click="downloadFile(filename, field.key)"
                       >
                         {{ filename }}
-                      </a>
+                      </button>
                     </div>
                   </template>
 
@@ -468,13 +467,20 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
         </template>
       </div>
 
-      <!-- États du dossier (journal) -->
+      <!-- États du dossier -->
       <div class="mt-6 border border-gray-200 rounded-lg overflow-hidden">
         <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
           <h2 class="text-sm font-semibold text-gray-700">États du dossier</h2>
         </div>
+        <div v-if="journalPending" class="divide-y divide-gray-100">
+          <div v-for="i in 3" :key="i" class="flex gap-4 px-4 py-3">
+            <Skeleton width="25%" height="0.75rem" />
+            <Skeleton width="25%" height="0.75rem" />
+            <Skeleton width="20%" height="0.75rem" />
+          </div>
+        </div>
         <div
-          v-if="!journalEntries.length"
+          v-else-if="!journalEntries.length"
           class="px-4 py-6 text-center text-gray-400 italic text-sm"
         >
           Aucun événement enregistré
@@ -490,9 +496,6 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
               </th>
               <th class="px-4 py-2 text-left font-medium text-gray-600">
                 Utilisateur
-              </th>
-              <th class="px-4 py-2 text-left font-medium text-gray-600">
-                Journal
               </th>
             </tr>
           </thead>
@@ -512,25 +515,6 @@ const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
               </td>
               <td class="px-4 py-2 text-gray-600 whitespace-nowrap">
                 {{ journalUser(entry) }}
-              </td>
-              <td class="px-4 py-2 text-gray-400">
-                <button
-                  v-if="entry.message"
-                  :title="entry.message"
-                  class="hover:text-gray-700 transition-colors"
-                  @click="
-                    expandedJournal =
-                      expandedJournal === entry.id_j ? null : entry.id_j
-                  "
-                >
-                  <i class="pi pi-eye" />
-                </button>
-                <div
-                  v-if="expandedJournal === entry.id_j"
-                  class="mt-1 text-xs text-gray-600 whitespace-pre-wrap max-w-xs"
-                >
-                  {{ entry.message }}
-                </div>
               </td>
             </tr>
           </tbody>

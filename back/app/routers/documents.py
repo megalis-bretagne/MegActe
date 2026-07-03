@@ -109,10 +109,11 @@ def add_files_to_document(
     element_id: str,
     entite_id: int,
     files: List[UploadFile] = File(...),
+    replace: bool = False,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     file_data = AddFilesToDoc(entite_id=entite_id, files=files)
-    return DocumentFileService(client).add_multiple_files(document_id, element_id, file_data)
+    return DocumentFileService(client).add_multiple_files(document_id, element_id, file_data, replace=replace)
 
 
 # Supprimer un fichier appartenant à un document
@@ -160,7 +161,7 @@ def patch_external_data(
     return 200
 
 
-# Récupérer les valeurs pour un champ externalData
+# Récupérer les valeurs pour un champ externalData (par document)
 @router.get(
     "/entite/{entite_id}/document/{document_id}/externalData/{element_id}",
     tags=["document"],
@@ -172,6 +173,20 @@ def get_external_data(
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     return DocumentFileService(client).get_external_data(entite_id, document_id, element_id)
+
+
+# Récupérer les valeurs pour un champ externalData (par type de flux, sans document_id)
+@router.get(
+    "/entite/{entite_id}/flux/{flux_type}/externalData/{element_id}",
+    tags=["document"],
+)
+def get_external_data_by_flux_type(
+    entite_id: int,
+    flux_type: str,
+    element_id: str,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return DocumentFileService(client).get_external_data_by_flux_type(entite_id, flux_type, element_id)
 
 
 @router.post(

@@ -5,7 +5,8 @@ export const useDocuments = (
   idFlux: Ref<string | null | undefined>,
   firstPage: Ref<DocumentPaginate | undefined>,
   page: Ref<number>,
-  search: Ref<string>
+  search: Ref<string>,
+  limit: Ref<number> = ref(ITEMS_PER_PAGE)
 ) => {
   const { data: user } = useAuth();
   const queryClient = useQueryClient();
@@ -17,10 +18,10 @@ export const useDocuments = (
 
   // En recherche : tout fetcher en une requête ; sinon pagination normale
   const effectiveOffset = computed(() =>
-    isSearching.value ? 0 : (page.value - 1) * ITEMS_PER_PAGE
+    isSearching.value ? 0 : (page.value - 1) * limit.value
   );
   const effectiveLimit = computed(() =>
-    isSearching.value ? knownTotal.value || ITEMS_PER_PAGE : ITEMS_PER_PAGE
+    isSearching.value ? knownTotal.value || limit.value : limit.value
   );
 
   const queryKey = computed(() => [
@@ -60,7 +61,7 @@ export const useDocuments = (
       entiteId.value,
       idFlux.value ?? null,
       prefetchOffset,
-      ITEMS_PER_PAGE,
+      limit.value,
     ];
 
     queryClient.prefetchQuery({
@@ -70,8 +71,8 @@ export const useDocuments = (
           entiteId.value!,
           idFlux.value ?? null,
           prefetchOffset,
-          ITEMS_PER_PAGE,
-          user.value?.accessToken
+          limit.value,
+          user.value?.token
         ),
     });
   };
@@ -82,19 +83,14 @@ export const useDocuments = (
       const total = d?.pagination?.total ?? 0;
       if (!total || isSearching.value) return;
       knownTotal.value = total;
-      doPrefetch(effectiveOffset.value + ITEMS_PER_PAGE, total);
-      doPrefetch(effectiveOffset.value - ITEMS_PER_PAGE, total);
+      doPrefetch(effectiveOffset.value + limit.value, total);
+      doPrefetch(effectiveOffset.value - limit.value, total);
     },
     { immediate: true }
   );
 
-  const documents = computed(() =>
-    (data.value?.documents ?? []).map((d) => ({ ...d, selected: false }))
-  );
+  const documents = computed(() => data.value?.documents ?? []);
   const pagination = computed(() => data.value?.pagination ?? null);
-  const totalPages = computed(() =>
-    pagination.value ? Math.ceil(pagination.value.total / ITEMS_PER_PAGE) : 0
-  );
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ["documents", entiteId.value] });

@@ -56,10 +56,16 @@ class DocumentService(BaseService):
         return document
 
     def get_document_journal(self, entite_id: int, document_id: str) -> list:
-        return self.api_pastell.perform_get(
+        raw = self.api_pastell.perform_get(
             "journal",
-            query_params={"id_e": entite_id, "id_d": document_id},
+            query_params={"id_e": entite_id, "id_d": document_id, "limit": 500},
         )
+        entries = sorted(
+            [e for e in raw if e.get("type") == "1"],
+            key=lambda e: e.get("date", ""),
+        )
+        deduped = [e for i, e in enumerate(entries) if i == len(entries) - 1 or e["action"] != entries[i + 1]["action"]]
+        return deduped[-13:]
 
     def create_document(self, id_e: int, flux: str):
         try:

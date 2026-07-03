@@ -27,6 +27,11 @@ const { data } = useAuth();
           </div>
         </div>
 
+        <!-- Center: Entity selector -->
+        <div class="flex-1 flex justify-center">
+          <EntiteSelector />
+        </div>
+
         <!-- Right side: User Avatar -->
         <div class="flex items-center flex-shrink-0">
           <span
