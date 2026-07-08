@@ -22,7 +22,6 @@ The app entry point is @./app/app.vue
 "@sidebase/nuxt-auth" is used to managed authentication against our keycloak server.
 The configuration is in the auth section of nuxt.config.ts.
 A catch-all route has been added into @./server/routes/auth/\[...\].ts
-A composable to retrieve authenticated user information is available in @./app/composables/useUserContext.ts
 
 ## Primevue and Tailwindcss integration
 
