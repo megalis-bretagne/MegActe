@@ -16,8 +16,7 @@ export interface DocumentPaginate {
   pagination: { total: number; offset: number; limit: number } | null;
 }
 
-export const ITEMS_PER_PAGE = 20;
-
+export const ITEMS_PER_PAGE = 10;
 
 const fetchPage = async (
   entiteId: number,
@@ -56,6 +55,7 @@ export const useDocuments = (
   page: Ref<number>,
   search: Ref<string>,
   limit: Ref<number> = ref(ITEMS_PER_PAGE),
+  enabled: Ref<boolean> = ref(true),
 ) => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
@@ -91,7 +91,9 @@ export const useDocuments = (
         effectiveLimit.value,
         user.value?.token,
       ),
-    enabled: computed(() => !!entiteId.value && !!user.value?.token),
+    enabled: computed(
+      () => !!entiteId.value && !!user.value?.token && enabled.value,
+    ),
     staleTime: 60_000,
     placeholderData: (prev) => prev,
     retry: (failureCount, error: any) => {

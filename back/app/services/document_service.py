@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from ..clients.pastell.exeptions import ApiPastellHttpForbidden
 from ..schemas.flux_action import FluxAction
 from ..services.flux_action_service import FluxActionService
@@ -99,13 +101,18 @@ class DocumentService(BaseService):
             query_param["type"] = doc_type
 
         query_param.update(kwargs)
-        documents = []
 
         list_documents = self.api_pastell.perform_get(f"entite/{id_e}/document", query_params=query_param)
         flux_action = None
         final_state = get_settings().document.final_state
         if doc_type is not None:
             flux_action = self.flux_action_service.get_action_on_flux(doc_type)
+
+        documents: list[DocumentInfo] = []
+        # Documents pour lesquels Pastell n'a rien renvoyé comme action_possible sur cet
+        # endpoint liste : notre estimation (state -> actions) peut être fausse (ex. un envoi
+        # pas vraiment disponible), donc on ira chercher la vraie donnée via le détail du document
+        to_refresh: list[str] = []
 
         for doc in list_documents:
             document_info = DocumentInfo(**doc)
@@ -118,9 +125,43 @@ class DocumentService(BaseService):
             ):
                 document_info.action_possible = self._get_action_possible(flux_action, document_info.last_action)
                 document_info.last_action_message = flux_action.actions[document_info.last_action].name
+            if not doc.get("action_possible") and document_info.last_action not in final_state:
+                to_refresh.append(document_info.id_d)
             documents.append(document_info)
 
+        if to_refresh:
+            by_id_d = {d.id_d: d for d in documents}
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                futures = {
+                    executor.submit(self._get_real_action_possible, id_e, id_d): id_d for id_d in to_refresh
+                }
+                for future in as_completed(futures):
+                    id_d = futures[future]
+                    try:
+                        by_id_d[id_d].action_possible = future.result()
+                    except Exception:
+                        logger.warning(
+                            "Impossible de récupérer les vraies actions possibles du document %s, "
+                            "on garde l'estimation par défaut",
+                            id_d,
+                        )
+
         return documents
+
+    def _get_real_action_possible(self, id_e: int, id_d: str) -> list[ActionPossible]:
+        """Récupère les vraies actions possibles d'un document via son détail Pastell.
+
+        L'endpoint liste ne fournit pas toujours action_possible de façon fiable
+        (cf. DocumentInfo._complete_next_action, qui n'est qu'une estimation par état).
+        """
+        raw = self.api_pastell.perform_get(f"/entite/{id_e}/document/{id_d}")
+        detail = DocumentDetail(**raw)
+        flux_action = self.flux_action_service.get_action_on_flux(detail.info.type)
+        if flux_action:
+            for action in detail.action_possible:
+                if action.action in flux_action.actions:
+                    action.message = flux_action.actions[action.action].name_action
+        return detail.action_possible
 
     def _get_action_possible(self, flux_action: FluxAction, last_action: ActionDocument | str) -> list[ActionPossible]:
         """A partir d'un status de document (champ last_action, retourne les action possibles)

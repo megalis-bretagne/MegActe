@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 
-const props = defineProps<{ entiteId: number; idD: string; fluxType: string; }>();
+const props = defineProps<{
+  entiteId: number;
+  idD: string;
+  fluxType: string;
+}>();
 
 const config = useRuntimeConfig();
 const router = useRouter();
@@ -9,47 +13,64 @@ const { user, authHeaders } = useUserContext();
 const { getFluxDef, fluxDefFor } = useFluxDef();
 const queryClient = useQueryClient();
 
-
 // ── Fetch document ────────────────────────────────────────────────────────────
-const { data: doc, isPending, error } = useQuery({
-  queryKey: computed(() => ['document', props.entiteId, props.idD]),
-  queryFn: async () => {
-    const url = `/entite/${props.entiteId}/document/${props.idD}`;
-    try {
-      return await $fetch<any>(url, { baseURL: config.public.apiBaseUrl, headers: authHeaders.value });
-    } catch (e: any) {
-      if (e?.status === 403) {
-        const newToken = await tryRefreshToken();
-        if (newToken) return await $fetch<any>(url, { baseURL: config.public.apiBaseUrl, headers: { Authorization: `Bearer ${newToken}` } });
-      }
-      throw e;
+async function fetchDocument() {
+  const url = `/entite/${props.entiteId}/document/${props.idD}`;
+  try {
+    return await $fetch<any>(url, {
+      baseURL: config.public.apiBaseUrl,
+      headers: authHeaders.value,
+    });
+  } catch (e: any) {
+    if (e?.status === 403) {
+      const newToken = await tryRefreshToken();
+      if (newToken)
+        return await $fetch<any>(url, {
+          baseURL: config.public.apiBaseUrl,
+          headers: { Authorization: `Bearer ${newToken}` },
+        });
     }
-  },
+    throw e;
+  }
+}
+
+const {
+  data: doc,
+  isPending,
+  error,
+} = useQuery({
+  queryKey: computed(() => ["document", props.entiteId, props.idD]),
+  queryFn: fetchDocument,
   enabled: computed(() => !!user.value?.token),
   staleTime: 30_000,
   placeholderData: (prev) => prev,
 });
 
-
 // ── Fetch journal ─────────────────────────────────────────────────────────────
 const { data: journalData, isPending: journalPending } = useQuery({
-  queryKey: computed(() => ['journal', props.entiteId, props.idD]),
+  queryKey: computed(() => ["journal", props.entiteId, props.idD]),
   queryFn: async () => {
     try {
-      return await $fetch<any[]>(
-        `/entite/${props.entiteId}/document/${props.idD}/journal`,
-        { baseURL: config.public.apiBaseUrl, headers: authHeaders.value },
+      const result = await $fetch<any[]>(
+          `/entite/${props.entiteId}/document/${props.idD}/journal`,
+          { baseURL: config.public.apiBaseUrl, headers: authHeaders.value },
       );
+      return result;
     } catch (e: any) {
       if (e?.status === 403) {
         const newToken = await tryRefreshToken();
         if (newToken) {
           try {
             return await $fetch<any[]>(
-              `/entite/${props.entiteId}/document/${props.idD}/journal`,
-              { baseURL: config.public.apiBaseUrl, headers: { Authorization: `Bearer ${newToken}` } },
+                `/entite/${props.entiteId}/document/${props.idD}/journal`,
+                {
+                  baseURL: config.public.apiBaseUrl,
+                  headers: { Authorization: `Bearer ${newToken}` },
+                },
             );
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
         }
       }
       return [];
@@ -59,26 +80,35 @@ const { data: journalData, isPending: journalPending } = useQuery({
   staleTime: 30_000,
 });
 
+// Type de flux effectif : celui passé en prop (dispo dès le mount, ex: venant
+// d'edit.vue) sinon celui du document une fois chargé. Mutualisé ici pour ne
+// plus le recalculer séparément dans fluxDef / watch / tabs / activeTabFields / runAction.
+const effectiveFluxType = computed(
+    () => props.fluxType ?? doc.value?.info?.type,
+);
 
 const fluxDef = computed(() => {
-  const type = props.fluxType ?? doc.value?.info?.type;
+  const type = effectiveFluxType.value;
   if (!type) return {};
   return fluxDefFor(type);
 });
 
 watch(
-  () => ({ token: user.value?.token, type: props.fluxType ?? doc.value?.info?.type }),
-  async ({ token, type }) => {
-    if (token && type) await getFluxDef(type);
-  },
-  { immediate: true },
+    () => ({
+      token: user.value?.token,
+      type: effectiveFluxType.value,
+    }),
+    async ({ token, type }) => {
+      if (token && type) await getFluxDef(type);
+    },
+    { immediate: true },
 );
 
 // ── Définition des onglets par flux ──────────────────────────────────────────
 
 // Onglets disponibles selon le type de flux (filtrés par condition)
 const tabs = computed(() => {
-  const fluxType = doc.value?.info?.type;
+  const fluxType = effectiveFluxType.value;
   const config = FLUX_TABS_CONFIG[fluxType];
   if (!config) return [{ id: "preparer", label: "Préparer", fields: [] }];
   const data = doc.value?.data ?? {};
@@ -99,88 +129,112 @@ const activeTabFields = computed(() => {
   const tab = tabs.value.find((t) => t.id === activeTab.value);
   if (!tab) return [];
 
-  const fluxType = doc.value?.info?.type;
+  const fluxType = effectiveFluxType.value;
   if (!FLUX_TABS_CONFIG[fluxType] && tab.id === "preparer") {
     return getFilteredFields();
   }
 
   const alwaysShow = new Set(tab.alwaysShow ?? []);
   return tab.fields
-    .map((key) => {
-      const def = fluxDef.value[key];
-      const val = doc.value.data[key];
-      const isEmpty =
-        val === undefined ||
-        val === null ||
-        val === "" ||
-        val === "[]" ||
-        (Array.isArray(val) && val.length === 0);
-      if (isEmpty && !alwaysShow.has(key)) return null;
-      return {
-        key,
-        val: isEmpty ? null : val,
-        label: def?.name ?? key.replace(/_/g, " "),
-        type: def?.type ?? "text",
-        selectValues: def?.value ?? null,
-        commentaire: def?.commentaire ?? null,
-      };
-    })
-    .filter(Boolean);
+      .map((key) => {
+        const def = fluxDef.value[key];
+        const val = doc.value.data[key];
+        const isEmpty =
+            val === undefined ||
+            val === null ||
+            val === "" ||
+            val === "[]" ||
+            (Array.isArray(val) && val.length === 0);
+        if (isEmpty && !alwaysShow.has(key)) return null;
+        return {
+          key,
+          val: isEmpty ? null : val,
+          label: def?.name ?? key.replace(/_/g, " "),
+          type: def?.type ?? "text",
+          selectValues: def?.value ?? null,
+          commentaire: def?.commentaire ?? null,
+        };
+      })
+      .filter(Boolean);
 });
 
 // filterFields pour flux sans config
 function getFilteredFields() {
   return Object.entries(fluxDef.value)
-    .filter(([key, def]: [string, any]) => {
-      if (def?.["no-show"]) return false;
-      if (!def?.type) return false;
-      if (def?.requis) {
-        if (def.type === "file" && def["read-only"]) return false;
+      .filter(([key, def]: [string, any]) => {
+        if (def?.["no-show"]) return false;
+        if (!def?.type) return false;
+        if (def?.requis) {
+          if (def.type === "file" && def["read-only"]) return false;
+          return true;
+        }
+        if (def?.["read-only"] === true) return false;
+        if ((def?.type === "date" || def?.type === "file") && !def?.commentaire)
+          return false;
         return true;
-      }
-      if (def?.["read-only"] === true) return false;
-      if ((def?.type === "date" || def?.type === "file") && !def?.commentaire)
-        return false;
-      return true;
-    })
-    .filter(([key]) => key !== "type_piece")
-    .map(([key, def]: [string, any]) => ({
-      key,
-      val: doc.value.data[key] ?? null,
-      label: def?.name ?? key.replace(/_/g, " "),
-      type: def?.type ?? "text",
-      selectValues: def?.value ?? null,
-      commentaire: def?.commentaire ?? null,
-    }))
-    .filter(
-      ({ val }) =>
-        val !== null &&
-        val !== "" &&
-        val !== "[]" &&
-        !(Array.isArray(val) && val.length === 0),
-    );
+      })
+      .filter(([key]) => key !== "type_piece")
+      .map(([key, def]: [string, any]) => ({
+        key,
+        val: doc.value.data[key] ?? null,
+        label: def?.name ?? key.replace(/_/g, " "),
+        type: def?.type ?? "text",
+        selectValues: def?.value ?? null,
+        commentaire: def?.commentaire ?? null,
+      }))
+      .filter(
+          ({ val }) =>
+              val !== null &&
+              val !== "" &&
+              val !== "[]" &&
+              !(Array.isArray(val) && val.length === 0),
+      );
 }
 
 // ── Actions ───────────────────────────────────────────────────────────────────
 const actionLoading = ref<string | null>(null);
 const actionError = ref<string | null>(null);
 
+// Après une action, Pastell met parfois un peu de temps à recalculer last_action /
+// action_possible (traitement pas toujours synchrone côté Pastell). Un seul refetch
+// juste après le POST retombe donc souvent sur l'ancien état : les boutons et le
+// journal affichés restent désynchronisés de ce qui vient d'être fait. On poll donc
+// le document jusqu'à ce que last_action change réellement (ou qu'on abandonne).
+const ACTION_POLL_DELAYS_MS = [300, 600, 1000, 1500, 2000, 3000];
+
+async function waitForActionSync(
+    previousState: string | undefined,
+): Promise<boolean> {
+  let changed = false;
+  for (const delay of ACTION_POLL_DELAYS_MS) {
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    const updated = await queryClient.fetchQuery({
+      queryKey: ["document", props.entiteId, props.idD],
+      queryFn: fetchDocument,
+    });
+    if (updated?.last_action !== previousState) {
+      changed = true;
+      break;
+    }
+  }
+  await queryClient.invalidateQueries({
+    queryKey: ["journal", props.entiteId, props.idD],
+  });
+  return changed;
+}
+
 // du bricolage pour l'instant car parfois après une action, j'ai des erreurs 403 donc j'ai ajouté ça pour
-async function handlePostAction403(actionName: string, previousState: string | undefined) {
+async function handlePostAction403(
+    actionName: string,
+    previousState: string | undefined,
+) {
   if (actionName === "supression") {
     router.push(`/`);
     return;
   }
   try {
-    const current = await $fetch<any>(
-      `/entite/${props.entiteId}/document/${props.idD}`,
-      { baseURL: config.public.apiBaseUrl, headers: authHeaders.value },
-    );
-    if (current?.last_action && current.last_action !== previousState) {
-      queryClient.invalidateQueries({ queryKey: ['document', props.entiteId, props.idD] });
-      queryClient.invalidateQueries({ queryKey: ['journal', props.entiteId, props.idD] });
-      return;
-    }
+    const changed = await waitForActionSync(previousState);
+    if (changed) return;
   } catch (checkErr: any) {
     if (checkErr?.status === 403) {
       router.push(`/org/${props.entiteId}`);
@@ -191,16 +245,14 @@ async function handlePostAction403(actionName: string, previousState: string | u
 }
 
 const { mutateAsync: performAction } = useMutation({
-  mutationFn: async (actionName: string) => {
-    const doFetch = (token: string) => $fetch(
-      `/entite/${props.entiteId}/documents/perform_action`,
-      {
-        method: "POST",
-        baseURL: config.public.apiBaseUrl,
-        headers: { Authorization: `Bearer ${token}` },
-        body: { document_ids: props.idD, action: actionName },
-      },
-    );
+  mutationFn: async ({ action: actionName }: { action: string; previousState: string | undefined }) => {
+    const doFetch = (token: string) =>
+        $fetch(`/entite/${props.entiteId}/documents/perform_action`, {
+          method: "POST",
+          baseURL: config.public.apiBaseUrl,
+          headers: { Authorization: `Bearer ${token}` },
+          body: { document_ids: props.idD, action: actionName },
+        });
     try {
       await doFetch(user.value?.token);
     } catch (e: any) {
@@ -218,19 +270,24 @@ const { mutateAsync: performAction } = useMutation({
       }
     }
   },
-  onSuccess: (_, actionName) => {
+  onSuccess: async (_, { action: actionName, previousState }) => {
     if (actionName === "supression") {
       router.push(`/`);
       return;
     }
-    queryClient.invalidateQueries({ queryKey: ['document', props.entiteId, props.idD] });
-    queryClient.invalidateQueries({ queryKey: ['journal', props.entiteId, props.idD] });
+    // On attend que le document et le journal soient rechargés avant de laisser
+    // runAction lever actionLoading : sinon les boutons redeviennent cliquables
+    // avec l'ancien action_possible pendant que Pastell recalcule les actions
+    // disponibles, ce qui provoque un affichage de boutons/journal obsolètes.
+    await waitForActionSync(previousState);
   },
 });
 
 async function runAction(action: { action: string; message: string }) {
   if (action.action === "modification") {
-    router.push(`/org/${props.entiteId}/document/${props.idD}/edit?type=${props.fluxType ?? doc.value?.info?.type ?? ""}`);
+    router.push(
+        `/org/${props.entiteId}/document/${props.idD}/edit?type=${effectiveFluxType.value ?? ""}`,
+    );
     return;
   }
 
@@ -238,12 +295,13 @@ async function runAction(action: { action: string; message: string }) {
   actionError.value = null;
   const previousState = doc.value?.last_action;
   try {
-    await performAction(action.action);
+    await performAction({ action: action.action, previousState });
   } catch (e: any) {
     if (e?.__pastell403) {
       await handlePostAction403(action.action, previousState);
     } else {
-      actionError.value = e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
+      actionError.value =
+          e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
     }
   } finally {
     actionLoading.value = null;
@@ -267,7 +325,10 @@ function downloadFile(filename: string, elementId: string) {
   a.click();
 }
 
-const ACTION_SEVERITY: Record<string, string> = { modification: "secondary", supression: "danger" };
+const ACTION_SEVERITY: Record<string, string> = {
+  modification: "secondary",
+  supression: "danger",
+};
 const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
 
 const ACTION_ICONS: Record<string, string> = {
@@ -281,24 +342,23 @@ const ACTION_ICONS: Record<string, string> = {
 const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
 
 const isFileArray = (val: any) =>
-  Array.isArray(val) &&
-  val.length > 0 &&
-  typeof val[0] === "string" &&
-  val[0].includes(".");
+    Array.isArray(val) &&
+    val.length > 0 &&
+    typeof val[0] === "string" &&
+    val[0].includes(".");
 
 const resolveSelectValue = (field: any) => {
   if (!field.selectValues) return field.val;
   return field.selectValues[field.val] ?? field.val;
 };
-
 </script>
 
 <template>
   <div class="max-w-4xl mx-auto px-4 py-6">
     <!-- Retour -->
     <button
-      class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors"
-      @click="router.back()"
+        class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors"
+        @click="router.back()"
     >
       <i class="pi pi-arrow-left text-xs" />
       Retour à la liste
@@ -338,7 +398,6 @@ const resolveSelectValue = (field: any) => {
             </h1>
             <p class="text-sm text-gray-500 mt-1">{{ doc.info.type }}</p>
           </div>
-
         </div>
         <!-- Dates : skeleton tant que le fetch frais n'est pas terminé -->
         <div v-if="!doc?.info?.creation" class="flex gap-4 mt-3">
@@ -362,28 +421,38 @@ const resolveSelectValue = (field: any) => {
         </template>
         <template v-else-if="doc.action_possible?.length">
           <Button
-            v-for="action in doc.action_possible.filter((a: any) => a.message && !(a.action === 'modification' && doc.last_action === 'termine'))"
-            :key="action.action"
-            :label="action.message"
-            :icon="actionLoading === action.action ? 'pi pi-spinner pi-spin' : `pi ${actionIcon(action.action)}`"
-            :severity="actionSeverity(action.action)"
-            :disabled="!!actionLoading"
-            @click="runAction(action)"
+              v-for="action in doc.action_possible.filter(
+              (a: any) =>
+                a.message &&
+                !(a.action === 'modification' && doc.last_action === 'termine'),
+            )"
+              :key="action.action"
+              :label="action.message"
+              :icon="
+              actionLoading === action.action
+                ? 'pi pi-spinner pi-spin'
+                : `pi ${actionIcon(action.action)}`
+            "
+              :severity="actionSeverity(action.action)"
+              :disabled="!!actionLoading"
+              @click="runAction(action)"
           />
         </template>
       </div>
 
       <!-- Bannière erreur formulaire : only si la partie avant ' : ' est un code action (sans espace) -->
       <div
-        v-if="doc?.last_action_message && /^[^\s]+ : /.test(doc.last_action_message)"
-        class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300 w-full"
+          v-if="
+          doc?.last_action_message && /^[^\s]+ : /.test(doc.last_action_message)
+        "
+          class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300 w-full"
       >
         {{ doc.last_action_message }}
       </div>
 
       <div
-        v-if="actionError"
-        class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300 w-full"
+          v-if="actionError"
+          class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300 w-full"
       >
         {{ actionError }}
       </div>
@@ -392,15 +461,15 @@ const resolveSelectValue = (field: any) => {
       <div class="border-b border-gray-200 mb-0">
         <nav class="flex gap-0">
           <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            :class="
+              v-for="tab in tabs"
+              :key="tab.id"
+              :class="
               activeTab === tab.id
                 ? 'border-b-2 border-blue-600 text-blue-600 font-medium'
                 : 'text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300'
             "
-            class="px-6 py-3 text-sm transition-colors -mb-px"
-            @click="activeTab = tab.id"
+              class="px-6 py-3 text-sm transition-colors -mb-px"
+              @click="activeTab = tab.id"
           >
             {{ tab.label }}
           </button>
@@ -409,12 +478,15 @@ const resolveSelectValue = (field: any) => {
 
       <!-- Contenu onglet actif -->
       <div
-        class="rounded-b-lg rounded-tr-lg border border-t-0 border-gray-200 overflow-hidden"
+          class="rounded-b-lg rounded-tr-lg border border-t-0 border-gray-200 overflow-hidden"
       >
         <!-- Skeleton flux pas encore chargé -->
         <div
-          v-if="!Object.keys(fluxDef).length || (isPending && !Object.keys(doc?.data ?? {}).length)"
-          class="divide-y divide-gray-100"
+            v-if="
+            !Object.keys(fluxDef).length ||
+            (isPending && !Object.keys(doc?.data ?? {}).length)
+          "
+            class="divide-y divide-gray-100"
         >
           <div v-for="i in 5" :key="i" class="flex px-4 py-3 even:bg-gray-50">
             <Skeleton width="33%" height="0.75rem" />
@@ -425,106 +497,108 @@ const resolveSelectValue = (field: any) => {
         <template v-else>
           <table class="min-w-full text-sm">
             <tbody class="divide-y divide-gray-100">
-              <tr v-if="activeTabFields.length === 0">
-                <td
+            <tr v-if="activeTabFields.length === 0">
+              <td
                   colspan="2"
                   class="px-4 py-6 text-center text-gray-400 italic"
-                >
-                  Aucun champ disponible
-                </td>
-              </tr>
-              <tr
+              >
+                Aucun champ disponible
+              </td>
+            </tr>
+            <tr
                 v-for="field in activeTabFields"
                 :key="field.key"
                 class="even:bg-gray-50"
-              >
-                <td
+            >
+              <td
                   class="px-4 py-3 font-medium text-gray-600 w-1/3 align-top whitespace-nowrap"
-                >
-                  {{ field.label }}
-                </td>
-                <td class="px-4 py-3 text-gray-800">
-                  <!-- ged_document_id_file -->
-                  <template v-if="field.key === 'ged_document_id_file'">
-                    <table class="text-xs border border-gray-200 rounded">
-                      <thead>
-                        <tr class="bg-gray-50">
-                          <th
-                            class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
-                          >
-                            Nom du fichier
-                          </th>
-                          <th
-                            class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
-                          >
-                            Identifiant
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="(id, name) in field.val as Record<
+              >
+                {{ field.label }}
+              </td>
+              <td class="px-4 py-3 text-gray-800">
+                <!-- ged_document_id_file -->
+                <template v-if="field.key === 'ged_document_id_file'">
+                  <table class="text-xs border border-gray-200 rounded">
+                    <thead>
+                    <tr class="bg-gray-50">
+                      <th
+                          class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
+                      >
+                        Nom du fichier
+                      </th>
+                      <th
+                          class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
+                      >
+                        Identifiant
+                      </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr
+                        v-for="(id, name) in field.val as Record<
                             string,
                             string
                           >"
-                          :key="name"
-                          class="border-t border-gray-100"
-                        >
-                          <td class="px-3 py-1 text-gray-700">{{ name }}</td>
-                          <td class="px-3 py-1 text-gray-500">{{ id }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </template>
+                        :key="name"
+                        class="border-t border-gray-100"
+                    >
+                      <td class="px-3 py-1 text-gray-700">{{ name }}</td>
+                      <td class="px-3 py-1 text-gray-500">{{ id }}</td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </template>
 
-                  <!-- type_piece_fichier -->
-                  <template v-else-if="field.key === 'type_piece_fichier'">
-                    <div
+                <!-- type_piece_fichier -->
+                <template v-else-if="field.key === 'type_piece_fichier'">
+                  <div
                       v-for="(piece, i) in field.val as any[]"
                       :key="i"
                       class="mb-1"
-                    >
-                      <button
+                  >
+                    <button
                         class="text-blue-600 hover:underline text-left"
                         @click="downloadFile(piece.filename, 'arrete')"
-                      >
-                        {{ piece.filename }}
-                      </button>
-                      <span class="text-gray-400 ml-2 text-xs">{{
+                    >
+                      {{ piece.filename }}
+                    </button>
+                    <span class="text-gray-400 ml-2 text-xs">{{
                         piece.typologie
                       }}</span>
-                    </div>
-                  </template>
+                  </div>
+                </template>
 
-                  <!-- Fichiers -->
-                  <template
+                <!-- Fichiers -->
+                <template
                     v-else-if="
                       field.key !== 'ged_document_id_file' &&
                       (field.type === 'file' || isFileArray(field.val))
                     "
-                  >
-                    <div
-                      v-for="(filename, i) in (Array.isArray(field.val) ? field.val : [field.val]) as string[]"
+                >
+                  <div
+                      v-for="(filename, i) in (Array.isArray(field.val)
+                        ? field.val
+                        : [field.val]) as string[]"
                       :key="i"
                       class="mb-1"
-                    >
-                      <button
+                  >
+                    <button
                         class="text-blue-600 hover:underline text-left"
                         @click="downloadFile(filename, field.key)"
-                      >
-                        {{ filename }}
-                      </button>
-                    </div>
-                  </template>
+                    >
+                      {{ filename }}
+                    </button>
+                  </div>
+                </template>
 
-                  <!-- Select -->
-                  <template v-else-if="field.type === 'select'">
-                    {{ resolveSelectValue(field) }}
-                  </template>
+                <!-- Select / Radios / Select2 -->
+                <template v-else-if="field.selectValues">
+                  {{ resolveSelectValue(field) }}
+                </template>
 
-                  <!-- Checkbox -->
-                  <template v-else-if="field.type === 'checkbox'">
-                    <input
+                <!-- Checkbox -->
+                <template v-else-if="field.type === 'checkbox'">
+                  <input
                       type="checkbox"
                       :checked="
                         field.val === 'checked' ||
@@ -533,56 +607,56 @@ const resolveSelectValue = (field: any) => {
                       "
                       disabled
                       class="w-4 h-4 accent-blue-600 cursor-default"
-                    />
-                  </template>
+                  />
+                </template>
 
-                  <!-- Date -->
-                  <template
+                <!-- Date -->
+                <template
                     v-else-if="
                       typeof field.val === 'string' &&
                       field.key !== 'date_cloture_journal_iso8601' &&
                       /^\d{4}-\d{2}-\d{2}/.test(field.val)
                     "
-                  >
-                    {{ new Date(field.val).toLocaleDateString("fr-FR") }}
-                  </template>
+                >
+                  {{ new Date(field.val).toLocaleDateString("fr-FR") }}
+                </template>
 
-                  <!-- URL -->
-                  <template
+                <!-- URL -->
+                <template
                     v-else-if="
                       typeof field.val === 'string' &&
                       field.val.startsWith('http')
                     "
-                  >
-                    <a
+                >
+                  <a
                       :href="field.val"
                       target="_blank"
                       class="text-blue-600 hover:underline"
-                      >{{ field.val }}</a
-                    >
-                  </template>
+                  >{{ field.val }}</a
+                  >
+                </template>
 
-                  <!-- Texte multilignes -->
-                  <template
+                <!-- Texte multilignes -->
+                <template
                     v-else-if="
                       typeof field.val === 'string' && field.val.includes('\n')
                     "
-                  >
-                    <p class="whitespace-pre-line text-sm text-gray-600">
-                      {{ field.val }}
-                    </p>
-                  </template>
+                >
+                  <p class="whitespace-pre-line text-sm text-gray-600">
+                    {{ field.val }}
+                  </p>
+                </template>
 
-                  <!-- Valeur simple -->
-                  <template v-else>
-                    {{
-                      Array.isArray(field.val)
+                <!-- Valeur simple -->
+                <template v-else>
+                  {{
+                    Array.isArray(field.val)
                         ? field.val.join(", ")
                         : field.val
-                    }}
-                  </template>
-                </td>
-              </tr>
+                  }}
+                </template>
+              </td>
+            </tr>
             </tbody>
           </table>
         </template>
@@ -601,39 +675,46 @@ const resolveSelectValue = (field: any) => {
           </div>
         </div>
         <div
-          v-else-if="!journalEntries.length"
-          class="px-4 py-6 text-center text-gray-400 italic text-sm"
+            v-else-if="!journalEntries.length"
+            class="px-4 py-6 text-center text-gray-400 italic text-sm"
         >
           Aucun événement enregistré
         </div>
         <table v-else class="min-w-full text-sm">
           <thead class="bg-white border-b border-gray-100">
-            <tr>
-              <th class="px-4 py-2 text-left font-medium text-gray-600">État</th>
-              <th class="px-4 py-2 text-left font-medium text-gray-600">Date</th>
-              <th class="px-4 py-2 text-left font-medium text-gray-600">Utilisateur</th>
-            </tr>
+          <tr>
+            <th class="px-4 py-2 text-left font-medium text-gray-600">
+              État
+            </th>
+            <th class="px-4 py-2 text-left font-medium text-gray-600">
+              Date
+            </th>
+            <th class="px-4 py-2 text-left font-medium text-gray-600">
+              Utilisateur
+            </th>
+          </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr
+          <tr
               v-for="entry in journalEntries"
               :key="entry.id_j"
               class="even:bg-gray-50"
+          >
+            <td class="px-4 py-2 text-gray-800 whitespace-nowrap">
+              {{ entry.action_libelle || entry.action || "—" }}
+            </td>
+            <td
+                class="px-4 py-2 text-gray-600 tabular-nums whitespace-nowrap"
             >
-              <td class="px-4 py-2 text-gray-800 whitespace-nowrap">
-                {{ entry.action_libelle || entry.action || "—" }}
-              </td>
-              <td class="px-4 py-2 text-gray-600 tabular-nums whitespace-nowrap">
-                {{ formatDate(entry.date) }}
-              </td>
-              <td class="px-4 py-2 text-gray-600 whitespace-nowrap">
-                {{ journalUser(entry) }}
-              </td>
-            </tr>
+              {{ formatDate(entry.date) }}
+            </td>
+            <td class="px-4 py-2 text-gray-600 whitespace-nowrap">
+              {{ journalUser(entry) }}
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
     </template>
   </div>
 </template>
-

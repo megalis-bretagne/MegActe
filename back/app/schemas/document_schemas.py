@@ -184,8 +184,12 @@ class DocumentInfo(BaseModelDocument):
 
     def _complete_next_action(self):
         """
-        complete les action_possible manuels possibles
+        complete les action_possible manuels possibles, uniquement si Pastell n'en a fourni aucune
+        (sinon on écraserait la vraie règle métier de Pastell, ex. un envoi pas encore autorisé)
         """
+        if self.action_possible:
+            return
+
         # si creation, on ne peut faire que de la modif ou supression
         if self.last_action == ActionDocument.creation:
             self.action_possible = [

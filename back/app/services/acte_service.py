@@ -39,8 +39,10 @@ class ActeService(BaseService):
 
         actions = response.get("action_possible", [])
         if action not in actions:
+            # 409 (et non 403) : le frontend traite tout 403 comme un token expiré et
+            # retente automatiquement avec un refresh, ce qui masque ce message métier.
             raise MegActeException(
-                status_code=HTTPStatus.FORBIDDEN,
+                status_code=HTTPStatus.CONFLICT,
                 code=ErrorCode.PASTELL_NO_RIGHT,
                 detail=f"Action '{action}' impossible pour le document {document_id}",
             )

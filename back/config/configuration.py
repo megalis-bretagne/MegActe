@@ -111,7 +111,7 @@ class Settings(BaseSettings):
     s2low: S2low
     keycloak: Keycloak
     database: Database
-    request_timeout: int = 5
+    request_timeout: int = 30
     log_level: str = Field(default="INFO", validation_alias="MEGACTE_LOGLEVEL")  # ["debug", "info", "warning", "error", "critical"],
 
     if pathlib.Path("config/config.yml").is_file():
