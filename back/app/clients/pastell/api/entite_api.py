@@ -1,3 +1,4 @@
+import unicodedata
 from typing import Dict, List
 from pydantic import TypeAdapter
 
@@ -6,6 +7,14 @@ from requests.auth import HTTPBasicAuth
 from . import ApiPastell
 
 __all__ = "EntiteApi"
+
+
+def _denomination_sort_key(entite: EntiteInfo) -> str:
+    """Clé de tri insensible à la casse et aux accents (approxime le tri 'fr' du frontend
+    sans dépendre de la locale du process, qui n'est pas fiable dans un serveur async).
+    """
+    normalized = unicodedata.normalize("NFD", entite.denomination)
+    return "".join(c for c in normalized if not unicodedata.combining(c)).casefold()
 
 
 class EntiteApi(ApiPastell):
@@ -83,4 +92,11 @@ class EntiteApi(ApiPastell):
 
         _complete(entite_dict, all_entite_ids, entite_mere_ids)
 
-        return list(entite_dict.values())
+        return self._sort_tree(list(entite_dict.values()))
+
+    def _sort_tree(self, nodes: List[EntiteInfoWithChild]) -> List[EntiteInfoWithChild]:
+        """Trie récursivement les entités (racines et enfants à chaque niveau) par dénomination."""
+        nodes.sort(key=_denomination_sort_key)
+        for node in nodes:
+            self._sort_tree(node.child)
+        return nodes
