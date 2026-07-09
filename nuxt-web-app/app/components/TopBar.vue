@@ -46,7 +46,3 @@ const { user } = useUserContext();
     </div>
   </header>
 </template>
-
-<style scoped>
-/* Custom styles can be added here if needed */
-</style>

@@ -33,7 +33,10 @@ export const useFluxDef = () => {
       fluxDefCache.value[type] = result;
       if (import.meta.client) {
         try {
-          localStorage.setItem(`fluxDef:${type}`, JSON.stringify({ data: result, expires: Date.now() + CACHE_TTL }));
+          localStorage.setItem(
+            `fluxDef:${type}`,
+            JSON.stringify({ data: result, expires: Date.now() + CACHE_TTL }),
+          );
         } catch {}
       }
       return result;

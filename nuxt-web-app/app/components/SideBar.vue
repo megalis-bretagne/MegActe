@@ -35,7 +35,11 @@ const fluxItems = computed(() => {
     <!-- Tous les documents -->
     <div class="p-3 border-b border-gray-100">
       <button
-        :class="!selectedFlux ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'"
+        :class="
+          !selectedFlux
+            ? 'bg-blue-600 text-white'
+            : 'text-gray-700 hover:bg-gray-100'
+        "
         class="w-full text-left px-3 py-2 rounded text-sm font-medium transition-colors"
         @click="selectedFlux = null"
       >

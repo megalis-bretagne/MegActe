@@ -15,11 +15,17 @@ export default eventHandler(async (event) => {
   );
 
   if (!upstream.ok) {
-    throw createError({ statusCode: upstream.status, message: "Erreur fichier" });
+    throw createError({
+      statusCode: upstream.status,
+      message: "Erreur fichier",
+    });
   }
 
-  const contentType = upstream.headers.get("content-type") ?? "application/octet-stream";
-  const contentDisposition = upstream.headers.get("content-disposition") ?? `attachment; filename="${filename}"`;
+  const contentType =
+    upstream.headers.get("content-type") ?? "application/octet-stream";
+  const contentDisposition =
+    upstream.headers.get("content-disposition") ??
+    `attachment; filename="${filename}"`;
 
   setHeader(event, "content-type", contentType);
   setHeader(event, "content-disposition", contentDisposition);

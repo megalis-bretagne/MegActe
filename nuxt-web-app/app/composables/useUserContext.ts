@@ -4,7 +4,6 @@ const selectedFlux = ref<string | null>(null);
 const selectedEntiteId = ref<number | null>(null);
 
 export const useUserContext = () => {
-
   const initUserFromAuth = async () => {
     try {
       const { data, status } = useAuth();

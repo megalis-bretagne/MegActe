@@ -6,6 +6,8 @@ export const tryRefreshToken = async (): Promise<string | null> => {
       user.value = { ...user.value, token: session.accessToken };
       return session.accessToken;
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return null;
 };

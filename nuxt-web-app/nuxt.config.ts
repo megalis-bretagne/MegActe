@@ -62,9 +62,7 @@ export default defineNuxtConfig({
     },
   },
 
-
-  eslint: {
-  },
+  eslint: {},
 
   ssr: true,
 
