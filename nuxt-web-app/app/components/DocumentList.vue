@@ -2,26 +2,24 @@
 import { ITEMS_PER_PAGE } from "~/composables/useDocuments";
 import { useQueryClient } from "@tanstack/vue-query";
 
-const props = defineProps<{
-  entiteId: number | undefined;
-}>();
+const router = useRouter();
+const { data: user } = useAuth();
+const selectedFlux = useSelectedFlux();
+const entiteId = useSelectedEntiteId();
+const queryClient = useQueryClient();
 
 const { data: firstPage } = await useFetch("/api/documents/firstpage", {
   params: {
-    entiteId: props.entiteId,
-    idFlux: props.idFlux,
+    entiteId: entiteId.value,
+    idFlux: selectedFlux.value,
     docsPerPage: ITEMS_PER_PAGE,
   },
 });
 
-const router = useRouter();
-const { user, selectedFlux } = useUserContext();
-const queryClient = useQueryClient();
-
 function createDoc() {
   if (!selectedFlux.value) return;
   router.push(
-    `/org/${props.entiteId}/document/new/edit?type=${selectedFlux.value}`
+    `/org/${entiteId.value}/document/new/edit?type=${selectedFlux.value}`
   );
 }
 
@@ -30,30 +28,20 @@ const searchPage = ref(1);
 const search = ref("");
 const rowsPerPage = ref(ITEMS_PER_PAGE);
 
-const {
-  documents,
-  pagination,
-  totalPages,
-  isFetching,
-  isError,
-  error,
-  invalidate,
-} = useDocuments(
-  toRef(props, "entiteId"),
+const { documents, pagination, isFetching, isError, error } = useDocuments(
+  entiteId,
   selectedFlux,
+  firstPage,
   pageActive,
   search,
   rowsPerPage
 );
 
-watch(
-  () => props.entiteId,
-  () => {
-    pageActive.value = 1;
-    search.value = "";
-    selectedFlux.value = null;
-  }
-);
+watch(entiteId, () => {
+  pageActive.value = 1;
+  search.value = "";
+  selectedFlux.value = null;
+});
 watch(selectedFlux, () => {
   pageActive.value = 1;
   search.value = "";
@@ -87,7 +75,7 @@ async function fetchEtatOptions(fluxType: string) {
       `/flux/${fluxType}/action`,
       {
         baseURL: config.public.apiBaseUrl,
-        headers: { Authorization: `Bearer ${user.value?.token}` },
+        headers: { Authorization: `Bearer ${user.value?.accessToken}` },
       }
     );
     etatOptions.value = Object.entries(actions).map(([value, action]) => ({
@@ -192,13 +180,13 @@ function openDoc(doc: any) {
 }
 
 function prefetchDoc(doc: any) {
-  if (!user.value?.token) return;
+  if (!user.value?.accessToken) return;
   queryClient.prefetchQuery({
     queryKey: ["document", doc.id_e, doc.id_d],
     queryFn: () =>
       $fetch(`/entite/${doc.id_e}/document/${doc.id_d}`, {
         baseURL: config.public.apiBaseUrl,
-        headers: { Authorization: `Bearer ${user.value?.token}` },
+        headers: { Authorization: `Bearer ${user.value?.accessToken}` },
       }),
     staleTime: 30_000,
   });
@@ -216,7 +204,7 @@ async function duplicateDoc(doc: any) {
     await $fetch(`/entite/${doc.id_e}/documents/perform_action`, {
       method: "POST",
       baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${user.value?.token}` },
+      headers: { Authorization: `Bearer ${user.value?.accessToken}` },
       body: { document_ids: doc.id_d, action: "duplicate" },
     });
     queryClient.invalidateQueries({
@@ -234,7 +222,7 @@ async function deleteDoc(doc: any) {
     await $fetch(`/entite/${doc.id_e}/documents/perform_action`, {
       method: "POST",
       baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${user.value?.token}` },
+      headers: { Authorization: `Bearer ${user.value?.accessToken}` },
       body: { document_ids: doc.id_d, action: "supression" },
     });
     queryClient.invalidateQueries({
@@ -347,7 +335,7 @@ function hasAction(doc: any, action: string) {
 
     <!-- Skeleton premier chargement -->
     <div
-      v-if="!props.entiteId || (isFetching && documents.length === 0)"
+      v-if="!entiteId || (isFetching && documents.length === 0)"
       class="overflow-x-auto rounded border border-gray-200"
     >
       <table class="min-w-full text-sm">

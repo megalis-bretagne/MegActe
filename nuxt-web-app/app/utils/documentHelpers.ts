@@ -1,10 +1,10 @@
 // ── Champs d'un onglet ────────────────────────────────────────────────────────
 export function getActiveTabFields(
-  document: DocumentInfo,
-  fluxDef: FluxDetails,
-  tab: { id: string; fields: string[] }
+  document: DocumentDetail | null | undefined,
+  fluxDef: FluxDetails | null | undefined,
+  tab: TabConfig
 ) {
-  if (!document.data) return [];
+  if (!document || !fluxDef || !document.data) return [];
 
   // Si pas de config pour ce flux, fallback sur filterFields
   const fluxType = document.info?.type;

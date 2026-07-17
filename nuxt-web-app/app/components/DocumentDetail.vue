@@ -1,53 +1,62 @@
 <script setup lang="ts">
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 
-const props = defineProps<{ entiteId: number; idD: string; fluxType: string; }>();
+const props = defineProps<{ idD: string; fluxType?: string }>();
 
 const config = useRuntimeConfig();
 const router = useRouter();
 const { data: user } = useAuth();
-const { getFluxDef, fluxDefFor } = useFluxDef();
+const { getFluxDef } = useFluxDef();
+const entiteId = useSelectedEntiteId();
 const queryClient = useQueryClient();
 
-
 // ── Fetch document ────────────────────────────────────────────────────────────
-const { data: doc, isPending, error } = useQuery({
-  queryKey: computed(() => ['document', props.entiteId, props.idD]),
+const {
+  data: doc,
+  isPending,
+  error,
+} = useQuery({
+  queryKey: computed(() => ["document", entiteId.value, props.idD]),
   queryFn: async () => {
-    const url = `/entite/${props.entiteId}/document/${props.idD}`;
-    return await $fetch<any>(url, { baseURL: config.public.apiBaseUrl, headers: { Authorization: `Bearer ${user.value.accessToken}`} });
+    const url = `/entite/${entiteId.value}/document/${props.idD}`;
+    return await $fetch<any>(url, {
+      baseURL: config.public.apiBaseUrl,
+      headers: { Authorization: `Bearer ${user.value?.accessToken}` },
+    });
   },
-  enabled: computed(() => !!user.value?.token),
   staleTime: 30_000,
   placeholderData: (prev) => prev,
 });
 
 // ── Fetch journal ────────────────────────────────────────────────────────────
 const { data: journalData, isPending: journalPending } = useQuery({
-  queryKey: computed(() => ['journal', props.entiteId, props.idD]),
+  queryKey: computed(() => ["journal", entiteId.value, props.idD]),
   queryFn: async () => {
-      return await $fetch<any[]>(
-        `/entite/${props.entiteId}/document/${props.idD}/journal`,
-        { baseURL: config.public.apiBaseUrl, headers: { Authorization: `Bearer ${user.value.accessToken}` },
-      );
+    return await $fetch<any[]>(
+      `/entite/${entiteId.value}/document/${props.idD}/journal`,
+      {
+        baseURL: config.public.apiBaseUrl,
+        headers: { Authorization: `Bearer ${user.value?.accessToken}` },
+      }
+    );
   },
-  enabled: computed(() => !!user.value?.token),
   staleTime: 30_000,
 });
 
-const fluxDef = computed(() => {
-  const type = props.fluxType ?? doc.value?.info?.type;
-  if (!type) return {};
-  return fluxDefFor(type);
-});
-
-watch(
-  () => ({ token: user.value?.token, type: props.fluxType ?? doc.value?.info?.type }),
-  async ({ token, type }) => {
-    if (token && type) await getFluxDef(type);
+// Fetch FluxDetails
+const fluxDef = ref<FluxDetails | null | undefined>(null);
+if (props.fluxType) {
+  fluxDef.value = await getFluxDef(props.fluxType);
+}
+const stop = watch(
+  () => (fluxDef ? undefined : doc.value?.info?.type),
+  async (type) => {
+    if (type === undefined) return;
+    fluxDef.value = await getFluxDef(type);
   },
-  { immediate: true },
+  { immediate: true }
 );
+if (fluxDef.value) stop();
 
 // Onglets disponibles selon le type de flux (filtrés par condition)
 const tabs = computed(() => {
@@ -67,9 +76,11 @@ watch(tabs, () => {
 
 // ── Champs de l'onglet actif ──────────────────────────────────────────────────
 const activeTabFields = computed(() =>
-  getActiveTabFields(document.value,
-    FluxDef.value,
-    tabs.find((t) => t.id === activeTab.value));
+  getActiveTabFields(
+    doc.value,
+    fluxDef.value,
+    tabs.value.find((t) => t.id === activeTab.value)!
+  )
 );
 
 // ── Actions ───────────────────────────────────────────────────────────────────
@@ -78,29 +89,32 @@ const actionError = ref<string | null>(null);
 
 const { mutateAsync: performAction } = useMutation({
   mutationFn: async (actionName: string) => {
-     await $fetch(
-      `/entite/${props.entiteId}/documents/perform_action`,
-      {
-        method: "POST",
-        baseURL: config.public.apiBaseUrl,
-        headers: { Authorization: `Bearer ${token}` },
-        body: { document_ids: props.idD, action: actionName },
-      },
-    );
+    await $fetch(`/entite/${entiteId.value}/documents/perform_action`, {
+      method: "POST",
+      baseURL: config.public.apiBaseUrl,
+      headers: { Authorization: `Bearer ${user.value?.accessToken}` },
+      body: { document_ids: props.idD, action: actionName },
+    });
   },
   onSuccess: (_, actionName) => {
     if (actionName === "supression") {
       router.push(`/`);
       return;
     }
-    queryClient.invalidateQueries({ queryKey: ['document', props.entiteId, props.idD] });
-    queryClient.invalidateQueries({ queryKey: ['journal', props.entiteId, props.idD] });
+    queryClient.invalidateQueries({
+      queryKey: ["document", entiteId.value, props.idD],
+    });
+    queryClient.invalidateQueries({
+      queryKey: ["journal", entiteId.value, props.idD],
+    });
   },
 });
 
 async function runAction(action: { action: string; message: string }) {
   if (action.action === "modification") {
-    router.push(`/org/${props.entiteId}/document/${props.idD}/edit?type=${props.fluxType ?? doc.value?.info?.type ?? ""}`);
+    router.push(
+      `/org/${entiteId.value}/document/${props.idD}/edit?type=${props.fluxType ?? doc.value?.info?.type ?? ""}`
+    );
     return;
   }
 
@@ -110,7 +124,8 @@ async function runAction(action: { action: string; message: string }) {
   try {
     await performAction(action.action);
   } catch (e) {
-      actionError.value = e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
+    actionError.value =
+      e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
   } finally {
     actionLoading.value = null;
   }
@@ -126,14 +141,17 @@ const journalUser = (entry: any) => {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function downloadFile(filename: string, elementId: string) {
-  const url = `/api/file/${props.entiteId}/${props.idD}/${elementId}/${encodeURIComponent(filename)}`;
+  const url = `/api/file/${entiteId.value}/${props.idD}/${elementId}/${encodeURIComponent(filename)}`;
   const a = window.document.createElement("a");
   a.href = url;
   a.download = filename;
   a.click();
 }
 
-const ACTION_SEVERITY: Record<string, string> = { modification: "secondary", supression: "danger" };
+const ACTION_SEVERITY: Record<string, string> = {
+  modification: "secondary",
+  supression: "danger",
+};
 const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
 
 const ACTION_ICONS: Record<string, string> = {
@@ -302,14 +320,6 @@ const resolveSelectValue = (field: any) => {
         <template v-else>
           <table class="min-w-full text-sm">
             <tbody class="divide-y divide-gray-100">
-              <tr v-if="activeTabFields.length === 0">
-                <td
-                  colspan="2"
-                  class="px-4 py-6 text-center text-gray-400 italic"
-                >
-                  Aucun champ disponible
-                </td>
-              </tr>
               <tr
                 v-for="field in activeTabFields"
                 :key="field.key"

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-const { selectedEntiteId } = useUserContext();
+// User initialization is handled by middleware/init-user.global.ts
 </script>
 
 <template>
   <div class="p-6">
-    <DocumentList :entite-id="selectedEntiteId" />
+    <DocumentList />
   </div>
 </template>

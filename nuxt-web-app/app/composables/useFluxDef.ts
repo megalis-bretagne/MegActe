@@ -3,10 +3,9 @@ const CACHE_TTL = 24 * 60 * 60 * 1000;
 const fluxDefCache = useState<Record<string, any>>("fluxDefCache", () => ({}));
 
 export const useFluxDef = () => {
-  const config = useRuntimeConfig();
-  const { user } = useUserContext();
-
-  const getFluxDef = async (type: string): Promise<Record<string, any>> => {
+  const getFluxDef = async (
+    type: string
+  ): Promise<FluxDetails | null | undefined> => {
     // cache memoire
     if (fluxDefCache.value[type]) return fluxDefCache.value[type];
 
@@ -26,23 +25,25 @@ export const useFluxDef = () => {
 
     // si aucun alors on arrive ici tout en mettant en cache localstorage
     try {
-      const result = await $fetch<any>(`/flux/${type}`, {
-        baseURL: config.public.apiBaseUrl,
-        headers: { Authorization: `Bearer ${user.value?.token}` },
-      });
+      const { data: user } = useAuth();
+      const result = await fetchFluxDetails(type, user.value?.accessToken);
       fluxDefCache.value[type] = result;
       if (import.meta.client) {
         try {
-          localStorage.setItem(`fluxDef:${type}`, JSON.stringify({ data: result, expires: Date.now() + CACHE_TTL }));
+          localStorage.setItem(
+            `fluxDef:${type}`,
+            JSON.stringify({ data: result, expires: Date.now() + CACHE_TTL })
+          );
         } catch {}
       }
       return result;
     } catch {
-      return {};
+      return null;
     }
   };
 
-  const fluxDefFor = (type: string) => fluxDefCache.value[type] ?? {};
+  const fluxDefFor = (type: string): FluxDetails | null =>
+    fluxDefCache.value[type] ?? null;
 
   return { getFluxDef, fluxDefFor };
 };

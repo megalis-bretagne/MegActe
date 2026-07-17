@@ -1,8 +1,8 @@
 export const ITEMS_PER_PAGE = 20;
 
 export const useDocuments = (
-  entiteId: Ref<number | undefined>,
-  idFlux: Ref<string | null | undefined>,
+  entiteId: Ref<number | null>,
+  idFlux: Ref<string | null>,
   firstPage: Ref<DocumentPaginate | undefined>,
   page: Ref<number>,
   search: Ref<string>,
@@ -72,7 +72,7 @@ export const useDocuments = (
           idFlux.value ?? null,
           prefetchOffset,
           limit.value,
-          user.value?.token
+          user.value?.accessToken
         ),
     });
   };
@@ -92,16 +92,11 @@ export const useDocuments = (
   const documents = computed(() => data.value?.documents ?? []);
   const pagination = computed(() => data.value?.pagination ?? null);
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ["documents", entiteId.value] });
-
   return {
     documents,
     pagination,
-    totalPages,
     isFetching,
     isError,
     error,
-    invalidate,
   };
 };

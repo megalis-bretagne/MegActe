@@ -13,9 +13,15 @@ type pastellUserInfo = {
   id_e: number;
 };
 
+export type EntiteNode = {
+  id_e: number;
+  denomination: string;
+  child: EntiteNode[];
+};
+
 export type pastellUser = {
-  userinfo: pastellUserInfo;
-  entites: [[object]];
+  user_info: pastellUserInfo;
+  entites: EntiteNode;
 };
 
 export type userSession = {

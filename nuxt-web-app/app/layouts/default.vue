@@ -1,6 +1,4 @@
-<script setup lang="ts">
-const { selectedFlux } = useUserContext();
-</script>
+<script setup lang="ts"></script>
 <template>
   <div class="min-h-screen flex flex-col">
     <TopBar />

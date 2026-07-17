@@ -1,6 +1,5 @@
 <script setup lang="ts">
-const config = useRuntimeConfig();
-const { user, selectedFlux } = useUserContext();
+const selectedFlux = useSelectedFlux();
 
 const { data: fluxList } = await useFetch("/api/user/flux");
 console.log("fluxList: ", fluxList.value);

@@ -6,7 +6,7 @@ export interface Flux {
 }
 
 /* some fields might be missing */
-export interface FluxDetails {
+export interface FluxDetail {
   name: string;
   title?: boolean;
   type?: string;
@@ -25,3 +25,5 @@ export interface FluxDetails {
   "visionneuse-no-link"?: boolean;
   "no-show"?: boolean;
 }
+
+export type FluxDetails = Record<string, FluxDetail>;
