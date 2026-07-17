@@ -18,12 +18,15 @@ const createdDocId = ref<string | null>(null);
 
 // ── Fetch document (edit only) ────────────────────────────────────────────
 const { data: doc, isPending } = useQuery({
-  queryKey: computed(() => ["document", entiteId, props.idD]),
+  queryKey: computed(() => ["document", entiteId.value, props.idD]),
   queryFn: async () => {
-    return await $fetch<any>(`/entite/${entiteId}/document/${props.idD}`, {
-      baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${user.value?.accessToken}` },
-    });
+    return await $fetch<any>(
+      `/entite/${entiteId.value}/document/${props.idD}`,
+      {
+        baseURL: config.public.apiBaseUrl,
+        headers: { Authorization: `Bearer ${user.value?.accessToken}` },
+      }
+    );
   },
   enabled: !isNew.value,
   staleTime: 30_000,
@@ -305,7 +308,7 @@ function isExternalOptionHeader(opt: string): boolean {
 async function ensureDocExists(): Promise<string> {
   if (!isNew.value) return props.idD;
   if (createdDocId.value) return createdDocId.value;
-  const response = await $fetch<any>(`/entite/${entiteId}/document`, {
+  const response = await $fetch<any>(`/entite/${entiteId.value}/document`, {
     method: "POST",
     baseURL: config.public.apiBaseUrl,
     headers: { Authorization: `Bearer ${user.value?.accessToken}` },
@@ -322,8 +325,8 @@ async function openExternalDialog(fieldKey: string, fieldLabel: string) {
     try {
       const docId = createdDocId.value ?? (!isNew.value ? props.idD : null);
       const url = docId
-        ? `/entite/${entiteId}/document/${docId}/externalData/type_piece`
-        : `/entite/${entiteId}/flux/${props.fluxType ?? ""}/externalData/type_piece`;
+        ? `/entite/${entiteId.value}/document/${docId}/externalData/type_piece`
+        : `/entite/${entiteId.value}/flux/${props.fluxType ?? ""}/externalData/type_piece`;
       const data = await $fetch<any>(url, {
         baseURL: config.public.apiBaseUrl,
         headers: { Authorization: `Bearer ${user.value?.accessToken}` },
@@ -393,8 +396,8 @@ async function openExternalDialog(fieldKey: string, fieldLabel: string) {
     try {
       const docId = createdDocId.value ?? (!isNew.value ? props.idD : null);
       const externalDataUrl = docId
-        ? `/entite/${entiteId}/document/${docId}/externalData/${fieldKey}`
-        : `/entite/${entiteId}/flux/${props.fluxType ?? ""}/externalData/${fieldKey}`;
+        ? `/entite/${entiteId.value}/document/${docId}/externalData/${fieldKey}`
+        : `/entite/${entiteId.value}/flux/${props.fluxType ?? ""}/externalData/${fieldKey}`;
       const data = await $fetch<Record<string, boolean>>(externalDataUrl, {
         baseURL: config.public.apiBaseUrl,
         headers: { Authorization: `Bearer ${user.value?.accessToken}` },
@@ -453,7 +456,7 @@ const { mutateAsync: saveDoc, isPending: saving } = useMutation({
       }
     }
 
-    await $fetch(`/entite/${entiteId}/document/${idD}`, {
+    await $fetch(`/entite/${entiteId.value}/document/${idD}`, {
       method: "PATCH",
       baseURL: config.public.apiBaseUrl,
       headers: { Authorization: `Bearer ${user.value?.accessToken}` },
@@ -466,7 +469,7 @@ const { mutateAsync: saveDoc, isPending: saving } = useMutation({
       const isMultiple = fieldDef?.multiple ?? false;
       const form = new FormData();
       for (const file of files) form.append("files", file, file.name);
-      const uploadUrl = `${config.public.apiBaseUrl}/entite/${entiteId}/document/${idD}/file/${key}${isMultiple ? "" : "?replace=true"}`;
+      const uploadUrl = `${config.public.apiBaseUrl}/entite/${entiteId.value}/document/${idD}/file/${key}${isMultiple ? "" : "?replace=true"}`;
       const uploadRes = await fetch(uploadUrl, {
         method: "POST",
         headers: { Authorization: `Bearer ${user.value?.accessToken}` },
@@ -488,7 +491,7 @@ const { mutateAsync: saveDoc, isPending: saving } = useMutation({
         (p: string) => p.match(/\(([^)]+)\)$/)?.[1] ?? p
       );
       await $fetch(
-        `/entite/${entiteId}/document/${idD}/externalData/type_piece`,
+        `/entite/${entiteId.value}/document/${idD}/externalData/type_piece`,
         {
           method: "PATCH",
           baseURL: config.public.apiBaseUrl,
@@ -502,10 +505,10 @@ const { mutateAsync: saveDoc, isPending: saving } = useMutation({
   },
   onSuccess: (idD) => {
     queryClient.invalidateQueries({
-      queryKey: ["document", entiteId, idD],
+      queryKey: ["document", entiteId.value, idD],
     });
     router.push(
-      `/org/${entiteId}/document/${idD}?type=${props.fluxType ?? ""}`
+      `/org/${entiteId.value}/document/${idD}?type=${props.fluxType ?? ""}`
     );
   },
   onError: (e: any) => {
