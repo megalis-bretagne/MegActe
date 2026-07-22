@@ -6,15 +6,13 @@ type EntiteNode = {
   denomination: string;
   child: EntiteNode[];
 };
-
-// Je déclare le noeud
 type TreeNode = {
   key: string;
   label: string;
   children: TreeNode[];
 };
 
-// Le tri par dénomination est fait côté back (cf. EntiteApi._sort_tree)
+// Convertit une entité Pastell (id_e, denomination, child) en noeud attendu par le TreeSelect (key, label, children)
 function toTreeNode(node: EntiteNode): TreeNode {
   return {
     key: String(node.id_e),
@@ -23,60 +21,57 @@ function toTreeNode(node: EntiteNode): TreeNode {
   };
 }
 
-function flattenKeys(nodes: TreeNode[]): string[] {
-  return nodes.flatMap((n) => [n.key, ...flattenKeys(n.children)]);
-}
-
-// Arbre complet (une entrée par racine, Pastell peut en renvoyer plusieurs)
+// Liste des entités de l'utilisateur, converties au format attendu par le TreeSelect
 const treeNodes = computed<TreeNode[]>(() =>
-  (user.value?.pastellUser?.entites ?? []).map(toTreeNode),
+    (user.value?.pastellUser?.entites ?? []).map(toTreeNode),
 );
 
-// Clé sélectionnée dans le TreeSelect (format imposé par le composant : map { key: true })
-const selectedKeys = ref<Record<string, boolean>>({});
+// Entité choisie manuellement par l'utilisateur (null si aucune sélection manuelle)
+const manuelKey = ref<string | null>(null);
 
-// Dès que l'arbre est disponible (ou change), on garde la sélection courante si elle
-// existe toujours, sinon on retombe sur la première racine par défaut
-watch(
-  treeNodes,
-  (nodes) => {
-    const validKeys = new Set(flattenKeys(nodes));
-    const currentKey = Object.keys(selectedKeys.value)[0];
-    if (currentKey && validKeys.has(currentKey)) return;
-    const firstRootKey = nodes[0]?.key;
-    selectedKeys.value = firstRootKey ? { [firstRootKey]: true } : {};
-  },
-  { immediate: true },
+watch(treeNodes, () => {
+  manuelKey.value = null;
+});
+
+//
+const effectiveKey = computed(
+    () => manuelKey.value ?? treeNodes.value[0]?.key ?? null,
 );
 
-// La clé sélectionnée est directement l'id_e : pas besoin de retraverser l'arbre
-watch(
-  selectedKeys,
-  (keys) => {
-    const key = Object.keys(keys)[0];
-    selectedEntiteId.value = key ? Number(key) : null;
+// Le TreeSelect attend un objet { key: true }, on le construit à partir de effectiveKey
+const selectedKeys = computed<Record<string, boolean>>({
+  get: () => (effectiveKey.value ? { [effectiveKey.value]: true } : {}),
+  set: (keys) => {
+    manuelKey.value = Object.keys(keys)[0] ?? null;
   },
-  { immediate: true, deep: true },
+});
+
+// Dès que l'entité sélectionnée change, on la propage dans le state global de l'app
+watch(
+    effectiveKey,
+    (key) => {
+      selectedEntiteId.value = key ? Number(key) : null;
+    },
+    { immediate: true },
 );
 </script>
 
 <template>
   <div class="flex items-center gap-2">
     <TreeSelect
-      v-if="treeNodes.length"
-      v-model="selectedKeys"
-      :options="treeNodes"
-      selection-mode="single"
-      filter
-      filter-placeholder="Rechercher une entité"
-      placeholder="Sélectionner une entité"
-      class="text-sm"
-      :pt="{
+        v-if="treeNodes.length"
+        v-model="selectedKeys"
+        :options="treeNodes"
+        selection-mode="single"
+        filter
+        filter-placeholder="Rechercher une entité"
+        placeholder="Sélectionner une entité"
+        class="text-sm"
+        :pt="{
         root: { style: 'min-width: 16rem' },
         transition: { css: false },
       }"
     />
-
     <template v-else>
       <Skeleton width="16rem" height="2rem" border-radius="6px" />
     </template>

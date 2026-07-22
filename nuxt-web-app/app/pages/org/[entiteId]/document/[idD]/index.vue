@@ -10,7 +10,7 @@ const fluxType = route.query.type as string | undefined;
     <ClientOnly>
       <DocumentDetail :entite-id="entiteId" :id-d="idD" :flux-type="fluxType" />
       <template #fallback>
-        <div class="max-w-4xl mx-auto px-4 py-6 space-y-4">
+        <div class="max-w-8xl mx-auto px-4 py-6 space-y-4">
           <Skeleton width="66%" height="2rem" />
           <Skeleton width="25%" height="1rem" />
           <div class="flex gap-2 mt-4">

@@ -1,9 +1,23 @@
 <script setup lang="ts">
 const { user } = useUserContext();
+const { signOut } = useAuth();
+
+const userMenu = ref();
+const userMenuItems = [
+  {
+    label: "Se déconnecter",
+    icon: "pi pi-sign-out",
+    command: () => signOut({ callbackUrl: "/" }),
+  },
+];
+
+function toggleUserMenu(event: Event) {
+  userMenu.value?.toggle(event);
+}
 </script>
 
 <template>
-  <header class="bg-white shadow-sm border-b border-gray-200">
+  <header class="shrink-0 bg-white shadow-sm border-b border-gray-200">
     <div class="container mx-auto px-4 py-3">
       <div class="flex items-center justify-between gap-4">
         <!-- Left side: Logo and text -->
@@ -34,13 +48,20 @@ const { user } = useUserContext();
 
         <!-- Right side: User Avatar -->
         <div class="flex items-center flex-shrink-0">
-          <span
-            v-if="user?.name"
-            class="text-sm text-gray-600 hidden md:inline mr-2"
+          <button
+              type="button"
+              class="flex items-center cursor-pointer bg-transparent border-0"
+              @click="toggleUserMenu"
           >
-            {{ user.name }}
-          </span>
-          <Avatar :label="user?.name?.charAt(0)" />
+            <span
+              v-if="user?.name"
+              class="text-sm text-gray-600 hidden md:inline mr-2"
+            >
+              {{ user.name }}
+            </span>
+            <Avatar :label="user?.name?.charAt(0)" />
+          </button>
+          <Menu ref="userMenu" :model="userMenuItems" :popup="true" />
         </div>
       </div>
     </div>

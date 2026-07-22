@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useQuery } from "@tanstack/vue-query";
 
 const props = defineProps<{
   entiteId: number;
@@ -11,7 +11,6 @@ const config = useRuntimeConfig();
 const router = useRouter();
 const { user, authHeaders } = useUserContext();
 const { getFluxDef, fluxDefFor } = useFluxDef();
-const queryClient = useQueryClient();
 
 // ── Fetch document ────────────────────────────────────────────────────────────
 async function fetchDocument() {
@@ -34,11 +33,7 @@ async function fetchDocument() {
   }
 }
 
-const {
-  data: doc,
-  isPending,
-  error,
-} = useQuery({
+const { data: doc, isPending, error,} = useQuery({
   queryKey: computed(() => ["document", props.entiteId, props.idD]),
   queryFn: fetchDocument,
   enabled: computed(() => !!user.value?.token),
@@ -77,7 +72,7 @@ const { data: journalData, isPending: journalPending } = useQuery({
     }
   },
   enabled: computed(() => !!user.value?.token),
-  staleTime: 30_000,
+  staleTime: 5 * 60 * 1000,
 });
 
 // Type de flux effectif : celui passé en prop (dispo dès le mount, ex: venant
@@ -116,11 +111,6 @@ const tabs = computed(() => {
 });
 
 const activeTab = ref("preparer");
-
-// Reset onglet actif quand le flux change
-watch(tabs, () => {
-  activeTab.value = "preparer";
-});
 
 // ── Champs de l'onglet actif ──────────────────────────────────────────────────
 const activeTabFields = computed(() => {
@@ -191,122 +181,13 @@ function getFilteredFields() {
       );
 }
 
-// ── Actions ───────────────────────────────────────────────────────────────────
-const actionLoading = ref<string | null>(null);
-const actionError = ref<string | null>(null);
-
-// Après une action, Pastell met parfois un peu de temps à recalculer last_action /
-// action_possible (traitement pas toujours synchrone côté Pastell). Un seul refetch
-// juste après le POST retombe donc souvent sur l'ancien état : les boutons et le
-// journal affichés restent désynchronisés de ce qui vient d'être fait. On poll donc
-// le document jusqu'à ce que last_action change réellement (ou qu'on abandonne).
-const ACTION_POLL_DELAYS_MS = [300, 600, 1000, 1500, 2000, 3000];
-
-async function waitForActionSync(
-    previousState: string | undefined,
-): Promise<boolean> {
-  let changed = false;
-  for (const delay of ACTION_POLL_DELAYS_MS) {
-    await new Promise((resolve) => setTimeout(resolve, delay));
-    const updated = await queryClient.fetchQuery({
-      queryKey: ["document", props.entiteId, props.idD],
-      queryFn: fetchDocument,
-    });
-    if (updated?.last_action !== previousState) {
-      changed = true;
-      break;
-    }
-  }
-  await queryClient.invalidateQueries({
-    queryKey: ["journal", props.entiteId, props.idD],
-  });
-  return changed;
-}
-
-// du bricolage pour l'instant car parfois après une action, j'ai des erreurs 403 donc j'ai ajouté ça pour
-async function handlePostAction403(
-    actionName: string,
-    previousState: string | undefined,
-) {
-  if (actionName === "supression") {
-    router.push(`/`);
-    return;
-  }
-  try {
-    const changed = await waitForActionSync(previousState);
-    if (changed) return;
-  } catch (checkErr: any) {
-    if (checkErr?.status === 403) {
-      router.push(`/org/${props.entiteId}`);
-      return;
-    }
-  }
-  actionError.value = "Une erreur est survenue lors de l'envoi";
-}
-
-const { mutateAsync: performAction } = useMutation({
-  mutationFn: async ({ action: actionName }: { action: string; previousState: string | undefined }) => {
-    const doFetch = (token: string) =>
-        $fetch(`/entite/${props.entiteId}/documents/perform_action`, {
-          method: "POST",
-          baseURL: config.public.apiBaseUrl,
-          headers: { Authorization: `Bearer ${token}` },
-          body: { document_ids: props.idD, action: actionName },
-        });
-    try {
-      await doFetch(user.value?.token);
-    } catch (e: any) {
-      if (e?.status !== 403) throw e;
-      const newToken = await tryRefreshToken();
-      if (newToken) {
-        try {
-          await doFetch(newToken);
-        } catch (e2: any) {
-          if (e2?.status !== 403) throw e2;
-          throw { __pastell403: true };
-        }
-      } else {
-        throw { __pastell403: true };
-      }
-    }
-  },
-  onSuccess: async (_, { action: actionName, previousState }) => {
-    if (actionName === "supression") {
-      router.push(`/`);
-      return;
-    }
-    // On attend que le document et le journal soient rechargés avant de laisser
-    // runAction lever actionLoading : sinon les boutons redeviennent cliquables
-    // avec l'ancien action_possible pendant que Pastell recalcule les actions
-    // disponibles, ce qui provoque un affichage de boutons/journal obsolètes.
-    await waitForActionSync(previousState);
-  },
-});
-
-async function runAction(action: { action: string; message: string }) {
-  if (action.action === "modification") {
-    router.push(
-        `/org/${props.entiteId}/document/${props.idD}/edit?type=${effectiveFluxType.value ?? ""}`,
-    );
-    return;
-  }
-
-  actionLoading.value = action.action;
-  actionError.value = null;
-  const previousState = doc.value?.last_action;
-  try {
-    await performAction({ action: action.action, previousState });
-  } catch (e: any) {
-    if (e?.__pastell403) {
-      await handlePostAction403(action.action, previousState);
-    } else {
-      actionError.value =
-          e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
-    }
-  } finally {
-    actionLoading.value = null;
-  }
-}
+const { actionLoading, actionError, runAction } = useDocumentActions(
+    toRef(props, "entiteId"),
+    toRef(props, "idD"),
+    effectiveFluxType,
+    doc,
+    fetchDocument,
+);
 
 const journalEntries = computed(() => journalData.value ?? []);
 
@@ -315,46 +196,17 @@ const journalUser = (entry: any) => {
   return name || "Action automatique";
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function downloadFile(filename: string, elementId: string) {
-  const url = `/api/file/${props.entiteId}/${props.idD}/${elementId}/${encodeURIComponent(filename)}`;
-  const a = window.document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-}
+// ── Helpers d'affichage des actions ──────────────────────────────────────────
 
 const ACTION_SEVERITY: Record<string, string> = {
   modification: "secondary",
   supression: "danger",
 };
 const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
-
-const ACTION_ICONS: Record<string, string> = {
-  modification: "pi-pencil",
-  supression: "pi-trash",
-  orientation: "pi-send",
-  duplicate: "pi-copy",
-  reouverture: "pi-refresh",
-  "annulation-tdt": "pi-times",
-};
-const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
-
-const isFileArray = (val: any) =>
-    Array.isArray(val) &&
-    val.length > 0 &&
-    typeof val[0] === "string" &&
-    val[0].includes(".");
-
-const resolveSelectValue = (field: any) => {
-  if (!field.selectValues) return field.val;
-  return field.selectValues[field.val] ?? field.val;
-};
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-6">
+  <div class="max-w-8xl mx-auto px-4 py-6">
     <!-- Retour -->
     <button
         class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors"
@@ -399,16 +251,12 @@ const resolveSelectValue = (field: any) => {
             <p class="text-sm text-gray-500 mt-1">{{ doc.info.type }}</p>
           </div>
         </div>
-        <!-- Dates : skeleton tant que le fetch frais n'est pas terminé -->
+        <!-- Date de création : skeleton tant que le fetch frais n'est pas terminé -->
         <div v-if="!doc?.info?.creation" class="flex gap-4 mt-3">
           <Skeleton width="8rem" height="0.75rem" />
-          <Skeleton width="8rem" height="0.75rem" />
-          <Skeleton width="9rem" height="0.75rem" />
         </div>
         <div v-else class="flex gap-6 mt-3 text-xs text-gray-400">
           <span>Créé le {{ formatDate(doc.info.creation) }}</span>
-          <span>Modifié le {{ formatDate(doc.info.modification) }}</span>
-          <span>Dernier état le {{ formatDate(doc.last_action_date) }}</span>
         </div>
       </div>
 
@@ -431,7 +279,7 @@ const resolveSelectValue = (field: any) => {
               :icon="
               actionLoading === action.action
                 ? 'pi pi-spinner pi-spin'
-                : `pi ${actionIcon(action.action)}`
+                : batchActionIcon(action.action)
             "
               :severity="actionSeverity(action.action)"
               :disabled="!!actionLoading"
@@ -516,145 +364,11 @@ const resolveSelectValue = (field: any) => {
                 {{ field.label }}
               </td>
               <td class="px-4 py-3 text-gray-800">
-                <!-- ged_document_id_file -->
-                <template v-if="field.key === 'ged_document_id_file'">
-                  <table class="text-xs border border-gray-200 rounded">
-                    <thead>
-                    <tr class="bg-gray-50">
-                      <th
-                          class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
-                      >
-                        Nom du fichier
-                      </th>
-                      <th
-                          class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
-                      >
-                        Identifiant
-                      </th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr
-                        v-for="(id, name) in field.val as Record<
-                            string,
-                            string
-                          >"
-                        :key="name"
-                        class="border-t border-gray-100"
-                    >
-                      <td class="px-3 py-1 text-gray-700">{{ name }}</td>
-                      <td class="px-3 py-1 text-gray-500">{{ id }}</td>
-                    </tr>
-                    </tbody>
-                  </table>
-                </template>
-
-                <!-- type_piece_fichier -->
-                <template v-else-if="field.key === 'type_piece_fichier'">
-                  <div
-                      v-for="(piece, i) in field.val as any[]"
-                      :key="i"
-                      class="mb-1"
-                  >
-                    <button
-                        class="text-blue-600 hover:underline text-left"
-                        @click="downloadFile(piece.filename, 'arrete')"
-                    >
-                      {{ piece.filename }}
-                    </button>
-                    <span class="text-gray-400 ml-2 text-xs">{{
-                        piece.typologie
-                      }}</span>
-                  </div>
-                </template>
-
-                <!-- Fichiers -->
-                <template
-                    v-else-if="
-                      field.key !== 'ged_document_id_file' &&
-                      (field.type === 'file' || isFileArray(field.val))
-                    "
-                >
-                  <div
-                      v-for="(filename, i) in (Array.isArray(field.val)
-                        ? field.val
-                        : [field.val]) as string[]"
-                      :key="i"
-                      class="mb-1"
-                  >
-                    <button
-                        class="text-blue-600 hover:underline text-left"
-                        @click="downloadFile(filename, field.key)"
-                    >
-                      {{ filename }}
-                    </button>
-                  </div>
-                </template>
-
-                <!-- Select / Radios / Select2 -->
-                <template v-else-if="field.selectValues">
-                  {{ resolveSelectValue(field) }}
-                </template>
-
-                <!-- Checkbox -->
-                <template v-else-if="field.type === 'checkbox'">
-                  <input
-                      type="checkbox"
-                      :checked="
-                        field.val === 'checked' ||
-                        field.val === 'on' ||
-                        field.val === '1'
-                      "
-                      disabled
-                      class="w-4 h-4 accent-blue-600 cursor-default"
-                  />
-                </template>
-
-                <!-- Date -->
-                <template
-                    v-else-if="
-                      typeof field.val === 'string' &&
-                      field.key !== 'date_cloture_journal_iso8601' &&
-                      /^\d{4}-\d{2}-\d{2}/.test(field.val)
-                    "
-                >
-                  {{ new Date(field.val).toLocaleDateString("fr-FR") }}
-                </template>
-
-                <!-- URL -->
-                <template
-                    v-else-if="
-                      typeof field.val === 'string' &&
-                      field.val.startsWith('http')
-                    "
-                >
-                  <a
-                      :href="field.val"
-                      target="_blank"
-                      class="text-blue-600 hover:underline"
-                  >{{ field.val }}</a
-                  >
-                </template>
-
-                <!-- Texte multilignes -->
-                <template
-                    v-else-if="
-                      typeof field.val === 'string' && field.val.includes('\n')
-                    "
-                >
-                  <p class="whitespace-pre-line text-sm text-gray-600">
-                    {{ field.val }}
-                  </p>
-                </template>
-
-                <!-- Valeur simple -->
-                <template v-else>
-                  {{
-                    Array.isArray(field.val)
-                        ? field.val.join(", ")
-                        : field.val
-                  }}
-                </template>
+                <DocumentFieldViewer
+                    :field="field"
+                    :entite-id="entiteId"
+                    :id-d="idD"
+                />
               </td>
             </tr>
             </tbody>

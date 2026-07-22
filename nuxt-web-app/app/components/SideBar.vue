@@ -29,22 +29,53 @@ const fluxItems = computed(() => {
     .map(([id, f]: [string, any]) => ({ id, nom: f.nom ?? id }))
     .sort((a, b) => a.nom.localeCompare(b.nom));
 });
+
+const rootMenuItems = computed(() => [
+  {
+    label: "Tous les documents",
+    active: !selectedFlux.value,
+    command: () => {
+      selectedFlux.value = null;
+    },
+  },
+]);
+
+const fluxMenuItems = computed(() =>
+  fluxItems.value.map((flux) => ({
+    label: flux.nom,
+    active: selectedFlux.value === flux.id,
+    command: () => {
+      selectedFlux.value = flux.id;
+    },
+  })),
+);
+
+const menuPt = {
+  root: { class: "!border-0 !bg-transparent !min-w-0 !p-0 w-full" },
+  list: { class: "!p-0 !gap-0.5" },
+};
 </script>
 <template>
-  <aside class="w-64 shrink-0 bg-white border-r border-gray-200 min-h-screen">
+  <aside
+    class="w-64 shrink-0 bg-white border-r border-gray-200 h-full overflow-y-auto"
+  >
     <!-- Tous les documents -->
     <div class="p-3 border-b border-gray-100">
-      <button
-        :class="
-          !selectedFlux
-            ? 'bg-blue-600 text-white'
-            : 'text-gray-700 hover:bg-gray-100'
-        "
-        class="w-full text-left px-3 py-2 rounded text-sm font-medium transition-colors"
-        @click="selectedFlux = null"
-      >
-        Tous les documents
-      </button>
+      <Menu :model="rootMenuItems" :pt="menuPt">
+        <template #item="{ item, label }">
+          <a
+            tabindex="-1"
+            class="block w-full px-3 py-2 rounded text-sm font-medium transition-colors cursor-pointer"
+            :class="
+              item.active
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-700 hover:bg-gray-100'
+            "
+          >
+            {{ label }}
+          </a>
+        </template>
+      </Menu>
     </div>
 
     <!-- Types de dossiers -->
@@ -59,21 +90,21 @@ const fluxItems = computed(() => {
         <Skeleton v-for="i in 5" :key="i" height="2rem" />
       </div>
 
-      <ul v-else class="space-y-0.5">
-        <li v-for="flux in fluxItems" :key="flux.id">
-          <button
+      <Menu v-else :model="fluxMenuItems" :pt="menuPt">
+        <template #item="{ item, label }">
+          <a
+            tabindex="-1"
+            class="block w-full px-3 py-2 rounded text-sm transition-colors cursor-pointer"
             :class="
-              selectedFlux === flux.id
+              item.active
                 ? 'bg-blue-600 text-white'
                 : 'text-gray-700 hover:bg-gray-100'
             "
-            class="w-full text-left px-3 py-2 rounded text-sm transition-colors"
-            @click="selectedFlux = flux.id"
           >
-            {{ flux.nom }}
-          </button>
-        </li>
-      </ul>
+            {{ label }}
+          </a>
+        </template>
+      </Menu>
     </div>
   </aside>
 </template>

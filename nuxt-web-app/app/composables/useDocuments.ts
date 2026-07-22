@@ -8,7 +8,7 @@ export interface DocumentInfo {
   last_action: string;
   last_action_date: string;
   last_action_message: string;
-  action_possible: { action: string; message: string }[];
+  action_possible: { action: string; message: string }[]
 }
 
 export interface DocumentPaginate {
@@ -18,17 +18,44 @@ export interface DocumentPaginate {
 
 export const ITEMS_PER_PAGE = 10;
 
+// Filtres avancés
+export interface AdvancedFilters {
+  etat?: string | null;
+  etatDebut?: Date | null;
+  etatFin?: Date | null;
+  etatTransit?: string | null;
+  etatTransitDebut?: Date | null;
+  etatTransitFin?: Date | null;
+}
+
+// return les données brutes ( documents, pagination )
 const fetchPage = async (
-  entiteId: number,
-  idFlux: string | null,
-  offset: number,
-  limit: number,
-  token: string,
+    entiteId: number,
+    idFlux: string | null,
+    offset: number,
+    limit: number,
+    search: string,
+    filters: AdvancedFilters,
+    token: string,
 ): Promise<DocumentPaginate> => {
   const config = useRuntimeConfig();
-  let queryParams = `offset=${offset}&limit=${limit}`;
-  if (idFlux) queryParams += `&type_flux=${idFlux}`;
-  const url = `/entite/${entiteId}/documents?${queryParams}`;
+
+  // Construction propre et sécurisée des paramètres d'URL
+  const params = new URLSearchParams({
+    offset: String(offset),
+    limit: String(limit),
+  });
+
+  if (idFlux) params.append("type_flux", idFlux);
+  if (search.trim()) params.append("search", search.trim());
+  if (filters.etat) params.append("etat", filters.etat);
+  if (filters.etatDebut) params.append("etat_debut", dateToISO(filters.etatDebut));
+  if (filters.etatFin) params.append("etat_fin", dateToISO(filters.etatFin));
+  if (filters.etatTransit) params.append("etat_transit", filters.etatTransit);
+  if (filters.etatTransitDebut) params.append("etat_transit_debut", dateToISO(filters.etatTransitDebut));
+  if (filters.etatTransitFin) params.append("etat_transit_fin", dateToISO(filters.etatTransitFin));
+
+  const url = `/entite/${entiteId}/documents?${params.toString()}`;
 
   try {
     return await $fetch<DocumentPaginate>(url, {
@@ -49,50 +76,47 @@ const fetchPage = async (
   }
 };
 
+// Qui utilise fetchpage avec useQuery ( tanstack ). Gère le cache, page suivante, ... pour disponibilité
 export const useDocuments = (
-  entiteId: Ref<number | undefined>,
-  idFlux: Ref<string | null | undefined>,
-  page: Ref<number>,
-  search: Ref<string>,
-  limit: Ref<number> = ref(ITEMS_PER_PAGE),
-  enabled: Ref<boolean> = ref(true),
+    entiteId: Ref<number | undefined>,
+    idFlux: Ref<string | null | undefined>,
+    page: Ref<number>,
+    search: Ref<string>,
+    limit: Ref<number> = ref(ITEMS_PER_PAGE),
+    filters: Ref<AdvancedFilters> = ref({}),
+    enabled: Ref<boolean> = ref(true),
 ) => {
   const { user } = useUserContext();
   const queryClient = useQueryClient();
 
-  // Mémorisé après le premier chargement normal
-  const knownTotal = ref(0);
+  // Calcul direct de l'offset
+  const offset = computed(() => (page.value - 1) * limit.value);
 
-  const isSearching = computed(() => !!search.value.trim());
-
-  // En recherche : tout fetcher en une requête ; sinon pagination normale
-  const effectiveOffset = computed(() =>
-    isSearching.value ? 0 : (page.value - 1) * limit.value,
-  );
-  const effectiveLimit = computed(() =>
-    isSearching.value ? knownTotal.value || limit.value : limit.value,
-  );
-
+  // queryKey
   const queryKey = computed(() => [
     "documents",
     entiteId.value,
     idFlux.value ?? null,
-    effectiveOffset.value,
-    effectiveLimit.value,
+    offset.value,
+    limit.value,
+    search.value,
+    filters.value,
   ]);
 
   const { data, isFetching, isError, error } = useQuery({
     queryKey,
     queryFn: () =>
-      fetchPage(
-        entiteId.value!,
-        idFlux.value ?? null,
-        effectiveOffset.value,
-        effectiveLimit.value,
-        user.value?.token,
-      ),
+        fetchPage(
+            entiteId.value!,
+            idFlux.value ?? null,
+            offset.value,
+            limit.value,
+            search.value,
+            filters.value,
+            user.value?.token!,
+        ),
     enabled: computed(
-      () => !!entiteId.value && !!user.value?.token && enabled.value,
+        () => !!entiteId.value && !!user.value?.token && enabled.value,
     ),
     staleTime: 60_000,
     placeholderData: (prev) => prev,
@@ -113,34 +137,37 @@ export const useDocuments = (
       idFlux.value ?? null,
       prefetchOffset,
       limit.value,
+      search.value,
+      filters.value,
     ];
+
     if (queryClient.getQueryData(key)) return;
 
     queryClient.prefetchQuery({
       queryKey: key,
       queryFn: () =>
-        fetchPage(
-          entiteId.value!,
-          idFlux.value ?? null,
-          prefetchOffset,
-          limit.value,
-          user.value?.token,
-        ),
+          fetchPage(
+              entiteId.value!,
+              idFlux.value ?? null,
+              prefetchOffset,
+              limit.value,
+              search.value,
+              filters.value,
+              user.value?.token!,
+          ),
       staleTime: 60_000,
       retry: false,
     });
   };
 
   watch(
-    data,
-    (d) => {
-      const total = d?.pagination?.total ?? 0;
-      if (!total || isSearching.value) return;
-      knownTotal.value = total;
-      doPrefetch(effectiveOffset.value + limit.value, total);
-      doPrefetch(effectiveOffset.value - limit.value, total);
-    },
-    { immediate: true },
+      data,
+      (d) => {
+        const total = d?.pagination?.total ?? 0;
+        if (!total) return;
+        doPrefetch(offset.value + limit.value, total);
+      },
+      { immediate: true },
   );
 
   const documents = computed(() => data.value?.documents ?? []);
