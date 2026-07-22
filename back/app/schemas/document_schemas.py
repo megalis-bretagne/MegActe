@@ -170,6 +170,7 @@ class DocumentInfo(BaseModelDocument):
     last_action: Optional[ActionDocument | str] = None
     last_action_message: Optional[str] = None
     action_possible: list[ActionPossible] = []
+    numero_de_lacte: Optional[str] = None
 
     def model_post_init(self, __context: Any):
         """Complète la creation du documentInfo après l'init

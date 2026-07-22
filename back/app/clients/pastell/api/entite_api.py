@@ -10,8 +10,7 @@ __all__ = "EntiteApi"
 
 
 def _denomination_sort_key(entite: EntiteInfo) -> str:
-    """Clé de tri insensible à la casse et aux accents (approxime le tri 'fr' du frontend
-    sans dépendre de la locale du process, qui n'est pas fiable dans un serveur async).
+    """Clé de tri insensible à la casse et aux accents.
     """
     normalized = unicodedata.normalize("NFD", entite.denomination)
     return "".join(c for c in normalized if not unicodedata.combining(c)).casefold()
@@ -44,7 +43,6 @@ class EntiteApi(ApiPastell):
         Args:
             only_active (bool, optional): pour filtrer les entités actite uniquement ou non
             auth (AuthUser, optional): le contexte utilisateur redéfini
-
         Returns:
             Liste d'entite
         """
