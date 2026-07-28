@@ -1,3 +1,4 @@
+import { toRaw } from "vue";
 import { useQuery, useQueryClient } from "@tanstack/vue-query";
 
 export interface DocumentInfo {
@@ -92,16 +93,19 @@ export const useDocuments = (
   // Calcul direct de l'offset
   const offset = computed(() => (page.value - 1) * limit.value);
 
-  // queryKey
-  const queryKey = computed(() => [
+  // Clé de cache (toRaw évite un Proxy Vue dans la clé)
+  const buildKey = (targetOffset: number) => [
     "documents",
     entiteId.value,
     idFlux.value ?? null,
-    offset.value,
+    targetOffset,
     limit.value,
     search.value,
-    filters.value,
-  ]);
+    toRaw(filters.value),
+  ];
+
+  // queryKey
+  const queryKey = computed(() => buildKey(offset.value));
 
   const { data, isFetching, isError, error } = useQuery({
     queryKey,
@@ -118,7 +122,7 @@ export const useDocuments = (
     enabled: computed(
         () => !!entiteId.value && !!user.value?.token && enabled.value,
     ),
-    staleTime: 60_000,
+    staleTime: 60000,
     placeholderData: (prev) => prev,
     retry: (failureCount, error: any) => {
       if (error?.status === 403 || error?.response?.status === 403)
@@ -127,20 +131,14 @@ export const useDocuments = (
     },
   });
 
-  const doPrefetch = (prefetchOffset: number, total: number) => {
-    if (!entiteId.value || !user.value?.token) return;
-    if (prefetchOffset < 0 || prefetchOffset >= total) return;
+  // Précharge la page suivante en cache dès que la page courante est chargée, pour une
+  // navigation instantanée quand l'utilisateur clique sur "suivant"
+  watch(data, (d) => {
+    const total = d?.pagination?.total ?? 0;
+    const nextOffset = offset.value + limit.value;
+    if (!entiteId.value || !user.value?.token || nextOffset >= total) return;
 
-    const key = [
-      "documents",
-      entiteId.value,
-      idFlux.value ?? null,
-      prefetchOffset,
-      limit.value,
-      search.value,
-      filters.value,
-    ];
-
+    const key = buildKey(nextOffset);
     if (queryClient.getQueryData(key)) return;
 
     queryClient.prefetchQuery({
@@ -149,7 +147,7 @@ export const useDocuments = (
           fetchPage(
               entiteId.value!,
               idFlux.value ?? null,
-              prefetchOffset,
+              nextOffset,
               limit.value,
               search.value,
               filters.value,
@@ -158,17 +156,7 @@ export const useDocuments = (
       staleTime: 60_000,
       retry: false,
     });
-  };
-
-  watch(
-      data,
-      (d) => {
-        const total = d?.pagination?.total ?? 0;
-        if (!total) return;
-        doPrefetch(offset.value + limit.value, total);
-      },
-      { immediate: true },
-  );
+  });
 
   const documents = computed(() => data.value?.documents ?? []);
   const pagination = computed(() => data.value?.pagination ?? null);
