@@ -3,7 +3,6 @@ export const ITEMS_PER_PAGE = 20;
 export const useDocuments = (
   entiteId: Ref<number | null>,
   idFlux: Ref<string | null>,
-  firstPage: Ref<DocumentPaginate | undefined>,
   page: Ref<number>,
   search: Ref<string>,
   limit: Ref<number> = ref(ITEMS_PER_PAGE)
@@ -43,8 +42,7 @@ export const useDocuments = (
         user.value?.accessToken
       ),
     enabled: computed(() => !!entiteId.value && !!user.value?.accessToken),
-    initialData: firstPage,
-    placeholderdata: (prev) => prev,
+    placeholderData: (prev) => prev,
     retry: (failurecount, error: any) => {
       if (error?.status === 403 || error?.response?.status === 403)
         return false;

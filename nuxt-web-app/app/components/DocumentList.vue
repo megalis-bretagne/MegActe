@@ -16,6 +16,16 @@ const { data: firstPage } = await useFetch("/api/documents/firstpage", {
   },
 });
 
+// Seed ponctuel du cache pour la clé exacte du premier chargement (évite un fetch en double
+// juste après le rendu SSR). Contrairement à `initialData`, ça ne reste pas branché sur les
+// clés suivantes : changer de flux repart bien sur un vrai fetch, pas sur cette donnée figée.
+if (firstPage.value) {
+  queryClient.setQueryData(
+    ["documents", entiteId.value, selectedFlux.value ?? null, 0, ITEMS_PER_PAGE],
+    firstPage.value
+  );
+}
+
 function createDoc() {
   if (!selectedFlux.value) return;
   router.push(
@@ -31,7 +41,6 @@ const rowsPerPage = ref(ITEMS_PER_PAGE);
 const { documents, pagination, isFetching, isError, error } = useDocuments(
   entiteId,
   selectedFlux,
-  firstPage,
   pageActive,
   search,
   rowsPerPage
