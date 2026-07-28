@@ -6,14 +6,11 @@ const props = defineProps<{
   docData?: Record<string, any>;
 }>();
 
+const { downloadDocumentFile } = useFileDownload();
+
 function downloadFile(filename: string, elementId: string, index?: number) {
   // index : évite au backend de refaire un fetch en plus pour retrouver le fichier par son nom
-  const base = `/api/file/${props.entiteId}/${props.idD}/${elementId}/${encodeURIComponent(filename)}`;
-  const url = index !== undefined ? `${base}?index=${index}` : base;
-  const a = window.document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
+  downloadDocumentFile(props.entiteId, props.idD, elementId, filename, index);
 }
 
 // Retrouve à quel champ (arrete ou autre_document_attache) appartient une pièce
