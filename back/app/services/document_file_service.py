@@ -246,6 +246,7 @@ class DocumentFileService(BaseService):
         document_id: str,
         element_id: str,
         file_name: str,
+        file_index: int | None = None,
     ):
         """Récupère un fichier spécifique par son nom depuis Pastell.
 
@@ -254,16 +255,17 @@ class DocumentFileService(BaseService):
             document_id (str): L'ID du document.
             element_id (str): L'ID de l'élément auquel le fichier est associé.
             file_name (str): Le nom du fichier à récupérer.
+            file_index (int | None): Position déjà connue du fichier, pour éviter un fetch en plus.
 
         Returns:
             Response: La réponse de l'API Pastell contenant le fichier.
         """
-        existing_files = self.get_existing_files(entite_id, document_id, element_id)
-
-        try:
-            file_index = existing_files.index(file_name)
-        except ValueError:
-            raise HTTPException(status_code=404, detail="File not found")
+        if file_index is None:
+            existing_files = self.get_existing_files(entite_id, document_id, element_id)
+            try:
+                file_index = existing_files.index(file_name)
+            except ValueError:
+                raise HTTPException(status_code=404, detail="File not found")
 
         response = self.api_pastell.perform_get(
             f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_index}"

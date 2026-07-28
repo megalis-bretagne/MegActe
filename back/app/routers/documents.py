@@ -138,9 +138,10 @@ def get_file_for_document(
     entite_id: int,
     element_id: str,
     file_name: str,
+    index: int | None = Query(None, description="Position du fichier, pour éviter un fetch en plus"),
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentFileService(client).get_file_by_name(entite_id, document_id, element_id, file_name)
+    return DocumentFileService(client).get_file_by_name(entite_id, document_id, element_id, file_name, index)
 
 
 # Attribuer un type à un fichier

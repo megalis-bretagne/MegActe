@@ -25,7 +25,8 @@ _count_documents_cache: dict[tuple[int, str | None], tuple[float, int]] = {}
 # TCP/TLS déjà établies vers Pastell au lieu d'en ouvrir une nouvelle à chaque appel
 # (perform_get/post/...), ce qui évite une poignée de main TLS à chaque requête.
 _session = requests.Session()
-_adapter = HTTPAdapter(pool_maxsize=20)
+# Aligné sur le pool de threads partagé (document_service._EXECUTOR, 32 workers)
+_adapter = HTTPAdapter(pool_maxsize=32)
 _session.mount("https://", _adapter)
 _session.mount("http://", _adapter)
 
