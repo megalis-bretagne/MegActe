@@ -3,14 +3,37 @@ const props = defineProps<{
   field: any;
   entiteId: number;
   idD: string;
+  docData?: Record<string, any>;
 }>();
 
-function downloadFile(filename: string, elementId: string) {
-  const url = `/api/file/${props.entiteId}/${props.idD}/${elementId}/${encodeURIComponent(filename)}`;
+function downloadFile(filename: string, elementId: string, index?: number) {
+  // index : évite au backend de refaire un fetch en plus pour retrouver le fichier par son nom
+  const base = `/api/file/${props.entiteId}/${props.idD}/${elementId}/${encodeURIComponent(filename)}`;
+  const url = index !== undefined ? `${base}?index=${index}` : base;
   const a = window.document.createElement("a");
   a.href = url;
   a.download = filename;
   a.click();
+}
+
+// Retrouve à quel champ (arrete ou autre_document_attache) appartient une pièce
+function resolveFileRef(filename: string): { elementId: string; index?: number } {
+  const arreteRaw = props.docData?.arrete;
+  const arreteList = Array.isArray(arreteRaw) ? arreteRaw : arreteRaw ? [arreteRaw] : [];
+  const arreteIndex = arreteList.indexOf(filename);
+  if (arreteIndex !== -1) return { elementId: "arrete", index: arreteIndex };
+
+  const autreRaw = props.docData?.autre_document_attache;
+  const autreList = Array.isArray(autreRaw) ? autreRaw : autreRaw ? [autreRaw] : [];
+  const autreIndex = autreList.indexOf(filename);
+  if (autreIndex !== -1) return { elementId: "autre_document_attache", index: autreIndex };
+
+  return { elementId: "arrete" };
+}
+
+function downloadPieceFile(filename: string) {
+  const ref = resolveFileRef(filename);
+  downloadFile(filename, ref.elementId, ref.index);
 }
 
 const isFileArray = (val: any) =>
@@ -68,7 +91,7 @@ const resolveSelectValue = (field: any) => {
     >
       <button
           class="text-blue-600 hover:underline text-left"
-          @click="downloadFile(piece.filename, 'arrete')"
+          @click="downloadPieceFile(piece.filename)"
       >
         {{ piece.filename }}
       </button>
@@ -94,7 +117,7 @@ const resolveSelectValue = (field: any) => {
     >
       <button
           class="text-blue-600 hover:underline text-left"
-          @click="downloadFile(filename, field.key)"
+          @click="downloadFile(filename, field.key, i)"
       >
         {{ filename }}
       </button>

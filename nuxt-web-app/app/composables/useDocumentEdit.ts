@@ -21,7 +21,7 @@ export function useDocumentEdit(props: { entiteId: number; idD: string; fluxType
             });
         },
         enabled: computed(() => !isNew.value && !!user.value?.token),
-        staleTime: 30_000,
+        staleTime: 30000,
         placeholderData: (prev) => prev,
     });
 
@@ -147,7 +147,6 @@ export function useDocumentEdit(props: { entiteId: number; idD: string; fluxType
     const externalDialogLabel = ref("");
     const externalDialogSearch = ref("");
     const externalDialogTemp = ref<string[]>([]);
-    const externalDialogHadSelection = ref(false);
 
     const showTypePieceDialog = ref(false);
     const typePieceTypesList = ref<Record<string, string>>({});
@@ -215,7 +214,6 @@ export function useDocumentEdit(props: { entiteId: number; idD: string; fluxType
 
         const current = formData.value[fieldKey];
         externalDialogTemp.value = Array.isArray(current) ? [...current] : current ? [current] : [];
-        externalDialogHadSelection.value = externalDialogTemp.value.length > 0;
 
         if (!externalDataCache.value[fieldKey]) {
             externalDataLoading.value = fieldKey;
@@ -248,11 +246,6 @@ export function useDocumentEdit(props: { entiteId: number; idD: string; fluxType
 
     function toggleExternalOption(option: string) {
         formData.value[externalDialogField.value] = option;
-        showExternalDialog.value = false;
-    }
-
-    function confirmExternalSelection() {
-        formData.value[externalDialogField.value] = [...externalDialogTemp.value];
         showExternalDialog.value = false;
     }
 
@@ -289,7 +282,6 @@ export function useDocumentEdit(props: { entiteId: number; idD: string; fluxType
         openExternalDialog,
         confirmTypePieceSelection,
         toggleExternalOption,
-        confirmExternalSelection,
         externalDisplayValue,
     };
 }

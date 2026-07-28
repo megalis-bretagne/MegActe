@@ -26,7 +26,15 @@ export function useBatchDocuments(
         selectedIds.value = new Set([...selectedIds.value].filter((id) => currentIds.has(id)));
     });
 
-    const canBatchSelect = (doc: DocumentInfo) => doc.action_possible?.some(isBatchable) ?? false;
+    // "duplicate" n'est pas une vraie action Pastell (cf. canDuplicate), on l'ajoute donc à part
+    // aux actions batchables issues de action_possible plutôt que de le chercher dedans
+    function getBatchableActions(doc: DocumentInfo): { action: string; message?: string }[] {
+        const actions = (doc.action_possible ?? []).filter(isBatchable);
+        if (canDuplicate(doc)) actions.push({ action: "duplicate", message: "Dupliquer" });
+        return actions;
+    }
+
+    const canBatchSelect = (doc: DocumentInfo) => getBatchableActions(doc).length > 0;
     const isSelected = (doc: DocumentInfo) => selectedIds.value.has(doc.id_d);
 
     // ajoute/retire un id du Set
@@ -50,9 +58,7 @@ export function useBatchDocuments(
         const docs = selected.value;
         if (!docs.length) return [];
 
-        const [firstDoc, ...otherDocs] = docs.map((doc) =>
-            (doc.action_possible ?? []).filter(isBatchable)
-        );
+        const [firstDoc, ...otherDocs] = docs.map(getBatchableActions);
         if (!firstDoc) return [];
 
         return firstDoc

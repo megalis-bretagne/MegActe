@@ -1,11 +1,7 @@
 import { ref, type Ref } from "vue";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 
-// Après une action, Pastell met parfois un peu de temps à recalculer last_action /
-// action_possible (traitement pas toujours synchrone côté Pastell). Un seul refetch
-// juste après le POST retombe donc souvent sur l'ancien état : les boutons et le
-// journal affichés restent désynchronisés de ce qui vient d'être fait. On poll donc
-// le document jusqu'à ce que last_action change réellement (ou qu'on abandonne).
+// Poll jusqu'à ce que last_action se stabilise (Pastell peut enchaîner plusieurs transitions)
 const ACTION_POLL_DELAYS_MS = [300, 600, 1000, 1500, 2000, 3000];
 
 export function useDocumentActions(
@@ -24,16 +20,20 @@ export function useDocumentActions(
 
   async function waitForActionSync(previousState: string | undefined): Promise<boolean> {
     let changed = false;
+    let lastSeen = previousState;
     for (const delay of ACTION_POLL_DELAYS_MS) {
       await new Promise((resolve) => setTimeout(resolve, delay));
       const updated = await queryClient.fetchQuery({
         queryKey: ["document", entiteId.value, idD.value],
         queryFn: fetchDocument,
       });
-      if (updated?.last_action !== previousState) {
+      if (updated?.last_action !== lastSeen) {
+        // Encore en train de bouger : on continue à poller
         changed = true;
-        break;
+        lastSeen = updated?.last_action;
+        continue;
       }
+      if (changed) break; // stable depuis un cycle
     }
     await queryClient.invalidateQueries({
       queryKey: ["journal", entiteId.value, idD.value],

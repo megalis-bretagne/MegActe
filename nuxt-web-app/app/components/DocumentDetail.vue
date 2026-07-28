@@ -37,7 +37,7 @@ const { data: doc, isPending, error,} = useQuery({
   queryKey: computed(() => ["document", props.entiteId, props.idD]),
   queryFn: fetchDocument,
   enabled: computed(() => !!user.value?.token),
-  staleTime: 30_000,
+  staleTime: 30000,
   placeholderData: (prev) => prev,
 });
 
@@ -368,6 +368,7 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
                     :field="field"
                     :entite-id="entiteId"
                     :id-d="idD"
+                    :doc-data="doc?.data"
                 />
               </td>
             </tr>

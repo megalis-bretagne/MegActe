@@ -94,6 +94,37 @@ export function useDocumentSave(
 
     async function save() {
         saveError.value = null;
+
+        const numeroActeError = validateNumeroActe(state.formData.value.numero_de_lacte);
+        if (numeroActeError) {
+            saveError.value = `Numéro d'acte : ${numeroActeError}`;
+            return;
+        }
+        const objetError = validateObjet(state.formData.value.objet);
+        if (objetError) {
+            saveError.value = `Objet : ${objetError}`;
+            return;
+        }
+
+        const allPendingFiles = Object.values(state.pendingFiles.value).flat();
+        if (allPendingFiles.length) {
+            const nonPdf = findNonPdfFileName(allPendingFiles);
+            if (nonPdf) {
+                saveError.value = `Le fichier « ${nonPdf} » n'est pas au format PDF. Seul le format PDF est accepté.`;
+                return;
+            }
+            const duplicate = findDuplicateFileName(allPendingFiles);
+            if (duplicate) {
+                saveError.value = `Le fichier « ${duplicate} » est déposé plusieurs fois. Merci de ne pas télétransmettre 2 fois le même document (acte ou annexe), pour éviter les erreurs d'archivage.`;
+                return;
+            }
+            const totalSize = allPendingFiles.reduce((sum, f) => sum + f.size, 0);
+            if (totalSize > MAX_TOTAL_FILES_SIZE_BYTES) {
+                saveError.value = `La taille totale des documents (acte + annexes) dépasse 150 Mo (${(totalSize / (1024 * 1024)).toFixed(1)} Mo).`;
+                return;
+            }
+        }
+
         for (const tab of state.tabs.value) {
             for (const key of tab.fields) {
                 const def = state.fluxDef.value[key];

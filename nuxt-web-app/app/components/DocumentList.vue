@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useQueryClient } from "@tanstack/vue-query";
 import type { AdvancedFilters } from "~/composables/useDocuments";
 
 const props = defineProps<{
@@ -10,7 +9,6 @@ const config = useRuntimeConfig();
 const router = useRouter();
 const route = useRoute();
 const { user, selectedFlux } = useUserContext();
-const queryClient = useQueryClient();
 
 // Création / navigation -------------------------------
 async function createDoc() {
@@ -26,19 +24,6 @@ async function openDoc(doc: any) {
 
 async function editDoc(doc: any) {
   await navigateTo(`/org/${doc.id_e}/document/${doc.id_d}/edit?type=${doc.type}`);
-}
-
-function prefetchDoc(doc: any) {
-  if (!user.value?.token) return;
-  queryClient.prefetchQuery({
-    queryKey: ["document", doc.id_e, doc.id_d],
-    queryFn: () =>
-        $fetch(`/entite/${doc.id_e}/document/${doc.id_d}`, {
-          baseURL: config.public.apiBaseUrl,
-          headers: { Authorization: `Bearer ${user.value?.token}` },
-        }),
-    staleTime: 30_000,
-  });
 }
 
 // Filtres avancés ---------------------------------
@@ -168,7 +153,7 @@ watch([pageActive, search, rowsPerPage], ([page, s, rows]) => {
   });
 });
 
-// Le total n'est pas correct quand la recherch est par les filtres. Pour l'instant sans filtre pagination et avec pas de pagination.
+// Avec un filtre actif, le total renvoyé par le backend n'est qu'une estimation (cf. entite.py)
 const hasActiveFilter = computed(() => {
   const f = advancedFilters.value;
   return !!search.value.trim() || !!(f.etat || f.etatDebut || f.etatFin || f.etatTransit || f.etatTransitDebut || f.etatTransitFin);
@@ -451,7 +436,7 @@ function onChangePage(p: number) {
                     @click="editDoc(doc)"
                 />
                 <Button
-                    v-if="hasAction(doc, 'duplicate')"
+                    v-if="canDuplicate(doc)"
                     v-tooltip.top="'Dupliquer'"
                     icon="pi pi-copy"
                     severity="secondary"

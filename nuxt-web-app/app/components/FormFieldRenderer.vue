@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   field: {
     key: string;
     label: string;
@@ -21,16 +21,22 @@ const emit = defineEmits([
   "update:modelValue",
   "fileChange",
   "fileRemove",
-  "openExternal",
-  "openTypePiece"
+  "openExternal"
 ]);
+
+// Retour visuel immédiat pour numero_de_lacte / objet (contrôle bloquant à l'enregistrement dans useDocumentSave.ts)
+const fieldError = computed(() => {
+  if (props.field.key === "numero_de_lacte") return validateNumeroActe(props.modelValue);
+  if (props.field.key === "objet") return validateObjet(props.modelValue);
+  return null;
+});
 </script>
 
 <template>
   <!-- Notice (champ sans label, ex: "comment") -->
   <tr v-if="field.label === '_'">
     <td colspan="2" class="px-4 py-3 text-xs text-amber-700 bg-amber-50 border-l-4 border-amber-400">
-      {{ field.commentaire }}
+      {{ field.commentaire ? decodeHtmlEntities(field.commentaire) : field.commentaire }}
     </td>
   </tr>
 
@@ -43,7 +49,7 @@ const emit = defineEmits([
           v-if="field.commentaire"
           class="block text-xs text-gray-400 font-normal max-w-xs whitespace-normal mt-0.5"
       >
-        {{ field.commentaire.replace(/<[^>]*>/g, "") }}
+        {{ decodeHtmlEntities(field.commentaire.replace(/<[^>]*>/g, "")) }}
       </span>
     </td>
 
@@ -137,9 +143,11 @@ const emit = defineEmits([
             :value="modelValue"
             type="text"
             :disabled="field.readonly"
-            class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            :class="fieldError ? 'border-red-400 focus:ring-red-400' : 'border-gray-300 focus:ring-blue-500'"
             @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
         />
+        <p v-if="fieldError" class="mt-1 text-xs text-red-600">{{ fieldError }}</p>
       </template>
     </td>
   </tr>

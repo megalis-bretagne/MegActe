@@ -16,7 +16,7 @@ const {
   externalDialogSearch, externalDialogTemp, filteredExternalOptions,
   showTypePieceDialog, typePieceTypesList, typePieceItems,
   openExternalDialog, confirmTypePieceSelection, toggleExternalOption,
-  confirmExternalSelection, externalDisplayValue
+  externalDisplayValue
 } = editState;
 
 // Sauvegarde
@@ -136,7 +136,7 @@ function handleOpenExternal(key: string, label: string) {
       v-model:visible="showExternalDialog"
       :header="`Sélectionner — ${externalDialogLabel}`"
       modal
-      :style="{ width: '520px' }"
+      :style="{ width: 'min(90vw, 900px)' }"
     >
       <div class="mb-3">
         <input
@@ -192,7 +192,7 @@ function handleOpenExternal(key: string, label: string) {
       v-model:visible="showTypePieceDialog"
       header="Choix des types de pièces"
       modal
-      :style="{ width: '680px' }"
+      :style="{ width: 'min(90vw, 1100px)' }"
     >
       <table class="w-full text-sm">
         <thead>

@@ -7,12 +7,17 @@ export default eventHandler(async (event) => {
   }
 
   const { entiteId, documentId, elementId, filename } = getRouterParams(event);
+  const { index } = getQuery(event);
   const config = useRuntimeConfig();
 
-  const upstream = await fetch(
+  const backendUrl = new URL(
     `${config.public.apiBaseUrl}/entite/${entiteId}/document/${documentId}/file/${elementId}/${filename}`,
-    { headers: { Authorization: `Bearer ${token.accessToken}` } },
   );
+  if (index !== undefined) backendUrl.searchParams.set("index", String(index));
+
+  const upstream = await fetch(backendUrl, {
+    headers: { Authorization: `Bearer ${token.accessToken}` },
+  });
 
   if (!upstream.ok) {
     throw createError({

@@ -23,8 +23,12 @@ function toTreeNode(node: EntiteNode): TreeNode {
 
 // Liste des entités de l'utilisateur, converties au format attendu par le TreeSelect
 const treeNodes = computed<TreeNode[]>(() =>
+
     (user.value?.pastellUser?.entites ?? []).map(toTreeNode),
+
 );
+
+
 
 // Entité choisie manuellement par l'utilisateur (null si aucune sélection manuelle)
 const manuelKey = ref<string | null>(null);
