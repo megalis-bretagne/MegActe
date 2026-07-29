@@ -1,66 +1,99 @@
 <script setup lang="ts">
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
+import { useQuery } from "@tanstack/vue-query";
 
 const props = defineProps<{ idD: string; fluxType?: string }>();
 
 const config = useRuntimeConfig();
 const router = useRouter();
 const { data: user } = useAuth();
-const { getFluxDef } = useFluxDef();
+const { getFluxDef, fluxDefFor } = useFluxDef();
 const entiteId = useSelectedEntiteId();
-const queryClient = useQueryClient();
 
 // ── Fetch document ────────────────────────────────────────────────────────────
-const {
-  data: doc,
-  isPending,
-  error,
-} = useQuery({
-  queryKey: computed(() => ["document", entiteId.value, props.idD]),
-  queryFn: async () => {
-    const url = `/entite/${entiteId.value}/document/${props.idD}`;
+async function fetchDocument() {
+  const url = `/entite/${entiteId.value}/document/${props.idD}`;
+  try {
     return await $fetch<any>(url, {
       baseURL: config.public.apiBaseUrl,
       headers: { Authorization: `Bearer ${user.value?.accessToken}` },
     });
-  },
+  } catch (e: any) {
+    if (e?.status === 403) {
+      const newToken = await tryRefreshToken();
+      if (newToken)
+        return await $fetch<any>(url, {
+          baseURL: config.public.apiBaseUrl,
+          headers: { Authorization: `Bearer ${newToken}` },
+        });
+    }
+    throw e;
+  }
+}
+
+const { data: doc, isPending, error } = useQuery({
+  queryKey: computed(() => ["document", entiteId.value, props.idD]),
+  queryFn: fetchDocument,
+  enabled: computed(() => !!user.value?.accessToken),
   staleTime: 30_000,
   placeholderData: (prev) => prev,
 });
 
-// ── Fetch journal ────────────────────────────────────────────────────────────
+// ── Fetch journal ─────────────────────────────────────────────────────────────
 const { data: journalData, isPending: journalPending } = useQuery({
   queryKey: computed(() => ["journal", entiteId.value, props.idD]),
   queryFn: async () => {
-    return await $fetch<any[]>(
-      `/entite/${entiteId.value}/document/${props.idD}/journal`,
-      {
+    const url = `/entite/${entiteId.value}/document/${props.idD}/journal`;
+    try {
+      return await $fetch<any[]>(url, {
         baseURL: config.public.apiBaseUrl,
         headers: { Authorization: `Bearer ${user.value?.accessToken}` },
+      });
+    } catch (e: any) {
+      if (e?.status === 403) {
+        const newToken = await tryRefreshToken();
+        if (newToken) {
+          return await $fetch<any[]>(url, {
+            baseURL: config.public.apiBaseUrl,
+            headers: { Authorization: `Bearer ${newToken}` },
+          });
+        }
       }
-    );
+      throw e;
+    }
   },
-  staleTime: 30_000,
+  enabled: computed(() => !!user.value?.accessToken),
+  staleTime: 5 * 60 * 1000,
 });
 
-// Fetch FluxDetails
-const fluxDef = ref<FluxDetails | null | undefined>(null);
-if (props.fluxType) {
-  fluxDef.value = await getFluxDef(props.fluxType);
-}
-const stop = watch(
-  () => (fluxDef ? undefined : doc.value?.info?.type),
-  async (type) => {
-    if (type === undefined) return;
-    fluxDef.value = await getFluxDef(type);
-  },
-  { immediate: true }
+// Type de flux effectif : celui passé en prop (dispo dès le mount, ex: venant
+// d'edit.vue) sinon celui du document une fois chargé. Mutualisé ici pour ne
+// plus le recalculer séparément dans fluxDef / watch / tabs / activeTabFields / runAction.
+const effectiveFluxType = computed(
+  () => props.fluxType ?? doc.value?.info?.type,
 );
-if (fluxDef.value) stop();
+
+const fluxDef = computed(() => {
+  const type = effectiveFluxType.value;
+  if (!type) return {};
+  return fluxDefFor(type) ?? {};
+});
+
+watch(
+  () => ({
+    token: user.value?.accessToken,
+    type: effectiveFluxType.value,
+  }),
+  async ({ token, type }) => {
+    if (token && type) await getFluxDef(type);
+  },
+  { immediate: true },
+);
+
+// ── Définition des onglets par flux ──────────────────────────────────────────
 
 // Onglets disponibles selon le type de flux (filtrés par condition)
 const tabs = computed(() => {
-  const fluxType = doc.value?.info?.type;
+  const fluxType = effectiveFluxType.value;
   const config = FLUX_TABS_CONFIG[fluxType];
   if (!config) return [{ id: "preparer", label: "Préparer", fields: [] }];
   const data = doc.value?.data ?? {};
@@ -69,67 +102,82 @@ const tabs = computed(() => {
 
 const activeTab = ref("preparer");
 
-// Reset onglet actif quand le flux change
-watch(tabs, () => {
-  activeTab.value = "preparer";
-});
-
 // ── Champs de l'onglet actif ──────────────────────────────────────────────────
-const activeTabFields = computed(() =>
-  getActiveTabFields(
-    doc.value,
-    fluxDef.value,
-    tabs.value.find((t) => t.id === activeTab.value)!
-  )
-);
+const activeTabFields = computed(() => {
+  if (!doc.value?.data) return [];
 
-// ── Actions ───────────────────────────────────────────────────────────────────
-const actionLoading = ref<string | null>(null);
-const actionError = ref<string | null>(null);
+  const tab = tabs.value.find((t) => t.id === activeTab.value);
+  if (!tab) return [];
 
-const { mutateAsync: performAction } = useMutation({
-  mutationFn: async (actionName: string) => {
-    await $fetch(`/entite/${entiteId.value}/documents/perform_action`, {
-      method: "POST",
-      baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${user.value?.accessToken}` },
-      body: { document_ids: props.idD, action: actionName },
-    });
-  },
-  onSuccess: (_, actionName) => {
-    if (actionName === "supression") {
-      router.push(`/`);
-      return;
-    }
-    queryClient.invalidateQueries({
-      queryKey: ["document", entiteId.value, props.idD],
-    });
-    queryClient.invalidateQueries({
-      queryKey: ["journal", entiteId.value, props.idD],
-    });
-  },
+  const fluxType = effectiveFluxType.value;
+  if (!FLUX_TABS_CONFIG[fluxType] && tab.id === "preparer") {
+    return getFilteredFields();
+  }
+
+  const alwaysShow = new Set(tab.alwaysShow ?? []);
+  return tab.fields
+    .map((key) => {
+      const def = fluxDef.value[key];
+      const val = doc.value.data[key];
+      const isEmpty =
+        val === undefined ||
+        val === null ||
+        val === "" ||
+        val === "[]" ||
+        (Array.isArray(val) && val.length === 0);
+      if (isEmpty && !alwaysShow.has(key)) return null;
+      return {
+        key,
+        val: isEmpty ? null : val,
+        label: def?.name ?? key.replace(/_/g, " "),
+        type: def?.type ?? "text",
+        selectValues: def?.value ?? null,
+        commentaire: def?.commentaire ?? null,
+      };
+    })
+    .filter(Boolean);
 });
 
-async function runAction(action: { action: string; message: string }) {
-  if (action.action === "modification") {
-    router.push(
-      `/org/${entiteId.value}/document/${props.idD}/edit?type=${props.fluxType ?? doc.value?.info?.type ?? ""}`
+// filterFields pour flux sans config
+function getFilteredFields() {
+  return Object.entries(fluxDef.value)
+    .filter(([key, def]: [string, any]) => {
+      if (def?.["no-show"]) return false;
+      if (!def?.type) return false;
+      if (def?.requis) {
+        if (def.type === "file" && def["read-only"]) return false;
+        return true;
+      }
+      if (def?.["read-only"] === true) return false;
+      if ((def?.type === "date" || def?.type === "file") && !def?.commentaire)
+        return false;
+      return true;
+    })
+    .filter(([key]) => key !== "type_piece")
+    .map(([key, def]: [string, any]) => ({
+      key,
+      val: doc.value.data[key] ?? null,
+      label: def?.name ?? key.replace(/_/g, " "),
+      type: def?.type ?? "text",
+      selectValues: def?.value ?? null,
+      commentaire: def?.commentaire ?? null,
+    }))
+    .filter(
+      ({ val }) =>
+        val !== null &&
+        val !== "" &&
+        val !== "[]" &&
+        !(Array.isArray(val) && val.length === 0),
     );
-    return;
-  }
-
-  actionLoading.value = action.action;
-  actionError.value = null;
-  const previousState = doc.value?.last_action;
-  try {
-    await performAction(action.action);
-  } catch (e) {
-    actionError.value =
-      e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
-  } finally {
-    actionLoading.value = null;
-  }
 }
+
+const { actionLoading, actionError, runAction } = useDocumentActions(
+  entiteId,
+  toRef(props, "idD"),
+  effectiveFluxType,
+  doc,
+  fetchDocument,
+);
 
 const journalEntries = computed(() => journalData.value ?? []);
 
@@ -138,46 +186,17 @@ const journalUser = (entry: any) => {
   return name || "Action automatique";
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function downloadFile(filename: string, elementId: string) {
-  const url = `/api/file/${entiteId.value}/${props.idD}/${elementId}/${encodeURIComponent(filename)}`;
-  const a = window.document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-}
+// ── Helpers d'affichage des actions ──────────────────────────────────────────
 
 const ACTION_SEVERITY: Record<string, string> = {
   modification: "secondary",
   supression: "danger",
 };
 const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
-
-const ACTION_ICONS: Record<string, string> = {
-  modification: "pi-pencil",
-  supression: "pi-trash",
-  orientation: "pi-send",
-  duplicate: "pi-copy",
-  reouverture: "pi-refresh",
-  "annulation-tdt": "pi-times",
-};
-const actionIcon = (action: string) => ACTION_ICONS[action] ?? "pi-info-circle";
-
-const isFileArray = (val: any) =>
-  Array.isArray(val) &&
-  val.length > 0 &&
-  typeof val[0] === "string" &&
-  val[0].includes(".");
-
-const resolveSelectValue = (field: any) => {
-  if (!field.selectValues) return field.val;
-  return field.selectValues[field.val] ?? field.val;
-};
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 py-6">
+  <div class="max-w-8xl mx-auto px-4 py-6">
     <!-- Retour -->
     <button
       class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors"
@@ -222,16 +241,12 @@ const resolveSelectValue = (field: any) => {
             <p class="text-sm text-gray-500 mt-1">{{ doc.info.type }}</p>
           </div>
         </div>
-        <!-- Dates : skeleton tant que le fetch frais n'est pas terminé -->
+        <!-- Date de création : skeleton tant que le fetch frais n'est pas terminé -->
         <div v-if="!doc?.info?.creation" class="flex gap-4 mt-3">
           <Skeleton width="8rem" height="0.75rem" />
-          <Skeleton width="8rem" height="0.75rem" />
-          <Skeleton width="9rem" height="0.75rem" />
         </div>
         <div v-else class="flex gap-6 mt-3 text-xs text-gray-400">
           <span>Créé le {{ formatDate(doc.info.creation) }}</span>
-          <span>Modifié le {{ formatDate(doc.info.modification) }}</span>
-          <span>Dernier état le {{ formatDate(doc.last_action_date) }}</span>
         </div>
       </div>
 
@@ -254,7 +269,7 @@ const resolveSelectValue = (field: any) => {
             :icon="
               actionLoading === action.action
                 ? 'pi pi-spinner pi-spin'
-                : `pi ${actionIcon(action.action)}`
+                : batchActionIcon(action.action)
             "
             :severity="actionSeverity(action.action)"
             :disabled="!!actionLoading"
@@ -320,6 +335,14 @@ const resolveSelectValue = (field: any) => {
         <template v-else>
           <table class="min-w-full text-sm">
             <tbody class="divide-y divide-gray-100">
+              <tr v-if="activeTabFields.length === 0">
+                <td
+                  colspan="2"
+                  class="px-4 py-6 text-center text-gray-400 italic"
+                >
+                  Aucun champ disponible
+                </td>
+              </tr>
               <tr
                 v-for="field in activeTabFields"
                 :key="field.key"
@@ -331,145 +354,12 @@ const resolveSelectValue = (field: any) => {
                   {{ field.label }}
                 </td>
                 <td class="px-4 py-3 text-gray-800">
-                  <!-- ged_document_id_file -->
-                  <template v-if="field.key === 'ged_document_id_file'">
-                    <table class="text-xs border border-gray-200 rounded">
-                      <thead>
-                        <tr class="bg-gray-50">
-                          <th
-                            class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
-                          >
-                            Nom du fichier
-                          </th>
-                          <th
-                            class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
-                          >
-                            Identifiant
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="(id, name) in field.val as Record<
-                            string,
-                            string
-                          >"
-                          :key="name"
-                          class="border-t border-gray-100"
-                        >
-                          <td class="px-3 py-1 text-gray-700">{{ name }}</td>
-                          <td class="px-3 py-1 text-gray-500">{{ id }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </template>
-
-                  <!-- type_piece_fichier -->
-                  <template v-else-if="field.key === 'type_piece_fichier'">
-                    <div
-                      v-for="(piece, i) in field.val as any[]"
-                      :key="i"
-                      class="mb-1"
-                    >
-                      <button
-                        class="text-blue-600 hover:underline text-left"
-                        @click="downloadFile(piece.filename, 'arrete')"
-                      >
-                        {{ piece.filename }}
-                      </button>
-                      <span class="text-gray-400 ml-2 text-xs">{{
-                        piece.typologie
-                      }}</span>
-                    </div>
-                  </template>
-
-                  <!-- Fichiers -->
-                  <template
-                    v-else-if="
-                      field.key !== 'ged_document_id_file' &&
-                      (field.type === 'file' || isFileArray(field.val))
-                    "
-                  >
-                    <div
-                      v-for="(filename, i) in (Array.isArray(field.val)
-                        ? field.val
-                        : [field.val]) as string[]"
-                      :key="i"
-                      class="mb-1"
-                    >
-                      <button
-                        class="text-blue-600 hover:underline text-left"
-                        @click="downloadFile(filename, field.key)"
-                      >
-                        {{ filename }}
-                      </button>
-                    </div>
-                  </template>
-
-                  <!-- Select -->
-                  <template v-else-if="field.type === 'select'">
-                    {{ resolveSelectValue(field) }}
-                  </template>
-
-                  <!-- Checkbox -->
-                  <template v-else-if="field.type === 'checkbox'">
-                    <input
-                      type="checkbox"
-                      :checked="
-                        field.val === 'checked' ||
-                        field.val === 'on' ||
-                        field.val === '1'
-                      "
-                      disabled
-                      class="w-4 h-4 accent-blue-600 cursor-default"
-                    />
-                  </template>
-
-                  <!-- Date -->
-                  <template
-                    v-else-if="
-                      typeof field.val === 'string' &&
-                      field.key !== 'date_cloture_journal_iso8601' &&
-                      /^\d{4}-\d{2}-\d{2}/.test(field.val)
-                    "
-                  >
-                    {{ new Date(field.val).toLocaleDateString("fr-FR") }}
-                  </template>
-
-                  <!-- URL -->
-                  <template
-                    v-else-if="
-                      typeof field.val === 'string' &&
-                      field.val.startsWith('http')
-                    "
-                  >
-                    <a
-                      :href="field.val"
-                      target="_blank"
-                      class="text-blue-600 hover:underline"
-                      >{{ field.val }}</a
-                    >
-                  </template>
-
-                  <!-- Texte multilignes -->
-                  <template
-                    v-else-if="
-                      typeof field.val === 'string' && field.val.includes('\n')
-                    "
-                  >
-                    <p class="whitespace-pre-line text-sm text-gray-600">
-                      {{ field.val }}
-                    </p>
-                  </template>
-
-                  <!-- Valeur simple -->
-                  <template v-else>
-                    {{
-                      Array.isArray(field.val)
-                        ? field.val.join(", ")
-                        : field.val
-                    }}
-                  </template>
+                  <DocumentFieldViewer
+                    :field="field"
+                    :entite-id="entiteId"
+                    :id-d="props.idD"
+                    :doc-data="doc?.data"
+                  />
                 </td>
               </tr>
             </tbody>

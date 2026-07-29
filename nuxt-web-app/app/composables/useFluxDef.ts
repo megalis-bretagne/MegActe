@@ -20,7 +20,9 @@ export const useFluxDef = () => {
             return data;
           }
         }
-      } catch {}
+      } catch {
+        //
+      }
     }
 
     // si aucun alors on arrive ici tout en mettant en cache localstorage
@@ -34,7 +36,9 @@ export const useFluxDef = () => {
             `fluxDef:${type}`,
             JSON.stringify({ data: result, expires: Date.now() + CACHE_TTL })
           );
-        } catch {}
+        } catch {
+          //
+        }
       }
       return result;
     } catch {

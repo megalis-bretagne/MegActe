@@ -39,8 +39,10 @@ class ActeService(BaseService):
 
         actions = response.get("action_possible", [])
         if action not in actions:
+            # 409 (et non 403) : le frontend traite tout 403 comme un token expiré et
+            # retente automatiquement avec un refresh, ce qui masque ce message métier.
             raise MegActeException(
-                status_code=HTTPStatus.FORBIDDEN,
+                status_code=HTTPStatus.CONFLICT,
                 code=ErrorCode.PASTELL_NO_RIGHT,
                 detail=f"Action '{action}' impossible pour le document {document_id}",
             )
@@ -102,15 +104,9 @@ class ActeService(BaseService):
                 data={"url": url},
             )
 
+        # Revérifie chaque document avant exécution (action_possible en liste n'est qu'une estimation)
         for doc_id in documents_id:
-            response = self.api_pastell.perform_post(f"/entite/{entite_id}/document/{doc_id}/action/{action}")
-            logger.info(f"Action multiple {action} sur le document {doc_id} entite {entite_id}, response {response}")
-            action_result = ActionResult(**response)
-            if not action_result.result:
-                raise MegActeException(
-                    status_code=HTTPStatus.BAD_REQUEST,
-                    detail=action_result.message or "Action impossible",
-                    code=ErrorCode.PASTELL_ERROR,
-                )
+            logger.info(f"Action multiple {action} sur le document {doc_id} entite {entite_id}")
+            self.check_and_perform_action(entite_id, doc_id, action)
 
         return ActionResult(result=True, message="")

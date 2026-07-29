@@ -38,7 +38,7 @@ export default defineNuxtConfig({
       addDefaultCallbackUrl: true,
     },
     sessionRefresh: {
-      enablePeriodically: 1000,
+      enablePeriodically: 30000,
       enableOnWindowFocus: true,
     },
   },
@@ -48,7 +48,7 @@ export default defineNuxtConfig({
      * Specify which Vue Query composables to auto-import
      * Default: `false`, set to `true` to auto-import all Vue Query composables
      */
-    autoImports: ["useQueryClient", "useQuery", "usePrefetchQuery"],
+    autoImports: ["useQueryClient", "useQuery", "useMutation"],
 
     // Enable/disable Nuxt DevTools integration (default: true)
     devtools: false,

@@ -3,12 +3,26 @@ export const fetchDocumentsPage = async (
   idFlux: string | null,
   offset: number,
   limit: number,
-  token: string
+  token: string,
+  search?: string,
+  filters?: AdvancedFilters
 ): Promise<DocumentPaginate> => {
   const config = useRuntimeConfig();
-  let queryParams = `offset=${offset}&limit=${limit}`;
-  if (idFlux) queryParams += `&type_flux=${idFlux}`;
-  const url = `/entite/${entiteId}/documents?${queryParams}`;
+
+  const params = new URLSearchParams({
+    offset: String(offset),
+    limit: String(limit),
+  });
+  if (idFlux) params.append("type_flux", idFlux);
+  if (search?.trim()) params.append("search", search.trim());
+  if (filters?.etat) params.append("etat", filters.etat);
+  if (filters?.etatDebut) params.append("etat_debut", dateToISO(filters.etatDebut));
+  if (filters?.etatFin) params.append("etat_fin", dateToISO(filters.etatFin));
+  if (filters?.etatTransit) params.append("etat_transit", filters.etatTransit);
+  if (filters?.etatTransitDebut) params.append("etat_transit_debut", dateToISO(filters.etatTransitDebut));
+  if (filters?.etatTransitFin) params.append("etat_transit_fin", dateToISO(filters.etatTransitFin));
+
+  const url = `/entite/${entiteId}/documents?${params.toString()}`;
 
   try {
     return await $fetch<DocumentPaginate>(url, {
@@ -17,46 +31,6 @@ export const fetchDocumentsPage = async (
     });
   } catch (e) {
     console.error("fetchDocumentsPage error", e);
-    throw e;
-  }
-};
-
-export const fetchDocument = async (
-  entiteId: number,
-  documentId: string,
-  token: string
-): Promise<DocumentDetail> => {
-  const config = useRuntimeConfig();
-  const url = `/entite/${entiteId}/document/${documentId}`;
-
-  try {
-    const doc: DocumentDetail = await $fetch<DocumentDetail>(url, {
-      baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    console.log("[DocumentDetail]", JSON.stringify(doc, null, 2));
-    return doc;
-  } catch (e) {
-    console.error("fetchDocument error", e);
-    throw e;
-  }
-};
-
-export const fetchDocumentJournal = async (
-  entiteId: number,
-  documentId: string,
-  token: string
-): Promise<Journal> => {
-  const config = useRuntimeConfig();
-  const url = `/entite/${entiteId}/document/${documentId}/journal`;
-
-  try {
-    return await $fetch<Journal>(url, {
-      baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${token}` },
-    });
-  } catch (e) {
-    console.error("fetchDocumentJournal error", e);
     throw e;
   }
 };

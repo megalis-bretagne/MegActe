@@ -1,34 +1,26 @@
-export const ITEMS_PER_PAGE = 20;
+export const ITEMS_PER_PAGE = 10;
 
 export const useDocuments = (
   entiteId: Ref<number | null>,
   idFlux: Ref<string | null>,
   page: Ref<number>,
   search: Ref<string>,
-  limit: Ref<number> = ref(ITEMS_PER_PAGE)
+  limit: Ref<number> = ref(ITEMS_PER_PAGE),
+  filters: Ref<AdvancedFilters> = ref({})
 ) => {
   const { data: user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Mémorisé après le premier chargement normal
-  const knownTotal = ref(0);
-
-  const isSearching = computed(() => !!search.value.trim());
-
-  // En recherche : tout fetcher en une requête ; sinon pagination normale
-  const effectiveOffset = computed(() =>
-    isSearching.value ? 0 : (page.value - 1) * limit.value
-  );
-  const effectiveLimit = computed(() =>
-    isSearching.value ? knownTotal.value || limit.value : limit.value
-  );
+  const offset = computed(() => (page.value - 1) * limit.value);
 
   const queryKey = computed(() => [
     "documents",
     entiteId.value,
     idFlux.value ?? null,
-    effectiveOffset.value,
-    effectiveLimit.value,
+    offset.value,
+    limit.value,
+    search.value,
+    toRaw(filters.value),
   ]);
 
   const { data, isFetching, isError, error } = useQuery({
@@ -37,9 +29,11 @@ export const useDocuments = (
       fetchDocumentsPage(
         entiteId.value!,
         idFlux.value ?? null,
-        effectiveOffset.value,
-        effectiveLimit.value,
-        user.value?.accessToken
+        offset.value,
+        limit.value,
+        user.value?.accessToken,
+        search.value,
+        filters.value
       ),
     enabled: computed(() => !!entiteId.value && !!user.value?.accessToken),
     placeholderData: (prev) => prev,
@@ -50,39 +44,40 @@ export const useDocuments = (
     },
   });
 
-  const doPrefetch = (prefetchOffset: number, total: number) => {
-    if (!entiteId.value || !user.value?.accessToken) return;
-    if (prefetchOffset < 0 || prefetchOffset >= total) return;
-
-    const key = [
-      "documents",
-      entiteId.value,
-      idFlux.value ?? null,
-      prefetchOffset,
-      limit.value,
-    ];
-
-    queryClient.prefetchQuery({
-      queryKey: key,
-      queryFn: () =>
-        fetchDocumentsPage(
-          entiteId.value!,
-          idFlux.value ?? null,
-          prefetchOffset,
-          limit.value,
-          user.value?.accessToken
-        ),
-    });
-  };
-
+  // Précharge la page suivante en cache dès que la page courante est chargée
   watch(
     data,
     (d) => {
       const total = d?.pagination?.total ?? 0;
-      if (!total || isSearching.value) return;
-      knownTotal.value = total;
-      doPrefetch(effectiveOffset.value + limit.value, total);
-      doPrefetch(effectiveOffset.value - limit.value, total);
+      if (!total) return;
+
+      const nextOffset = offset.value + limit.value;
+      if (!entiteId.value || !user.value?.accessToken || nextOffset >= total) return;
+
+      const key = [
+        "documents",
+        entiteId.value,
+        idFlux.value ?? null,
+        nextOffset,
+        limit.value,
+        search.value,
+        toRaw(filters.value),
+      ];
+      if (queryClient.getQueryData(key)) return;
+
+      queryClient.prefetchQuery({
+        queryKey: key,
+        queryFn: () =>
+          fetchDocumentsPage(
+            entiteId.value!,
+            idFlux.value ?? null,
+            nextOffset,
+            limit.value,
+            user.value?.accessToken,
+            search.value,
+            filters.value
+          ),
+      });
     },
     { immediate: true }
   );

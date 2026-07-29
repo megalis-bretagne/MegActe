@@ -18,7 +18,12 @@ const STUDIO_TABS: TabConfig[] = [
       "autre_document_attache",
       "publication_open_data",
     ],
-    alwaysShow: ["acte_nature", "numero_de_lacte", "objet", "publication_open_data"],
+    alwaysShow: [
+      "acte_nature",
+      "numero_de_lacte",
+      "objet",
+      "publication_open_data",
+    ],
   },
   {
     id: "cheminement",
@@ -28,13 +33,19 @@ const STUDIO_TABS: TabConfig[] = [
   {
     id: "acte",
     label: "Acte",
-    fields: ["date_de_lacte", "classification", "type_piece_fichier", "document_papier"],
+    fields: [
+      "date_de_lacte",
+      "classification",
+      "type_piece_fichier",
+      "document_papier",
+    ],
     alwaysShow: ["document_papier"],
   },
   {
     id: "retour-tdt",
     label: "Retour Tdt",
-    condition: (data) => !!data.tedetis_transaction_id && data.has_bordereau === "1",
+    condition: (data) =>
+      !!data.tedetis_transaction_id && data.has_bordereau === "1",
     fields: [
       "tedetis_transaction_id",
       "bordereau",
@@ -87,7 +98,15 @@ const AUTRES_SANS_TDT_TABS: TabConfig[] = [
       "autre_document_attache",
       "publication_open_data",
     ],
-    alwaysShow: ["acte_nature", "nature_autre_detail", "numero_de_lacte", "objet", "date_de_lacte", "classification", "publication_open_data"],
+    alwaysShow: [
+      "acte_nature",
+      "nature_autre_detail",
+      "numero_de_lacte",
+      "objet",
+      "date_de_lacte",
+      "classification",
+      "publication_open_data",
+    ],
   },
   {
     id: "cheminement",

@@ -1,5 +1,18 @@
 <script setup lang="ts">
-const { data } = useAuth();
+const { data, signOut } = useAuth();
+
+const userMenu = ref();
+const userMenuItems = [
+  {
+    label: "Se déconnecter",
+    icon: "pi pi-sign-out",
+    command: () => signOut({ callbackUrl: "/" }),
+  },
+];
+
+function toggleUserMenu(event: Event) {
+  userMenu.value?.toggle(event);
+}
 </script>
 
 <template>
@@ -34,13 +47,20 @@ const { data } = useAuth();
 
         <!-- Right side: User Avatar -->
         <div class="flex items-center flex-shrink-0">
-          <span
-            v-if="data?.user?.name"
-            class="text-sm text-gray-600 hidden md:inline mr-2"
+          <button
+              type="button"
+              class="flex items-center cursor-pointer bg-transparent border-0"
+              @click="toggleUserMenu"
           >
-            {{ data.user.name }}
-          </span>
-          <Avatar :label="data?.user?.name?.charAt(0)" />
+            <span
+              v-if="data?.user?.name"
+              class="text-sm text-gray-600 hidden md:inline mr-2"
+            >
+              {{ data.user.name }}
+            </span>
+            <Avatar :label="data?.user?.name?.charAt(0)" />
+          </button>
+          <Menu ref="userMenu" :model="userMenuItems" :popup="true" />
         </div>
       </div>
     </div>

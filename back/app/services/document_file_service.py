@@ -117,6 +117,7 @@ class DocumentFileService(BaseService):
             f"entite/{entite_id}/document",
             query_params={"type": flux_type, "limit": 1},
         )
+        borrowed = bool(docs)
         if docs:
             doc_id = docs[0]["id_d"]
         else:
@@ -135,7 +136,14 @@ class DocumentFileService(BaseService):
                 f"/entite/{entite_id}/document", data={"type": flux_type}
             )
             doc_id = response["info"]["id_d"]
+            borrowed = False
             result = self.get_external_data(entite_id, doc_id, element_id, _allow_fallback=False)
+
+        if borrowed and element_id == "type_piece" and isinstance(result, dict) and "pieces" in result:
+            # `pieces` provient d'un document emprunté, sans rapport avec le document
+            # qu'on est en train de créer : on ne renvoie pas ce champ ici pour éviter
+            # que les appelants ne s'en servent comme s'il reflétait leurs propres fichiers.
+            result = {**result, "pieces": []}
 
         _external_data_cache[cache_key] = result
         return result
@@ -238,6 +246,7 @@ class DocumentFileService(BaseService):
         document_id: str,
         element_id: str,
         file_name: str,
+        file_index: int | None = None,
     ):
         """Récupère un fichier spécifique par son nom depuis Pastell.
 
@@ -246,16 +255,17 @@ class DocumentFileService(BaseService):
             document_id (str): L'ID du document.
             element_id (str): L'ID de l'élément auquel le fichier est associé.
             file_name (str): Le nom du fichier à récupérer.
+            file_index (int | None): Position déjà connue du fichier, pour éviter un fetch en plus.
 
         Returns:
             Response: La réponse de l'API Pastell contenant le fichier.
         """
-        existing_files = self.get_existing_files(entite_id, document_id, element_id)
-
-        try:
-            file_index = existing_files.index(file_name)
-        except ValueError:
-            raise HTTPException(status_code=404, detail="File not found")
+        if file_index is None:
+            existing_files = self.get_existing_files(entite_id, document_id, element_id)
+            try:
+                file_index = existing_files.index(file_name)
+            except ValueError:
+                raise HTTPException(status_code=404, detail="File not found")
 
         response = self.api_pastell.perform_get(
             f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_index}"

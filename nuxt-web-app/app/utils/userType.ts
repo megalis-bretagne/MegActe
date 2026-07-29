@@ -21,7 +21,7 @@ export type EntiteNode = {
 
 export type pastellUser = {
   user_info: pastellUserInfo;
-  entites: EntiteNode;
+  entites: EntiteNode[];
 };
 
 export type userSession = {

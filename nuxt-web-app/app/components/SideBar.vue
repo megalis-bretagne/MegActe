@@ -2,7 +2,6 @@
 const selectedFlux = useSelectedFlux();
 
 const { data: fluxList } = await useFetch("/api/user/flux");
-console.log("fluxList: ", fluxList.value);
 
 const fluxItems = computed(() => {
   return Object.entries(fluxList.value)
@@ -10,6 +9,7 @@ const fluxItems = computed(() => {
     .sort((a, b) => a.nom.localeCompare(b.nom));
 });
 </script>
+
 <template>
   <aside class="w-64 shrink-0 bg-white border-r border-gray-200 min-h-screen">
     <!-- Tous les documents -->

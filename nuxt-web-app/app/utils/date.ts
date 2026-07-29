@@ -1,3 +1,5 @@
+export const dateToISO = (d: Date): string => d.toISOString().split("T")[0];
+
 export const formatDate = (d: string) => {
   if (!d) return "—";
   return new Date(d).toLocaleString("fr-FR", {

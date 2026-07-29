@@ -1,4 +1,8 @@
-from ..clients.pastell.exeptions import ApiPastellHttpForbidden
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from pydantic import ValidationError
+
+from ..clients.pastell.exeptions import ApiError, ApiPastellHttpForbidden
 from ..schemas.flux_action import FluxAction
 from ..services.flux_action_service import FluxActionService
 from . import BaseService
@@ -9,6 +13,9 @@ from app.dependencies import get_settings
 
 
 logger = logging.getLogger(__name__)
+
+# Pool de threads partagé pour les appels Pastell parallélisés de ce module
+_EXECUTOR = ThreadPoolExecutor(max_workers=32)
 
 
 class DocumentService(BaseService):
@@ -40,25 +47,50 @@ class DocumentService(BaseService):
 
         document = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}")
 
-        for external_data in external_data_to_retrieve:
-            if external_data in document["data"]:
-                logger.debug(f"Récupération des informations de {external_data} pour le document {document_id}")
-                info = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}/file/{external_data}")
-                document["data"][external_data] = info.json()
+        # Les fichiers external_data et les actions du flux sont indépendants entre eux
+        # (les actions ne dépendent que du type de flux, déjà connu à ce stade) : on les
+        # récupère en parallèle plutôt que séquentiellement, pour ne payer qu'un seul
+        # aller-retour Pastell au lieu de jusqu'à 3 (2 external_data + 1 flux_action)
+        keys_to_fetch = [key for key in external_data_to_retrieve if key in document["data"]]
+
+        external_data_futures = {
+            key: _EXECUTOR.submit(
+                self.api_pastell.perform_get,
+                f"/entite/{entite_id}/document/{document_id}/file/{key}",
+            )
+            for key in keys_to_fetch
+        }
+        flux_action_future = _EXECUTOR.submit(self.flux_action_service.get_action_on_flux, document["info"]["type"])
+
+        for key, future in external_data_futures.items():
+            logger.debug(f"Récupération des informations de {key} pour le document {document_id}")
+            document["data"][key] = future.result().json()
+
+        try:
+            flux_action = flux_action_future.result()
+        except (ApiError, ValidationError):
+            # Type de flux obsolète/supprimé côté Pastell, ou réponse Pastell mal formée pour
+            # ce flux : on continue sans enrichissement plutôt que de faire échouer le détail
+            logger.warning(
+                "Impossible de récupérer les actions du flux '%s' (document %s), flux probablement obsolète ou réponse invalide",
+                document["info"]["type"],
+                document_id,
+            )
+            flux_action = None
 
         document = DocumentDetail(**document)
-        flux_action = self.flux_action_service.get_action_on_flux(document.info.type)
 
-        for action in document.action_possible:
-            if action.action in flux_action.actions:
-                action.message = flux_action.actions[action.action].name_action
+        if flux_action:
+            for action in document.action_possible:
+                if action.action in flux_action.actions:
+                    action.message = flux_action.actions[action.action].name_action
 
         return document
 
     def get_document_journal(self, entite_id: int, document_id: str) -> list:
         raw = self.api_pastell.perform_get(
             "journal",
-            query_params={"id_e": entite_id, "id_d": document_id, "limit": 500},
+            query_params={"id_e": entite_id, "id_d": document_id, "limit": 300},
         )
         entries = sorted(
             [e for e in raw if e.get("type") == "1"],
@@ -75,7 +107,15 @@ class DocumentService(BaseService):
                 e.status_code, detail="Can not create document", code=ErrorCode.MEGACTE_CREATE_DOCUMENT_NO_RIGHT
             )
 
-    def list_documents_paginate(self, id_e: int, doc_type=None, offset=0, limit=100, **kwargs) -> list[DocumentInfo]:
+    def list_documents_paginate(
+        self,
+        id_e: int,
+        doc_type=None,
+        offset=0,
+        limit=100,
+        search: str | None = None,
+        **kwargs,
+    ) -> list[DocumentInfo]:
         """Retourne la liste des documents paginer
 
         Args:
@@ -84,6 +124,7 @@ class DocumentService(BaseService):
             doc_type (str | None) : le type de flux
             offset (int, optional): Décalage à partir duquel récupérer les documents (par défaut est 0).
             limit (int, optional): Nombre maximum de documents à récupérer par page (par défaut est 100).
+            search (str | None) : filtre sur l'objet du document (paramètre Pastell "search")
             **kwargs: Autres paramètres de requête facultatifs à passer à l'API.
 
         Returns:
@@ -97,18 +138,38 @@ class DocumentService(BaseService):
         # Dictionnaire pour renommer les clés
         if doc_type:
             query_param["type"] = doc_type
+        if search:
+            query_param["search"] = search
 
         query_param.update(kwargs)
-        documents = []
 
         list_documents = self.api_pastell.perform_get(f"entite/{id_e}/document", query_params=query_param)
-        flux_action = None
         final_state = get_settings().document.final_state
-        if doc_type is not None:
-            flux_action = self.flux_action_service.get_action_on_flux(doc_type)
+
+        def _fetch_flux_action(type_flux: str) -> FluxAction | None:
+            try:
+                return self.flux_action_service.get_action_on_flux(type_flux)
+            except (ApiError, ValidationError):
+                # Flux obsolète ou réponse invalide : on continue sans enrichissement
+                logger.warning(
+                    "Impossible de récupérer les actions du flux '%s', flux probablement obsolète ou réponse invalide",
+                    type_flux,
+                )
+                return None
+
+        # Cache des FluxAction par type de flux, récupérés en parallèle
+        unique_types = {doc["type"] for doc in list_documents if doc.get("type")}
+        flux_action_cache: dict[str, FluxAction | None] = {}
+        if unique_types:
+            futures = {_EXECUTOR.submit(_fetch_flux_action, type_flux): type_flux for type_flux in unique_types}
+            for future in as_completed(futures):
+                flux_action_cache[futures[future]] = future.result()
+
+        documents: list[DocumentInfo] = []
 
         for doc in list_documents:
             document_info = DocumentInfo(**doc)
+            flux_action = flux_action_cache.get(document_info.type)
             if (
                 document_info.last_action not in final_state  # si l'état courant n'est pas un état finale
                 and flux_action  # si le flux est non vide

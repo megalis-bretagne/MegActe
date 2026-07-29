@@ -29,7 +29,7 @@ interface DocumentActionDetails {
   action_possible: ActionPossible[];
 }
 
-interface DocumentInfo extends BaseDocumentInfo, DocumentActionDetails {
+export interface DocumentInfo extends BaseDocumentInfo, DocumentActionDetails {
   id_e: string;
   role: string;
   siren: string;
@@ -45,6 +45,16 @@ export interface DocumentPaginate {
     next: string;
     prev: string;
   } | null;
+}
+
+// Filtres avancés
+export interface AdvancedFilters {
+  etat?: string | null;
+  etatDebut?: Date | null;
+  etatFin?: Date | null;
+  etatTransit?: string | null;
+  etatTransitDebut?: Date | null;
+  etatTransitFin?: Date | null;
 }
 
 interface TypePieceFichier {

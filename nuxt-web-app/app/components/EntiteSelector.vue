@@ -2,57 +2,82 @@
 const user = usePastellUser();
 const selectedEntiteId = useSelectedEntiteId();
 
-const rootEntity = computed<EntiteNode | null>(
-  () => user.value?.entites?.[0] ?? null
-);
-const childrenEntities = computed(() => rootEntity.value?.child ?? []);
-const selectedChild = ref<EntiteNode | null>(null);
+type TreeNode = {
+  key: string;
+  label: string;
+  children: TreeNode[];
+};
 
-// Dès que la rootEntity est disponible (ou change), on reset la sélection des childrenEntities à null
-// et on pose l'id actif sur la rootEntity par défaut
-watch(
-  rootEntity,
-  (r) => {
-    selectedChild.value = null;
-    if (r) selectedEntiteId.value = r.id_e;
-  },
-  { immediate: true }
+// Convertit une entité Pastell (id_e, denomination, child) en noeud attendu par le TreeSelect (key, label, children)
+function toTreeNode(node: EntiteNode): TreeNode {
+  return {
+    key: String(node.id_e),
+    label: node.denomination,
+    children: (node.child ?? []).map(toTreeNode),
+  };
+}
+
+// Liste des entités de l'utilisateur, converties au format attendu par le TreeSelect
+const treeNodes = computed<TreeNode[]>(() =>
+    (user.value?.entites ?? []).map(toTreeNode),
 );
 
-// Choix d'une fille -> id actif = id de la fille, sinon on revient à la rootEntity
-watch(selectedChild, (child) => {
-  selectedEntiteId.value = child
-    ? child.id_e
-    : (rootEntity.value?.id_e ?? null);
+// Entité choisie manuellement par l'utilisateur (null si aucune sélection manuelle)
+const manuelKey = ref<string | null>(null);
+
+watch(treeNodes, () => {
+  manuelKey.value = null;
 });
+
+const effectiveKey = computed(
+    () => manuelKey.value ?? treeNodes.value[0]?.key ?? null,
+);
+
+// Le TreeSelect attend un objet { key: true }, on le construit à partir de effectiveKey
+const selectedKeys = computed<Record<string, boolean>>({
+  get: () => (effectiveKey.value ? { [effectiveKey.value]: true } : {}),
+  set: (keys) => {
+    manuelKey.value = Object.keys(keys)[0] ?? null;
+  },
+});
+
+// Dès que l'entité sélectionnée change, on la passe dans le state global de l'app
+watch(
+    effectiveKey,
+    (key) => {
+      selectedEntiteId.value = key ? Number(key) : null;
+    },
+    { immediate: true },
+);
+
+// DEBUG temporaire
+watch(
+  [user, treeNodes, effectiveKey, selectedEntiteId],
+  ([u, nodes, key, id]) => {
+    console.log("[EntiteSelector] user=", u, "treeNodes=", nodes, "effectiveKey=", key, "selectedEntiteId=", id);
+  },
+  { immediate: true, deep: true },
+);
 </script>
 
 <template>
   <div class="flex items-center gap-2">
-    <template v-if="rootEntity">
-      <span class="text-sm font-medium text-gray-900">{{
-        rootEntity.denomination
-      }}</span>
-
-      <template v-if="childrenEntities.length">
-        <span class="text-gray-400 font-light text-lg">/</span>
-        <Select
-          v-model="selectedChild"
-          :options="childrenEntities"
-          option-label="denomination"
-          placeholder="Sélectionner une entité fille"
-          show-clear
-          class="text-sm"
-          :pt="{ root: { style: 'min-width: max-content' } }"
-        />
-      </template>
-    </template>
-
+    <TreeSelect
+        v-if="treeNodes.length"
+        v-model="selectedKeys"
+        :options="treeNodes"
+        selection-mode="single"
+        filter
+        filter-placeholder="Rechercher une entité"
+        placeholder="Sélectionner une entité"
+        class="text-sm"
+        :pt="{
+        root: { style: 'min-width: 16rem' },
+        transition: { css: false },
+      }"
+    />
     <template v-else>
-      <Skeleton width="10rem" height="2rem" border-radius="6px" />
-      <span class="text-gray-300">/</span>
-      <Skeleton width="14rem" height="2rem" border-radius="6px" />
+      <Skeleton width="16rem" height="2rem" border-radius="6px" />
     </template>
   </div>
 </template>
-
