@@ -15,5 +15,5 @@ mode=${1:---prod}
 if [ $mode = "--dev" ]; then
   alembic upgrade head && fastapi run app/main.py --reload --port 8080
 else
-  fastapi run app/main.py --port 8080
+  fastapi run app/main.py --port 80
 fi
