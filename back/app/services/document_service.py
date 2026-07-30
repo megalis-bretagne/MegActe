@@ -29,7 +29,7 @@ class DocumentService(BaseService):
         super().__init__(api)
         self.flux_action_service = flux_action_service
 
-    def get_single_document(self, entite_id: int, document_id: str):
+    def get_single_document(self, entite_id: int, document_id: str, type_flux: str | None = None):
         """Récupère les infos d'un document dans Pastell.
 
         Args:
@@ -37,6 +37,8 @@ class DocumentService(BaseService):
             document_id (str): L'ID du document à récupérer.
             user (UserPastell): L'utilisateur pour lequel le document doit être récupéré.
             external_data_to_retrieve (list[str]) : liste des external Data a récupérer
+            type_flux (str | None) : type de flux déjà connu du front, pour lancer flux_action
+                en parallèle du fetch du document (revérifié après coup, ignoré si erroné)
 
         Returns:
             dict: Les détails du document récupéré.
@@ -45,10 +47,14 @@ class DocumentService(BaseService):
         if external_data_to_retrieve is None:
             external_data_to_retrieve = []
 
-        document = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}")
+        document_future = _EXECUTOR.submit(self.api_pastell.perform_get, f"/entite/{entite_id}/document/{document_id}")
+        hinted_flux_action_future = (
+            _EXECUTOR.submit(self.flux_action_service.get_action_on_flux, type_flux) if type_flux else None
+        )
 
-        # Les fichiers external_data et les actions du flux sont indépendants entre eux
-        # (les actions ne dépendent que du type de flux, déjà connu à ce stade) : on les
+        document = document_future.result()
+
+        # Les fichiers external_data et les actions du flux sont indépendants entre eux : on les
         # récupère en parallèle plutôt que séquentiellement, pour ne payer qu'un seul
         # aller-retour Pastell au lieu de jusqu'à 3 (2 external_data + 1 flux_action)
         keys_to_fetch = [key for key in external_data_to_retrieve if key in document["data"]]
@@ -60,7 +66,11 @@ class DocumentService(BaseService):
             )
             for key in keys_to_fetch
         }
-        flux_action_future = _EXECUTOR.submit(self.flux_action_service.get_action_on_flux, document["info"]["type"])
+        # Indice front valide : on garde le fetch déjà en vol, sinon on relance avec le vrai type
+        if type_flux == document["info"]["type"] and hinted_flux_action_future is not None:
+            flux_action_future = hinted_flux_action_future
+        else:
+            flux_action_future = _EXECUTOR.submit(self.flux_action_service.get_action_on_flux, document["info"]["type"])
 
         for key, future in external_data_futures.items():
             logger.debug(f"Récupération des informations de {key} pour le document {document_id}")
@@ -146,6 +156,11 @@ class DocumentService(BaseService):
         list_documents = self.api_pastell.perform_get(f"entite/{id_e}/document", query_params=query_param)
         final_state = get_settings().document.final_state
 
+        documents: list[DocumentInfo] = [DocumentInfo(**doc) for doc in list_documents]
+
+        def _needs_enrichment(document_info: DocumentInfo) -> bool:
+            return document_info.last_action not in final_state and not document_info.action_possible
+
         def _fetch_flux_action(type_flux: str) -> FluxAction | None:
             try:
                 return self.flux_action_service.get_action_on_flux(type_flux)
@@ -157,18 +172,17 @@ class DocumentService(BaseService):
                 )
                 return None
 
-        # Cache des FluxAction par type de flux, récupérés en parallèle
-        unique_types = {doc["type"] for doc in list_documents if doc.get("type")}
+        # Cache des FluxAction par type de flux, récupérés en parallèle. On ne le fait que pour
+        # les types dont au moins un document a réellement besoin de l'enrichissement (état non
+        # final) : inutile d'aller chercher /flux/{type}/action pour des documents déjà clos.
+        unique_types = {d.type for d in documents if d.type and _needs_enrichment(d)}
         flux_action_cache: dict[str, FluxAction | None] = {}
         if unique_types:
             futures = {_EXECUTOR.submit(_fetch_flux_action, type_flux): type_flux for type_flux in unique_types}
             for future in as_completed(futures):
                 flux_action_cache[futures[future]] = future.result()
 
-        documents: list[DocumentInfo] = []
-
-        for doc in list_documents:
-            document_info = DocumentInfo(**doc)
+        for document_info in documents:
             flux_action = flux_action_cache.get(document_info.type)
             if (
                 document_info.last_action not in final_state  # si l'état courant n'est pas un état finale
@@ -179,7 +193,6 @@ class DocumentService(BaseService):
             ):
                 document_info.action_possible = self._get_action_possible(flux_action, document_info.last_action)
                 document_info.last_action_message = flux_action.actions[document_info.last_action].name
-            documents.append(document_info)
 
         return documents
 

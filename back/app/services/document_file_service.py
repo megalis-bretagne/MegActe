@@ -153,6 +153,7 @@ class DocumentFileService(BaseService):
         entite_id: int,
         document_id: str,
         element_id: str,
+        type_flux: str | None = None,
         _allow_fallback: bool = True,
     ) -> dict:
         """Récupère les valeurs possibles pour un champ externalData dans Pastell.
@@ -161,12 +162,21 @@ class DocumentFileService(BaseService):
             entite_id (int): L'ID de l'entité.
             document_id (str): L'ID du document.
             element_id (str): L'ID de l'élément externalData.
+            type_flux (str | None) : type de flux déjà connu du front. Si fourni (et hors
+                type_piece, dont la réponse contient les fichiers propres à ce document),
+                réutilise le cache partagé avec get_external_data_by_flux_type.
             _allow_fallback: False quand appelé depuis get_external_data_by_flux_type pour éviter la récursion.
         Returns:
             dict: Les valeurs possibles pour l'élément externalData.
         """
+        cacheable = type_flux is not None and element_id != "type_piece"
+        cache_key = (entite_id, type_flux, element_id)
+        if cacheable and cache_key in _external_data_cache:
+            logger.debug(f"Cache hit externalData ({entite_id}, {type_flux}, {element_id})")
+            return _external_data_cache[cache_key]
+
         try:
-            return self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}")
+            result = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}")
         except (ApiPastellHttpForbidden, ApiPastellHttp40XError):
             if not _allow_fallback:
                 raise
@@ -178,6 +188,10 @@ class DocumentFileService(BaseService):
             if not flux_type:
                 raise
             return self.get_external_data_by_flux_type(entite_id, flux_type, element_id)
+
+        if cacheable:
+            _external_data_cache[cache_key] = result
+        return result
 
     def assign_file_typologie(
         self,

@@ -57,9 +57,13 @@ def update_document(
 def get_document(
     document_id: str,
     entite_id: int,
+    type_flux: Annotated[
+        str | None,
+        Query(description="Type de flux déjà connu du front, pour paralléliser le fetch des actions possibles"),
+    ] = None,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentService(client).get_single_document(entite_id, document_id)
+    return DocumentService(client).get_single_document(entite_id, document_id, type_flux=type_flux)
 
 
 # Journal doc
@@ -171,9 +175,13 @@ def get_external_data(
     entite_id: int,
     document_id: str,
     element_id: str,
+    type_flux: Annotated[
+        str | None,
+        Query(description="Type de flux déjà connu du front, pour réutiliser le cache par type de flux"),
+    ] = None,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentFileService(client).get_external_data(entite_id, document_id, element_id)
+    return DocumentFileService(client).get_external_data(entite_id, document_id, element_id, type_flux=type_flux)
 
 
 # Récupérer les valeurs pour un champ externalData (par type de flux, sans document_id)
