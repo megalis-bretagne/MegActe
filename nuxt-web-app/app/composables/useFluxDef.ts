@@ -42,12 +42,14 @@ export const useFluxDef = () => {
       }
       return result;
     } catch {
+      // Cache mémoire même en échec pour éviter de re-fetcher un flux qui 404 en permanence
+      fluxDefCache.value[type] = {};
       return null;
     }
   };
 
-  const fluxDefFor = (type: string): FluxDetails | null =>
-    fluxDefCache.value[type] ?? null;
+  const fluxDefFor = (type: string): FluxDetails =>
+    fluxDefCache.value[type] ?? {};
 
   return { getFluxDef, fluxDefFor };
 };

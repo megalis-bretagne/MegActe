@@ -12,22 +12,33 @@ const entiteId = useSelectedEntiteId();
 // ── Fetch document ────────────────────────────────────────────────────────────
 async function fetchDocument() {
   const url = `/entite/${entiteId.value}/document/${props.idD}`;
+  const query = props.fluxType ? { type_flux: props.fluxType } : undefined;
   try {
     return await $fetch<any>(url, {
       baseURL: config.public.apiBaseUrl,
       headers: { Authorization: `Bearer ${user.value?.accessToken}` },
+      query,
     });
   } catch (e: any) {
     if (e?.status === 403) {
       const newToken = await tryRefreshToken();
-      if (newToken)
+      if (newToken) {
         return await $fetch<any>(url, {
           baseURL: config.public.apiBaseUrl,
           headers: { Authorization: `Bearer ${newToken}` },
+          query,
         });
+      }
     }
     throw e;
   }
+}
+
+// Pas de retry sur 4xx (erreur définitive, pas transitoire)
+function retryUnlessClientError(failureCount: number, error: any): boolean {
+  const status = error?.status ?? error?.response?.status;
+  if (status && status >= 400 && status < 500) return false;
+  return failureCount < 1;
 }
 
 const { data: doc, isPending, error } = useQuery({
@@ -36,6 +47,7 @@ const { data: doc, isPending, error } = useQuery({
   enabled: computed(() => !!user.value?.accessToken),
   staleTime: 30_000,
   placeholderData: (prev) => prev,
+  retry: retryUnlessClientError,
 });
 
 // ── Fetch journal ─────────────────────────────────────────────────────────────
@@ -63,6 +75,7 @@ const { data: journalData, isPending: journalPending } = useQuery({
   },
   enabled: computed(() => !!user.value?.accessToken),
   staleTime: 5 * 60 * 1000,
+  retry: retryUnlessClientError,
 });
 
 // Type de flux effectif : celui passé en prop (dispo dès le mount, ex: venant

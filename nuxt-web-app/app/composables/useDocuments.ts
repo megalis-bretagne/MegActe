@@ -9,7 +9,6 @@ export const useDocuments = (
   filters: Ref<AdvancedFilters> = ref({})
 ) => {
   const { data: user } = useAuth();
-  const queryClient = useQueryClient();
 
   const offset = computed(() => (page.value - 1) * limit.value);
 
@@ -43,44 +42,6 @@ export const useDocuments = (
       return failurecount < 1;
     },
   });
-
-  // Précharge la page suivante en cache dès que la page courante est chargée
-  watch(
-    data,
-    (d) => {
-      const total = d?.pagination?.total ?? 0;
-      if (!total) return;
-
-      const nextOffset = offset.value + limit.value;
-      if (!entiteId.value || !user.value?.accessToken || nextOffset >= total) return;
-
-      const key = [
-        "documents",
-        entiteId.value,
-        idFlux.value ?? null,
-        nextOffset,
-        limit.value,
-        search.value,
-        toRaw(filters.value),
-      ];
-      if (queryClient.getQueryData(key)) return;
-
-      queryClient.prefetchQuery({
-        queryKey: key,
-        queryFn: () =>
-          fetchDocumentsPage(
-            entiteId.value!,
-            idFlux.value ?? null,
-            nextOffset,
-            limit.value,
-            user.value?.accessToken,
-            search.value,
-            filters.value
-          ),
-      });
-    },
-    { immediate: true }
-  );
 
   const documents = computed(() => data.value?.documents ?? []);
   const pagination = computed(() => data.value?.pagination ?? null);

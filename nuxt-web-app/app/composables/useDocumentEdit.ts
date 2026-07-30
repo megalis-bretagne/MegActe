@@ -17,11 +17,18 @@ export function useDocumentEdit(props: { entiteId: number; idD: string; fluxType
             return await $fetch<any>(`/entite/${props.entiteId}/document/${props.idD}`, {
                 baseURL: config.public.apiBaseUrl,
                 headers: authHeaders.value,
+                query: props.fluxType ? { type_flux: props.fluxType } : undefined,
             });
         },
         enabled: computed(() => !isNew.value && !!user.value?.accessToken),
         staleTime: 30000,
         placeholderData: (prev) => prev,
+        // Pas de retry sur 4xx (erreur définitive, pas transitoire)
+        retry: (failureCount, error: any) => {
+            const status = error?.status ?? error?.response?.status;
+            if (status && status >= 400 && status < 500) return false;
+            return failureCount < 1;
+        },
     });
 
     const fluxDef = computed(() => {
@@ -221,9 +228,11 @@ export function useDocumentEdit(props: { entiteId: number; idD: string; fluxType
                 const externalDataUrl = docId
                     ? `/entite/${props.entiteId}/document/${docId}/externalData/${fieldKey}`
                     : `/entite/${props.entiteId}/flux/${props.fluxType ?? ""}/externalData/${fieldKey}`;
+                // type_flux : permet au backend de réutiliser le cache par type de flux
                 const data = await $fetch<Record<string, boolean>>(externalDataUrl, {
                     baseURL: config.public.apiBaseUrl,
                     headers: authHeaders.value,
+                    query: docId && props.fluxType ? { type_flux: props.fluxType } : undefined,
                 });
                 externalDataCache.value[fieldKey] = data;
             } catch (e: any) {

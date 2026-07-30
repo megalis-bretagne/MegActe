@@ -24,12 +24,19 @@ export const fetchDocumentsPage = async (
 
   const url = `/entite/${entiteId}/documents?${params.toString()}`;
 
-  try {
-    return await $fetch<DocumentPaginate>(url, {
+  const doFetch = (authToken: string) =>
+    $fetch<DocumentPaginate>(url, {
       baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${authToken}` },
     });
-  } catch (e) {
+
+  try {
+    return await doFetch(token);
+  } catch (e: any) {
+    if (e?.status === 403) {
+      const newToken = await tryRefreshToken();
+      if (newToken) return await doFetch(newToken);
+    }
     console.error("fetchDocumentsPage error", e);
     throw e;
   }

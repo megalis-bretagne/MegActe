@@ -32,7 +32,9 @@ export function useBatchDocuments(
         return actions;
     }
 
-    const canBatchSelect = (doc: DocumentInfo) => getBatchableActions(doc).length > 0;
+    // Un document "terminé" n'a plus aucune action de lot pertinente (même dupliquer n'a
+    // pas de sens une fois le workflow clos) : pas de case à cocher pour lui.
+    const canBatchSelect = (doc: DocumentInfo) => doc.last_action !== "termine" && getBatchableActions(doc).length > 0;
     const isSelected = (doc: DocumentInfo) => selectedIds.value.has(doc.id_d);
 
     // ajoute/retire un id du Set

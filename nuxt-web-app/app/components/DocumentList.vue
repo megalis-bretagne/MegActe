@@ -12,21 +12,32 @@ const queryClient = useQueryClient();
 // entiteId n'est pas toujours prêt à ce stade (dépend du middleware/de l'utilisateur) : on ne
 // tente le seed SSR que s'il est valide, sinon useDocuments fera un fetch client normal une
 // fois entiteId/user disponibles (cf. son `enabled`).
-if (entiteId.value) {
+// Uniquement côté serveur : en navigation client, useDocuments gère déjà l'affichage seul.
+if (import.meta.server && entiteId.value) {
+  const initialSearch =
+    typeof route.query.search === "string" ? route.query.search : "";
+  const initialRows = Number(route.query.rows) || ITEMS_PER_PAGE;
+
   const { data: firstPage } = await useFetch("/api/documents/firstpage", {
     params: {
       entiteId: entiteId.value,
       idFlux: selectedFlux.value,
-      docsPerPage: ITEMS_PER_PAGE,
+      docsPerPage: initialRows,
     },
   });
 
-  // Seed ponctuel du cache pour la clé exacte du premier chargement (évite un fetch en double
-  // juste après le rendu SSR). Contrairement à `initialData`, ça ne reste pas branché sur les
-  // clés suivantes : changer de flux repart bien sur un vrai fetch, pas sur cette donnée figée.
-  if (firstPage.value) {
+  // pour la 1ère page
+  if (firstPage.value && !initialSearch) {
     queryClient.setQueryData(
-      ["documents", entiteId.value, selectedFlux.value ?? null, 0, ITEMS_PER_PAGE],
+      [
+        "documents",
+        entiteId.value,
+        selectedFlux.value ?? null,
+        0,
+        initialRows,
+        initialSearch,
+        {},
+      ],
       firstPage.value
     );
   }
@@ -41,8 +52,6 @@ async function createDoc() {
 }
 
 function openDoc(doc: any) {
-  // Seed optimiste du cache détail à partir de ce qu'on connaît déjà dans la liste,
-  // pour éviter un écran de chargement vide en arrivant sur la fiche
   queryClient.setQueryData(["document", doc.id_e, doc.id_d], {
     info: {
       id_d: doc.id_d,
@@ -156,6 +165,7 @@ const {
   someSelected,
   availableActions,
   actionLoading,
+  canBatchSelect,
   isSelected,
   toggleSelect,
   toggleSelectAll,
@@ -184,7 +194,7 @@ watch([pageActive, search, rowsPerPage], ([page, s, rows]) => {
   });
 });
 
-// Avec un filtre actif, le total renvoyé par le backend n'est qu'une estimation (cf. entite.py)
+// Pas de total fiable côté Pastell avec un filtre actif : pagination Précédent/Suivant seule.
 const hasActiveFilter = computed(() => {
   const f = advancedFilters.value;
   return (
@@ -206,14 +216,6 @@ function onChangePage(p: number) {
         {{ selectedFlux ? `Liste des ${selectedFlux}` : "Liste des documents" }}
       </h1>
       <div class="flex items-center gap-3">
-        <Button
-          v-if="selectedFlux"
-          label="Créer un document"
-          icon="pi pi-plus"
-          severity="secondary"
-          class="shrink-0"
-          @click="createDoc"
-        />
         <Button
           :icon="showAdvanced ? 'pi pi-filter-slash' : 'pi pi-filter'"
           :label="showAdvanced ? 'Masquer' : 'Filtres avancés'"
@@ -389,6 +391,7 @@ function onChangePage(p: number) {
             </template>
             <template #body="{ data: doc }">
               <Checkbox
+                v-if="canBatchSelect(doc)"
                 :model-value="isSelected(doc)"
                 binary
                 @update:model-value="(checked: boolean) => toggleSelect(doc, checked)"
@@ -494,18 +497,39 @@ function onChangePage(p: number) {
 
         <!-- Pagination -->
         <div class="flex justify-center mt-2">
+          <div v-if="hasActiveFilter && (pagination?.total ?? 0) > 0" class="flex items-center gap-3">
+            <Button
+              icon="pi pi-chevron-left"
+              text
+              rounded
+              severity="secondary"
+              :disabled="pageActive <= 1"
+              @click="onChangePage(pageActive - 1)"
+            />
+            <span class="text-sm text-gray-600">Page {{ pageActive }}</span>
+            <Button
+              icon="pi pi-chevron-right"
+              text
+              rounded
+              severity="secondary"
+              :disabled="!pagination?.next"
+              @click="onChangePage(pageActive + 1)"
+            />
+            <Select
+              v-model="rowsPerPage"
+              :options="[5, 10, 20, 50]"
+              class="w-24 text-sm"
+            />
+          </div>
+
           <Paginator
-            v-if="(pagination?.total ?? 0) > 0"
+            v-else-if="(pagination?.total ?? 0) > 0"
             :rows="rowsPerPage"
             :total-records="pagination?.total ?? 0"
             :first="(pageActive - 1) * rowsPerPage"
             :rows-per-page-options="[5, 10, 20, 50]"
-            :template="
-              hasActiveFilter
-                ? 'PrevPageLink CurrentPageReport NextPageLink RowsPerPageDropdown'
-                : 'FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown'
-            "
-            :current-page-report-template="hasActiveFilter ? 'Page {currentPage}' : '{first} - {last} of {totalRecords}'"
+            template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+            current-page-report-template="{first} - {last} of {totalRecords}"
             @page="
               (e) => {
                 rowsPerPage = e.rows;

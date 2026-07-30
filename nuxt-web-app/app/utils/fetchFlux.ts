@@ -29,7 +29,6 @@ export async function fetchFluxDetails(
       headers: {
         Authorization: `Bearer ${token}`,
       },
-      timeout: 1000,
     });
     return fluxDetails;
   } catch (error) {

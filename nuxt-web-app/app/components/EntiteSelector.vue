@@ -50,14 +50,19 @@ watch(
     { immediate: true },
 );
 
-// DEBUG temporaire
-watch(
-  [user, treeNodes, effectiveKey, selectedEntiteId],
-  ([u, nodes, key, id]) => {
-    console.log("[EntiteSelector] user=", u, "treeNodes=", nodes, "effectiveKey=", key, "selectedEntiteId=", id);
-  },
-  { immediate: true, deep: true },
-);
+// Réapplique le scroll vers l'entité sélectionnée à chaque frame pendant l'ouverture, pour
+// contrer le focus interne de PrimeVue qui remonte sinon la liste tout en haut.
+function onBeforeShow() {
+  let framesLeft = 20;
+  function tick() {
+    document
+        .querySelector('[data-p-selected="true"]')
+        ?.scrollIntoView({ block: "nearest", inline: "start" });
+    framesLeft -= 1;
+    if (framesLeft > 0) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
 </script>
 
 <template>
@@ -73,8 +78,8 @@ watch(
         class="text-sm"
         :pt="{
         root: { style: 'min-width: 16rem' },
-        transition: { css: false },
       }"
+        @before-show="onBeforeShow"
     />
     <template v-else>
       <Skeleton width="16rem" height="2rem" border-radius="6px" />
