@@ -28,7 +28,6 @@ export default defineNuxtConfig({
     globalAppMiddleware: true,
     disableServerSideAuth: false,
     originEnvKey: "AUTH_ORIGIN",
-    baseURL: "/auth",
     provider: {
       type: "authjs",
       trustHost: false,
@@ -36,7 +35,7 @@ export default defineNuxtConfig({
       addDefaultCallbackUrl: true,
     },
     sessionRefresh: {
-      enablePeriodically: 30000,
+      enablePeriodically: 1000,
       enableOnWindowFocus: true,
     },
   },
