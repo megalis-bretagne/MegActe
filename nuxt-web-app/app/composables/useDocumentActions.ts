@@ -4,11 +4,11 @@ import { ref, type Ref } from "vue";
 const ACTION_POLL_DELAYS_MS = [300, 600, 1000, 1500, 2000, 3000];
 
 export function useDocumentActions(
-    entiteId: Ref<number>,
-    idD: Ref<string>,
-    effectiveFluxType: Ref<string | undefined>,
-    doc: Ref<any>,
-    fetchDocument: () => Promise<any>,
+  entiteId: Ref<number>,
+  idD: Ref<string>,
+  effectiveFluxType: Ref<string | undefined>,
+  doc: Ref<any>,
+  fetchDocument: () => Promise<any>
 ) {
   const config = useRuntimeConfig();
   const { data: user } = useAuth();
@@ -17,7 +17,9 @@ export function useDocumentActions(
   const actionLoading = ref<string | null>(null);
   const actionError = ref<string | null>(null);
 
-  async function waitForActionSync(previousState: string | undefined): Promise<boolean> {
+  async function waitForActionSync(
+    previousState: string | undefined
+  ): Promise<boolean> {
     let changed = false;
     let lastSeen = previousState;
     for (const delay of ACTION_POLL_DELAYS_MS) {
@@ -41,14 +43,19 @@ export function useDocumentActions(
   }
 
   const { mutateAsync: performAction } = useMutation({
-    mutationFn: async ({ action: actionName }: { action: string; previousState: string | undefined }) => {
+    mutationFn: async ({
+      action: actionName,
+    }: {
+      action: string;
+      previousState: string | undefined;
+    }) => {
       const doFetch = (token: string) =>
-          $fetch(`/entite/${entiteId.value}/documents/perform_action`, {
-            method: "POST",
-            baseURL: config.public.apiBaseUrl,
-            headers: { Authorization: `Bearer ${token}` },
-            body: { document_ids: idD.value, action: actionName },
-          });
+        $fetch(`/entite/${entiteId.value}/documents/perform_action`, {
+          method: "POST",
+          baseURL: config.public.apiBaseUrl,
+          headers: { Authorization: `Bearer ${token}` },
+          body: { document_ids: idD.value, action: actionName },
+        });
       try {
         await doFetch(user.value?.accessToken);
       } catch (e: any) {
@@ -74,7 +81,7 @@ export function useDocumentActions(
   async function runAction(action: { action: string; message: string }) {
     if (action.action === "modification") {
       navigateTo(
-          `/org/${entiteId.value}/document/${idD.value}/edit?type=${effectiveFluxType.value ?? ""}`,
+        `/org/${entiteId.value}/document/${idD.value}/edit?type=${effectiveFluxType.value ?? ""}`
       );
       return;
     }
@@ -85,7 +92,8 @@ export function useDocumentActions(
     try {
       await performAction({ action: action.action, previousState });
     } catch (e: any) {
-      actionError.value = e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
+      actionError.value =
+        e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
     } finally {
       actionLoading.value = null;
     }

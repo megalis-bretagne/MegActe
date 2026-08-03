@@ -41,7 +41,11 @@ function retryUnlessClientError(failureCount: number, error: any): boolean {
   return failureCount < 1;
 }
 
-const { data: doc, isPending, error } = useQuery({
+const {
+  data: doc,
+  isPending,
+  error,
+} = useQuery({
   queryKey: computed(() => ["document", entiteId.value, props.idD]),
   queryFn: fetchDocument,
   enabled: computed(() => !!user.value?.accessToken),
@@ -82,7 +86,7 @@ const { data: journalData, isPending: journalPending } = useQuery({
 // d'edit.vue) sinon celui du document une fois chargé. Mutualisé ici pour ne
 // plus le recalculer séparément dans fluxDef / watch / tabs / activeTabFields / runAction.
 const effectiveFluxType = computed(
-  () => props.fluxType ?? doc.value?.info?.type,
+  () => props.fluxType ?? doc.value?.info?.type
 );
 
 const fluxDef = computed(() => {
@@ -99,7 +103,7 @@ watch(
   async ({ token, type }) => {
     if (token && type) await getFluxDef(type);
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 // ── Définition des onglets par flux ──────────────────────────────────────────
@@ -180,7 +184,7 @@ function getFilteredFields() {
         val !== null &&
         val !== "" &&
         val !== "[]" &&
-        !(Array.isArray(val) && val.length === 0),
+        !(Array.isArray(val) && val.length === 0)
     );
 }
 
@@ -189,7 +193,7 @@ const { actionLoading, actionError, runAction } = useDocumentActions(
   toRef(props, "idD"),
   effectiveFluxType,
   doc,
-  fetchDocument,
+  fetchDocument
 );
 
 const journalEntries = computed(() => journalData.value ?? []);

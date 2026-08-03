@@ -12,17 +12,39 @@ const formProps = reactive({
 
 const editState = useDocumentEdit(formProps);
 const {
-  doc, isPending, isNew, fluxDef, tabs, activeTab, tabFields,
-  formData, pendingFiles, onFileChange, removeFile, fetchWithRefresh,
-  externalDataLoading, showExternalDialog, externalDialogLabel,
-  externalDialogSearch, externalDialogTemp, filteredExternalOptions,
-  showTypePieceDialog, typePieceTypesList, typePieceItems,
-  openExternalDialog, confirmTypePieceSelection, toggleExternalOption,
-  externalDisplayValue
+  doc,
+  isPending,
+  isNew,
+  fluxDef,
+  tabs,
+  activeTab,
+  tabFields,
+  formData,
+  pendingFiles,
+  onFileChange,
+  removeFile,
+  fetchWithRefresh,
+  externalDataLoading,
+  showExternalDialog,
+  externalDialogLabel,
+  externalDialogSearch,
+  externalDialogTemp,
+  filteredExternalOptions,
+  showTypePieceDialog,
+  typePieceTypesList,
+  typePieceItems,
+  openExternalDialog,
+  confirmTypePieceSelection,
+  toggleExternalOption,
+  externalDisplayValue,
 } = editState;
 
 // Sauvegarde
-const { save, saving, saveError } = useDocumentSave(formProps, editState, fetchWithRefresh);
+const { save, saving, saveError } = useDocumentSave(
+  formProps,
+  editState,
+  fetchWithRefresh
+);
 
 // Raccord de l'affichage d'erreurs pour les dialogs externes
 function handleOpenExternal(key: string, label: string) {
@@ -108,16 +130,16 @@ function handleOpenExternal(key: string, label: string) {
               </td>
             </tr>
             <FormFieldRenderer
-                v-for="field in tabFields"
-                :key="field!.key"
-                v-model="formData[field!.key]"
-                :field="field!"
-                :pending-files="pendingFiles[field!.key]"
-                :external-display-value="externalDisplayValue(field!.key)"
-                :external-data-loading="externalDataLoading === field!.key"
-                @file-change="(e) => onFileChange(field!.key, e)"
-                @file-remove="(f) => removeFile(field!.key, f)"
-                @open-external="(key, label) => handleOpenExternal(key, label)"
+              v-for="field in tabFields"
+              :key="field!.key"
+              v-model="formData[field!.key]"
+              :field="field!"
+              :pending-files="pendingFiles[field!.key]"
+              :external-display-value="externalDisplayValue(field!.key)"
+              :external-data-loading="externalDataLoading === field!.key"
+              @file-change="(e) => onFileChange(field!.key, e)"
+              @file-remove="(f) => removeFile(field!.key, f)"
+              @open-external="(key, label) => handleOpenExternal(key, label)"
             />
           </tbody>
         </table>

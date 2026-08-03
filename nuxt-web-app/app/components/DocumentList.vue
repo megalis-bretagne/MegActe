@@ -144,7 +144,9 @@ watch(
 
 // Pagination et Recherche (100% serveur, gérées dans useDocuments) -----------------
 const pageActive = ref(Number(route.query.page) || 1);
-const search = ref(typeof route.query.search === "string" ? route.query.search : "");
+const search = ref(
+  typeof route.query.search === "string" ? route.query.search : ""
+);
 const rowsPerPage = ref(Number(route.query.rows) || ITEMS_PER_PAGE);
 
 const { documents, pagination, isFetching, isError, error } = useDocuments(
@@ -199,7 +201,14 @@ const hasActiveFilter = computed(() => {
   const f = advancedFilters.value;
   return (
     !!search.value.trim() ||
-    !!(f.etat || f.etatDebut || f.etatFin || f.etatTransit || f.etatTransitDebut || f.etatTransitFin)
+    !!(
+      f.etat ||
+      f.etatDebut ||
+      f.etatFin ||
+      f.etatTransit ||
+      f.etatTransitDebut ||
+      f.etatTransitFin
+    )
   );
 });
 
@@ -235,7 +244,10 @@ function onChangePage(p: number) {
     >
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Dernier état</label>
+          <label
+            class="text-xs font-medium text-gray-500 uppercase tracking-wide"
+            >Dernier état</label
+          >
           <Select
             v-model="filterEtat"
             :options="etatOptions"
@@ -243,13 +255,18 @@ function onChangePage(p: number) {
             :disabled="!selectedFlux"
             option-label="label"
             option-value="value"
-            :placeholder="selectedFlux ? 'Tous les états' : 'Sélectionner un flux d\'abord'"
+            :placeholder="
+              selectedFlux ? 'Tous les états' : 'Sélectionner un flux d\'abord'
+            "
             show-clear
             class="w-full"
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Depuis</label>
+          <label
+            class="text-xs font-medium text-gray-500 uppercase tracking-wide"
+            >Depuis</label
+          >
           <DatePicker
             v-model="filterDateDebut"
             date-format="dd/mm/yy"
@@ -259,7 +276,10 @@ function onChangePage(p: number) {
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Jusqu'au</label>
+          <label
+            class="text-xs font-medium text-gray-500 uppercase tracking-wide"
+            >Jusqu'au</label
+          >
           <DatePicker
             v-model="filterDateFin"
             date-format="dd/mm/yy"
@@ -271,7 +291,10 @@ function onChangePage(p: number) {
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">État transitoire</label>
+          <label
+            class="text-xs font-medium text-gray-500 uppercase tracking-wide"
+            >État transitoire</label
+          >
           <Select
             v-model="filterEtatTransit"
             :options="etatOptions"
@@ -279,13 +302,20 @@ function onChangePage(p: number) {
             :disabled="!selectedFlux"
             option-label="label"
             option-value="value"
-            :placeholder="selectedFlux ? 'Le document doit être passé par cet état' : 'Sélectionner un flux d\'abord'"
+            :placeholder="
+              selectedFlux
+                ? 'Le document doit être passé par cet état'
+                : 'Sélectionner un flux d\'abord'
+            "
             show-clear
             class="w-full"
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Depuis</label>
+          <label
+            class="text-xs font-medium text-gray-500 uppercase tracking-wide"
+            >Depuis</label
+          >
           <DatePicker
             v-model="filterStateBegin"
             date-format="dd/mm/yy"
@@ -295,7 +325,10 @@ function onChangePage(p: number) {
           />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Jusqu'au</label>
+          <label
+            class="text-xs font-medium text-gray-500 uppercase tracking-wide"
+            >Jusqu'au</label
+          >
           <DatePicker
             v-model="filterStateEnd"
             date-format="dd/mm/yy"
@@ -306,8 +339,19 @@ function onChangePage(p: number) {
         </div>
       </div>
       <div class="flex justify-end gap-2 mt-3">
-        <Button label="Réinitialiser" severity="secondary" text size="small" @click="resetAdvancedFilters" />
-        <Button label="Appliquer" icon="pi pi-search" size="small" @click="applyAdvancedFilters" />
+        <Button
+          label="Réinitialiser"
+          severity="secondary"
+          text
+          size="small"
+          @click="resetAdvancedFilters"
+        />
+        <Button
+          label="Appliquer"
+          icon="pi pi-search"
+          size="small"
+          @click="applyAdvancedFilters"
+        />
       </div>
     </div>
 
@@ -317,7 +361,10 @@ function onChangePage(p: number) {
       class="shrink-0 flex items-center justify-between bg-white border-b border-gray-200 px-2 py-2 mb-4"
     >
       <span class="text-sm text-gray-500">
-        {{ selected.length }} document{{ selected.length > 1 ? "s" : "" }} sélectionné{{ selected.length > 1 ? "s" : "" }}
+        {{ selected.length }} document{{
+          selected.length > 1 ? "s" : ""
+        }}
+        sélectionné{{ selected.length > 1 ? "s" : "" }}
       </span>
       <div class="flex items-center gap-1">
         <Button
@@ -345,20 +392,47 @@ function onChangePage(p: number) {
         <table class="min-w-full text-sm">
           <thead class="bg-white border-b border-gray-200">
             <tr>
-              <th class="px-4 py-3"><Skeleton width="4rem" height="0.75rem" /></th>
-              <th class="px-4 py-3 hidden sm:table-cell"><Skeleton width="6rem" height="0.75rem" /></th>
-              <th class="px-4 py-3"><Skeleton width="5rem" height="0.75rem" /></th>
-              <th class="px-4 py-3 hidden sm:table-cell"><Skeleton width="8rem" height="0.75rem" /></th>
-              <th class="px-4 py-3"><Skeleton width="4rem" height="0.75rem" /></th>
+              <th class="px-4 py-3">
+                <Skeleton width="4rem" height="0.75rem" />
+              </th>
+              <th class="px-4 py-3 hidden sm:table-cell">
+                <Skeleton width="6rem" height="0.75rem" />
+              </th>
+              <th class="px-4 py-3">
+                <Skeleton width="5rem" height="0.75rem" />
+              </th>
+              <th class="px-4 py-3 hidden sm:table-cell">
+                <Skeleton width="8rem" height="0.75rem" />
+              </th>
+              <th class="px-4 py-3">
+                <Skeleton width="4rem" height="0.75rem" />
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="i in ITEMS_PER_PAGE" :key="i" :class="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-              <td class="px-4 py-2"><Skeleton :width="`${50 + ((i * 17) % 35)}%`" height="0.75rem" /></td>
-              <td class="px-4 py-2 hidden sm:table-cell"><Skeleton width="9rem" height="0.75rem" /></td>
-              <td class="px-4 py-2"><Skeleton width="7rem" height="0.75rem" /></td>
-              <td class="px-4 py-2 hidden sm:table-cell"><Skeleton width="8rem" height="0.75rem" /></td>
-              <td class="px-4 py-2"><Skeleton width="5rem" height="0.75rem" /></td>
+            <tr
+              v-for="i in ITEMS_PER_PAGE"
+              :key="i"
+              :class="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
+            >
+              <td class="px-4 py-2">
+                <Skeleton
+                  :width="`${50 + ((i * 17) % 35)}%`"
+                  height="0.75rem"
+                />
+              </td>
+              <td class="px-4 py-2 hidden sm:table-cell">
+                <Skeleton width="9rem" height="0.75rem" />
+              </td>
+              <td class="px-4 py-2">
+                <Skeleton width="7rem" height="0.75rem" />
+              </td>
+              <td class="px-4 py-2 hidden sm:table-cell">
+                <Skeleton width="8rem" height="0.75rem" />
+              </td>
+              <td class="px-4 py-2">
+                <Skeleton width="5rem" height="0.75rem" />
+              </td>
             </tr>
           </tbody>
         </table>
@@ -370,13 +444,11 @@ function onChangePage(p: number) {
 
       <!-- Table PrimeVue -->
       <div v-else :class="{ 'opacity-60 pointer-events-none': isFetching }">
-        <DataTable
-          :value="documents"
-          striped-rows
-          class="text-sm"
-        >
+        <DataTable :value="documents" striped-rows class="text-sm">
           <template #empty>
-            <div class="text-center py-8 text-gray-400 italic">Aucun document</div>
+            <div class="text-center py-8 text-gray-400 italic">
+              Aucun document
+            </div>
           </template>
 
           <!-- Sélection pour actions groupées -->
@@ -394,7 +466,9 @@ function onChangePage(p: number) {
                 v-if="canBatchSelect(doc)"
                 :model-value="isSelected(doc)"
                 binary
-                @update:model-value="(checked: boolean) => toggleSelect(doc, checked)"
+                @update:model-value="
+                  (checked: boolean) => toggleSelect(doc, checked)
+                "
               />
             </template>
           </Column>
@@ -429,7 +503,9 @@ function onChangePage(p: number) {
           <!-- Dernier état -->
           <Column field="last_action_message" header="Dernier état">
             <template #body="{ data: doc }">
-              <span class="text-gray-700">{{ doc.last_action_message || doc.last_action || "—" }}</span>
+              <span class="text-gray-700">{{
+                doc.last_action_message || doc.last_action || "—"
+              }}</span>
             </template>
           </Column>
 
@@ -441,7 +517,9 @@ function onChangePage(p: number) {
             body-class="hidden sm:table-cell"
           >
             <template #body="{ data: doc }">
-              <span class="text-gray-600 tabular-nums">{{ formatDate(doc.last_action_date) }}</span>
+              <span class="text-gray-600 tabular-nums">{{
+                formatDate(doc.last_action_date)
+              }}</span>
             </template>
           </Column>
 
@@ -497,7 +575,10 @@ function onChangePage(p: number) {
 
         <!-- Pagination -->
         <div class="flex justify-center mt-2">
-          <div v-if="hasActiveFilter && (pagination?.total ?? 0) > 0" class="flex items-center gap-3">
+          <div
+            v-if="hasActiveFilter && (pagination?.total ?? 0) > 0"
+            class="flex items-center gap-3"
+          >
             <Button
               icon="pi pi-chevron-left"
               text

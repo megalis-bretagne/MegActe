@@ -48,9 +48,9 @@ function toggleUserMenu(event: Event) {
         <!-- Right side: User Avatar -->
         <div class="flex items-center flex-shrink-0">
           <button
-              type="button"
-              class="flex items-center cursor-pointer bg-transparent border-0"
-              @click="toggleUserMenu"
+            type="button"
+            class="flex items-center cursor-pointer bg-transparent border-0"
+            @click="toggleUserMenu"
           >
             <span
               v-if="data?.user?.name"

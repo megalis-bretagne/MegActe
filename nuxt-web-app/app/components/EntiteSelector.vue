@@ -19,7 +19,7 @@ function toTreeNode(node: EntiteNode): TreeNode {
 
 // Liste des entités de l'utilisateur, converties au format attendu par le TreeSelect
 const treeNodes = computed<TreeNode[]>(() =>
-    (user.value?.entites ?? []).map(toTreeNode),
+  (user.value?.entites ?? []).map(toTreeNode)
 );
 
 // Entité choisie manuellement par l'utilisateur (null si aucune sélection manuelle)
@@ -30,7 +30,7 @@ watch(treeNodes, () => {
 });
 
 const effectiveKey = computed(
-    () => manuelKey.value ?? treeNodes.value[0]?.key ?? null,
+  () => manuelKey.value ?? treeNodes.value[0]?.key ?? null
 );
 
 // Le TreeSelect attend un objet { key: true }, on le construit à partir de effectiveKey
@@ -43,11 +43,11 @@ const selectedKeys = computed<Record<string, boolean>>({
 
 // Dès que l'entité sélectionnée change, on la passe dans le state global de l'app
 watch(
-    effectiveKey,
-    (key) => {
-      selectedEntiteId.value = key ? Number(key) : null;
-    },
-    { immediate: true },
+  effectiveKey,
+  (key) => {
+    selectedEntiteId.value = key ? Number(key) : null;
+  },
+  { immediate: true }
 );
 
 // Réapplique le scroll vers l'entité sélectionnée à chaque frame pendant l'ouverture, pour
@@ -56,8 +56,8 @@ function onBeforeShow() {
   let framesLeft = 20;
   function tick() {
     document
-        .querySelector('[data-p-selected="true"]')
-        ?.scrollIntoView({ block: "nearest", inline: "start" });
+      .querySelector('[data-p-selected="true"]')
+      ?.scrollIntoView({ block: "nearest", inline: "start" });
     framesLeft -= 1;
     if (framesLeft > 0) requestAnimationFrame(tick);
   }
@@ -68,18 +68,18 @@ function onBeforeShow() {
 <template>
   <div class="flex items-center gap-2">
     <TreeSelect
-        v-if="treeNodes.length"
-        v-model="selectedKeys"
-        :options="treeNodes"
-        selection-mode="single"
-        filter
-        filter-placeholder="Rechercher une entité"
-        placeholder="Sélectionner une entité"
-        class="text-sm"
-        :pt="{
+      v-if="treeNodes.length"
+      v-model="selectedKeys"
+      :options="treeNodes"
+      selection-mode="single"
+      filter
+      filter-placeholder="Rechercher une entité"
+      placeholder="Sélectionner une entité"
+      class="text-sm"
+      :pt="{
         root: { style: 'min-width: 16rem' },
       }"
-        @before-show="onBeforeShow"
+      @before-show="onBeforeShow"
     />
     <template v-else>
       <Skeleton width="16rem" height="2rem" border-radius="6px" />

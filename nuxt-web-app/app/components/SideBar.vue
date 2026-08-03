@@ -47,7 +47,11 @@ async function createDoc(flux: { id: string }) {
       </div>
 
       <ul v-else class="space-y-0.5">
-        <li v-for="flux in fluxItems" :key="flux.id" class="flex items-center gap-1">
+        <li
+          v-for="flux in fluxItems"
+          :key="flux.id"
+          class="flex items-center gap-1"
+        >
           <button
             :class="
               selectedFlux === flux.id

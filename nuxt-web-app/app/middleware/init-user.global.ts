@@ -6,10 +6,10 @@ export default defineNuxtRouteMiddleware(async () => {
   // Skip if already initialized (prevents duplicate fetches on client-side navigation)
   if (!user.value) {
     try {
-      const { data, error } = await useFetch('/api/user');
+      const { data, error } = await useFetch("/api/user");
 
       if (error.value) {
-        console.error('Failed to fetch user:', error.value);
+        console.error("Failed to fetch user:", error.value);
         // Optional: redirect to login if auth is required
         // return navigateTo('/login');
       }
@@ -18,10 +18,13 @@ export default defineNuxtRouteMiddleware(async () => {
         user.value = data.value;
         entityId.value = data.value.user_info?.id_e ?? null;
         // Initialize flux from user data if applicable
-        flux.value = data.value.user_info?.default_flux ?? data.value.user_info?.flux ?? null;
+        flux.value =
+          data.value.user_info?.default_flux ??
+          data.value.user_info?.flux ??
+          null;
       }
     } catch (e) {
-      console.error('Middleware init error:', e);
+      console.error("Middleware init error:", e);
     }
   }
 });
