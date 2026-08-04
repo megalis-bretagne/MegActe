@@ -5,8 +5,6 @@ export default defineEventHandler(async (event) => {
   const session = await getServerSession(event);
   if (!session?.accessToken) throw createError({ statusCode: 401 });
 
-  const query = getQuery(event);
-
   const config = useRuntimeConfig();
   const data = await $fetch<e>("/user", {
     baseURL: config.public.apiBaseUrl,

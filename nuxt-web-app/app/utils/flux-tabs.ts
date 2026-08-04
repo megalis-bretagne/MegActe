@@ -2,8 +2,31 @@ export type TabConfig = {
   id: string;
   label: string;
   fields: string[];
-  condition?: (data: Record<string, any>) => boolean;
+  condition?: (data: DocumentDetail) => boolean;
   alwaysShow?: string[];
+};
+
+// Field types are crafted to handle printing and editing of a document field
+
+export type FieldValue = string | string[] | Record<string, string>;
+
+type FieldBase = {
+  key: string;
+  label: string;
+  type: string;
+  selectValues: Record<string, string> | null;
+  commentaire: string;
+};
+
+export type Field = FieldBase & {
+  val: FieldValue;
+};
+
+export type FieldEdit = FieldBase & {
+  required: boolean;
+  multiple: boolean;
+  readonly: boolean;
+  accept: string | null;
 };
 
 const STUDIO_TABS: TabConfig[] = [

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
+import { FetchError } from "ofetch";
 
 const props = defineProps<{ idD: string; fluxType?: string }>();
 
@@ -14,20 +15,22 @@ async function fetchDocument() {
   const url = `/entite/${entiteId.value}/document/${props.idD}`;
   const query = props.fluxType ? { type_flux: props.fluxType } : undefined;
   try {
-    return await $fetch<any>(url, {
+    return await $fetch<DocumentDetail>(url, {
       baseURL: config.public.apiBaseUrl,
       headers: { Authorization: `Bearer ${user.value?.accessToken}` },
       query,
     });
-  } catch (e: any) {
-    if (e?.status === 403) {
-      const newToken = await tryRefreshToken();
-      if (newToken) {
-        return await $fetch<any>(url, {
-          baseURL: config.public.apiBaseUrl,
-          headers: { Authorization: `Bearer ${newToken}` },
-          query,
-        });
+  } catch (e) {
+    if (e instanceof FetchError) {
+      if (e?.status === 403) {
+        const newToken = await tryRefreshToken();
+        if (newToken) {
+          return await $fetch<DocumentDetail>(url, {
+            baseURL: config.public.apiBaseUrl,
+            headers: { Authorization: `Bearer ${newToken}` },
+            query,
+          });
+        }
       }
     }
     throw e;
@@ -35,10 +38,13 @@ async function fetchDocument() {
 }
 
 // Pas de retry sur 4xx (erreur définitive, pas transitoire)
-function retryUnlessClientError(failureCount: number, error: any): boolean {
-  const status = error?.status ?? error?.response?.status;
-  if (status && status >= 400 && status < 500) return false;
-  return failureCount < 1;
+function retryUnlessClientError(failureCount: number, error: unknown): boolean {
+  if (error instanceof FetchError) {
+    const status = error?.status ?? error?.response?.status;
+    if (status && status >= 400 && status < 500) return false;
+    return failureCount < 1;
+  }
+  return false;
 }
 
 const {
@@ -60,18 +66,20 @@ const { data: journalData, isPending: journalPending } = useQuery({
   queryFn: async () => {
     const url = `/entite/${entiteId.value}/document/${props.idD}/journal`;
     try {
-      return await $fetch<any[]>(url, {
+      return await $fetch<Journal>(url, {
         baseURL: config.public.apiBaseUrl,
         headers: { Authorization: `Bearer ${user.value?.accessToken}` },
       });
-    } catch (e: any) {
-      if (e?.status === 403) {
-        const newToken = await tryRefreshToken();
-        if (newToken) {
-          return await $fetch<any[]>(url, {
-            baseURL: config.public.apiBaseUrl,
-            headers: { Authorization: `Bearer ${newToken}` },
-          });
+    } catch (e) {
+      if (e instanceof FetchError) {
+        if (e?.status === 403) {
+          const newToken = await tryRefreshToken();
+          if (newToken) {
+            return await $fetch<Journal>(url, {
+              baseURL: config.public.apiBaseUrl,
+              headers: { Authorization: `Bearer ${newToken}` },
+            });
+          }
         }
       }
       throw e;
@@ -158,7 +166,7 @@ const activeTabFields = computed(() => {
 // filterFields pour flux sans config
 function getFilteredFields() {
   return Object.entries(fluxDef.value)
-    .filter(([key, def]: [string, any]) => {
+    .filter(([, def]) => {
       if (def?.["no-show"]) return false;
       if (!def?.type) return false;
       if (def?.requis) {
@@ -171,7 +179,7 @@ function getFilteredFields() {
       return true;
     })
     .filter(([key]) => key !== "type_piece")
-    .map(([key, def]: [string, any]) => ({
+    .map(([key, def]) => ({
       key,
       val: doc.value.data[key] ?? null,
       label: def?.name ?? key.replace(/_/g, " "),
@@ -198,7 +206,7 @@ const { actionLoading, actionError, runAction } = useDocumentActions(
 
 const journalEntries = computed(() => journalData.value ?? []);
 
-const journalUser = (entry: any) => {
+const journalUser = (entry: JournalListEntry) => {
   const name = [entry.prenom, entry.nom].filter(Boolean).join(" ");
   return name || "Action automatique";
 };

@@ -1,17 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
-  field: {
-    key: string;
-    label: string;
-    type: string;
-    required: boolean;
-    multiple: boolean;
-    selectValues?: Record<string, string> | null;
-    commentaire?: string | null;
-    accept?: string | null;
-    readonly?: boolean;
-  };
-  modelValue: any;
+  field: FieldEdit;
+  modelValue: string | string[];
   pendingFiles?: File[];
   externalDisplayValue?: string;
   externalDataLoading?: boolean;

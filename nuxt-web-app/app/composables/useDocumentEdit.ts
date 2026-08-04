@@ -1,3 +1,5 @@
+import type { FetchOptions } from "ofetch";
+
 export function useDocumentEdit(props: {
   entiteId: number;
   idD: string;
@@ -13,14 +15,14 @@ export function useDocumentEdit(props: {
   const isNew = computed(() => props.idD === "new");
   const createdDocId = ref<string | null>(null);
   const activeTab = ref("preparer");
-  const formData = ref<Record<string, any>>({});
-  const pendingFiles = ref<Record<string, File[]>>({});
+  const formData = ref<FormData | null>(null);
+  const pendingFiles = ref<Record<string, File[]> | null>(null);
 
   const { data: doc, isPending } = useQuery({
     queryKey: computed(() => ["document", props.entiteId, props.idD]),
     queryFn: async () => {
       if (isNew.value) return null;
-      return await $fetch<any>(
+      return await $fetch<DocumentDetail>(
         `/entite/${props.entiteId}/document/${props.idD}`,
         {
           baseURL: config.public.apiBaseUrl,
@@ -33,7 +35,7 @@ export function useDocumentEdit(props: {
     staleTime: 30000,
     placeholderData: (prev) => prev,
     // Pas de retry sur 4xx (erreur définitive, pas transitoire)
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error) => {
       const status = error?.status ?? error?.response?.status;
       if (status && status >= 400 && status < 500) return false;
       return failureCount < 1;
@@ -66,8 +68,8 @@ export function useDocumentEdit(props: {
       [];
 
     return configTabs
-      .filter((tab: any) => !tab.condition || tab.condition(data))
-      .map((tab: any) => {
+      .filter((tab) => !tab.condition || tab.condition(data))
+      .map((tab) => {
         const override = FORM_TAB_FIELD_OVERRIDES[tab.id];
         const fields = override?.[type] ?? override?.["default"] ?? tab.fields;
         return { ...tab, fields };
@@ -75,7 +77,7 @@ export function useDocumentEdit(props: {
   });
 
   const tabFields = computed(() => {
-    const tab = tabs.value.find((t: any) => t.id === activeTab.value);
+    const tab = tabs.value.find((t) => t.id === activeTab.value);
     if (!tab) return [];
     return tab.fields
       .map((key: string) => {
@@ -163,14 +165,17 @@ export function useDocumentEdit(props: {
     return pieces;
   }
 
-  async function fetchWithRefresh<T>(url: string, opts?: any): Promise<T> {
+  async function fetchWithRefresh<T>(
+    url: string,
+    opts?: FetchOptions
+  ): Promise<T> {
     try {
       return await $fetch<T>(url, {
         baseURL: config.public.apiBaseUrl,
         headers: authHeaders.value,
         ...opts,
       });
-    } catch (e: any) {
+    } catch (e) {
       if (e?.status === 403 || e?.response?.status === 403) {
         const newToken = await tryRefreshToken();
         if (newToken)
@@ -215,7 +220,7 @@ export function useDocumentEdit(props: {
         const url = docId
           ? `/entite/${props.entiteId}/document/${docId}/externalData/type_piece`
           : `/entite/${props.entiteId}/flux/${props.fluxType ?? ""}/externalData/type_piece`;
-        const data = await fetchWithRefresh<any>(url, { retry: 0 });
+        const data = await fetchWithRefresh(url, { retry: 0 });
 
         // Le nombre de pièces renvoyé par le serveur peut être erroné : sans docId,
         // il provient d'un autre document du même flux (emprunté par le backend) et
@@ -236,7 +241,7 @@ export function useDocumentEdit(props: {
             ? [current]
             : [];
 
-        typePieceItems.value = rawPieces.map((p: any, i: number) => {
+        typePieceItems.value = rawPieces.map((p, i) => {
           const piece = typeof p === "string" ? p : (p.filename ?? String(p));
           const raw =
             typeof p === "object" && p.type_pj
@@ -247,7 +252,7 @@ export function useDocumentEdit(props: {
         });
 
         showTypePieceDialog.value = true;
-      } catch (e: any) {
+      } catch (e) {
         const status = e?.status ?? e?.response?.status;
         if (status === 400) {
           const hasPending = Object.values(pendingFiles.value).some(
@@ -297,7 +302,7 @@ export function useDocumentEdit(props: {
             docId && props.fluxType ? { type_flux: props.fluxType } : undefined,
         });
         externalDataCache.value[fieldKey] = data;
-      } catch (e: any) {
+      } catch (e) {
         onError?.(
           e?.data?.detail ??
             e?.message ??

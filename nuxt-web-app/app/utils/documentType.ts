@@ -62,25 +62,28 @@ interface TypePieceFichier {
   typologie: string;
 }
 
+export interface DocumentData {
+  envoi_tdt_actes?: string;
+  envoi_depot?: string;
+  envoi_sae?: string;
+  numero_de_lacte?: string;
+  objet?: string;
+  document_papier?: string;
+  acte_nature?: string;
+  publication_open_data?: string;
+  date_de_lacte?: string;
+  classification?: string;
+  arrete?: string[];
+  autre_document_attache?: string[];
+  type_piece?: string;
+  type_acte?: string;
+  type_pj?: string;
+  type_piece_fichier?: TypePieceFichier[];
+  //[key: string]: string | number | TypePieceFichier[] | string[]
+}
+
 export interface DocumentDetail extends DocumentActionDetails {
   info: BaseDocumentInfo;
-  data: {
-    envoi_tdt_actes?: string;
-    envoi_depot?: string;
-    envoi_sae?: string;
-    numero_de_lacte?: string;
-    objet?: string;
-    document_papier?: string;
-    acte_nature?: string;
-    publication_open_data?: string;
-    date_de_lacte?: string;
-    classification?: string;
-    arrete?: string[];
-    autre_document_attache?: string[];
-    type_piece?: string;
-    type_acte?: string;
-    type_pj?: string;
-    type_piece_fichier?: TypePieceFichier[];
-    //[key: string]: string | number | TypePieceFichier[] | string[]
-  };
+  data: DocumentData;
+  action_possible: ActionPossible[];
 }

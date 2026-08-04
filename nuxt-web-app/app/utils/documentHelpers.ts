@@ -39,7 +39,7 @@ export function getActiveTabFields(
 // filterFields pour flux sans config
 function getFilteredFields(document: DocumentInfo, fluxDef: FluxDetails) {
   return Object.entries(fluxDef)
-    .filter(([key, def]: [string, any]) => {
+    .filter(([, def]) => {
       if (def?.["no-show"]) return false;
       if (!def?.type) return false;
       if (def?.requis) {
@@ -52,7 +52,7 @@ function getFilteredFields(document: DocumentInfo, fluxDef: FluxDetails) {
       return true;
     })
     .filter(([key]) => key !== "type_piece")
-    .map(([key, def]: [string, any]) => ({
+    .map(([, def]) => ({
       key,
       val: document.data[key] ?? null,
       label: def?.name ?? key.replace(/_/g, " "),

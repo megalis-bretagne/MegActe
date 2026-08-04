@@ -43,15 +43,7 @@ if (import.meta.server && entiteId.value) {
   }
 }
 
-// Création / navigation -------------------------------
-async function createDoc() {
-  if (!selectedFlux.value) return;
-  await navigateTo(
-    `/org/${entiteId.value}/document/new/edit?type=${selectedFlux.value}`
-  );
-}
-
-function openDoc(doc: any) {
+function openDoc(doc: DocumentInfo) {
   queryClient.setQueryData(["document", doc.id_e, doc.id_d], {
     info: {
       id_d: doc.id_d,
@@ -70,7 +62,7 @@ function openDoc(doc: any) {
   router.push(`/org/${doc.id_e}/document/${doc.id_d}?type=${doc.type}`);
 }
 
-function editDoc(doc: any) {
+function editDoc(doc: DocumentInfo) {
   router.push(`/org/${doc.id_e}/document/${doc.id_d}/edit?type=${doc.type}`);
 }
 
@@ -83,6 +75,7 @@ const filterEtatTransit = ref<string | null>(null);
 const filterStateBegin = ref<Date | null>(null);
 const filterStateEnd = ref<Date | null>(null);
 
+// etatOptions is formatted to be used by PrimeVue Select component
 const etatOptions = ref<{ label: string; value: string }[]>([]);
 const etatLoading = ref(false);
 
@@ -90,16 +83,13 @@ async function fetchEtatOptions(fluxType: string) {
   etatLoading.value = true;
   etatOptions.value = [];
   try {
-    const actions = await $fetch<Record<string, any>>(
-      `/flux/${fluxType}/action`,
-      {
-        baseURL: config.public.apiBaseUrl,
-        headers: { Authorization: `Bearer ${user.value?.accessToken}` },
-      }
-    );
+    const actions = await $fetch<FluxActions>(`/flux/${fluxType}/action`, {
+      baseURL: config.public.apiBaseUrl,
+      headers: { Authorization: `Bearer ${user.value?.accessToken}` },
+    });
     etatOptions.value = Object.entries(actions).map(([value, action]) => ({
       label: action["name-action"] ?? action["name"] ?? value,
-      value,
+      value: value,
     }));
   } catch {
     etatOptions.value = [];

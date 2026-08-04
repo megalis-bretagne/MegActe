@@ -22,8 +22,8 @@ export function useFileDownload() {
 
     let blob: Blob;
     try {
-      blob = await fetchBlob(user.value?.accessToken!);
-    } catch (e: any) {
+      blob = await fetchBlob(user.value?.accessToken);
+    } catch (e) {
       if (e?.status !== 403) throw e;
       const newToken = await tryRefreshToken();
       if (!newToken) throw e;

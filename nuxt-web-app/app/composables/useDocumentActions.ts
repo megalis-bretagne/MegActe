@@ -7,8 +7,8 @@ export function useDocumentActions(
   entiteId: Ref<number>,
   idD: Ref<string>,
   effectiveFluxType: Ref<string | undefined>,
-  doc: Ref<any>,
-  fetchDocument: () => Promise<any>
+  doc: Ref<DocumentDetail>,
+  fetchDocument: () => Promise<DocumentDetail>
 ) {
   const config = useRuntimeConfig();
   const { data: user } = useAuth();
@@ -58,7 +58,7 @@ export function useDocumentActions(
         });
       try {
         await doFetch(user.value?.accessToken);
-      } catch (e: any) {
+      } catch (e) {
         if (e?.status !== 403) throw e;
         const newToken = await tryRefreshToken();
         if (!newToken) throw e;
@@ -91,7 +91,7 @@ export function useDocumentActions(
     const previousState = doc.value?.last_action;
     try {
       await performAction({ action: action.action, previousState });
-    } catch (e: any) {
+    } catch (e) {
       actionError.value =
         e?.data?.detail ?? e?.message ?? "Une erreur est survenue";
     } finally {

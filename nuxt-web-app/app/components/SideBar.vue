@@ -6,7 +6,7 @@ const { data: fluxList } = await useFetch("/api/user/flux");
 
 const fluxItems = computed(() => {
   return Object.entries(fluxList.value ?? {})
-    .map(([id, f]: [string, any]) => ({ id, nom: f.nom ?? id }))
+    .map(([id, f]: [string, Flux]) => ({ id, nom: f.nom ?? id }))
     .sort((a, b) => a.nom.localeCompare(b.nom));
 });
 

@@ -13,3 +13,11 @@ export interface ActionError {
   data?: { detail?: string };
   message?: string;
 }
+
+// lot of fields are missing: e.g. rule, last-action ...
+export interface FluxAction {
+  name: string;
+  "name-action": string;
+}
+
+export type FluxActions = Record<string, FluxAction>;

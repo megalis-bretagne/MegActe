@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const props = defineProps<{
-  field: any;
+  field: Field;
   entiteId: number;
   idD: string;
-  docData?: Record<string, any>;
+  docData?: DocumentData;
 }>();
 
 const { downloadDocumentFile } = useFileDownload();
@@ -45,13 +45,13 @@ function downloadPieceFile(filename: string) {
   downloadFile(filename, ref.elementId, ref.index);
 }
 
-const isFileArray = (val: any) =>
+const isFileArray = (val: FieldValue) =>
   Array.isArray(val) &&
   val.length > 0 &&
   typeof val[0] === "string" &&
   val[0].includes(".");
 
-const resolveSelectValue = (field: any) => {
+const resolveSelectValue = (field: Field) => {
   if (!field.selectValues) return field.val;
   return field.selectValues[field.val] ?? field.val;
 };

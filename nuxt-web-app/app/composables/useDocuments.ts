@@ -36,7 +36,7 @@ export const useDocuments = (
       ),
     enabled: computed(() => !!entiteId.value && !!user.value?.accessToken),
     placeholderData: (prev) => prev,
-    retry: (failurecount, error: any) => {
+    retry: (failurecount, error) => {
       if (error?.status === 403 || error?.response?.status === 403)
         return false;
       return failurecount < 1;

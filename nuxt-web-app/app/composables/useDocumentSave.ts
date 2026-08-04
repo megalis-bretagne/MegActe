@@ -1,17 +1,18 @@
+import type { FetchOptions } from "ofetch";
+
 export function useDocumentSave(
   props: { entiteId: number; idD: string; fluxType?: string },
   state: {
     isNew: Ref<boolean>;
     createdDocId: Ref<string | null>;
-    formData: Ref<Record<string, any>>;
+    formData: Ref<FormData>;
     pendingFiles: Ref<Record<string, File[]>>;
-    tabs: Ref<any[]>;
-    fluxDef: Ref<Record<string, any>>;
+    tabs: Ref<TabConfig[]>;
+    fluxDef: Ref<FluxDetails>;
   },
-  fetchWithRefresh: <T>(url: string, opts?: any) => Promise<T>
+  fetchWithRefresh: <T>(url: string, opts?: FetchOptions) => Promise<T>
 ) {
   const config = useRuntimeConfig();
-  const router = useRouter();
   const { data: user } = useAuth();
   const authHeaders = computed(() => ({
     Authorization: `Bearer ${user.value?.accessToken}`,
@@ -19,16 +20,19 @@ export function useDocumentSave(
   const queryClient = useQueryClient();
   const saveError = ref<string | null>(null);
 
-  async function ensureDocExists(): Promise<string> {
+  async function ensureDocExists(): Promise<string | null> {
     if (!state.isNew.value) return props.idD;
     if (state.createdDocId.value) return state.createdDocId.value;
 
-    const response = await $fetch<any>(`/entite/${props.entiteId}/document`, {
-      method: "POST",
-      baseURL: config.public.apiBaseUrl,
-      headers: authHeaders.value,
-      body: { flux_type: props.fluxType, doc_info: {} },
-    });
+    const response = await $fetch<DocumentDetail>(
+      `/entite/${props.entiteId}/document`,
+      {
+        method: "POST",
+        baseURL: config.public.apiBaseUrl,
+        headers: authHeaders.value,
+        body: { flux_type: props.fluxType, doc_info: {} },
+      }
+    );
     state.createdDocId.value = response.info.id_d;
     return state.createdDocId.value;
   }
@@ -37,7 +41,7 @@ export function useDocumentSave(
     mutationFn: async () => {
       const idD = await ensureDocExists();
 
-      const textData: Record<string, any> = {};
+      const textData: Record<string, string> = {};
       for (const tab of state.tabs.value) {
         for (const key of tab.fields) {
           const def = state.fluxDef.value[key];
@@ -67,11 +71,13 @@ export function useDocumentSave(
         });
 
         if (!uploadRes.ok) {
-          let detail = `Erreur lors de l'upload du fichier (${uploadRes.status})`;
           try {
-            detail = (await uploadRes.json())?.detail ?? detail;
-          } catch {}
-          throw new Error(detail);
+            throw new Error(await uploadRes.json().detail);
+          } catch {
+            throw new Error(
+              `Erreur lors de l'upload du fichier (${uploadRes.status})`
+            );
+          }
         }
       }
 
@@ -100,7 +106,7 @@ export function useDocumentSave(
         `/org/${props.entiteId}/document/${idD}?type=${props.fluxType ?? ""}`
       );
     },
-    onError: (e: any) => {
+    onError: (e) => {
       saveError.value =
         e?.data?.detail ?? e?.message ?? "Erreur lors de la sauvegarde";
     },

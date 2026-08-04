@@ -10,6 +10,7 @@ export interface FluxDetail {
   name: string;
   title?: boolean;
   type?: string;
+  value: string;
   requis?: boolean;
   multiple?: boolean;
   commentaire?: string;

@@ -51,7 +51,8 @@ export function useBatchDocuments(
   // ajoute/retire un id du Set
   function toggleSelect(doc: DocumentInfo, checked: boolean) {
     const next = new Set(selectedIds.value);
-    checked ? next.add(doc.id_d) : next.delete(doc.id_d);
+    if (checked) next.add(doc.id_d);
+    else next.delete(doc.id_d);
     selectedIds.value = next;
   }
 
@@ -131,7 +132,7 @@ export function useBatchDocuments(
         `${ids.length} document${ids.length > 1 ? "s" : ""} traité${ids.length > 1 ? "s" : ""} avec succès.`
       );
       selectedIds.value = new Set();
-    } catch (e: any) {
+    } catch (e) {
       showBatchResult(
         "error",
         e?.data?.detail ?? "Le lot n'a pas pu être traité entièrement."

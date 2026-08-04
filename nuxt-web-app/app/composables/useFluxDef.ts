@@ -1,6 +1,6 @@
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
-const fluxDefCache = useState<Record<string, any>>("fluxDefCache", () => ({}));
+const fluxDefCache = useState<FluxDetails>("fluxDefCache", () => ({}));
 
 export const useFluxDef = () => {
   const getFluxDef = async (

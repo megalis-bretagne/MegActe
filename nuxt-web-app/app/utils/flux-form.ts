@@ -81,7 +81,7 @@ export const FORM_TAB_FIELD_OVERRIDES: Record<
 };
 
 // Valeurs par défaut (par flux)
-export const FORM_DEFAULTS: Record<string, Record<string, any>> = {
+export const FORM_DEFAULTS: Record<string, FormData> = {
   "arretes-individuels-studio": {
     envoi_tdt_actes: "checked",
     envoi_depot: "checked",

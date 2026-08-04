@@ -35,7 +35,7 @@ export const fetchDocumentsPage = async (
 
   try {
     return await doFetch(token);
-  } catch (e: any) {
+  } catch (e) {
     if (e?.status === 403) {
       const newToken = await tryRefreshToken();
       if (newToken) return await doFetch(newToken);

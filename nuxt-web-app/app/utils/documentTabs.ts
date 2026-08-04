@@ -1,10 +1,3 @@
-type TabConfig = {
-  id: string;
-  label: string;
-  fields: string[];
-  condition?: (data: Record<string, any>) => boolean;
-};
-
 const ACTE_TABS: TabConfig[] = [
   {
     id: "preparer",
