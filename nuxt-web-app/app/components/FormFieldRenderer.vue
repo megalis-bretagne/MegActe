@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = defineProps<{
   field: FieldEdit;
-  modelValue: string | string[];
+  modelValue?: string | string[];
   pendingFiles?: File[];
   externalDisplayValue?: string;
   externalDataLoading?: boolean;

@@ -107,8 +107,8 @@ export function useDocumentEdit(props: {
   watch(
     doc,
     (d) => {
-      if (d?.data && !Object.keys(formData.value).length) {
-        formData.value = { ...d.data };
+      if (d?.data && formData.value == null) {
+        formData.value = d.data;
       }
     },
     { immediate: true }

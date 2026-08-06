@@ -132,9 +132,9 @@ function handleOpenExternal(key: string, label: string) {
             <FormFieldRenderer
               v-for="field in tabFields"
               :key="field!.key"
-              v-model="formData[field!.key]"
+              v-model="(formData ?? {})[field!.key]"
               :field="field!"
-              :pending-files="pendingFiles[field!.key]"
+              :pending-files="(pendingFiles ?? {})[field!.key]"
               :external-display-value="externalDisplayValue(field!.key)"
               :external-data-loading="externalDataLoading === field!.key"
               @file-change="(e) => onFileChange(field!.key, e)"
