@@ -15,8 +15,8 @@ export function useDocumentEdit(props: {
   const isNew = computed(() => props.idD === "new");
   const createdDocId = ref<string | null>(null);
   const activeTab = ref("preparer");
-  const formData = ref<FormData | null>(null);
-  const pendingFiles = ref<Record<string, File[]> | null>(null);
+  const formData = ref<FormData>({});
+  const pendingFiles = ref<Record<string, File[]>>({});
 
   const { data: doc, isPending } = useQuery({
     queryKey: computed(() => ["document", props.entiteId, props.idD]),
@@ -107,8 +107,8 @@ export function useDocumentEdit(props: {
   watch(
     doc,
     (d) => {
-      if (d?.data && formData.value == null) {
-        formData.value = d.data;
+      if (d?.data && !Object.keys(formData.value).length) {
+        formData.value = { ...d.data };
       }
     },
     { immediate: true }
