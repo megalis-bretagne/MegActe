@@ -1,10 +1,12 @@
 from http import HTTPStatus
 from ..schemas.flux_action import ActionResult
 from ..services.tdt_service import TdtService
+from ..services.document_service import _EXECUTOR
 from ..schemas.document_schemas import ActionDocument, DocumentDetail
 from . import BaseService
 from ..exceptions.custom_exceptions import ErrorCode, MegActeException, PastellException
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +50,7 @@ class ActeService(BaseService):
             )
 
         if action == ActionDocument.teletransmission_tdt:
-            logger.info(f"Génération de l'url pour teletransmission au TDT doc {document_id} entite {entite_id}")
+            logger.info(f"Génération de l'url pour teletransmission  au TDT doc {document_id} entite {entite_id}")
             document = DocumentDetail(**response)
             url = self.tdt_service.teletransmission(document, entite_id)
             logger.debug(f"Url généré : {url}")
@@ -57,7 +59,6 @@ class ActeService(BaseService):
                 message="",
                 data={"url": url},
             )
-
         response = self.api_pastell.perform_post(f"/entite/{entite_id}/document/{document_id}/action/{action}")
         action_result = ActionResult(**response)
 
@@ -84,17 +85,28 @@ class ActeService(BaseService):
             ActionResult: Les détails de l'action exécutée.
         """
 
+        batch_start = time.monotonic()
+
         if action == ActionDocument.teletransmission_tdt:
             logger.info(
                 f"Génération de l'url pour teletransmission au TDT des documents {documents_id} entite {entite_id}"
             )
-            url = ""
-            documents = []
-            for doc_id in documents_id:
-                response = self.api_pastell.perform_get(
-                    f"/entite/{entite_id}/document/{doc_id}"
-                )  # récupération des infos du documents
-                documents.append(DocumentDetail(**response))
+
+            def _fetch_doc(doc_id):
+                t0 = time.monotonic()
+                logger.info(f"[batch] GET document {doc_id} : démarré (+{t0 - batch_start:.3f}s)")
+                result = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{doc_id}")
+                logger.info(
+                    f"[batch] GET document {doc_id} : terminé (+{time.monotonic() - batch_start:.3f}s, "
+                    f"durée {time.monotonic() - t0:.3f}s)"
+                )
+                return result
+
+            # Pastell n'a pas d'endpoint pour récupérer plusieurs documents d'un coup : on lance
+            # un GET par document en parallèle plutôt qu'en boucle séquentielle.
+            futures = [_EXECUTOR.submit(_fetch_doc, doc_id) for doc_id in documents_id]
+            documents = [DocumentDetail(**future.result()) for future in futures]
+            logger.info(f"[batch] {len(documents_id)} GET documents terminés en {time.monotonic() - batch_start:.3f}s au total")
             url = self.tdt_service.teletransmission_multi(documents, entite_id)
             logger.debug(f"Url généré : {url}")
 
@@ -104,9 +116,23 @@ class ActeService(BaseService):
                 data={"url": url},
             )
 
-        # Revérifie chaque document avant exécution (action_possible en liste n'est qu'une estimation)
-        for doc_id in documents_id:
-            logger.info(f"Action multiple {action} sur le document {doc_id} entite {entite_id}")
+        def _run_action(doc_id):
+            t0 = time.monotonic()
+            logger.info(f"[batch] Action {action} sur {doc_id} : démarrée (+{t0 - batch_start:.3f}s)")
             self.check_and_perform_action(entite_id, doc_id, action)
+            logger.info(
+                f"[batch] Action {action} sur {doc_id} : terminée (+{time.monotonic() - batch_start:.3f}s, "
+                f"durée {time.monotonic() - t0:.3f}s)"
+            )
+
+        # Revérifie chaque document avant exécution (action_possible en liste n'est qu'une estimation).
+        # Idem : pas d'endpoint Pastell pour agir sur plusieurs documents à la fois, donc un appel
+        # par document, mais en parallèle. Contrairement à une boucle séquentielle qui s'arrêterait
+        # net au premier échec (documents suivants jamais traités), tous les documents sont traités
+        # ici avant que la première erreur rencontrée ne soit levée.
+        futures = [_EXECUTOR.submit(_run_action, doc_id) for doc_id in documents_id]
+        for future in futures:
+            future.result()
+        logger.info(f"[batch] {len(documents_id)} actions '{action}' terminées en {time.monotonic() - batch_start:.3f}s au total")
 
         return ActionResult(result=True, message="")

@@ -1,100 +1,53 @@
 <script setup lang="ts">
 import { useQuery } from "@tanstack/vue-query";
-import { FetchError } from "ofetch";
 
 const props = defineProps<{ idD: string; fluxType?: string }>();
 
-const config = useRuntimeConfig();
 const router = useRouter();
 const { data: user } = useAuth();
 const { getFluxDef, fluxDefFor } = useFluxDef();
 const entiteId = useSelectedEntiteId();
+const apiFetch = useApiFetch();
 
 // ── Fetch document ────────────────────────────────────────────────────────────
 async function fetchDocument() {
-  const url = `/entite/${entiteId.value}/document/${props.idD}`;
   const query = props.fluxType ? { type_flux: props.fluxType } : undefined;
-  try {
-    return await $fetch<DocumentDetail>(url, {
-      baseURL: config.public.apiBaseUrl,
-      headers: { Authorization: `Bearer ${user.value?.accessToken}` },
-      query,
-    });
-  } catch (e) {
-    if (e instanceof FetchError) {
-      if (e?.status === 403) {
-        const newToken = await tryRefreshToken();
-        if (newToken) {
-          return await $fetch<DocumentDetail>(url, {
-            baseURL: config.public.apiBaseUrl,
-            headers: { Authorization: `Bearer ${newToken}` },
-            query,
-          });
-        }
-      }
-    }
-    throw e;
-  }
+  return await apiFetch<DocumentDetail>(`/entite/${entiteId.value}/document/${props.idD}`, { query });
 }
 
-// Pas de retry sur 4xx (erreur définitive, pas transitoire)
-function retryUnlessClientError(failureCount: number, error: unknown): boolean {
-  if (error instanceof FetchError) {
-    const status = error?.status ?? error?.response?.status;
-    if (status && status >= 400 && status < 500) return false;
-    return failureCount < 1;
-  }
-  return false;
+// ── Fetch document mais sans retélécharger les pièces jointes (skip_external_data) : utilisé
+// par le polling post-action, où seuls last_action/action_possible nous intéressent. ────────────────────────────────────────────────────────────
+async function fetchDocumentStatus() {
+  const query = {
+    ...(props.fluxType ? { type_flux: props.fluxType } : {}),
+    skip_external_data: true,
+  };
+  return await apiFetch<DocumentDetail>(`/entite/${entiteId.value}/document/${props.idD}`, { query });
 }
 
-const {
-  data: doc,
-  isPending,
-  error,
-} = useQuery({
+const { data: doc, isPending, error } = useQuery({
   queryKey: computed(() => ["document", entiteId.value, props.idD]),
   queryFn: fetchDocument,
   enabled: computed(() => !!user.value?.accessToken),
   staleTime: 30_000,
   placeholderData: (prev) => prev,
-  retry: retryUnlessClientError,
+  retry: shouldRetry,
 });
 
 // ── Fetch journal ─────────────────────────────────────────────────────────────
 const { data: journalData, isPending: journalPending } = useQuery({
   queryKey: computed(() => ["journal", entiteId.value, props.idD]),
-  queryFn: async () => {
-    const url = `/entite/${entiteId.value}/document/${props.idD}/journal`;
-    try {
-      return await $fetch<Journal>(url, {
-        baseURL: config.public.apiBaseUrl,
-        headers: { Authorization: `Bearer ${user.value?.accessToken}` },
-      });
-    } catch (e) {
-      if (e instanceof FetchError) {
-        if (e?.status === 403) {
-          const newToken = await tryRefreshToken();
-          if (newToken) {
-            return await $fetch<Journal>(url, {
-              baseURL: config.public.apiBaseUrl,
-              headers: { Authorization: `Bearer ${newToken}` },
-            });
-          }
-        }
-      }
-      throw e;
-    }
-  },
+  queryFn: () => apiFetch<JournalListEntry[]>(`/entite/${entiteId.value}/document/${props.idD}/journal`),
   enabled: computed(() => !!user.value?.accessToken),
   staleTime: 5 * 60 * 1000,
-  retry: retryUnlessClientError,
+  retry: shouldRetry,
 });
 
 // Type de flux effectif : celui passé en prop (dispo dès le mount, ex: venant
 // d'edit.vue) sinon celui du document une fois chargé. Mutualisé ici pour ne
 // plus le recalculer séparément dans fluxDef / watch / tabs / activeTabFields / runAction.
 const effectiveFluxType = computed(
-  () => props.fluxType ?? doc.value?.info?.type
+  () => props.fluxType ?? doc.value?.info?.type,
 );
 
 const fluxDef = computed(() => {
@@ -111,7 +64,7 @@ watch(
   async ({ token, type }) => {
     if (token && type) await getFluxDef(type);
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // ── Définition des onglets par flux ──────────────────────────────────────────
@@ -122,7 +75,19 @@ const tabs = computed(() => {
   const config = FLUX_TABS_CONFIG[fluxType];
   if (!config) return [{ id: "preparer", label: "Préparer", fields: [] }];
   const data = doc.value?.data ?? {};
-  return config.filter((tab) => !tab.condition || tab.condition(data));
+  const filtered = config.filter((tab) => !tab.condition || tab.condition(data));
+
+  // Comme dans le formulaire de création : "Acte" est fusionné dans "Préparer" pour
+  // alléger l'affichage (moins d'onglets à parcourir pour un même acte).
+  const acteTab = filtered.find((t) => t.id === "acte");
+  if (!acteTab) return filtered;
+  return filtered
+    .filter((t) => t.id !== "acte")
+    .map((t) =>
+      t.id === "preparer"
+        ? { ...t, fields: [...t.fields, ...acteTab.fields], alwaysShow: [...(t.alwaysShow ?? []), ...(acteTab.alwaysShow ?? [])] }
+        : t
+    );
 });
 
 const activeTab = ref("preparer");
@@ -170,10 +135,10 @@ function getFilteredFields() {
       if (def?.["no-show"]) return false;
       if (!def?.type) return false;
       if (def?.requis) {
-        if (def.type === "file" && def["read-only"]) return false;
+        if (def.type === "file" && def["readonly"]) return false;
         return true;
       }
-      if (def?.["read-only"] === true) return false;
+      if (def?.["readonly"] === true) return false;
       if ((def?.type === "date" || def?.type === "file") && !def?.commentaire)
         return false;
       return true;
@@ -192,7 +157,7 @@ function getFilteredFields() {
         val !== null &&
         val !== "" &&
         val !== "[]" &&
-        !(Array.isArray(val) && val.length === 0)
+        !(Array.isArray(val) && val.length === 0),
     );
 }
 
@@ -201,10 +166,19 @@ const { actionLoading, actionError, runAction } = useDocumentActions(
   toRef(props, "idD"),
   effectiveFluxType,
   doc,
-  fetchDocument
+  fetchDocumentStatus,
 );
 
 const journalEntries = computed(() => journalData.value ?? []);
+
+// Les messages Pastell/S²low ne suivent pas un format fixe (parfois "code : détail",
+// parfois de la prose libre) : on ne peut donc pas fiabiliser leur détection sur la forme
+// du texte. On se base plutôt sur des mots-clés d'échec côté Pastell/S²low ("erreur", "ko",
+// "rejet...") pour choisir la couleur, et on affiche le message dans tous les cas dès qu'il
+// est présent plutôt que de le masquer par défaut.
+const isLastActionMessageError = computed(() =>
+  /erreur|\bko\b|rejet/i.test(doc.value?.last_action_message ?? "")
+);
 
 const journalUser = (entry: JournalListEntry) => {
   const name = [entry.prenom, entry.nom].filter(Boolean).join(" ");
@@ -285,7 +259,7 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
         <template v-else-if="doc.action_possible?.length">
           <Button
             v-for="action in doc.action_possible.filter(
-              (a: any) =>
+              (a: ActionPossible) =>
                 a.message &&
                 !(a.action === 'modification' && doc.last_action === 'termine')
             )"
@@ -303,12 +277,15 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
         </template>
       </div>
 
-      <!-- Bannière erreur formulaire : only si la partie avant ' : ' est un code action (sans espace) -->
+      <!-- Dernier message Pastell/S²low associé au document (succès ou erreur) -->
       <div
-        v-if="
-          doc?.last_action_message && /^[^\s]+ : /.test(doc.last_action_message)
-        "
-        class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300 w-full"
+        v-if="doc?.last_action_message"
+        :class="[
+          'mb-4 text-sm px-4 py-3 rounded border w-full',
+          isLastActionMessageError
+            ? 'text-red-700 bg-red-50 border-red-300'
+            : 'text-green-700 bg-green-50 border-green-300',
+        ]"
       >
         {{ doc.last_action_message }}
       </div>

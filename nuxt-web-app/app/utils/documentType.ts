@@ -6,7 +6,7 @@ interface BaseDocumentInfo {
   modification: string;
 }
 
-interface ActionPossible {
+export interface ActionPossible {
   action: ActionPossibleEnum | string;
   message: string;
 }
@@ -62,6 +62,11 @@ interface TypePieceFichier {
   typologie: string;
 }
 
+export interface TypePieceMeta {
+  pieces?: (string | { filename: string; type_pj?: string })[];
+  actes_type_pj_list?: Record<string, string>;
+}
+
 export interface DocumentData {
   envoi_tdt_actes?: string;
   envoi_depot?: string;
@@ -79,7 +84,7 @@ export interface DocumentData {
   type_acte?: string;
   type_pj?: string;
   type_piece_fichier?: TypePieceFichier[];
-  //[key: string]: string | number | TypePieceFichier[] | string[]
+  [key: string]: string | string[] | TypePieceFichier[] | undefined;
 }
 
 export interface DocumentDetail extends DocumentActionDetails {

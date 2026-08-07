@@ -11,7 +11,9 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: "http://localhost:8080", // can be overridden by NUXT_PUBLIC_API_BASE_URL environment variable
+      apiBaseUrl: process.env.API_URL || "http://localhost:8080",
+      pastellUrl:
+        process.env.PASTEL_URL || "https://pastell.megalis.bretagne.bzh",
     },
   },
 
@@ -28,6 +30,7 @@ export default defineNuxtConfig({
     globalAppMiddleware: true,
     disableServerSideAuth: false,
     originEnvKey: "AUTH_ORIGIN",
+    baseURL: "/auth",
     provider: {
       type: "authjs",
       trustHost: false,
@@ -35,7 +38,7 @@ export default defineNuxtConfig({
       addDefaultCallbackUrl: true,
     },
     sessionRefresh: {
-      enablePeriodically: 1000,
+      enablePeriodically: 30000,
       enableOnWindowFocus: true,
     },
   },

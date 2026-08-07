@@ -29,7 +29,13 @@ class DocumentService(BaseService):
         super().__init__(api)
         self.flux_action_service = flux_action_service
 
-    def get_single_document(self, entite_id: int, document_id: str, type_flux: str | None = None):
+    def get_single_document(
+        self,
+        entite_id: int,
+        document_id: str,
+        type_flux: str | None = None,
+        skip_external_data: bool = False,
+    ):
         """Récupère les infos d'un document dans Pastell.
 
         Args:
@@ -39,11 +45,13 @@ class DocumentService(BaseService):
             external_data_to_retrieve (list[str]) : liste des external Data a récupérer
             type_flux (str | None) : type de flux déjà connu du front, pour lancer flux_action
                 en parallèle du fetch du document (revérifié après coup, ignoré si erroné)
+            skip_external_data (bool) : ne pas retélécharger les pièces jointes (utilisé pour
+                le polling après une action, où seuls last_action/action_possible nous intéressent)
 
         Returns:
             dict: Les détails du document récupéré.
         """
-        external_data_to_retrieve = get_settings().document.external_data_to_retrieve
+        external_data_to_retrieve = [] if skip_external_data else get_settings().document.external_data_to_retrieve
         if external_data_to_retrieve is None:
             external_data_to_retrieve = []
 

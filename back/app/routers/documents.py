@@ -61,9 +61,15 @@ def get_document(
         str | None,
         Query(description="Type de flux déjà connu du front, pour paralléliser le fetch des actions possibles"),
     ] = None,
+    skip_external_data: Annotated[
+        bool,
+        Query(description="Ne pas retélécharger les pièces jointes (utilisé pour le polling après une action)"),
+    ] = False,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentService(client).get_single_document(entite_id, document_id, type_flux=type_flux)
+    return DocumentService(client).get_single_document(
+        entite_id, document_id, type_flux=type_flux, skip_external_data=skip_external_data
+    )
 
 
 # Journal doc

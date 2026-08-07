@@ -30,7 +30,6 @@ export const useDocuments = (
         idFlux.value ?? null,
         offset.value,
         limit.value,
-        user.value?.accessToken,
         search.value,
         filters.value
       ),

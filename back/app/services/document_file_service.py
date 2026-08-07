@@ -1,15 +1,16 @@
 from . import BaseService
+from .document_service import _EXECUTOR
 from ..exceptions.custom_exceptions import PastellException
 from ..schemas.document_schemas import (
     DeleteFileFromDoc,
     AddFilesToDoc,
-    AddFileToDoc,
 )
 from ..clients.pastell.exeptions import ApiPastellHttpForbidden, ApiPastellHttp40XError
 from fastapi import HTTPException
 from io import BytesIO
 from fastapi.responses import StreamingResponse
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -31,36 +32,65 @@ class DocumentFileService(BaseService):
         files_data: AddFilesToDoc,
         replace: bool = False,
     ):
-        results = []
-        for file in files_data.files:
-            file_data = AddFileToDoc(entite_id=files_data.entite_id, file=file)
-            result = self.add_file(document_id, element_id, file_data, replace=replace)
-            results.append(result)
+        """Ajoute plusieurs fichiers à un même champ d'un document.
+
+        Le numéro de fichier suivant (position où Pastell attend chaque fichier) ne dépend
+        que du nombre de fichiers déjà présents : on le récupère une seule fois avant la
+        boucle plutôt qu'à chaque fichier, puis on téléverse tous les fichiers en parallèle
+        (chacun a sa position réservée à l'avance, donc pas de risque de collision).
+        """
+        t0 = time.monotonic()
+        existing_files = self.get_existing_files(files_data.entite_id, document_id, element_id)
+        logger.info(f"[perf] get_existing_files {element_id} : {time.monotonic() - t0:.3f}s")
+        start_index = 0 if replace else len(existing_files)
+
+        # Le contenu de chaque UploadFile est lu ici (thread principal) : SpooledTemporaryFile
+        # n'est pas garanti thread-safe pour une lecture concurrente depuis le pool de threads.
+        prepared = [
+            (start_index + i, file.filename, file.file.read(), file.content_type)
+            for i, file in enumerate(files_data.files)
+        ]
+
+        def _upload(item):
+            file_number, filename, content, content_type = item
+            file_t0 = time.monotonic()
+            result = self.add_file(
+                document_id,
+                element_id,
+                files_data.entite_id,
+                file_number,
+                filename,
+                content,
+                content_type,
+            )
+            logger.info(f"[perf] add_file {element_id}/{file_number} ({filename}) : {time.monotonic() - file_t0:.3f}s")
+            return result
+
+        t1 = time.monotonic()
+        results = list(_EXECUTOR.map(_upload, prepared))
+        logger.info(
+            f"[perf] add_multiple_files {element_id} : {len(prepared)} fichier(s) en {time.monotonic() - t1:.3f}s "
+            f"(total avec get_existing_files : {time.monotonic() - t0:.3f}s)"
+        )
         return results
 
     def add_file(
         self,
         document_id: str,
         element_id: str,
-        file_data: AddFileToDoc,
-        replace: bool = False,
+        entite_id: int,
+        file_number: int,
+        filename: str,
+        content: bytes,
+        content_type: str,
     ):
-        existing_files = self.get_existing_files(file_data.entite_id, document_id, element_id)
-        next_file_number = 0 if replace else len(existing_files)
-
-        file_content = file_data.file.file.read()
-
         files = {
-            "file_name": (None, file_data.file.filename),
-            "file_content": (
-                file_data.file.filename,
-                file_content,
-                file_data.file.content_type,
-            ),
+            "file_name": (None, filename),
+            "file_content": (filename, content, content_type),
         }
 
         return self.api_pastell.perform_post(
-            f"/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{next_file_number}",
+            f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_number}",
             files=files,
         )
 

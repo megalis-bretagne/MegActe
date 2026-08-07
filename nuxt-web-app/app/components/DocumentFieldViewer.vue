@@ -14,28 +14,14 @@ function downloadFile(filename: string, elementId: string, index?: number) {
 }
 
 // Retrouve à quel champ (arrete ou autre_document_attache) appartient une pièce
-function resolveFileRef(filename: string): {
-  elementId: string;
-  index?: number;
-} {
-  const arreteRaw = props.docData?.arrete;
-  const arreteList = Array.isArray(arreteRaw)
-    ? arreteRaw
-    : arreteRaw
-      ? [arreteRaw]
-      : [];
+function resolveFileRef(filename: string): { elementId: string; index?: number } {
+  const arreteList = toFileList(props.docData?.arrete);
   const arreteIndex = arreteList.indexOf(filename);
   if (arreteIndex !== -1) return { elementId: "arrete", index: arreteIndex };
 
-  const autreRaw = props.docData?.autre_document_attache;
-  const autreList = Array.isArray(autreRaw)
-    ? autreRaw
-    : autreRaw
-      ? [autreRaw]
-      : [];
+  const autreList = toFileList(props.docData?.autre_document_attache);
   const autreIndex = autreList.indexOf(filename);
-  if (autreIndex !== -1)
-    return { elementId: "autre_document_attache", index: autreIndex };
+  if (autreIndex !== -1) return { elementId: "autre_document_attache", index: autreIndex };
 
   return { elementId: "arrete" };
 }
@@ -46,10 +32,10 @@ function downloadPieceFile(filename: string) {
 }
 
 const isFileArray = (val: FieldValue) =>
-  Array.isArray(val) &&
-  val.length > 0 &&
-  typeof val[0] === "string" &&
-  val[0].includes(".");
+    Array.isArray(val) &&
+    val.length > 0 &&
+    typeof val[0] === "string" &&
+    val[0].includes(".");
 
 const resolveSelectValue = (field: Field) => {
   if (!field.selectValues) return field.val;
@@ -62,18 +48,18 @@ const resolveSelectValue = (field: Field) => {
   <template v-if="field.key === 'ged_document_id_file'">
     <table class="text-xs border border-gray-200 rounded">
       <thead>
-        <tr class="bg-gray-50">
-          <th
+      <tr class="bg-gray-50">
+        <th
             class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
-          >
-            Nom du fichier
-          </th>
-          <th
+        >
+          Nom du fichier
+        </th>
+        <th
             class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
-          >
-            Identifiant
-          </th>
-        </tr>
+        >
+          Identifiant
+        </th>
+      </tr>
       </thead>
       <tbody>
         <tr
@@ -97,23 +83,23 @@ const resolveSelectValue = (field: Field) => {
       >
         {{ piece.filename }}
       </button>
-      <span class="text-gray-400 ml-2 text-xs">{{ piece.typologie }}</span>
+      <span class="text-gray-400 ml-2 text-xs">{{
+          piece.typologie
+        }}</span>
     </div>
   </template>
 
   <!-- Fichiers -->
   <template
-    v-else-if="
-      field.key !== 'ged_document_id_file' &&
-      (field.type === 'file' || isFileArray(field.val))
-    "
+      v-else-if="
+        field.key !== 'ged_document_id_file' &&
+        (field.type === 'file' || isFileArray(field.val))
+      "
   >
     <div
-      v-for="(filename, i) in (Array.isArray(field.val)
-        ? field.val
-        : [field.val]) as string[]"
-      :key="i"
-      class="mb-1"
+        v-for="(filename, i) in toFileList(field.val)"
+        :key="i"
+        class="mb-1"
     >
       <button
         class="text-blue-600 hover:underline text-left"
@@ -143,11 +129,11 @@ const resolveSelectValue = (field: Field) => {
 
   <!-- Date -->
   <template
-    v-else-if="
-      typeof field.val === 'string' &&
-      field.key !== 'date_cloture_journal_iso8601' &&
-      /^\d{4}-\d{2}-\d{2}/.test(field.val)
-    "
+      v-else-if="
+        typeof field.val === 'string' &&
+        field.key !== 'date_cloture_journal_iso8601' &&
+        /^\d{4}-\d{2}-\d{2}/.test(field.val)
+      "
   >
     {{ new Date(field.val).toLocaleDateString("fr-FR") }}
   </template>
@@ -157,10 +143,10 @@ const resolveSelectValue = (field: Field) => {
     v-else-if="typeof field.val === 'string' && field.val.startsWith('http')"
   >
     <a
-      :href="field.val"
-      target="_blank"
-      class="text-blue-600 hover:underline"
-      >{{ field.val }}</a
+        :href="field.val"
+        target="_blank"
+        class="text-blue-600 hover:underline"
+    >{{ field.val }}</a
     >
   </template>
 

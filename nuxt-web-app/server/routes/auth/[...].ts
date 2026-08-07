@@ -1,9 +1,9 @@
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { NuxtAuthHandler } from "#auth";
+import type {JWT} from "next-auth/jwt";
 
 async function refreshAccessToken(token: JWT) {
   try {
-    console.log("refreshAccessToken called");
     const url = `${process.env.KEYCLOAK_ISSUER}/protocol/openid-connect/token`;
     const res = await $fetch(url, {
       method: "POST",
@@ -15,10 +15,13 @@ async function refreshAccessToken(token: JWT) {
         `&client_id=${process.env.KEYCLOAK_CLIENT_ID}` +
         `&client_secret=${process.env.KEYCLOAK_CLIENT_SECRET}` +
         `&refresh_token=${token.refreshToken}`,
-      timeout: 1000,
+      // 1s était trop court pour un aller-retour OAuth2 vers Keycloak : la moindre latence
+      // réseau déclenchait un RefreshAccessTokenError alors que le refresh token était valide.
+      timeout: 10000,
     });
 
-    console.log("new access token", res.access_token);
+    console.log("Token rafraîchi :", res.access_token);
+
     return {
       ...token,
       accessToken: res.access_token,
@@ -26,7 +29,7 @@ async function refreshAccessToken(token: JWT) {
       refreshToken: res.refresh_token ?? token.refreshToken, // Fall back to old refresh token
     };
   } catch (error) {
-    console.error(error);
+    console.error("Échec du rafraîchissement du token Keycloak", error);
 
     return {
       ...token,
@@ -36,7 +39,7 @@ async function refreshAccessToken(token: JWT) {
 }
 
 export default NuxtAuthHandler({
-  secret: "secret",
+  secret: process.env.AUTH_SECRET,
   providers: [
     KeycloakProvider.default({
       clientId: process.env.KEYCLOAK_CLIENT_ID,
@@ -45,9 +48,8 @@ export default NuxtAuthHandler({
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, account }) {
       if (account) {
-        console.log({ token, user, account });
         token.accessToken = account.access_token;
         token.accessTokenExpiresAt = account.expires_at * 1000;
         token.refreshToken = account.refresh_token;
@@ -58,7 +60,6 @@ export default NuxtAuthHandler({
 
       // If the access token has not expired we return it
       if (Date.now() < (token.accessTokenExpiresAt as number)) {
-        console.log("Token still valid returning it: ", token.accessToken);
         return token;
       }
 
@@ -66,8 +67,9 @@ export default NuxtAuthHandler({
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken;
-      console.log("returned session object");
-      console.log(session);
+      // Sans ça, un échec de refresh était invisible côté client : accessToken restait
+      // présent (l'ancien, expiré), donc rien ne distinguait un token valide d'un stale.
+      session.error = token.error;
       return session;
     },
   },

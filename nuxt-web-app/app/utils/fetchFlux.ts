@@ -17,22 +17,7 @@ export async function fetchUserFlux(
   }
 }
 
-export async function fetchFluxDetails(
-  fluxType: string,
-  token: string
-): Promise<FluxDetails | null> {
-  try {
-    const config = useRuntimeConfig();
-    console.log("Fetch flux details for type:" + fluxType);
-    const fluxDetails: FluxDetails = await $fetch(`/flux/${fluxType}`, {
-      baseURL: config.public.apiBaseUrl,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return fluxDetails;
-  } catch (error) {
-    console.log("Failed to fetch flux details: ", error);
-    throw error;
-  }
+export async function fetchFluxDetails(fluxType: string): Promise<FluxDetails | null> {
+  const apiFetch = useApiFetch();
+  return await apiFetch<FluxDetails>(`/flux/${fluxType}`);
 }

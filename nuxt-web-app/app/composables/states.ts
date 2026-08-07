@@ -6,3 +6,6 @@ export const useSelectedEntiteId = () =>
 
 export const usePastellUser = () =>
   useState<pastellUser | null>("pastellUser", () => null);
+
+export const useSidebarCollapsed = () =>
+  useState<boolean>("sidebarCollapsed", () => false);

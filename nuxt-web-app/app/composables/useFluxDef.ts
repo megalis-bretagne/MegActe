@@ -27,8 +27,7 @@ export const useFluxDef = () => {
 
     // si aucun alors on arrive ici tout en mettant en cache localstorage
     try {
-      const { data: user } = useAuth();
-      const result = await fetchFluxDetails(type, user.value?.accessToken);
+      const result = await fetchFluxDetails(type);
       fluxDefCache.value[type] = result;
       if (import.meta.client) {
         try {
