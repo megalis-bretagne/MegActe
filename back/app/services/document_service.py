@@ -74,8 +74,15 @@ class DocumentService(BaseService):
             )
             for key in keys_to_fetch
         }
+        # Sans action_possible côté Pastell, la boucle d'enrichissement plus bas ne fera de
+        # toute façon rien : inutile d'aller chercher flux/{type}/action (souvent un aller-retour
+        # Pastell supplémentaire, pas seulement un cache-hit) pour des documents déjà finalisés.
+        needs_flux_action = bool(document.get("action_possible"))
+
         # Indice front valide : on garde le fetch déjà en vol, sinon on relance avec le vrai type
-        if type_flux == document["info"]["type"] and hinted_flux_action_future is not None:
+        if not needs_flux_action:
+            flux_action_future = None
+        elif type_flux == document["info"]["type"] and hinted_flux_action_future is not None:
             flux_action_future = hinted_flux_action_future
         else:
             flux_action_future = _EXECUTOR.submit(self.flux_action_service.get_action_on_flux, document["info"]["type"])
@@ -84,17 +91,19 @@ class DocumentService(BaseService):
             logger.debug(f"Récupération des informations de {key} pour le document {document_id}")
             document["data"][key] = future.result().json()
 
-        try:
-            flux_action = flux_action_future.result()
-        except (ApiError, ValidationError):
-            # Type de flux obsolète/supprimé côté Pastell, ou réponse Pastell mal formée pour
-            # ce flux : on continue sans enrichissement plutôt que de faire échouer le détail
-            logger.warning(
-                "Impossible de récupérer les actions du flux '%s' (document %s), flux probablement obsolète ou réponse invalide",
-                document["info"]["type"],
-                document_id,
-            )
-            flux_action = None
+        flux_action = None
+        if flux_action_future is not None:
+            try:
+                flux_action = flux_action_future.result()
+            except (ApiError, ValidationError):
+                # Type de flux obsolète/supprimé côté Pastell, ou réponse Pastell mal formée pour
+                # ce flux : on continue sans enrichissement plutôt que de faire échouer le détail
+                logger.warning(
+                    "Impossible de récupérer les actions du flux '%s' (document %s), flux probablement obsolète ou réponse invalide",
+                    document["info"]["type"],
+                    document_id,
+                )
+                flux_action = None
 
         document = DocumentDetail(**document)
 
@@ -105,14 +114,64 @@ class DocumentService(BaseService):
 
         return document
 
+    def get_document_external_data(self, entite_id: int, document_id: str, doc_keys: list[str] | None = None) -> dict:
+        """Récupère séparément les champs external_data enrichis (ex: liste des pièces jointes
+        avec leur typologie) d'un document.
+
+        Endpoint dédié pensé pour être appelé par le front en parallèle du fetch principal du
+        document (`get_single_document`) plutôt que d'attendre que celui-ci les inclue : c'est
+        la partie la plus lente de get_single_document (un aller-retour Pastell par clé), donc
+        l'isoler évite de bloquer l'affichage des infos/actions du document sur elle.
+
+        Args:
+            entite_id (int): L'ID de l'entité.
+            document_id (str): L'ID du document.
+            doc_keys (list[str] | None) : clés présentes dans le `data` du document (déjà connu
+                du front via le fetch principal). Sert à ne tenter que les clés réellement
+                définies par ce flux, comme le fait get_single_document (`key in document["data"]`)
+                — sans ça on tenterait aveuglément toutes les clés configurées, y compris celles
+                que ce flux ne définit pas (404 Pastell inutile à chaque appel).
+
+        Returns:
+            dict: Les valeurs par clé (uniquement celles applicables à ce document/flux).
+        """
+        external_data_to_retrieve = get_settings().document.external_data_to_retrieve or []
+        if doc_keys is not None:
+            external_data_to_retrieve = [key for key in external_data_to_retrieve if key in doc_keys]
+
+        def _fetch(key: str):
+            try:
+                return key, self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}/file/{key}").json()
+            except ApiError:
+                # Clé non applicable à ce document/flux (ex: 404) : on l'ignore simplement
+                return key, None
+
+        futures = [_EXECUTOR.submit(_fetch, key) for key in external_data_to_retrieve]
+        result = {key: value for key, value in (future.result() for future in futures) if value is not None}
+
+        return result
+
     def get_document_journal(self, entite_id: int, document_id: str) -> list:
         raw = self.api_pastell.perform_get(
             "journal",
             query_params={"id_e": entite_id, "id_d": document_id, "limit": 300},
         )
+
+        def _sort_key(entry: dict):
+            # date seule ne suffit pas : plusieurs entrées peuvent partager la même seconde
+            # (ex: "Traitement terminé" et "Versé à la GED" générées coup sur coup par
+            # l'automate Pastell). id_j (identifiant séquentiel de l'entrée journal) départage
+            # ces égalités de façon fiable, plutôt que de dépendre de l'ordre brut renvoyé par
+            # Pastell (tri Python stable = ordre indéfini en cas d'égalité sur la seule date).
+            try:
+                id_j = int(entry.get("id_j"))
+            except (TypeError, ValueError):
+                id_j = 0
+            return (entry.get("date", ""), id_j)
+
         entries = sorted(
             [e for e in raw if e.get("type") == "1"],
-            key=lambda e: e.get("date", ""),
+            key=_sort_key,
         )
         deduped = [e for i, e in enumerate(entries) if i == len(entries) - 1 or e["action"] != entries[i + 1]["action"]]
         return deduped[-13:]

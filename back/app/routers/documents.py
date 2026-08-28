@@ -72,6 +72,24 @@ def get_document(
     )
 
 
+# Champs external_data enrichis du document (pièces jointes, etc.), séparés de l'endpoint
+# principal : la partie la plus lente à récupérer, pour ne pas bloquer l'affichage initial.
+@router.get(
+    "/entite/{entite_id}/document/{document_id}/external-data",
+    tags=["document"],
+)
+def get_document_external_data(
+    document_id: str,
+    entite_id: int,
+    keys: Annotated[
+        List[str] | None,
+        Query(description="Clés présentes dans le data du document (déjà connu du front), pour ne tenter que celles-ci"),
+    ] = None,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return DocumentService(client).get_document_external_data(entite_id, document_id, doc_keys=keys)
+
+
 # Journal doc
 @router.get(
     "/entite/{entite_id}/document/{document_id}/journal",
