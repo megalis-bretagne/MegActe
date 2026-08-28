@@ -9,23 +9,6 @@ const entiteBaseName = computed(() => {
   if (!u) return null;
   return findEntiteDenomination(u.entites ?? [], u.user_info.id_e);
 });
-
-const passwordChangeLoading = ref(false);
-async function openPasswordChange() {
-  passwordChangeLoading.value = true;
-  try {
-    const res = await $fetch<{ url: string | null }>(
-      "/api/auth/keycloak-account-url"
-    );
-    if (res.url) {
-      window.open(res.url, "_blank", "noopener,noreferrer");
-    }
-  } catch (e) {
-    console.error("Impossible de récupérer l'URL du compte Keycloak :", e);
-  } finally {
-    passwordChangeLoading.value = false;
-  }
-}
 </script>
 
 <template>
@@ -34,28 +17,18 @@ async function openPasswordChange() {
 
     <section class="bg-white border border-gray-200 rounded-lg p-6">
       <h2 class="font-medium text-gray-900 mb-3">Profil</h2>
-      <div class="flex items-center justify-between gap-4">
-        <div class="flex items-center gap-4">
-          <Avatar :label="data?.user?.name?.charAt(0)" size="xlarge" />
-          <dl class="text-sm">
-            <div class="flex gap-2">
-              <dt class="text-gray-500 w-20 shrink-0">Nom</dt>
-              <dd class="text-gray-900">{{ data?.user?.name ?? "—" }}</dd>
-            </div>
-            <div class="flex gap-2">
-              <dt class="text-gray-500 w-20 shrink-0">Email</dt>
-              <dd class="text-gray-900">{{ data?.user?.email ?? "—" }}</dd>
-            </div>
-          </dl>
-        </div>
-        <Button
-          label="Modifier le mot de passe"
-          icon="pi pi-key"
-          severity="secondary"
-          outlined
-          :loading="passwordChangeLoading"
-          @click="openPasswordChange"
-        />
+      <div class="flex items-center gap-4">
+        <Avatar :label="data?.user?.name?.charAt(0)" size="xlarge" />
+        <dl class="text-sm">
+          <div class="flex gap-2">
+            <dt class="text-gray-500 w-20 shrink-0">Nom</dt>
+            <dd class="text-gray-900">{{ data?.user?.name ?? "—" }}</dd>
+          </div>
+          <div class="flex gap-2">
+            <dt class="text-gray-500 w-20 shrink-0">Email</dt>
+            <dd class="text-gray-900">{{ data?.user?.email ?? "—" }}</dd>
+          </div>
+        </dl>
       </div>
     </section>
 
