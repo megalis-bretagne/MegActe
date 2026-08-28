@@ -10,23 +10,50 @@ const formProps = reactive({
   fluxType: computed(() => props.fluxType),
 });
 
-const editState = useDocumentEdit(formProps);
+const editState = await useDocumentEdit(formProps);
 const {
-  doc, isPending, isNew, fluxDef, hasStepTdt, currentStep, tabs, activeTab, tabFields,
-  formData, pendingFiles, onFileChange, removeFile,
-  externalDataLoading, showExternalDialog, externalDialogLabel,
-  externalDialogSearch, externalDialogTemp, filteredExternalOptions,
-  typePieceTypesList, typePieceItems, typePieceLoading,
-  openExternalDialog, toggleExternalOption,
-  externalDisplayValue
+  doc,
+  isPending,
+  isNew,
+  fluxDef,
+  hasStepTdt,
+  currentStep,
+  sections,
+  formData,
+  pendingFiles,
+  fileError,
+  onFileChange,
+  removeFile,
+  externalDataLoading,
+  showExternalDialog,
+  externalDialogLabel,
+  externalDialogSearch,
+  externalDialogTemp,
+  filteredExternalOptions,
+  typePieceTypesList,
+  typePieceItems,
+  typePieceLoading,
+  openExternalDialog,
+  toggleExternalOption,
+  externalDisplayValue,
 } = editState;
 
-// Sauvegarde
-const { save, sendActe, saveTypePiece, saving, saveError, savingStep1, savingTypePiece, sending } = useDocumentSave(formProps, editState);
+const {
+  save,
+  sendActe,
+  saveTypePiece,
+  saving,
+  saveError,
+  savingStep1,
+  savingTypePiece,
+  sending,
+} = useDocumentSave(formProps, editState);
 
 // Id du document déjà créé (pour télécharger les fichiers déjà enregistrés) : celui qu'on
 // vient de créer en session, sinon celui de l'URL si ce n'est pas une création ("new")
-const effectiveDocId = computed(() => editState.createdDocId.value ?? (!isNew.value ? props.idD : null));
+const effectiveDocId = computed(
+  () => editState.createdDocId.value ?? (!isNew.value ? props.idD : null)
+);
 
 // Raccord de l'affichage d'erreurs pour les dialogs externes
 function handleOpenExternal(key: string, label: string) {
@@ -34,6 +61,13 @@ function handleOpenExternal(key: string, label: string) {
     saveError.value = msg;
   });
 }
+
+// Affichées à part (largeur naturelle) : en grille 2 colonnes, un nombre impair de checkboxes
+// en isole une seule sur sa ligne.
+const checkboxFields = (fields: FieldEdit[]) =>
+  fields.filter((f) => f.type === "checkbox");
+const otherFields = (fields: FieldEdit[]) =>
+  fields.filter((f) => f.type !== "checkbox");
 </script>
 
 <template>
@@ -47,7 +81,22 @@ function handleOpenExternal(key: string, label: string) {
     </button>
 
     <div v-if="isPending && !isNew" class="space-y-4">
-      <Skeleton v-for="i in 6" :key="i" height="3rem" />
+      <Skeleton width="66%" height="2rem" />
+      <Skeleton width="25%" height="1rem" />
+      <div class="flex gap-4 mt-2">
+        <Skeleton width="8rem" height="0.75rem" />
+        <Skeleton width="8rem" height="0.75rem" />
+      </div>
+      <div class="flex gap-2 mt-4">
+        <Skeleton width="6rem" height="2.25rem" border-radius="6px" />
+        <Skeleton width="6rem" height="2.25rem" border-radius="6px" />
+      </div>
+      <div class="border border-gray-200 rounded-lg overflow-hidden mt-6">
+        <div v-for="i in 5" :key="i" class="flex px-4 py-3 even:bg-gray-50">
+          <Skeleton width="33%" height="0.75rem" />
+          <Skeleton width="50%" height="0.75rem" class="ml-8" />
+        </div>
+      </div>
     </div>
 
     <template v-else>
@@ -56,6 +105,13 @@ function handleOpenExternal(key: string, label: string) {
         class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300"
       >
         {{ saveError }}
+      </div>
+
+      <div
+        v-if="fileError"
+        class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300"
+      >
+        {{ fileError }}
       </div>
 
       <h1 class="text-2xl font-bold text-gray-900 mb-6">
@@ -68,72 +124,82 @@ function handleOpenExternal(key: string, label: string) {
 
       <!-- Cheminement (étapes), uniquement pour les flux avec télétransmission -->
       <ol v-if="hasStepTdt" class="flex items-center gap-2 mb-6 text-sm">
-        <li class="flex items-center" :class="currentStep === 1 ? 'text-blue-600 font-medium' : 'text-gray-500'">
+        <li
+          class="flex items-center"
+          :class="
+            currentStep === 1 ? 'text-blue-600 font-medium' : 'text-gray-500'
+          "
+        >
           <span
             class="flex items-center justify-center w-6 h-6 mr-2 text-xs border rounded-full shrink-0"
             :class="currentStep === 1 ? 'border-blue-600' : 'border-gray-400'"
-          >1</span>
+            >1</span
+          >
           Préparation de l'acte
           <i class="pi pi-angle-right mx-3 text-gray-400" />
         </li>
-        <li class="flex items-center" :class="currentStep === 2 ? 'text-blue-600 font-medium' : 'text-gray-500'">
+        <li
+          class="flex items-center"
+          :class="
+            currentStep === 2 ? 'text-blue-600 font-medium' : 'text-gray-500'
+          "
+        >
           <span
             class="flex items-center justify-center w-6 h-6 mr-2 text-xs border rounded-full shrink-0"
             :class="currentStep === 2 ? 'border-blue-600' : 'border-gray-400'"
-          >2</span>
+            >2</span
+          >
           Envoyer l'acte
         </li>
       </ol>
 
-      <!-- Étape 1 : champs du flux -->
       <template v-if="!hasStepTdt || currentStep === 1">
-        <!-- Onglets -->
-        <div class="border-b border-gray-200 mb-0">
-          <nav class="flex gap-0">
-            <button
-              v-for="tab in tabs"
-              :key="tab.id"
-              :class="
-                activeTab === tab.id
-                  ? 'border-b-2 border-blue-600 text-blue-600 font-medium'
-                  : 'text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300'
-              "
-              class="px-6 py-3 text-sm transition-colors -mb-px"
-              @click="activeTab = tab.id"
-            >
-              {{ tab.label }}
-            </button>
-          </nav>
-        </div>
-
-        <!-- Skeleton flux pas encore chargé -->
-        <div
-          v-if="!Object.keys(fluxDef).length"
-          class="border border-t-0 border-gray-200 rounded-b-lg divide-y divide-gray-100"
-        >
-          <div v-for="i in 5" :key="i" class="flex px-4 py-3 even:bg-gray-50">
-            <Skeleton width="33%" height="0.75rem" />
-            <Skeleton width="50%" height="0.75rem" class="ml-8" />
+        <div v-if="!Object.keys(fluxDef).length" class="space-y-8">
+          <div v-for="i in 2" :key="i" class="space-y-4">
+            <Skeleton width="10rem" height="1rem" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+              <div v-for="j in 4" :key="j">
+                <Skeleton width="40%" height="0.75rem" class="mb-2" />
+                <Skeleton width="100%" height="2.5rem" border-radius="6px" />
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Champs -->
-        <div
-          v-else
-          class="border border-t-0 border-gray-200 rounded-b-lg rounded-tr-lg overflow-hidden"
-        >
-          <table class="min-w-full text-sm">
-            <tbody class="divide-y divide-gray-100">
-              <tr v-if="tabFields.length === 0">
-                <td
-                  colspan="2"
-                  class="px-4 py-6 text-center text-gray-400 italic"
-                >
-                  Aucun champ disponible
-                </td>
-              </tr>
-              <FormFieldRenderer
-                  v-for="field in tabFields"
+        <!-- Sections (une par onglet du flux, toutes affichées à la suite) -->
+        <div v-else class="space-y-8">
+          <section v-for="section in sections" :key="section.id">
+            <h2
+              class="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200"
+            >
+              {{ section.label }}
+            </h2>
+            <p
+              v-if="section.fields.length === 0"
+              class="text-sm text-gray-400 italic"
+            >
+              Aucun champ disponible
+            </p>
+            <template v-else>
+              <div
+                v-if="checkboxFields(section.fields).length"
+                class="flex flex-wrap gap-x-10 gap-y-4 mb-5"
+              >
+                <FormFieldRenderer
+                  v-for="field in checkboxFields(section.fields)"
+                  :key="field!.key"
+                  v-model="formData[field!.key]"
+                  :field="field!"
+                  :entite-id="formProps.entiteId"
+                  :id-d="effectiveDocId"
+                />
+              </div>
+              <div
+                v-if="otherFields(section.fields).length"
+                class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5"
+              >
+                <FormFieldRenderer
+                  v-for="field in otherFields(section.fields)"
                   :key="field!.key"
                   v-model="formData[field!.key]"
                   :field="field!"
@@ -144,10 +210,13 @@ function handleOpenExternal(key: string, label: string) {
                   :id-d="effectiveDocId"
                   @file-change="(e) => onFileChange(field!.key, e)"
                   @file-remove="(f) => removeFile(field!.key, f)"
-                  @open-external="(key, label) => handleOpenExternal(key, label)"
-              />
-            </tbody>
-          </table>
+                  @open-external="
+                    (key, label) => handleOpenExternal(key, label)
+                  "
+                />
+              </div>
+            </template>
+          </section>
         </div>
 
         <div class="mt-6 flex gap-3">
@@ -181,20 +250,27 @@ function handleOpenExternal(key: string, label: string) {
         </div>
       </template>
 
-      <!-- Étape 2 : classification des pièces avant télétransmission -->
       <template v-else>
         <h3 class="text-lg font-semibold mb-4">Choix des types de pièces</h3>
 
-        <div v-if="typePieceLoading" class="border border-gray-200 rounded-lg divide-y divide-gray-100">
+        <div
+          v-if="typePieceLoading"
+          class="border border-gray-200 rounded-lg divide-y divide-gray-100"
+        >
           <div v-for="i in 3" :key="i" class="flex px-4 py-3 even:bg-gray-50">
             <Skeleton width="33%" height="0.75rem" />
             <Skeleton width="50%" height="0.75rem" class="ml-8" />
           </div>
         </div>
 
-        <table v-else class="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+        <table
+          v-else
+          class="w-full text-sm border border-gray-200 rounded-lg overflow-hidden"
+        >
           <thead>
-            <tr class="text-left text-xs text-gray-500 border-b border-gray-200 bg-gray-50">
+            <tr
+              class="text-left text-xs text-gray-500 border-b border-gray-200 bg-gray-50"
+            >
               <th class="px-4 py-2 pr-6 font-medium">Pièce</th>
               <th class="px-4 py-2 pr-6 font-medium">Nom du fichier</th>
               <th class="px-4 py-2 font-medium">Type de pièce</th>

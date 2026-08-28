@@ -16,6 +16,7 @@
   "dependencies": {
     "@peterbud/nuxt-query": "^1.8.0",
     "@primeuix/themes": "^2.0.3",
+    "chart.js": "^4.5.1",
     "next-auth": "^4.21.1",
     "nuxt": "^4.4.2",
     "primeicons": "^7.0.0",

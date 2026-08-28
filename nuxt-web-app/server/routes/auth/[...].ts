@@ -1,6 +1,6 @@
 import KeycloakProvider from "next-auth/providers/keycloak";
 import { NuxtAuthHandler } from "#auth";
-import type {JWT} from "next-auth/jwt";
+import type { JWT } from "next-auth/jwt";
 
 async function refreshAccessToken(token: JWT) {
   try {
@@ -20,13 +20,17 @@ async function refreshAccessToken(token: JWT) {
       timeout: 10000,
     });
 
-    console.log("Token rafraîchi :", res.access_token);
+    // Keycloak peut répondre 200 sans access_token (ex: refresh concurrent) : sans ce contrôle,
+    // la session restait corrompue silencieusement (accessToken undefined, pas d'erreur).
+    if (!res.access_token) {
+      throw new Error("Réponse de rafraîchissement Keycloak sans access_token");
+    }
 
     return {
       ...token,
       accessToken: res.access_token,
       accessTokenExpiresAt: Date.now() + res.expires_in * 1000,
-      refreshToken: res.refresh_token ?? token.refreshToken, // Fall back to old refresh token
+      refreshToken: res.refresh_token ?? token.refreshToken,
     };
   } catch (error) {
     console.error("Échec du rafraîchissement du token Keycloak", error);
@@ -55,6 +59,9 @@ export default NuxtAuthHandler({
         token.refreshToken = account.refresh_token;
         token.refreshTokenExpiresAt =
           Date.now() + (account.refresh_expires_in as number) * 1000;
+        // Nécessaire pour la déconnexion Keycloak (id_token_hint) : sans lui, signOut() ne coupe
+        // que la session locale, la session SSO Keycloak resterait active.
+        token.idToken = account.id_token;
         return token;
       }
 
@@ -71,6 +78,14 @@ export default NuxtAuthHandler({
       // présent (l'ancien, expiré), donc rien ne distinguait un token valide d'un stale.
       session.error = token.error;
       return session;
+    },
+    // AUTH_ORIGIN inclut "/auth" (requis par sidebase) : le redirect par défaut de next-auth
+    // concatène baseUrl+url, donc un callbackUrl "/" atterrissait sur ".../auth/" au lieu de "/".
+    async redirect({ url, baseUrl }) {
+      const appOrigin = new URL(baseUrl).origin;
+      if (url.startsWith("/")) return `${appOrigin}${url}`;
+      if (new URL(url).origin === appOrigin) return url;
+      return appOrigin;
     },
   },
 });

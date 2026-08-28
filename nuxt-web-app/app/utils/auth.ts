@@ -1,12 +1,20 @@
 export const tryRefreshToken = async (): Promise<string | null> => {
   try {
     const session = await $fetch("/auth/session");
-    // session.error (RefreshAccessTokenError) : le refresh a échoué côté serveur, mais
-    // accessToken reste rempli avec l'ancien token expiré (le callback jwt ne l'efface pas).
-    // Sans ce check, on renverrait ce token périmé comme s'il était valide, et le retry
-    // échouerait à nouveau en 403 pour la même raison.
+
+    // session.error (RefreshAccessTokenError) : accessToken reste l'ancien token expiré (jwt
+    // callback ne l'efface pas) — sans ce check on le renverrait comme valide, retry en boucle.
+
     if (session?.accessToken && !session?.error) {
       return session.accessToken;
+    }
+    if (session?.error === "RefreshAccessTokenError" && import.meta.client) {
+      const { signIn } = useAuth();
+      try {
+        await signIn("keycloak");
+      } catch (e) {
+        console.error("Échec de la redirection vers la reconnexion :", e);
+      }
     }
   } catch {
     /* ignore */

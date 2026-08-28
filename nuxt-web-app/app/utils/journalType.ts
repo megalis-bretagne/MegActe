@@ -18,5 +18,3 @@ export interface JournalListEntry {
   document_type_libelle: string;
   action_libelle: string;
 }
-
-export type Journal = JournalListEntry[];

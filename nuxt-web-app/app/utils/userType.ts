@@ -1,9 +1,3 @@
-type User = {
-  name: string;
-  email: string;
-  image: string;
-};
-
 type pastellUserInfo = {
   id_u: number;
   login: string;
@@ -22,9 +16,4 @@ export type EntiteNode = {
 export type pastellUser = {
   user_info: pastellUserInfo;
   entites: EntiteNode[];
-};
-
-export type userSession = {
-  user: User;
-  pastellUser: pastellUser;
 };

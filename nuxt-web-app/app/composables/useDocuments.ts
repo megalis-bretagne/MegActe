@@ -12,15 +12,17 @@ export const useDocuments = (
 
   const offset = computed(() => (page.value - 1) * limit.value);
 
-  const queryKey = computed(() => [
+  const buildKey = (targetOffset: number) => [
     "documents",
     entiteId.value,
     idFlux.value ?? null,
-    offset.value,
+    targetOffset,
     limit.value,
     search.value,
     toRaw(filters.value),
-  ]);
+  ];
+
+  const queryKey = computed(() => buildKey(offset.value));
 
   const { data, isFetching, isError, error } = useQuery({
     queryKey,
@@ -34,12 +36,9 @@ export const useDocuments = (
         filters.value
       ),
     enabled: computed(() => !!entiteId.value && !!user.value?.accessToken),
+    staleTime: 10_000,
     placeholderData: (prev) => prev,
-    retry: (failurecount, error) => {
-      if (error?.status === 403 || error?.response?.status === 403)
-        return false;
-      return failurecount < 1;
-    },
+    retry: shouldRetry,
   });
 
   const documents = computed(() => data.value?.documents ?? []);

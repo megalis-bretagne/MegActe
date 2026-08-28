@@ -2,24 +2,9 @@
 const user = usePastellUser();
 const selectedEntiteId = useSelectedEntiteId();
 
-type TreeNode = {
-  key: string;
-  label: string;
-  children: TreeNode[];
-};
-
-// Convertit une entité Pastell (id_e, denomination, child) en noeud attendu par le TreeSelect (key, label, children)
-function toTreeNode(node: EntiteNode): TreeNode {
-  return {
-    key: String(node.id_e),
-    label: node.denomination,
-    children: (node.child ?? []).map(toTreeNode),
-  };
-}
-
 // Liste des entités de l'utilisateur, converties au format attendu par le TreeSelect
-const treeNodes = computed<TreeNode[]>(() =>
-  (user.value?.entites ?? []).map(toTreeNode)
+const treeNodes = computed<EntiteTreeNode[]>(() =>
+  (user.value?.entites ?? []).map(toEntiteTreeNode)
 );
 
 // Entité choisie manuellement par l'utilisateur (null si aucune sélection manuelle)
@@ -41,7 +26,6 @@ const selectedKeys = computed<Record<string, boolean>>({
   },
 });
 
-// Dès que l'entité sélectionnée change, on la passe dans le state global de l'app
 watch(
   effectiveKey,
   (key) => {
@@ -52,17 +36,24 @@ watch(
 
 // Réapplique le scroll vers l'entité sélectionnée à chaque frame pendant l'ouverture, pour
 // contrer le focus interne de PrimeVue qui remonte sinon la liste tout en haut.
+let scrollRafId: number | null = null;
+
 function onBeforeShow() {
+  if (scrollRafId !== null) cancelAnimationFrame(scrollRafId);
   let framesLeft = 20;
   function tick() {
     document
       .querySelector('[data-p-selected="true"]')
       ?.scrollIntoView({ block: "nearest", inline: "start" });
     framesLeft -= 1;
-    if (framesLeft > 0) requestAnimationFrame(tick);
+    scrollRafId = framesLeft > 0 ? requestAnimationFrame(tick) : null;
   }
-  requestAnimationFrame(tick);
+  scrollRafId = requestAnimationFrame(tick);
 }
+
+onBeforeUnmount(() => {
+  if (scrollRafId !== null) cancelAnimationFrame(scrollRafId);
+});
 </script>
 
 <template>

@@ -6,9 +6,11 @@ export type TabConfig = {
   alwaysShow?: string[];
 };
 
-// Field types are crafted to handle printing and editing of a document field
-
-export type FieldValue = string | string[] | Record<string, string>;
+export type FieldValue =
+  | string
+  | string[]
+  | Record<string, string>
+  | TypePieceFichier[];
 
 type FieldBase = {
   key: string;

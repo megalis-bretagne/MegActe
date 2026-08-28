@@ -1,12 +1,19 @@
 <script setup lang="ts">
-const { data, signOut } = useAuth();
+const { data } = useAuth();
+const router = useRouter();
+const { handleSignOut } = useKeycloakSignOut();
 
 const userMenu = ref();
 const userMenuItems = [
   {
+    label: "Paramètres",
+    icon: "pi pi-cog",
+    command: () => router.push("/parametres"),
+  },
+  {
     label: "Se déconnecter",
     icon: "pi pi-sign-out",
-    command: () => signOut({ callbackUrl: "/" }),
+    command: () => handleSignOut(),
   },
 ];
 
@@ -19,7 +26,6 @@ function toggleUserMenu(event: Event) {
   <header class="bg-white shadow-sm border-b border-gray-200">
     <div class="container mx-auto px-4 py-3">
       <div class="flex items-center justify-between gap-4">
-        <!-- Left side: Logo and text -->
         <div class="flex items-center space-x-3 flex-shrink-0">
           <img
             src="/img/megalis_logo.png"
@@ -40,13 +46,19 @@ function toggleUserMenu(event: Event) {
           </div>
         </div>
 
-        <!-- Center: Entity selector -->
         <div class="flex-1 flex justify-center">
           <EntiteSelector />
         </div>
 
-        <!-- Right side: User Avatar -->
-        <div class="flex items-center flex-shrink-0">
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <Button
+            as="router-link"
+            to="/documents"
+            icon="pi pi-file"
+            label="Documents"
+            text
+            class="hidden md:inline-flex whitespace-nowrap"
+          />
           <button
             type="button"
             class="flex items-center cursor-pointer bg-transparent border-0"

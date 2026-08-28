@@ -5,7 +5,8 @@ export interface Flux {
   enable: boolean;
 }
 
-/* some fields might be missing */
+// Schéma d'un champ de flux renvoyé par Pastell. Tous les champs optionnels peuvent
+// être absents selon le type de flux et la version de Pastell.
 export interface FluxDetail {
   name: string;
   title?: boolean;

@@ -1,5 +1,29 @@
 <script setup lang="ts">
 const modelValue = defineModel<string>({ default: "" });
+
+// Débounce : search alimente la queryKey de useDocuments, sans lui chaque frappe déclenchait
+// un fetch serveur (taper "acte" = 4 requêtes, 3 jetées).
+const localValue = ref(modelValue.value);
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+watch(localValue, (val) => {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    modelValue.value = val;
+  }, 350);
+});
+
+// Resynchronise l'input si la valeur change depuis l'extérieur (ex: reset ailleurs dans
+// l'appli), sans attendre le débounce.
+watch(modelValue, (val) => {
+  if (val !== localValue.value) localValue.value = val;
+});
+
+function clear() {
+  if (debounceTimer) clearTimeout(debounceTimer);
+  localValue.value = "";
+  modelValue.value = "";
+}
 </script>
 
 <template>
@@ -18,15 +42,15 @@ const modelValue = defineModel<string>({ default: "" });
       />
     </svg>
     <input
-      v-model="modelValue"
+      v-model="localValue"
       type="text"
       placeholder="Rechercher…"
       class="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400"
     />
     <button
-      v-if="modelValue"
+      v-if="localValue"
       class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-      @click="modelValue = ''"
+      @click="clear"
     >
       <svg
         class="h-4 w-4"

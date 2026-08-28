@@ -1,15 +1,15 @@
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
-const fluxDefCache = useState<FluxDetails>("fluxDefCache", () => ({}));
-
 export const useFluxDef = () => {
+  // useState() doit être appelé dans un contexte Nuxt valide : au niveau module, il tournerait
+  // une seule fois hors contexte de requête — plante en SSR et partagerait l'état entre requêtes.
+  const fluxDefCache = useState<FluxDetails>("fluxDefCache", () => ({}));
+
   const getFluxDef = async (
     type: string
   ): Promise<FluxDetails | null | undefined> => {
-    // cache memoire
     if (fluxDefCache.value[type]) return fluxDefCache.value[type];
 
-    // cache dansle local storage
     if (import.meta.client) {
       try {
         const raw = localStorage.getItem(`fluxDef:${type}`);
@@ -25,7 +25,6 @@ export const useFluxDef = () => {
       }
     }
 
-    // si aucun alors on arrive ici tout en mettant en cache localstorage
     try {
       const result = await fetchFluxDetails(type);
       fluxDefCache.value[type] = result;

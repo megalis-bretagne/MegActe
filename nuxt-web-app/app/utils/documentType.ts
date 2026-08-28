@@ -7,19 +7,8 @@ interface BaseDocumentInfo {
 }
 
 export interface ActionPossible {
-  action: ActionPossibleEnum | string;
+  action: string;
   message: string;
-}
-
-enum ActionPossibleEnum {
-  Orientation = "orientation",
-  Suppression = "supression",
-  Modification = "modification",
-  Teletransmission_TDT = "teletransmission-tdt",
-  Annulation_TDT = "annulation-tdt",
-  Creation = "creation",
-  Duplicate = "duplicate",
-  Verification_TDT = "verif-tdt",
 }
 
 interface DocumentActionDetails {
@@ -34,6 +23,7 @@ export interface DocumentInfo extends BaseDocumentInfo, DocumentActionDetails {
   role: string;
   siren: string;
   selected: boolean;
+  denomination?: string | null;
 }
 
 export interface DocumentPaginate {
@@ -47,7 +37,6 @@ export interface DocumentPaginate {
   } | null;
 }
 
-// Filtres avancés
 export interface AdvancedFilters {
   etat?: string | null;
   etatDebut?: Date | null;
@@ -57,7 +46,7 @@ export interface AdvancedFilters {
   etatTransitFin?: Date | null;
 }
 
-interface TypePieceFichier {
+export interface TypePieceFichier {
   filename: string;
   typologie: string;
 }
