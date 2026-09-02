@@ -21,4 +21,9 @@ dependencies = [
 dev = [
     "pytest==8.3.2",
     "pytest-cov==5.0.0",
+    "ruff>=0.16.5",
 ]
+
+[tool.ruff]
+# Default line length is 88 (https://docs.astral.sh/ruff/configuration/)
+line-length = 120
