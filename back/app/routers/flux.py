@@ -8,6 +8,7 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
+
 # Get flux
 @router.get("/flux", tags=["flux"])
 def get_flux(client: ApiPastell = Depends(get_or_make_api_pastell)):

@@ -14,7 +14,6 @@ def tearDownModule():
 
 
 class FluxActionServiceMock(FluxActionService):
-
     def __init__(self) -> None:
         self.api_pastell = MagicMock()
 

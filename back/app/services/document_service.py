@@ -141,7 +141,9 @@ class DocumentService(BaseService):
 
         def _fetch(key: str):
             try:
-                return key, self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}/file/{key}").json()
+                return key, self.api_pastell.perform_get(
+                    f"/entite/{entite_id}/document/{document_id}/file/{key}"
+                ).json()
             except ApiError:
                 # Clé non applicable à ce document/flux (ex: 404) : on l'ignore simplement
                 return key, None

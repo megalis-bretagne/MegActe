@@ -25,7 +25,7 @@ class TdtService:
             str: l'url de télétransmission
         """
         logging.debug("Demande de teletransmission")
-        
+
         # Avoir en paramètre le Document (id,e, flux, id tedetis_transaction_id)
         co = self.connecteur_service.get_connecteur(doc.info.type, id_e)
         logging.debug("Récupératoin du connecteur")

@@ -75,7 +75,9 @@ def _handle_connection_error(f):
             return f(*args, **kwargs)
         except RequestException as e:
             logger.error(f"Erreur de connexion vers l'API pastell : {e}")
-            error_response = ApiErrorResponse(status="error", error_message="Le service Pastell est indisponible ou n'a pas répondu à temps")
+            error_response = ApiErrorResponse(
+                status="error", error_message="Le service Pastell est indisponible ou n'a pas répondu à temps"
+            )
             raise ApiPastellHttp50XError(error_response)
 
     return inner

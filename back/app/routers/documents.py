@@ -83,7 +83,9 @@ def get_document_external_data(
     entite_id: int,
     keys: Annotated[
         List[str] | None,
-        Query(description="Clés présentes dans le data du document (déjà connu du front), pour ne tenter que celles-ci"),
+        Query(
+            description="Clés présentes dans le data du document (déjà connu du front), pour ne tenter que celles-ci"
+        ),
     ] = None,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
