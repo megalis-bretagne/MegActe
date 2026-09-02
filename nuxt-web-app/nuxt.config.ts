@@ -13,7 +13,7 @@ export default defineNuxtConfig({
     public: {
       apiBaseUrl: process.env.API_URL || "http://localhost:8080",
       pastellUrl:
-        process.env.PASTEL_URL || "https://pastell.megalis.bretagne.bzh",
+        process.env.PASTELL_URL || "https://pastell.megalis.bretagne.bzh",
     },
   },
 
