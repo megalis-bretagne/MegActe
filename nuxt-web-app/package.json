@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --check",
-    "format:fix": "prettier . --write"
+    "format:fix": "prettier . --write",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@peterbud/nuxt-query": "^1.8.0",
@@ -34,6 +35,7 @@
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "3.8.3",
+    "typecheck": "^0.1.2",
     "typescript": "^6.0.3"
   }
 }
