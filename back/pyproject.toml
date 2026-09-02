@@ -1,7 +1,7 @@
 [project]
 name = "megacte-back"
 version = "0.1.0"
-description = "Megacte runs over Pastell as a user-friendly tool"
+description = "Megacte backend"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -16,26 +16,6 @@ dependencies = [
     "requests~=2.32.3",
     "sqlalchemy~=2.0.34",
 ]
-
-[tool.black]
-line-length = 120
-target-version = ['py311']
-include = '\.py$'
-exclude = '''
-^/(
-      \.eggs         # exclude a few common directories in the
-    | \.git          # root of the project
-    | \.github          # root of the project
-    | \.mypy_cache
-    | \.tox
-    | venv
-    | \.venv
-    | build
-    | dist
-    | migrations
-    | config
-)
-'''
 
 [dependency-groups]
 dev = [
