@@ -1,42 +1,49 @@
-# AGENTS.md
+# AGENTS.md — Nuxt frontend
 
-## Project Overview
+## Stack
 
-Current repository is a Nuxt.js webapp. Nuxt 4.x is used.
-It is using Primevue as component library with Tailwindcss in styled mode.
+- Nuxt 4
+- Vue 3
+- PrimeVue 4 (styled mode) + Tailwind CSS via `tailwindcss-primeui`
+- `@sidebase/nuxt-auth` (next-auth) for Keycloak OAuth
+- `@peterbud/nuxt-query` (TanStack/Vue Query) for data fetching/caching
 
-## Project Structure
+## Commands
 
-Structure follows what is described in the official documentation here (<https://nuxt.com/docs/4.x/directory-structure>)
+Build: `npm run build`
+Lint: `npm run lint`
+Format: `npm run format`
+Typecheck: `npm run typecheck`
 
-### Nuxt configuration
+**No test suite** exists.
 
-Nuxt configuration is in @./nuxt.config.ts
+## Code style
 
-### App entry point
+- TypeScript with strict mode enabled.
+- No `any` types.
+- Named exports only.
+- Interfaces over type aliases for object shapes.
+- Use `const` by default; `let` only when reassignment is necessary.
 
-The app entry point is @./app/app.vue
+## Architecture
 
-## Authentication module
+- `app/` - main directory of the Nuxt application
+- `app/app.vue` is the entry point of the Nuxt application
+- `app/pages` - file-based routing directory
+- `app/composables` - Vue composables - are auto-imported
+- `app/components` - Vue components - Nuxt automatically imports any components in this directory
+- `app/layout` - Layouts framework to extract common UI patterns into reusable layouts
+- `app/utils` - Utility functions - are auto-imported throughout the application
+- `server` - directory that contains the server-side code of the Nuxt application
+- `shared` - directory that contains the shared code of the Nuxt application and Nuxt server
 
-"@sidebase/nuxt-auth" is used to managed authentication against our keycloak server.
-The configuration is in the auth section of nuxt.config.ts.
-A catch-all route has been added into @./server/routes/auth/\[...\].ts
+## Nuxt MCP server
 
-## Primevue and Tailwindcss integration
+If Nuxt MCP server is configured, use it in priority for Nuxt documentation. Filter documentation for the relevant Nuxt version.
 
-Tailwindcss is integrated to Primevue in styled mode. So @nuxtjs/tailwindcss and tailwindcss-primeui packages are used.
+## Rules
 
-## MCP servers
-
-3 MCP servers are configured:
-
-- Nuxt.js MCP
-- Primevue MCP
-- Tailwindcss MCP
-
-Please use those MCP servers to get up-to-date documentation when you generate code.
-
-## Searching for files (find command)
-
-When you search for files using for instance find command, don't search into @./node_modules/ directory
+- **PrimeVue in styled mode** with Tailwind (`tailwindcss-primeui`, Aura theme, dark mode via `.p-dark`). Don't add unstyled CSS overrides that fight the theme.
+- Code Format (**Prettier**): Follow rules described in file `.prettierrc`
+- Run `npm run lint`, `npm run typecheck` and `npm run format` before declaring work complete.
+- When searching with `find`, exclude `node_modules/`
