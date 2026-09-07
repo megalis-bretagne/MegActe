@@ -1,18 +1,17 @@
-from sqlalchemy import or_
+import logging
 
-from ..utils import PasswordUtils
-from . import BaseService
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
-from ..schemas.user_schemas import UserCreate
-
 from ..exceptions.custom_exceptions import (
-    UserNotFoundException,
     UserExistException,
+    UserNotFoundException,
     UserRegistrationException,
 )
 from ..models.users import UserPastell
-import logging
+from ..schemas.user_schemas import UserCreate
+from ..utils import PasswordUtils
+from . import BaseService
 
 logger = logging.getLogger(__name__)
 

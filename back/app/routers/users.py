@@ -1,21 +1,19 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from ..schemas.flux_schemas import FluxResponseModel
-from ..services.flux_service import FluxService
-
+from ..clients.pastell.api import ApiPastell
 from ..clients.pastell.api.entite_api import EntiteApi
-
+from ..database import get_db, get_user_from_db
+from ..models.users import UserPastell
+from ..schemas.flux_schemas import FluxResponseModel
+from ..schemas.user_schemas import UserCreate
 from ..services import (
     get_client_api_pastell,
     get_or_make_api_pastell,
     get_or_make_api_pastell_for_admin,
 )
-from ..clients.pastell.api import ApiPastell
-from ..database import get_db, get_user_from_db
-from ..schemas.user_schemas import UserCreate
+from ..services.flux_service import FluxService
 from ..services.user_service import UserService
-from ..models.users import UserPastell
 
 router = APIRouter()
 

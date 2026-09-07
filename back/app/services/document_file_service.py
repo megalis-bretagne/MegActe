@@ -1,16 +1,18 @@
-from . import BaseService
-from .document_service import _EXECUTOR
-from ..exceptions.custom_exceptions import PastellException
-from ..schemas.document_schemas import (
-    DeleteFileFromDoc,
-    AddFilesToDoc,
-)
-from ..clients.pastell.exeptions import ApiPastellHttpForbidden, ApiPastellHttp40XError
-from fastapi import HTTPException
-from io import BytesIO
-from fastapi.responses import StreamingResponse
 import logging
 import time
+from io import BytesIO
+
+from fastapi import HTTPException
+from fastapi.responses import StreamingResponse
+
+from ..clients.pastell.exeptions import ApiPastellHttp40XError, ApiPastellHttpForbidden
+from ..exceptions.custom_exceptions import PastellException
+from ..schemas.document_schemas import (
+    AddFilesToDoc,
+    DeleteFileFromDoc,
+)
+from . import BaseService
+from .document_service import _EXECUTOR
 
 logger = logging.getLogger(__name__)
 

@@ -1,8 +1,9 @@
 import unittest
+
 import pytest
 
-from app.utils import PasswordUtils
 from app.exceptions.custom_exceptions import DecryptionException
+from app.utils import PasswordUtils
 
 
 class TestPassword(unittest.TestCase):

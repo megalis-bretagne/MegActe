@@ -1,14 +1,15 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+import logging
 
-from .models.users import UserPastell
+from fastapi import Depends
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from .dependencies import get_current_user, get_settings
 from .exceptions.custom_exceptions import (
     UserNotFoundException,
     UserPasswordNullException,
 )
-from .dependencies import get_settings, get_current_user
-from fastapi import Depends
-import logging
+from .models.users import UserPastell
 
 engine = create_engine(get_settings().database.database_url, pool_pre_ping=True, pool_recycle=30)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

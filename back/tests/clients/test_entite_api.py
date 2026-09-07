@@ -1,8 +1,8 @@
 import unittest
 
 from app.clients.pastell.api.entite_api import EntiteApi
-from app.clients.pastell.models.entite_info import EntiteInfo
 from app.clients.pastell.models.config import Config
+from app.clients.pastell.models.entite_info import EntiteInfo
 
 
 class TestEntiteApi(unittest.TestCase):

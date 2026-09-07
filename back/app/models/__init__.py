@@ -1,5 +1,5 @@
-from .users import UserPastell
-from .flux import FluxAvailable
 from .connecteur_auth_tdt import ConnecteurAuthTdt
+from .flux import FluxAvailable
+from .users import UserPastell
 
-__all__ = ["UserPastell", "FluxAvailable", "ConnecteurAuthTdt"]
+__all__ = ["ConnecteurAuthTdt", "FluxAvailable", "UserPastell"]

@@ -1,19 +1,17 @@
 import functools
 from http import HTTPStatus
 
-from .models.errors import ApiErrorResponse
-
-from . import logger
 from requests import HTTPError
 from requests.exceptions import RequestException
 
-
+from . import logger
 from .exeptions import (
     ApiPastellHttp40XError,
     ApiPastellHttp50XError,
     ApiPastellHttpForbidden,
     ApiPastellHttpNotAuthorized,
 )
+from .models.errors import ApiErrorResponse
 
 
 def _handle_httperr_40X(f):

@@ -1,8 +1,8 @@
 from enum import Enum
-from pydantic import BaseModel, Field, AliasPath, model_validator
-from typing import Dict, Any
+from typing import Any
+
 from fastapi import UploadFile
-from typing import List, Optional, Union
+from pydantic import AliasPath, BaseModel, Field, model_validator
 
 from .pagination import ResponsePagination
 
@@ -15,7 +15,7 @@ class DocumentActionRequest(BaseModel):
         BaseModel (_type_): _description_
     """
 
-    document_ids: Union[str, List[str]]
+    document_ids: str | list[str]
     action: str
 
 
@@ -27,7 +27,7 @@ class DocUpdateInfo(BaseModel):
         doc_info (Dict[str, Any]): Les informations mises à jour du document.
     """
 
-    doc_info: Dict[str, Any]
+    doc_info: dict[str, Any]
 
 
 class DocCreateInfo(BaseModel):
@@ -40,7 +40,7 @@ class DocCreateInfo(BaseModel):
     """
 
     flux_type: str
-    doc_info: Dict[str, Any]
+    doc_info: dict[str, Any]
 
 
 class DeleteFileFromDoc(BaseModel):
@@ -78,7 +78,7 @@ class AddFilesToDoc(BaseModel):
     """
 
     entite_id: int
-    files: List[UploadFile]
+    files: list[UploadFile]
 
 
 class ActionDocument(str, Enum):
@@ -114,8 +114,8 @@ class LastActionDocument(BaseModel):
     """Dernière action effectué sur un document"""
 
     action: ActionDocument | str
-    message: Optional[str] = None
-    date: Optional[str] = None
+    message: str | None = None
+    date: str | None = None
 
 
 class ActionPossible(BaseModel):
@@ -127,7 +127,7 @@ class ActionPossible(BaseModel):
     """
 
     action: ActionDocument | str
-    message: Optional[str] = None
+    message: str | None = None
 
 
 class BaseModelDocument(BaseModel):
@@ -167,11 +167,11 @@ class DocumentInfo(BaseModelDocument):
     role: str
     siren: str
     last_action_date: str
-    last_action: Optional[ActionDocument | str] = None
-    last_action_message: Optional[str] = None
+    last_action: ActionDocument | str | None = None
+    last_action_message: str | None = None
     action_possible: list[ActionPossible] = []
-    numero_de_lacte: Optional[str] = None
-    denomination: Optional[str] = None
+    numero_de_lacte: str | None = None
+    denomination: str | None = None
 
     def model_post_init(self, __context: Any):
         """Complète la creation du documentInfo après l'init
@@ -221,14 +221,14 @@ class DocumentPaginate(BaseModel):
 
 
 class JournalEntry(BaseModel):
-    id_j: Optional[str] = None
-    type: Optional[str] = None
-    action: Optional[str] = None
-    message: Optional[str] = None
-    date: Optional[str] = None
-    nom: Optional[str] = None
-    prenom: Optional[str] = None
-    action_libelle: Optional[str] = None
+    id_j: str | None = None
+    type: str | None = None
+    action: str | None = None
+    message: str | None = None
+    date: str | None = None
+    nom: str | None = None
+    prenom: str | None = None
+    action_libelle: str | None = None
 
 
 class DocumentDetail(BaseModel):
@@ -242,13 +242,13 @@ class DocumentDetail(BaseModel):
     """
 
     info: BaseModelDocument
-    data: Dict[str, Any]
+    data: dict[str, Any]
 
     last_action: str = Field(validation_alias=AliasPath("last_action", "action"))
-    last_action_message: Optional[str] = Field(validation_alias=AliasPath("last_action", "message"), default="")
+    last_action_message: str | None = Field(validation_alias=AliasPath("last_action", "message"), default="")
     last_action_date: str = Field(validation_alias=AliasPath("last_action", "date"))
     action_possible: list[ActionPossible] = []
-    log: list[Dict[str, Any]] = []
+    log: list[dict[str, Any]] = []
 
     @model_validator(mode="before")
     def convert_action_possible(cls, values):

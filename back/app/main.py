@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .dependencies import validate_token
-from .routers import users, health, flux, documents, entite, connecteurs
 from .exceptions.error_handlers import add_exception_handlers
+from .routers import connecteurs, documents, entite, flux, health, users
 
 app = FastAPI()
 origins = ["*"]

@@ -1,27 +1,23 @@
-from typing_extensions import Annotated
-from fastapi import APIRouter, Depends, File, Query, UploadFile, status
-from typing import List
+import logging
+from typing import Annotated
 
-from ..schemas.flux_action import ActionResult
-from ..services.acte_service import ActeService
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 
 from ..clients.pastell.api import ApiPastell
-
+from ..schemas.flux_action import ActionResult
 from ..services import get_or_make_api_pastell
-
-from ..services.document_service import DocumentService
+from ..services.acte_service import ActeService
 from ..services.document_file_service import DocumentFileService
-
-import logging
+from ..services.document_service import DocumentService
 
 logger = logging.getLogger(__name__)
 
 from ..schemas.document_schemas import (
-    DocCreateInfo,
-    DocUpdateInfo,
-    DeleteFileFromDoc,
     AddFilesToDoc,
+    DeleteFileFromDoc,
+    DocCreateInfo,
     DocumentActionRequest,
+    DocUpdateInfo,
     JournalEntry,
 )
 
@@ -82,7 +78,7 @@ def get_document_external_data(
     document_id: str,
     entite_id: int,
     keys: Annotated[
-        List[str] | None,
+        list[str] | None,
         Query(
             description="Clés présentes dans le data du document (déjà connu du front), pour ne tenter que celles-ci"
         ),
@@ -116,7 +112,7 @@ def get_document_journal(
 def delete_document(
     entite_id: int,
     documents_id: Annotated[
-        List[str],
+        list[str],
         Query(
             title="les identifiants de documents",
             description="Les identifiants de documents",
@@ -138,7 +134,7 @@ def add_files_to_document(
     document_id: str,
     element_id: str,
     entite_id: int,
-    files: List[UploadFile] = File(...),
+    files: list[UploadFile] = File(...),
     replace: bool = False,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
@@ -183,7 +179,7 @@ def patch_external_data(
     document_id: str,
     entite_id: int,
     element_id: str,
-    data: List[str],
+    data: list[str],
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
 

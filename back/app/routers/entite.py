@@ -1,13 +1,12 @@
-from fastapi import APIRouter, Depends, Query
 from typing import Annotated
 
-from ..schemas.pagination import ResponsePagination
-from ..schemas.document_schemas import DocumentPaginate
-from ..services.document_service import DocumentService, _EXECUTOR
+from fastapi import APIRouter, Depends, Query
 
 from ..clients.pastell.api import ApiPastell
+from ..schemas.document_schemas import DocumentPaginate
+from ..schemas.pagination import ResponsePagination
 from ..services import get_or_make_api_pastell
-
+from ..services.document_service import _EXECUTOR, DocumentService
 
 router = APIRouter()
 

@@ -1,12 +1,12 @@
+import logging
+
 from sqlalchemy import select
 
-from ..exceptions.custom_exceptions import ConnecteurExistException, ConnecteurNotFound
-from ..utils import PasswordUtils
-from ..schemas.connecteur_schemas import ConnecteurCreateAuthTdt
-from ..models.connecteur_auth_tdt import ConnecteurAuthTdt
 from ..database import SessionLocal
-
-import logging
+from ..exceptions.custom_exceptions import ConnecteurExistException, ConnecteurNotFound
+from ..models.connecteur_auth_tdt import ConnecteurAuthTdt
+from ..schemas.connecteur_schemas import ConnecteurCreateAuthTdt
+from ..utils import PasswordUtils
 
 logger = logging.getLogger(__name__)
 

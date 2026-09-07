@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String
-from .base import Base  # Assurez-vous de pointer vers la base SQLAlchemy
 
 from ..utils import PasswordUtils
+from .base import Base  # Assurez-vous de pointer vers la base SQLAlchemy
 
 
 class UserPastell(Base):

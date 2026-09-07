@@ -1,4 +1,4 @@
-from typing import List, Optional
+
 from pydantic import BaseModel, field_validator
 
 
@@ -21,7 +21,7 @@ class EntiteInfo(BaseModel):
     type: str
     entite_mere: int
     centre_de_gestion: str
-    is_active: Optional[bool] = True
+    is_active: bool | None = True
 
     @field_validator("id_e", "entite_mere", mode="before")
     def parse_int(cls, v: str):
@@ -44,4 +44,4 @@ class EntiteInfoWithChild(EntiteInfo):
         EntiteInfo (_type_): _description_
     """
 
-    child: Optional[List["EntiteInfoWithChild"]] = []
+    child: list["EntiteInfoWithChild"] | None = []

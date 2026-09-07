@@ -1,9 +1,12 @@
 from unittest.mock import MagicMock
+
 import pytest
-from app.models.users import UserPastell
-from app.services.user_service import UserService
-from app.schemas.user_schemas import UserCreate
+
 from app.exceptions.custom_exceptions import UserExistException
+from app.models.users import UserPastell
+from app.schemas.user_schemas import UserCreate
+from app.services.user_service import UserService
+
 from ..conftest import TestDatabase
 
 

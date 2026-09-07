@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column, String, UniqueConstraint
+from sqlalchemy import Column, Integer, String, UniqueConstraint
 
 from ..utils import PasswordUtils
 from .base import Base  # Assurez-vous de pointer vers la base SQLAlchemy

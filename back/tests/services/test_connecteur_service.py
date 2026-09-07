@@ -1,9 +1,12 @@
 from unittest.mock import MagicMock
+
 import pytest
-from app.services.connecteur_service import ConnecteurTdtService
-from app.schemas.connecteur_schemas import ConnecteurCreateAuthTdt
+
 from app.exceptions.custom_exceptions import ConnecteurExistException
 from app.models.connecteur_auth_tdt import ConnecteurAuthTdt
+from app.schemas.connecteur_schemas import ConnecteurCreateAuthTdt
+from app.services.connecteur_service import ConnecteurTdtService
+
 from ..conftest import TestDatabase
 
 

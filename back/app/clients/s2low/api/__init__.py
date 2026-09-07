@@ -1,14 +1,13 @@
-from hashlib import sha256
 import os
+from hashlib import sha256
 
 import requests
 import urllib3
+from requests.auth import HTTPBasicAuth
 from urllib3.exceptions import InsecureRequestWarning
 
-from .adapter.ssl import SSLAdapter
 from ..models.config import Config
-from requests.auth import HTTPBasicAuth
-
+from .adapter.ssl import SSLAdapter
 
 __all__ = ("ApiS2low",)
 

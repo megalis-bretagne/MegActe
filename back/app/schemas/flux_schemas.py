@@ -1,5 +1,5 @@
+
 from pydantic import BaseModel, RootModel
-from typing import Dict
 
 
 class FluxModel(BaseModel):
@@ -24,4 +24,4 @@ class FluxResponseModel(RootModel):
         et les valeurs sont des instances de `ActeModel`.
     """
 
-    __pydantic_root_model__: Dict[str, FluxModel]
+    __pydantic_root_model__: dict[str, FluxModel]

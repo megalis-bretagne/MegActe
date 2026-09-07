@@ -1,8 +1,10 @@
+import logging
+
+from requests.auth import HTTPBasicAuth
+
 from ..schemas.document_schemas import DocumentDetail
 from ..services.connecteur_service import ConnecteurTdtService
 from . import get_or_make_api_s2low
-import logging
-from requests.auth import HTTPBasicAuth
 
 
 class TdtService:

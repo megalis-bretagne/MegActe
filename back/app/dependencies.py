@@ -1,7 +1,9 @@
 from functools import lru_cache
+
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
-import jwt
+
 from config.configuration import Settings
 
 

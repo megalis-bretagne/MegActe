@@ -1,8 +1,10 @@
+import logging
+
 from fastapi import APIRouter, Depends
+
 from ..clients.pastell.api import ApiPastell
 from ..services import get_or_make_api_pastell
 from ..services.flux_service import FluxService
-import logging
 
 router = APIRouter()
 

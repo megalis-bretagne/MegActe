@@ -1,9 +1,9 @@
 import unicodedata
-from typing import Dict, List
+
 from pydantic import TypeAdapter
+from requests.auth import HTTPBasicAuth
 
 from ..models.entite_info import EntiteInfo, EntiteInfoWithChild
-from requests.auth import HTTPBasicAuth
 from . import ApiPastell
 
 __all__ = "EntiteApi"
@@ -48,7 +48,7 @@ class EntiteApi(ApiPastell):
         list_entites = self.get_entite(only_active, auth)
         return self._build_tree_entite(list_entites)
 
-    def _build_tree_entite(self, entites: List[EntiteInfo]) -> List[EntiteInfoWithChild]:
+    def _build_tree_entite(self, entites: list[EntiteInfo]) -> list[EntiteInfoWithChild]:
         """
         Construit un arbre d'entités avec des relations parent-enfant à partir d'une liste plate d'entités.
 
@@ -60,7 +60,7 @@ class EntiteApi(ApiPastell):
             List[EntiteInfoWithChild]: Une liste d'entités à la racine avec leurs enfants.
 
         """
-        entite_dict: Dict[int, EntiteInfoWithChild] = {}
+        entite_dict: dict[int, EntiteInfoWithChild] = {}
         all_entite_ids: set[int] = set()
         entite_mere_ids: set[int] = set()
         for entite in entites:
@@ -69,7 +69,7 @@ class EntiteApi(ApiPastell):
             entite_mere_ids.add(entite.entite_mere)
 
         def _complete(
-            group_entite: Dict[int, EntiteInfoWithChild],
+            group_entite: dict[int, EntiteInfoWithChild],
             all_entite_ids: set[int],
             entite_mere_ids: set[id],
         ):
@@ -91,7 +91,7 @@ class EntiteApi(ApiPastell):
 
         return self._sort_tree(list(entite_dict.values()))
 
-    def _sort_tree(self, nodes: List[EntiteInfoWithChild]) -> List[EntiteInfoWithChild]:
+    def _sort_tree(self, nodes: list[EntiteInfoWithChild]) -> list[EntiteInfoWithChild]:
         """Trie récursivement les entités (racines et enfants à chaque niveau) par dénomination."""
         nodes.sort(key=_denomination_sort_key)
         for node in nodes:

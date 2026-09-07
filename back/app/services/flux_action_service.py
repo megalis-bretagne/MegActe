@@ -1,6 +1,5 @@
 from ..schemas.flux_action import FluxAction
-from . import get_or_make_api_pastell_for_admin
-from . import BaseService
+from . import BaseService, get_or_make_api_pastell_for_admin
 
 
 class FluxActionService(BaseService):

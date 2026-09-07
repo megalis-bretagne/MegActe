@@ -1,26 +1,24 @@
-from ..clients.pastell.api.entite_api import EntiteApi
-from ..clients.pastell.api import ApiPastell
-
-
-import functools, logging
-from typing import Callable, Type
+import functools
+import logging
+from collections.abc import Callable
+from typing import Type
 
 from fastapi import Depends
+from requests.auth import HTTPBasicAuth
 
-from ..models.users import UserPastell
-
+from ..clients.pastell.api import *
+from ..clients.pastell.api import ApiPastell
+from ..clients.pastell.api.entite_api import EntiteApi
+from ..clients.pastell.models.config import Config as PastellConfig
+from ..clients.s2low.api import ApiS2low
+from ..clients.s2low.models.config import Config as S2lowConfig
 from ..database import get_user_from_db
 from ..dependencies import settings
-from ..clients.pastell.api import *
-from ..clients.s2low.api import ApiS2low
-from ..clients.pastell.models.config import Config as PastellConfig
-from ..clients.s2low.models.config import Config as S2lowConfig
-
-from requests.auth import HTTPBasicAuth
+from ..models.users import UserPastell
 
 
 def _make_api_pastell(
-    cls: Type[ApiPastell],
+    cls: type[ApiPastell],
     auth: HTTPBasicAuth = None,
 ) -> ApiPastell:
 
@@ -37,7 +35,7 @@ def get_or_make_api_pastell(
 
 
 def get_client_api_pastell(
-    api_type: Type[ApiPastell],
+    api_type: type[ApiPastell],
 ) -> Callable[[UserPastell], ApiPastell]:
     def api_dependency(
         current_user: UserPastell = Depends(get_user_from_db),

@@ -1,16 +1,15 @@
 import time
 
-from pydantic import TypeAdapter
 import requests
+from pydantic import TypeAdapter
 from requests.adapters import HTTPAdapter
-
-from ..models.user_info import UserInfo
-from ..models.config import Config
-from ..handlers import call_handler
 from requests.auth import HTTPBasicAuth
 
+from ..handlers import call_handler
+from ..models.config import Config
+from ..models.user_info import UserInfo
 
-__all__ = ("entite_api", "ApiPastell")
+__all__ = ("ApiPastell", "entite_api")
 
 # Cache du nombre de documents par entité, en dehors de la classe : un ApiPastell
 # est recréé à chaque requête (client = Depends(get_or_make_api_pastell)), donc un
