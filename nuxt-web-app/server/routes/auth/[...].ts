@@ -43,7 +43,7 @@ async function refreshAccessToken(token: JWT) {
 }
 
 export default NuxtAuthHandler({
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.NUXT_AUTH_SECRET,
   providers: [
     KeycloakProvider.default({
       clientId: process.env.KEYCLOAK_CLIENT_ID,
