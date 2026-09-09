@@ -11,6 +11,7 @@ from .exceptions.custom_exceptions import (
 )
 from .models.users import UserPastell
 
+logger = logging.getLogger(__name__)
 engine = create_engine(get_settings().database.database_url, pool_pre_ping=True, pool_recycle=30)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -37,7 +38,7 @@ def get_user_from_db(login_user: dict = Depends(get_current_user), db: Session =
     Returns:
         UserPastell: L'utilisateur récupéré depuis la BD.
     """
-    logging.debug(f"Retrieve User form DB : {login_user}")
+    logger.debug(f"Getting User form DB : {login_user}")
     user = db.query(UserPastell).filter(UserPastell.login == login_user).first()
     if not user:
         raise UserNotFoundException()

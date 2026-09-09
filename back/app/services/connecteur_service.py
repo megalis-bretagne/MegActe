@@ -17,8 +17,8 @@ class ConnecteurTdtService:
     """
 
     def create(self, connecteur_config: ConnecteurCreateAuthTdt, db=SessionLocal):
-        with db() as db:
-            db_connecteur = db.execute(
+        with db() as inner_db:
+            db_connecteur = inner_db.execute(
                 select(ConnecteurAuthTdt)
                 .where(ConnecteurAuthTdt.id_e == connecteur_config.id_e)
                 .where(ConnecteurAuthTdt.flux == connecteur_config.flux)
@@ -36,16 +36,16 @@ class ConnecteurTdtService:
                 pwd_tech_tdt=encrypted_pwd,
                 pwd_key=key,
             )
-            db.add(new_connecteur)
-            db.commit()
-            db.refresh(new_connecteur)
+            inner_db.add(new_connecteur)
+            inner_db.commit()
+            inner_db.refresh(new_connecteur)
 
             logger.info(f"Creation du connecteur pour id_e {new_connecteur.id_e} flux {new_connecteur.flux} ")
             return new_connecteur
 
     def get_connecteur(self, flux: str, id_e: int, db=SessionLocal) -> ConnecteurAuthTdt:
-        with db() as db:
-            result = db.execute(
+        with db() as inner_db:
+            result = inner_db.execute(
                 select(ConnecteurAuthTdt).where(ConnecteurAuthTdt.id_e == id_e).where(ConnecteurAuthTdt.flux == flux)
             ).first()
 

@@ -1,7 +1,7 @@
 import base64
 import os
 
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
@@ -16,7 +16,7 @@ class PasswordUtils:
         try:
             fernet = Fernet(base64.urlsafe_b64decode(key.encode("utf-8")))
             return fernet.decrypt(password.encode("utf-8")).decode()
-        except Exception:
+        except (TypeError, InvalidToken):
             raise DecryptionException
 
     @staticmethod

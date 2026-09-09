@@ -37,7 +37,7 @@ class MegActeException(Exception):
         Args:
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "Decryption failed".
         """
-        logging.error(f"{self.__class__.__name__} : {detail}")
+        logger.error(f"{self.__class__.__name__} : {detail}")
         self.code = code
         self.status_code = status_code
         self.detail = detail

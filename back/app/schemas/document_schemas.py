@@ -173,11 +173,11 @@ class DocumentInfo(BaseModelDocument):
     numero_de_lacte: str | None = None
     denomination: str | None = None
 
-    def model_post_init(self, __context: Any):
+    def model_post_init(self, context: Any, /):
         """Complète la creation du documentInfo après l'init
 
         Args:
-            __context (Any): _description_
+            context (Any): _description_
         """
         if self.last_action is None:
             self.last_action = ActionDocument.creation

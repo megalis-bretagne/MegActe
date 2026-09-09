@@ -187,10 +187,10 @@ class TestEntiteApi(unittest.TestCase):
         # [ id e 1 => [2] , 3 => [4] , 5 => [6 => [7]], 10 ]
         self.assertEqual(len(group_entite), 4)  # trois racine
 
-        id_e_1 = list(filter(lambda entite: entite.id_e == 1, group_entite))[0]
-        id_e_3 = list(filter(lambda entite: entite.id_e == 3, group_entite))[0]
-        id_e_5 = list(filter(lambda entite: entite.id_e == 5, group_entite))[0]
-        id_e_10 = list(filter(lambda entite: entite.id_e == 10, group_entite))[0]
+        id_e_1 = next(filter(lambda entite: entite.id_e == 1, group_entite))
+        id_e_3 = next(filter(lambda entite: entite.id_e == 3, group_entite))
+        id_e_5 = next(filter(lambda entite: entite.id_e == 5, group_entite))
+        id_e_10 = next(filter(lambda entite: entite.id_e == 10, group_entite))
 
         self.assertEqual(len(id_e_1.child), 1)
         self.assertEqual(len(id_e_3.child), 1)

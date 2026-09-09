@@ -112,7 +112,7 @@ def get_document_journal(
 def delete_document(
     entite_id: int,
     documents_id: Annotated[
-        list[str],
+        list[str] | None,
         Query(
             title="les identifiants de documents",
             description="Les identifiants de documents",

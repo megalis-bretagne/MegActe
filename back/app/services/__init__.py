@@ -1,7 +1,6 @@
 import functools
 import logging
 from collections.abc import Callable
-from typing import Type
 
 from fastapi import Depends
 from requests.auth import HTTPBasicAuth
@@ -16,6 +15,8 @@ from ..database import get_user_from_db
 from ..dependencies import settings
 from ..models.users import UserPastell
 
+logger = logging.getLogger(__name__)
+
 
 def _make_api_pastell(
     cls: type[ApiPastell],
@@ -29,7 +30,7 @@ def _make_api_pastell(
 def get_or_make_api_pastell(
     current_user: UserPastell = Depends(get_user_from_db),
 ) -> ApiPastell:
-    logging.debug(f"Get api pastell client for user : {current_user.login}, {current_user.id_pastell}")
+    logger.debug(f"Get api pastell client for user : {current_user.login}, {current_user.id_pastell}")
     auth = HTTPBasicAuth(current_user.login, current_user.get_decrypt_password())
     return _make_api_pastell(ApiPastell, auth)
 
@@ -48,7 +49,7 @@ def get_client_api_pastell(
 
 @functools.cache
 def get_or_make_api_pastell_for_admin() -> ApiPastell:
-    logging.debug("Get api pastell client For Admin")
+    logger.debug("Get api pastell client For Admin")
     return _make_api_pastell(
         ApiPastell,
         HTTPBasicAuth(settings.pastell.user, settings.pastell.password),
@@ -57,7 +58,7 @@ def get_or_make_api_pastell_for_admin() -> ApiPastell:
 
 @functools.cache
 def get_or_make_api_s2low() -> ApiS2low:
-    logging.debug("Get api S2low client")
+    logger.debug("Get api S2low client")
     api_config = S2lowConfig(
         base_url=settings.s2low.url,
         certificate_path=settings.s2low.path_certificate,

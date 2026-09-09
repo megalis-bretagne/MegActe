@@ -6,7 +6,7 @@ from requests.auth import HTTPBasicAuth
 from ..models.entite_info import EntiteInfo, EntiteInfoWithChild
 from . import ApiPastell
 
-__all__ = "EntiteApi"
+__all__ = ("EntiteApi",)
 
 
 def _denomination_sort_key(entite: EntiteInfo) -> str:
@@ -76,13 +76,13 @@ class EntiteApi(ApiPastell):
             for id_e in all_entite_ids:
                 if id_e not in entite_mere_ids:  # si feuille
                     id_mere = group_entite[id_e].entite_mere
-                    entite_mere = group_entite[id_mere] if id_mere in group_entite else None
+                    entite_mere = group_entite.get(id_mere, None)
                     if entite_mere is not None:
                         entite_mere.child.append(group_entite[id_e])
                         del group_entite[id_e]  # on supprime l'entite feuille du group
 
             all_entite_ids = set(entite_dict.keys())
-            entite_mere_ids = set([entite.entite_mere for entite in list(entite_dict.values())])
+            entite_mere_ids =  { entite.entite_mere for entite in list(entite_dict.values()) }
             # tant qu'il y a des id commun entre les id_mere et tous les id
             if not entite_mere_ids.isdisjoint(all_entite_ids):
                 _complete(group_entite, all_entite_ids, entite_mere_ids)

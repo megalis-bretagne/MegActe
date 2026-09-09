@@ -25,9 +25,12 @@ class DocumentService(BaseService):
         BaseService
     """
 
-    def __init__(self, api=None, flux_action_service: FluxActionService = FluxActionService()):
+    def __init__(self, api=None, flux_action_service: FluxActionService | None = None):
         super().__init__(api)
-        self.flux_action_service = flux_action_service
+        if flux_action_service is None:
+            self.flux_action_service = FluxActionService()
+        else:
+            self.flux_action_service = flux_action_service
 
     def get_single_document(
         self,

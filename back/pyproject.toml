@@ -31,3 +31,7 @@ extend-exclude = [
   "migrations",
   "config"
 ]
+
+[tool.ruff.lint.flake8-bugbear]
+# Allow default arguments like, e.g., `data: List[str] = fastapi.Query(None)`.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.File", "functools.partial"]

@@ -67,7 +67,7 @@ class ApiPastell:
         response = self.perform_get(f"utilisateur/{id_u}", auth)
         return TypeAdapter(UserInfo).validate_python(response)
 
-    def count_documents_by_id_e(self, id_e: int, type_document: str = None, auth: HTTPBasicAuth | None = None):
+    def count_documents_by_id_e(self, id_e: int, type_document: str | None = None, auth: HTTPBasicAuth | None = None):
         """Retourne le nombre de document sur une entite
 
         Args:
@@ -92,7 +92,7 @@ class ApiPastell:
             _count_documents_cache[cache_key] = (time.monotonic(), 0)
             return 0
 
-        for _, value in count_response[str(id_e)]["flux"].items():
+        for value in count_response[str(id_e)]["flux"].values():
             if not isinstance(value, list):
                 try:
                     total += sum(value.values())
