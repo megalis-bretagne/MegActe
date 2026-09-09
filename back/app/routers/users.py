@@ -1,5 +1,3 @@
-from functools import partial
-
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -19,6 +17,8 @@ from ..services.user_service import UserService
 
 router = APIRouter()
 
+entite_api_dependency = get_client_api_pastell(EntiteApi)
+
 
 # Get infos user connecté
 @router.get(
@@ -28,7 +28,7 @@ router = APIRouter()
 )
 def get_user(
     user: UserPastell = Depends(get_user_from_db),
-    client: ApiPastell = Depends(partial(get_client_api_pastell, EntiteApi)),
+    client: ApiPastell = Depends(entite_api_dependency),
 ):
     return UserService(client).get_user_context_service(user)
 
