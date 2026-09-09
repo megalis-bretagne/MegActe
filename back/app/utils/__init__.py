@@ -16,7 +16,7 @@ class PasswordUtils:
         try:
             fernet = Fernet(base64.urlsafe_b64decode(key.encode("utf-8")))
             return fernet.decrypt(password.encode("utf-8")).decode()
-        except (TypeError, InvalidToken):
+        except (TypeError, ValueError, InvalidToken):
             raise DecryptionException
 
     @staticmethod
