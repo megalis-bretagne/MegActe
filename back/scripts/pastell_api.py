@@ -3,6 +3,8 @@
 Usage:
     uv run pastell_api.py --url https://pastell.example.org/api --token <token>
     uv run pastell_api.py --url https://pastell.example.org/api --token <token> --path /v2/version
+    uv run pastell_api.py --url https://pastell.example.org/api --token <token> \
+        --path /v2/utilisateur/123/token --method POST --data name=mon-jeton
 
 Le mode par défaut exécute un smoke test en lecture seule sur les principaux
 endpoints de l'API, en se reposant sur les éléments retournés (première entité,
@@ -57,10 +59,26 @@ class PastellClient:
 
             warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
-    def request(self, method: str, path: str, params: dict[str, Any] | None = None) -> tuple[int | None, Any]:
-        """Envoie une requête et retourne (code HTTP, corps parsé)."""
+    def request(
+        self,
+        method: str,
+        path: str,
+        params: dict[str, Any] | None = None,
+        data: dict[str, Any] | None = None,
+    ) -> tuple[int | None, Any]:
+        """Envoie une requête et retourne (code HTTP, corps parsé).
+
+        `params` est envoyé en query string, `data` en corps de type
+        application/x-www-form-urlencoded.
+        """
         try:
-            response = self.session.request(method, f"{self.base_url}{path}", params=params, timeout=self.timeout)
+            response = self.session.request(
+                method,
+                f"{self.base_url}{path}",
+                params=params,
+                data=data,
+                timeout=self.timeout,
+            )
         except requests.RequestException as exc:
             return None, str(exc)
         return response.status_code, _parse_body(response)
@@ -215,7 +233,14 @@ def main(argv: list[str] | None = None) -> int:
         action="append",
         default=[],
         metavar="KEY=VALUE",
-        help="Paramètre de requête, répétable (ex. --param limit=10)",
+        help="Paramètre de requête (query string), répétable (ex. --param limit=10)",
+    )
+    parser.add_argument(
+        "--data",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="Champ de formulaire du corps de la requête, répétable (ex. --data name=mon-jeton)",
     )
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT, help="Délai d'expiration des requêtes (secondes)")
     parser.add_argument("--no-verify", action="store_true", help="Désactive la vérification SSL (certificats auto-signés)")
@@ -242,7 +267,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.path:
         params = {key: value for item in args.param for key, _, value in [item.partition("=")]}
-        status, body = client.request(args.method, args.path, params=params)
+        data = {key: value for item in args.data for key, _, value in [item.partition("=")]}
+        status, body = client.request(args.method, args.path, params=params, data=data)
         print(f"{args.method} {args.path}  ->  {status}")
         if isinstance(body, (dict, list)):
             print(json.dumps(body, indent=2, ensure_ascii=False))
