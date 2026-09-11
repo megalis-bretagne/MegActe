@@ -82,7 +82,7 @@ class EntiteApi(ApiPastell):
                         del group_entite[id_e]  # on supprime l'entite feuille du group
 
             all_entite_ids = set(entite_dict.keys())
-            entite_mere_ids =  { entite.entite_mere for entite in list(entite_dict.values()) }
+            entite_mere_ids = {entite.entite_mere for entite in list(entite_dict.values())}
             # tant qu'il y a des id commun entre les id_mere et tous les id
             if not entite_mere_ids.isdisjoint(all_entite_ids):
                 _complete(group_entite, all_entite_ids, entite_mere_ids)

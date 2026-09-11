@@ -10,6 +10,7 @@ Le mode par défaut exécute un smoke test en lecture seule sur les principaux
 endpoints de l'API, en se reposant sur les éléments retournés (première entité,
 premier document, premier flux, ...) pour tester les endpoints imbriqués.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -160,7 +161,9 @@ def run_smoke_test(client: PastellClient) -> list[TestResult]:
     def test(name: str, method: str, path: str, params: dict[str, Any] | None = None) -> tuple[int | None, Any]:
         status, body = client.request(method, path, params=params)
         results.append(
-            TestResult(name=name, method=method, path=path, status=status, ok=status in OK_STATUSES, detail=summarize(body))
+            TestResult(
+                name=name, method=method, path=path, status=status, ok=status in OK_STATUSES, detail=summarize(body)
+            )
         )
         return status, body
 
@@ -242,8 +245,12 @@ def main(argv: list[str] | None = None) -> int:
         metavar="KEY=VALUE",
         help="Champ de formulaire du corps de la requête, répétable (ex. --data name=mon-jeton)",
     )
-    parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT, help="Délai d'expiration des requêtes (secondes)")
-    parser.add_argument("--no-verify", action="store_true", help="Désactive la vérification SSL (certificats auto-signés)")
+    parser.add_argument(
+        "--timeout", type=int, default=DEFAULT_TIMEOUT, help="Délai d'expiration des requêtes (secondes)"
+    )
+    parser.add_argument(
+        "--no-verify", action="store_true", help="Désactive la vérification SSL (certificats auto-signés)"
+    )
     parser.add_argument(
         "--list-endpoints",
         action="store_true",
