@@ -129,3 +129,5 @@ config*
 back/config/config.yml
 back/config/s2low
 web-app/src/assets/settings.json
+back/scripts/tokens
+back/scripts/pastell-preprod-url
