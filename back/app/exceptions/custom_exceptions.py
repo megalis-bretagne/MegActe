@@ -188,6 +188,26 @@ class UserPasswordNullException(MegActeException):
         super().__init__(status_code=400, detail=detail)
 
 
+class UserNoCredentialException(MegActeException):
+    """Exception lorsqu'un utilisateur n'a ni token valide ni mot de passe utilisable."""
+
+    def __init__(self, login: str):
+        super().__init__(
+            status_code=400,
+            detail=f"Aucune credential Pastell disponible pour l'utilisateur {login}",
+        )
+
+
+class UserNotAdminException(MegActeException):
+    """Exception lorsque l'utilisateur connecté n'a pas le rôle admin Pastell."""
+
+    def __init__(self):
+        super().__init__(
+            status_code=403,
+            detail="Seul l'utilisateur admin Pastell peut déclencher la synchronisation",
+        )
+
+
 class MegacteErrorResponse(JSONResponse):
     """Modele de response en cas d'erreur
 

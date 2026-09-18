@@ -13,17 +13,19 @@ class UserInfo(BaseModel):
         email (str): L'adresse email de l'utilisateur.
         certificat (list[str]): La liste des certificats de l'utilisateur.
         id_e (int): L'ID de l'entité associée à l'utilisateur.
+        active (bool): Si l'utilisateur est actif.
     """
 
     id_u: int
     login: str
-    nom: str
-    prenom: str
-    email: str
-    id_e: int
+    nom: str | None = None
+    prenom: str | None = None
+    email: str | None = None
+    id_e: int | None = None
+    active: bool = True
 
     @field_validator("id_u", "id_e", mode="before")
-    def parse_int(cls, v: str):
+    def parse_int(cls, v):
         """
         Valide et convertit les valeurs des champs 'id_u' et 'id_e' en entiers.
 
@@ -31,12 +33,8 @@ class UserInfo(BaseModel):
             v (str): La valeur à convertir.
 
         Returns:
-            int: La valeur convertie en entier.
+            int: La valeur convertie en entier (ou None si absente).
         """
+        if v is None:
+            return None
         return int(v)
-
-        # if "certificat" not in user_info_data or not isinstance(
-
-    #     user_info_data["certificat"], list
-    # ):
-    #     user_info_data["certificat"] = []

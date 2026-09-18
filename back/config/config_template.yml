@@ -22,3 +22,7 @@ s2low:
   path_certificate: <certificat .pem>
   path_key: <private_key.pem>
   key_password: <password>
+
+sync:
+  enabled: true
+  interval_minutes: 1440

@@ -1,6 +1,7 @@
 import base64
 import os
 
+import requests.auth
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -8,8 +9,39 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from ..exceptions.custom_exceptions import DecryptionException
 
 
+class BearerAuth(requests.auth.AuthBase):
+    """Authentification Bearer Token pour les appels API Pastell."""
+
+    def __init__(self, token: str):
+        self.token = token
+
+    def __call__(self, r):
+        r.headers["Authorization"] = f"Bearer {self.token}"
+        return r
+
+
 class PasswordUtils:
-    """Contient les méthodes utilitaire pour encrypted decrypter les mdp"""
+    """Contient les méthodes utilitaire pour chiffrer/déchiffrer les mdp et tokens"""
+
+    @staticmethod
+    def generate_fernet_key() -> str:
+        """Génère une clé Fernet aléatoire et la retourne sous forme de chaîne."""
+        return Fernet.generate_key().decode("utf-8")
+
+    @staticmethod
+    def encrypt_with_key(data: str, key: str) -> str:
+        """Chiffre des données avec une clé Fernet existante."""
+        fernet = Fernet(key.encode("utf-8"))
+        return fernet.encrypt(data.encode("utf-8")).decode("utf-8")
+
+    @staticmethod
+    def decrypt_with_key(data: str, key: str) -> str:
+        """Déchiffre des données avec une clé Fernet existante."""
+        try:
+            fernet = Fernet(key.encode("utf-8"))
+            return fernet.decrypt(data.encode("utf-8")).decode("utf-8")
+        except (TypeError, ValueError, InvalidToken):
+            raise DecryptionException
 
     @staticmethod
     def decrypt_password(password: str, key: str) -> str:
@@ -21,20 +53,13 @@ class PasswordUtils:
 
     @staticmethod
     def encrypt_password(password: str) -> tuple:
-        """Encrypte un mot de passe et retourne ca clé et le mdp encrypté
-
-        Args:
-            password (str): le mot de passe non crypté
-
-        Returns:
-            tuple: (key , password cyrpted)
-        """
+        """Chiffre un mot de passe et retourne sa clé et le mdp chiffré."""
         salt = os.urandom(16)
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
             salt=salt,
-            iterations=480000,  # Un nombre élevé d'itérations pour renforcer la sécurité
+            iterations=480000,
         )
         key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
 

@@ -44,6 +44,13 @@ class DocumentConfig(BaseModel):
     ]
 
 
+class SyncConfig(BaseModel):
+    """Configuration de la synchronisation des utilisateurs Pastell."""
+
+    enabled: bool = True
+    interval_minutes: int = 1440  # 24h par défaut
+
+
 class Pastell(BaseModel):
     """
     Configuration pour la connexion pastell
@@ -111,6 +118,7 @@ class Settings(BaseSettings):
     s2low: S2low
     keycloak: Keycloak
     database: Database
+    sync: SyncConfig = SyncConfig()
     request_timeout: int = 30
     log_level: str = Field(default="INFO", validation_alias="MEGACTE_LOGLEVEL")  # ["debug", "info", "warning", "error", "critical"],
 

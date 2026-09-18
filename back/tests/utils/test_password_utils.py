@@ -38,3 +38,23 @@ class TestPassword(unittest.TestCase):
 
         with pytest.raises(DecryptionException):
             PasswordUtils.decrypt_password("bad password", g_key)
+
+    def test_should_encrypt_and_decrypt_with_key(self):
+        # GIVEN
+        g_data = "token-valeur-secrete"
+        g_key = PasswordUtils.generate_fernet_key()
+
+        g_encrypted = PasswordUtils.encrypt_with_key(g_data, g_key)
+
+        # THEN
+        self.assertEqual(g_data, PasswordUtils.decrypt_with_key(g_encrypted, g_key))
+
+    def test_raise_decrypt_with_bad_key(self):
+        # GIVEN
+        g_data = "token-valeur-secrete"
+        g_key = PasswordUtils.generate_fernet_key()
+        g_encrypted = PasswordUtils.encrypt_with_key(g_data, g_key)
+
+        # THEN
+        with pytest.raises(DecryptionException):
+            PasswordUtils.decrypt_with_key(g_encrypted, "mauvaise-cle")

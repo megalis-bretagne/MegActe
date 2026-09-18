@@ -77,6 +77,28 @@ class UserService(BaseService):
 
         return new_user
 
+    def create_user_token(self, user: UserPastell, db: Session) -> UserPastell:
+        """Crée un token Pastell (nom megacte_<login>) pour l'utilisateur et le stocke chiffré en BDD.
+
+        Args:
+            user (UserPastell): l'utilisateur concerné
+            db (Session): la session de base de données
+
+        Returns:
+            UserPastell: l'utilisateur avec son token renseigné
+        """
+        token_name = f"megacte_{user.login}"
+        response = self.api_pastell.perform_post(f"/utilisateur/{user.id_pastell}/token", data={"name": token_name})
+        if not user.pwd_key:
+            user.pwd_key = PasswordUtils.generate_fernet_key()
+        user.token_name = token_name
+        user.token = PasswordUtils.encrypt_with_key(response["token"], user.pwd_key)
+        user.token_expires_at = None
+        db.commit()
+        db.refresh(user)
+        logger.info(f"Token créé pour l'utilisateur {user.login}")
+        return user
+
     # Delete User
     def delete_user_from_db(self, user_id: int, db: Session):
         db_user = db.query(UserPastell).filter(UserPastell.id == user_id).first()

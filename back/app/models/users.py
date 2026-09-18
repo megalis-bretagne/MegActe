@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String
+from datetime import UTC, datetime
+
+from sqlalchemy import Boolean, Column, DateTime, Integer, String
 
 from ..utils import PasswordUtils
 from .base import Base  # Assurez-vous de pointer vers la base SQLAlchemy
@@ -21,18 +23,30 @@ class UserPastell(Base):
     id_pastell = Column(Integer, unique=True, nullable=False)
     pwd_pastell = Column(String)
     pwd_key = Column(String)
+    token_name = Column(String)
+    token = Column(String)
+    token_expires_at = Column(DateTime(timezone=True), nullable=True)
+    active = Column(Boolean, default=True, nullable=False)
 
-    _cached_password = None  # mot de passe non chiffré en cache
+    _cached_password = None
+    _cached_token = None
 
     def get_decrypt_password(self) -> str:
-        """Retourne le mot de passe non crypté
-
-        Returns:
-            str: le mot de passe
-        """
         if self._cached_password is None:
-            self._cached_password = PasswordUtils().decrypt_password(self.pwd_pastell, self.pwd_key)
+            self._cached_password = PasswordUtils.decrypt_password(self.pwd_pastell, self.pwd_key)
         return self._cached_password
+
+    def get_decrypt_token(self) -> str:
+        if self._cached_token is None:
+            self._cached_token = PasswordUtils.decrypt_with_key(self.token, self.pwd_key)
+        return self._cached_token
+
+    def is_token_valid(self) -> bool:
+        if not self.token:
+            return False
+        if self.token_expires_at is None:
+            return True
+        return datetime.now(UTC) < self.token_expires_at
 
     def __eq__(self, other):
         if not isinstance(other, UserPastell):
