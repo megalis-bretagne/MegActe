@@ -70,6 +70,10 @@ class SyncUserService:
         return None
 
     def _upsert_user(self, db: Session, user_info: UserInfo) -> None:
+        # Flush pour rendre visibles les insertions en attente de ce cycle : sans
+        # cela (autoflush=False), deux comptes Pastell partageant le même login mais
+        # avec des id_u différents seraient insérés deux fois → violation d'unicité.
+        db.flush()
         user = (
             db.query(UserPastell)
             .filter(
@@ -90,6 +94,11 @@ class SyncUserService:
             db.add(user)
             logger.info(f"Nouvel utilisateur Pastell enrolé : {user_info.login} (id_u={user_info.id_u})")
         else:
+            if user.id_pastell != user_info.id_u:
+                logger.warning(
+                    f"Login dupliqué dans Pastell : {user_info.login} (id_u={user.id_pastell} et {user_info.id_u}) ; "
+                    f"une seule ligne est conservée (id_u={user.id_pastell})"
+                )
             if user.active != user_info.active:
                 user.active = user_info.active
                 logger.info(f"Mise à jour du statut actif de l'utilisateur {user_info.login} : {user_info.active}")

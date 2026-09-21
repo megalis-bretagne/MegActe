@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session, sessionmaker
 from .dependencies import get_current_user, get_settings
 from .exceptions.custom_exceptions import UserNotFoundException, UserRegistrationException
 from .models.users import UserPastell
-from .utils import PasswordUtils
 
 logger = logging.getLogger(__name__)
 engine = create_engine(get_settings().database.database_url, pool_pre_ping=True, pool_recycle=30)
@@ -40,8 +39,11 @@ def get_db():
 def _ensure_user_has_token(user: UserPastell, db: Session) -> None:
     """Crée un token Pastell pour l'utilisateur s'il n'en a pas de valide.
 
-    La création est faite une seule fois (au premier login) via le client admin.
-    En cas d'échec, on retombe sur le mot de passe s'il existe en base.
+    S'exécute au premier accès de l'utilisateur (aucun token configuré dans la
+    table pastell_users) : le mot de passe Pastell de l'utilisateur est réinitialisé
+    via le compte technique, puis un token est créé par l'utilisateur lui-même via
+    l'endpoint self-service POST /v2/utilisateur/token. Seul le token (chiffré) est
+    conservé en base.
 
     Args:
         user (UserPastell): l'utilisateur
@@ -49,8 +51,6 @@ def _ensure_user_has_token(user: UserPastell, db: Session) -> None:
     """
     if user.is_token_valid():
         return
-    if not user.pwd_key:
-        user.pwd_key = PasswordUtils.generate_fernet_key()
 
     from .services import get_or_make_api_pastell_for_admin
     from .services.user_service import UserService
@@ -58,10 +58,9 @@ def _ensure_user_has_token(user: UserPastell, db: Session) -> None:
     admin_api = get_or_make_api_pastell_for_admin()
     try:
         UserService(admin_api).create_user_token(user, db)
-    except Exception as e:  # fallback mdp si la création de token échoue
-        logger.warning(f"Échec de création du token pour l'utilisateur {user.login} : {e}")
-        if not user.pwd_pastell:
-            raise UserRegistrationException(f"Impossible de créer un token pour l'utilisateur {user.login}") from e
+    except Exception as e:
+        logger.error(f"Échec de création du token pour l'utilisateur {user.login} : {e}")
+        raise UserRegistrationException(f"Impossible de créer un token pour l'utilisateur {user.login}") from e
 
 
 def get_user_from_db(login_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> UserPastell:

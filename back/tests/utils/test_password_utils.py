@@ -49,6 +49,26 @@ class TestPassword(unittest.TestCase):
         # THEN
         self.assertEqual(g_data, PasswordUtils.decrypt_with_key(g_encrypted, g_key))
 
+    def test_should_generate_random_password(self):
+        # WHEN
+        password = PasswordUtils.generate_password(15)
+
+        # THEN
+        self.assertEqual(len(password), 15)
+        self.assertTrue(any(c.islower() for c in password))
+        self.assertTrue(any(c.isupper() for c in password))
+        self.assertTrue(any(c.isdigit() for c in password))
+        special_count = sum(1 for c in password if c in "!@#$%&*")
+        self.assertGreaterEqual(special_count, 3)
+
+    def test_should_generate_random_password_unique(self):
+        # WHEN
+        password_1 = PasswordUtils.generate_password(15)
+        password_2 = PasswordUtils.generate_password(15)
+
+        # THEN
+        self.assertNotEqual(password_1, password_2)
+
     def test_raise_decrypt_with_bad_key(self):
         # GIVEN
         g_data = "token-valeur-secrete"

@@ -64,13 +64,9 @@ flowchart TD
     E --> L{Token valide en BDD ?}
     L -- Oui --> M[Utilisateur enrollé + auth prêt]
 
-    L -- Non / absent / expiré --> N["POST /utilisateur/{id_u}/token<br/>via client admin nom=megacte_login"] --> O{Création OK ?}
-    O -- Oui --> P["Token chiffré Fernet (pwd_key)<br/>stocké en BDD, sans expiration"] --> M
-    O -- Non --> Q{pwd_pastell existe ?}
-    Q -- Oui --> R[Fallback: auth Basic login/mdp] --> M
-    Q -- Non --> S[UserRegistrationException]
-
-    M --> T[build_user_auth: Bearer token préféré,<br/>sinon Basic login/mdp]
+    L -- Non / absent / expiré --> N["PATCH /utilisateur/{id_u}<br/>via compte technique password=aléatoire<br/>sur 10 caractères"] --> O["POST /utilisateur/token<br/>Basic Auth login / mot de passe temporaire"] --> P{Création OK ?}
+    P -- Oui --> Q["Token chiffré Fernet (pwd_key)<br/>stocké en BDD, sans expiration.<br/>Le mot de passe temporaire n'est pas conservé"] --> M
+    P -- Non --> R["UserRegistrationException<br/>(réessaie à la connexion suivante)"]
 ```
 
 ## Synchronisation de fond
@@ -79,8 +75,10 @@ La synchro (démarrage + job périodique `settings.sync.interval_minutes`, + end
 
 ## Points clés
 
-- **Token prioritaire** : `build_user_auth` privilégie le Bearer token ; le login/mot de passe n'est qu'un fallback (si la création de token échoue et qu'un mot de passe existe).
+- **Token prioritaire** : `build_user_auth` utilise le Bearer token ; le login/mot de passe n'intervient plus que pour un éventuel utilisateur ajouté manuellement (jamais pour les utilisateurs enrollés).
+- **Réinitialisation du mot de passe** : à la première connexion (aucun token configuré), le mot de passe Pastell est réinitialisé via le compte technique (`PATCH /v2/utilisateur/{id_u}`). Le mot de passe temporaire ne sert qu'à la création du token et **n'est pas stocké en base**.
+- **Création du token par l'utilisateur** : le token est créé via l'endpoint self-service `POST /v2/utilisateur/token` en Basic Auth avec le login / mot de passe temporaire (la création par le compte admin `POST /utilisateur/{id_u}/token` ne fonctionne pas pour les utilisateurs qui ne sont pas de type `api`).
 - **Cache négatif** : un login absent (ni en BDD, ni dans Pastell) n'est re-scanné que toutes les 5 minutes max (TTL), sinon le scan Pastell serait trop coûteux.
-- **Clé Fernet** : le token est chiffré avec `pwd_key` du user (générée à l'enrôlement si absente) ; `pwd_key` sert aussi au mot de passe.
+- **Clé Fernet** : le token est chiffré avec `pwd_key` du user (générée à l'enrôlement si absente).
 - **Sanity check sync** : si une entité échoue pendant le scan, la synchro est abandonnée (pas de commit) pour ne pas désactiver à tort des utilisateurs d'entités non scannées.
 

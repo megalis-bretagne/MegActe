@@ -1,5 +1,6 @@
 import logging
 
+from requests.auth import HTTPBasicAuth
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -78,7 +79,13 @@ class UserService(BaseService):
         return new_user
 
     def create_user_token(self, user: UserPastell, db: Session) -> UserPastell:
-        """Crée un token Pastell (nom megacte_<login>) pour l'utilisateur et le stocke chiffré en BDD.
+        """Crée un token Pastell (nom megacte_<login>) pour l'utilisateur.
+
+        Réinitialise d'abord le mot de passe Pastell de l'utilisateur via le compte
+        technique (PATCH /v2/utilisateur/{id_u}), puis crée le token via l'endpoint
+        self-service POST /v2/utilisateur/token en s'authentifiant en Basic Auth avec
+        le login et le mot de passe temporaire. Ce mot de passe temporaire n'est pas
+        stocké en base : seul le token obtenu y est conservé (chiffré).
 
         Args:
             user (UserPastell): l'utilisateur concerné
@@ -88,9 +95,20 @@ class UserService(BaseService):
             UserPastell: l'utilisateur avec son token renseigné
         """
         token_name = f"megacte_{user.login}"
-        response = self.api_pastell.perform_post(f"/utilisateur/{user.id_pastell}/token", data={"name": token_name})
-        if not user.pwd_key:
-            user.pwd_key = PasswordUtils.generate_fernet_key()
+        temp_password = PasswordUtils.generate_password(15)
+
+        # Réinitialiser le mot de passe Pastell via le compte technique
+        self.api_pastell.perform_patch(f"/utilisateur/{user.id_pastell}", {"password": temp_password})
+
+        # Créer le token utilisateur via Basic Auth login / mot de passe temporaire
+        user_client = self.api_pastell.with_auth(HTTPBasicAuth(user.login, temp_password))
+        response = user_client.perform_post("/utilisateur/token", data={"name": token_name})
+
+        # Utiliser une clé Fernet valide pour chiffrer le token : la clé existante
+        # (issue d'encrypt_password, en base64 "doublé") n'est pas au format attendu
+        # par encrypt_with_key. Le mot de passe stocké devient de toute façon obsolète
+        # après la réinitialisation : régénérer la clé ne casse rien.
+        user.pwd_key = PasswordUtils.generate_fernet_key()
         user.token_name = token_name
         user.token = PasswordUtils.encrypt_with_key(response["token"], user.pwd_key)
         user.token_expires_at = None

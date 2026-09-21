@@ -1,5 +1,7 @@
 import base64
 import os
+import secrets
+import string
 
 import requests.auth
 from cryptography.fernet import Fernet, InvalidToken
@@ -50,6 +52,33 @@ class PasswordUtils:
             return fernet.decrypt(password.encode("utf-8")).decode()
         except (TypeError, ValueError, InvalidToken):
             raise DecryptionException
+
+    SPECIAL_CHARS = "!@#$%&*"
+
+    @staticmethod
+    def generate_password(length: int = 15) -> str:
+        """Génère un mot de passe aléatoire conforme à la politique Pastell.
+
+        Le mot de passe contient au moins un caractère minuscule, un caractère
+        majuscule, un chiffre et trois caractères spéciaux parmi !@#$%&*.
+        """
+        if length < 6:
+            raise ValueError("length doit être >= 6")
+        lowercase = string.ascii_lowercase
+        uppercase = string.ascii_uppercase
+        digits = string.digits
+        guaranteed = [
+            secrets.choice(lowercase),
+            secrets.choice(uppercase),
+            secrets.choice(digits),
+            secrets.choice(PasswordUtils.SPECIAL_CHARS),
+            secrets.choice(PasswordUtils.SPECIAL_CHARS),
+            secrets.choice(PasswordUtils.SPECIAL_CHARS),
+        ]
+        all_chars = lowercase + uppercase + digits + PasswordUtils.SPECIAL_CHARS
+        chars = guaranteed + [secrets.choice(all_chars) for _ in range(length - len(guaranteed))]
+        secrets.SystemRandom().shuffle(chars)
+        return "".join(chars)
 
     @staticmethod
     def encrypt_password(password: str) -> tuple:

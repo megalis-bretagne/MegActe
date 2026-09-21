@@ -44,6 +44,10 @@ class ApiPastell:
     def auth(self, auth: HTTPBasicAuth):
         self._auth = auth
 
+    def with_auth(self, auth: HTTPBasicAuth) -> "ApiPastell":
+        """Retourne un nouveau client Pastell avec une authentification différente."""
+        return ApiPastell(self._config, auth)
+
     def perform_get(self, url, auth: HTTPBasicAuth = None, **kwagrs):
         return self._perform_request("GET", url, auth=auth, **kwagrs)
 

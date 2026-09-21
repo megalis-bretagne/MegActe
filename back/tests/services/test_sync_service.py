@@ -76,3 +76,17 @@ class TestSyncUserService(TestDatabase):
         user = self.service.find_and_upsert_user("inconnu", self.session)
 
         self.assertIsNone(user)
+
+    def test_sync_users_deduplicates_users_with_same_login(self):
+        """Deux comptes Pastell avec le même login (id_u différents) ne créent qu'une seule ligne."""
+        self.api_admin.perform_get.side_effect = [
+            [{"id_e": "1"}, {"id_e": "2"}],
+            [{"id_u": "10", "login": "duplicate@x.fr", "nom": "A", "prenom": "Alice", "id_e": "1"}],
+            [{"id_u": "20", "login": "duplicate@x.fr", "nom": "B", "prenom": "Bob", "id_e": "2"}],
+        ]
+
+        self.service.sync_users(self.session)
+
+        rows = self.session.query(UserPastell).filter(UserPastell.login == "duplicate@x.fr").all()
+        self.assertEqual(len(rows), 1)
+        self.assertIn(rows[0].id_pastell, (10, 20))
