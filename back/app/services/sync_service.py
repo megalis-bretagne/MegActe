@@ -45,10 +45,7 @@ class SyncUserService:
         return len(seen_id_pastell)
 
     def find_and_upsert_user(self, login: str, db: Session) -> UserPastell | None:
-        """Cherche un login donné dans Pastell via le scan des entités.
-
-        Permet l'enrollment progressif : au premier login inconnu, on scanne Pastell
-        et on crée la ligne locale si l'utilisateur existe.
+        """Cherche un login donné dans Pastell via le scan des entités et l'upsert local.
 
         Args:
             login (str): le login à rechercher
