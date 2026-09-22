@@ -3,7 +3,7 @@ import logging
 from collections.abc import Callable
 
 from fastapi import Depends
-from requests.auth import AuthBase, HTTPBasicAuth
+from requests.auth import AuthBase
 
 from ..clients.pastell.api import *
 from ..clients.pastell.api import ApiPastell
@@ -78,10 +78,7 @@ def get_client_api_pastell(
 @functools.cache
 def get_or_make_api_pastell_for_admin() -> ApiPastell:
     logger.debug("Get api pastell client For Admin")
-    return _make_api_pastell(
-        ApiPastell,
-        HTTPBasicAuth(settings.pastell.user, settings.pastell.password),
-    )
+    return _make_api_pastell(ApiPastell, BearerAuth(settings.pastell.token))
 
 
 @functools.cache

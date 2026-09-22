@@ -67,7 +67,7 @@ def refresh_users(
     db: Session = Depends(get_db),
     client_admin: ApiPastell = Depends(get_or_make_api_pastell_for_admin),
 ):
-    if current_user.login != settings.pastell.user:
+    if settings.pastell.user and current_user.login != settings.pastell.user:
         raise UserNotAdminException()
     count = SyncUserService(client_admin).sync_users(db)
     return {"message": f"Synchronisation terminée : {count} utilisateurs actifs"}

@@ -60,8 +60,10 @@ class Pastell(BaseModel):
     """
 
     url: str
-    user: str
-    password: str
+    # user: optionnel, renseigné à titre indicatif (savoir à quel utilisateur
+    # appartient le token). Utilisé aussi comme garde pour l'endpoint admin.
+    user: str | None = None
+    token: str
 
 
 class Keycloak(BaseModel):

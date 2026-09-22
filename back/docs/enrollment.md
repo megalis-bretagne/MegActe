@@ -72,7 +72,7 @@ La synchro (démarrage + job périodique `settings.sync.interval_minutes`, + end
 
 ## Points clés
 
-- **Token obligatoire** : `build_user_auth` utilise exclusivement le token Bearer stocké en base pour les appels utilisateur vers Pastell. Aucun repli login/mot de passe, et la colonne `pwd_pastell` a été supprimée (migration « drop pwd_pastell »). Seul le compte technique admin (`settings.pastell.*`) s'authentifie encore par login/mot de passe.
+- **Token partout** : tous les appels vers Pastell passent par un token Bearer — les appels utilisateur (`build_user_auth`, token stocké en base) comme les appels du compte technique admin (`settings.pastell.token`). Aucun login/mot de passe, et la colonne `pwd_pastell` a été supprimée (migration « drop pwd_pastell »). Le champ `user` de la config n'est plus qu'indicatif.
 - **Création du token (seule exception)** : à la première connexion (aucun token configuré), le mot de passe Pastell est réinitialisé via le compte technique (`PATCH /v2/utilisateur/{id_u}`). Le token est ensuite créé via l'endpoint self-service `POST /v2/utilisateur/token` en Basic Auth avec le login / mot de passe temporaire — la seule utilisation du login/mot de passe d'un utilisateur (la création par le compte admin `POST /utilisateur/{id_u}/token` ne fonctionne pas pour les utilisateurs qui ne sont pas de type `api`).
 - **Clé Fernet** : le token est chiffré avec `pwd_key` du user (générée à l'enrôlement ou à la création manuelle si absente).
 - **Sanity check sync** : si une entité échoue pendant le scan, la synchro est abandonnée (pas de commit) pour ne pas désactiver à tort des utilisateurs d'entités non scannées.

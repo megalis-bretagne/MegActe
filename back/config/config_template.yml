@@ -1,7 +1,7 @@
 pastell:
   url : <url>
-  user : <user>
-  password : <mdp>
+  # user : <utilisateur Pastell à qui appartient le token> (optionnel, indicatif)
+  token : <token d'accès Pastell>
 
 keycloak:
   token_url: <token>
