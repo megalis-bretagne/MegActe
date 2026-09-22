@@ -33,7 +33,7 @@ FastAPI application is located in './app' with the following key components:
 - `migrations/`: Alembic migration scripts
 - `config/`: Yaml configuration files (excluded from git)
 - `config/configuration.py`: a `pydantic-settings` `BaseSettings` tree (`Pastell`, `Keycloak`, `Database`, `S2low`, `DocumentConfig`) loaded from YAML (YAML configuration file in `config/`) + env/`.env`, exposed as a cached singleton via `dependencies.get_settings()` / `dependencies.settings`.
-- Authorization flow: every router except `health` is protected by `dependencies.validate_token` (validates a Keycloak JWT against Keycloak's JWKS, checked in `app/main.py` via `Depends`). `get_current_user` then extracts the `preferred_username` from the token, and `database.get_user_from_db` looks that login up in the local `pastell_users` table to get the user's **Pastell** credentials (password stored encrypted, see `models/users.py::UserPastell.get_decrypt_password` / `app/utils`).
+- Authorization flow: every router except `health` is protected by `dependencies.validate_token` (validates a Keycloak JWT against Keycloak's JWKS, checked in `app/main.py` via `Depends`). `get_current_user` then extracts the `preferred_username` from the token, and `database.get_user_from_db` looks that login up in the local `pastell_users` table to get the user's **Pastell** token (stored encrypted, only token used for Pastell; see `models/users.py::UserPastell.get_decrypt_token` / `app/utils`). The admin technical account (`settings.pastell.*`) still authenticates with login/password; the only Basic Auth with a user's credentials is the token-creation call at enrollment (`UserService.create_user_token`).
 
 ## Rules
 

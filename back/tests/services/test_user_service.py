@@ -15,7 +15,7 @@ from ..conftest import TestDatabase
 class TestUserService(TestDatabase):
     """Test du service user_service"""
 
-    user_fake = UserCreate(login="test_meg@megacte.fr", id_pastell=1, pwd_pastell="fake")
+    user_fake = UserCreate(login="test_meg@megacte.fr", id_pastell=1)
 
     def setUp(self):
         super().setUp()
@@ -24,7 +24,6 @@ class TestUserService(TestDatabase):
             UserPastell(
                 login=self.user_fake.login,
                 id_pastell=self.user_fake.id_pastell,
-                pwd_pastell=self.user_fake.pwd_pastell,
                 pwd_key=PasswordUtils.generate_fernet_key(),
             )
         )
@@ -34,7 +33,6 @@ class TestUserService(TestDatabase):
         user_login_exist = UserCreate(
             login=self.user_fake.login,
             id_pastell=100,
-            pwd_pastell="fake",
         )
         # Assert
         with pytest.raises(UserExistException):
@@ -45,7 +43,6 @@ class TestUserService(TestDatabase):
         user_id_pastell_exist = UserCreate(
             login="fake_login",
             id_pastell=1,
-            pwd_pastell="fake",
         )
         # Assert
         with pytest.raises(UserExistException):
@@ -56,19 +53,14 @@ class TestUserService(TestDatabase):
         new_user = UserCreate(
             login="new_login@megacte.fr",
             id_pastell=1000,
-            pwd_pastell="AZerty35!",
         )
 
         # assert
         insert_user = UserService(self.client_api).add_user_to_db(new_user, self.session)
-        self.client_api.perform_patch.assert_called_once_with(
-            f"/utilisateur/{new_user.id_pastell}",
-            {"password": new_user.pwd_pastell},
-        )
         self.assertEqual(insert_user.login, new_user.login)
         self.assertEqual(insert_user.id_pastell, new_user.id_pastell)
-        self.assertIsNotNone(insert_user.pwd_pastell)
         self.assertIsNotNone(insert_user.pwd_key)
+        self.assertIsNone(insert_user.token)
 
     def test_create_user_token_resets_password_and_creates_token(self):
         # Given
@@ -106,7 +98,7 @@ class TestUserService(TestDatabase):
         self.assertEqual(PasswordUtils.decrypt_with_key(result.token, user.pwd_key), token_value)
 
     def test_create_user_token_replaces_non_fernet_legacy_key(self):
-        # Given un utilisateur avec une clé au format "double base64" (issue d'encrypt_password)
+        # Given un utilisateur avec une clé non-Fernet héritée
         user = self.session.query(UserPastell).filter(UserPastell.login == self.user_fake.login).first()
         user.pwd_key = base64.urlsafe_b64encode(b"not-a-fernet-key").decode()
         self.session.commit()
@@ -121,18 +113,6 @@ class TestUserService(TestDatabase):
             PasswordUtils.decrypt_with_key(result.token, result.pwd_key),
             token_value,
         )
-
-    def test_create_user_token_does_not_store_temp_password(self):
-        # Given
-        user = self.session.query(UserPastell).filter(UserPastell.login == self.user_fake.login).first()
-        self.client_api.with_auth.return_value.perform_post.return_value = {"token": "pastell-token-abc123"}
-
-        # When
-        UserService(self.client_api).create_user_token(user, self.session)
-
-        # Then le mot de passe temporaire n'est pas enregistré dans pwd_pastell
-        refreshed = self.session.query(UserPastell).filter(UserPastell.login == self.user_fake.login).first()
-        self.assertEqual(refreshed.pwd_pastell, self.user_fake.pwd_pastell)
 
     def _insert_one_fake_user(self, user: UserPastell):
         self.session.add(user)

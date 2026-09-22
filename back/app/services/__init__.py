@@ -3,7 +3,7 @@ import logging
 from collections.abc import Callable
 
 from fastapi import Depends
-from requests.auth import HTTPBasicAuth
+from requests.auth import AuthBase, HTTPBasicAuth
 
 from ..clients.pastell.api import *
 from ..clients.pastell.api import ApiPastell
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def _make_api_pastell(
     cls: type[ApiPastell],
-    auth: HTTPBasicAuth = None,
+    auth: AuthBase = None,
 ) -> ApiPastell:
 
     api_config = PastellConfig(base_url=settings.pastell.url, timeout=settings.request_timeout)
@@ -32,25 +32,22 @@ def _make_api_pastell(
 def build_user_auth(current_user: UserPastell):
     """Construit l'authentification Pastell pour un utilisateur.
 
-    Privilégie le token Bearer (stocké en base) et retombe sur l'authentification
-    simple login/password si aucun token valide n'est disponible.
+    L'authentification des appels utilisateurs se fait exclusivement via le token
+    Bearer stocké en base. Aucun repli login / mot de passe n'existe (le mot de passe
+    n'est de toute façon jamais conservé) : seule la création du token, à l'enrôlement,
+    utilise ponctuellement le login / mot de passe temporaire (voir `UserService.create_user_token`).
 
     Args:
         current_user (UserPastell): l'utilisateur courant
 
     Returns:
-        BearerAuth | HTTPBasicAuth | None
+        BearerAuth | None
     """
     if current_user.is_token_valid():
         try:
             return BearerAuth(current_user.get_decrypt_token())
         except DecryptionException:
             logger.warning(f"Impossible de déchiffrer le token de l'utilisateur {current_user.login}")
-    if current_user.pwd_pastell:
-        try:
-            return HTTPBasicAuth(current_user.login, current_user.get_decrypt_password())
-        except DecryptionException:
-            logger.warning(f"Impossible de déchiffrer le mot de passe de l'utilisateur {current_user.login}")
     return None
 
 

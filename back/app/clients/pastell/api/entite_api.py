@@ -1,7 +1,7 @@
 import unicodedata
 
 from pydantic import TypeAdapter
-from requests.auth import HTTPBasicAuth
+from requests.auth import AuthBase
 
 from ..models.entite_info import EntiteInfo, EntiteInfoWithChild
 from . import ApiPastell
@@ -22,12 +22,12 @@ class EntiteApi(ApiPastell):
         ApiPastell (_type_): _description_
     """
 
-    def get_entite(self, only_active: bool = False, auth: HTTPBasicAuth = None):
+    def get_entite(self, only_active: bool = False, auth: AuthBase = None):
         """Retourne les entités à plat en fonction du contexte utilisateur
 
         Args:
             only_active (bool, optional): pour filtrer les entités actite uniquement ou non
-            auth (AuthUser, optional): le contexte utilisateur redéfini
+            auth (AuthBase, optional): le contexte utilisateur redéfini
 
         Returns:
             Liste d'entite
@@ -36,12 +36,12 @@ class EntiteApi(ApiPastell):
 
         return list_entites if not only_active else list(filter(lambda entite: entite.is_active, list_entites))
 
-    def get_entite_with_child(self, only_active: bool = False, auth: HTTPBasicAuth = None):
+    def get_entite_with_child(self, only_active: bool = False, auth: AuthBase = None):
         """Retourne les entités hierarchisés  en fonction du contexte utilisateur
 
         Args:
             only_active (bool, optional): pour filtrer les entités actite uniquement ou non
-            auth (AuthUser, optional): le contexte utilisateur redéfini
+            auth (AuthBase, optional): le contexte utilisateur redéfini
         Returns:
             Liste d'entite
         """

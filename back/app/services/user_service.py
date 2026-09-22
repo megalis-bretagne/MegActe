@@ -28,18 +28,20 @@ class UserService(BaseService):
     """
 
     # Add user
-    def add_user_to_db(self, user_data: UserCreate, db: Session):
-        """Ajouter un nouvel utilisateur dans la BD et envoyer le mot de passe non chifré à PASTELL
+    def add_user_to_db(self, user_data: UserCreate, db: Session) -> UserPastell:
+        """Crée une ligne locale pour un utilisateur Pastell (le token est créé au premier accès).
+
+        L'authentification Pastell passe exclusivement par un token : aucun mot de
+        passe n'est stocké ici. Le jeton d'accès sera créé au premier accès via
+        `create_user_token` (réinitialisation du mot de passe via le compte technique).
 
         Args:
             user_data (UserCreate): Les données du user à ajouter.
-            db (Session, optional): La session de base de données. Defaults to Depends(get_db).
+            db (Session): La session de base de données.
 
         Returns:
             UserPastell: L'utilisateur nouvellement créé.
         """
-        # Chiffrer le pwd
-
         # check user_existe
         db_user = (
             db.query(UserPastell)
@@ -54,14 +56,10 @@ class UserService(BaseService):
         if db_user:
             raise UserExistException(user_data.login)
 
-        key, encrypted_pwd = PasswordUtils.encrypt_password(user_data.pwd_pastell)
-
-        # Enregistrer l'user dans la BD
         new_user = UserPastell(
             login=user_data.login,
             id_pastell=user_data.id_pastell,
-            pwd_pastell=encrypted_pwd,
-            pwd_key=key,
+            pwd_key=PasswordUtils.generate_fernet_key(),
         )
         db.add(new_user)
         db.commit()
@@ -72,10 +70,6 @@ class UserService(BaseService):
         if new_user.id is None:
             raise UserRegistrationException("Failed to register the user in the database")
 
-        # Envoyer le pwd non chifré à PASTELL
-
-        self.api_pastell.perform_patch(f"/utilisateur/{user_data.id_pastell}", {"password": user_data.pwd_pastell})
-
         return new_user
 
     def create_user_token(self, user: UserPastell, db: Session) -> UserPastell:
@@ -84,8 +78,9 @@ class UserService(BaseService):
         Réinitialise d'abord le mot de passe Pastell de l'utilisateur via le compte
         technique (PATCH /v2/utilisateur/{id_u}), puis crée le token via l'endpoint
         self-service POST /v2/utilisateur/token en s'authentifiant en Basic Auth avec
-        le login et le mot de passe temporaire. Ce mot de passe temporaire n'est pas
-        stocké en base : seul le token obtenu y est conservé (chiffré).
+        le login et le mot de passe temporaire. C'est la seule exception à
+        l'authentification par token : ce mot de passe temporaire n'est pas stocké en
+        base, seul le token obtenu y est conservé (chiffré).
 
         Args:
             user (UserPastell): l'utilisateur concerné
@@ -104,10 +99,9 @@ class UserService(BaseService):
         user_client = self.api_pastell.with_auth(HTTPBasicAuth(user.login, temp_password))
         response = user_client.perform_post("/utilisateur/token", data={"name": token_name})
 
-        # Utiliser une clé Fernet valide pour chiffrer le token : la clé existante
-        # (issue d'encrypt_password, en base64 "doublé") n'est pas au format attendu
-        # par encrypt_with_key. Le mot de passe stocké devient de toute façon obsolète
-        # après la réinitialisation : régénérer la clé ne casse rien.
+        # Utiliser une clé Fernet valide pour chiffrer le token (régénérer la clé ne
+        # casse rien : le mot de passe stocké devient de toute façon obsolète après la
+        # réinitialisation, et ce mot de passe n'est jamais enregistré en base).
         user.pwd_key = PasswordUtils.generate_fernet_key()
         user.token_name = token_name
         user.token = PasswordUtils.encrypt_with_key(response["token"], user.pwd_key)

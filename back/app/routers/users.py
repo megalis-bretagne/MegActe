@@ -41,9 +41,8 @@ def get_user(
 def add_user(
     user_data: UserCreate,
     db: Session = Depends(get_db),
-    client_admin: ApiPastell = Depends(get_or_make_api_pastell_for_admin),
 ):
-    return UserService(client_admin).add_user_to_db(user_data, db)
+    return UserService().add_user_to_db(user_data, db)
 
 
 # Get liste des flux dispo pour l'utilisateur connecté

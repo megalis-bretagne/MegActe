@@ -3,7 +3,7 @@ import time
 import requests
 from pydantic import TypeAdapter
 from requests.adapters import HTTPAdapter
-from requests.auth import HTTPBasicAuth
+from requests.auth import AuthBase
 
 from ..handlers import call_handler
 from ..models.config import Config
@@ -35,49 +35,52 @@ class ApiPastell:
     Client pour Pastell V4
     """
 
-    def __init__(self, conf: Config, auth: HTTPBasicAuth = None) -> None:
+    def __init__(self, conf: Config, auth: AuthBase = None) -> None:
         self._config = conf
         self._timeout_s = conf.timeout
         self._version = "v4"
         self._auth = auth
 
-    def auth(self, auth: HTTPBasicAuth):
+    def auth(self, auth: AuthBase):
         self._auth = auth
 
-    def with_auth(self, auth: HTTPBasicAuth) -> "ApiPastell":
-        """Retourne un nouveau client Pastell avec une authentification différente."""
+    def with_auth(self, auth: AuthBase) -> "ApiPastell":
+        """Retourne un nouveau client Pastell avec une authentification différente.
+        Utilisé uniquement à l'enrôlement : création du token via login / mot de passe
+        temporaire.
+        """
         return ApiPastell(self._config, auth)
 
-    def perform_get(self, url, auth: HTTPBasicAuth = None, **kwagrs):
+    def perform_get(self, url, auth: AuthBase = None, **kwagrs):
         return self._perform_request("GET", url, auth=auth, **kwagrs)
 
-    def perform_patch(self, url, data, auth: HTTPBasicAuth = None):
+    def perform_patch(self, url, data, auth: AuthBase = None):
         return self._perform_request("PATCH", url, data=data, auth=auth)
 
-    def perform_delete(self, url, auth: HTTPBasicAuth = None):
+    def perform_delete(self, url, auth: AuthBase = None):
         return self._perform_request("DELETE", url, auth=auth)
 
-    def perform_post(self, url, data=None, files=None, auth: HTTPBasicAuth = None):
+    def perform_post(self, url, data=None, files=None, auth: AuthBase = None):
         return self._perform_request("POST", url, data=data, files=files, auth=auth)
 
-    def get_user_by_id_u(self, id_u: int, auth: HTTPBasicAuth = None):
+    def get_user_by_id_u(self, id_u: int, auth: AuthBase = None):
         """Retourne les infos d'un utilisateur
 
         Args:
             id_u (int): identifiant de l'utilisateur
-            auth (HTTPBasicAuth, optional): le contexte utilisateur redéfini
+            auth (AuthBase, optional): le contexte utilisateur redéfini
         """
 
         response = self.perform_get(f"utilisateur/{id_u}", auth)
         return TypeAdapter(UserInfo).validate_python(response)
 
-    def count_documents_by_id_e(self, id_e: int, type_document: str | None = None, auth: HTTPBasicAuth | None = None):
+    def count_documents_by_id_e(self, id_e: int, type_document: str | None = None, auth: AuthBase | None = None):
         """Retourne le nombre de document sur une entite
 
         Args:
             id_e (int): l'id_e
             type_document (str, optional): possibilité de filtré par le type de flux
-            auth (HTTPBasicAuth, optional): _description_. Defaults to None.
+            auth (AuthBase, optional): _description_. Defaults to None.
         """
         cache_key = (id_e, type_document)
         cached = _count_documents_cache.get(cache_key)
@@ -114,7 +117,7 @@ class ApiPastell:
         data=None,
         query_params=None,
         files=None,
-        auth: HTTPBasicAuth = None,
+        auth: AuthBase = None,
     ):
         """
         Méthode générique pour effectuer des requêtes HTTP.

@@ -72,8 +72,7 @@ La synchro (démarrage + job périodique `settings.sync.interval_minutes`, + end
 
 ## Points clés
 
-- **Token prioritaire** : `build_user_auth` utilise le Bearer token ; le login/mot de passe n'intervient plus que pour un éventuel utilisateur ajouté manuellement (jamais pour les utilisateurs enrollés).
-- **Réinitialisation du mot de passe** : à la première connexion (aucun token configuré), le mot de passe Pastell est réinitialisé via le compte technique (`PATCH /v2/utilisateur/{id_u}`). Le mot de passe temporaire ne sert qu'à la création du token et **n'est pas stocké en base**.
-- **Création du token par l'utilisateur** : le token est créé via l'endpoint self-service `POST /v2/utilisateur/token` en Basic Auth avec le login / mot de passe temporaire (la création par le compte admin `POST /utilisateur/{id_u}/token` ne fonctionne pas pour les utilisateurs qui ne sont pas de type `api`).
-- **Clé Fernet** : le token est chiffré avec `pwd_key` du user (générée à l'enrôlement si absente).
+- **Token obligatoire** : `build_user_auth` utilise exclusivement le token Bearer stocké en base pour les appels utilisateur vers Pastell. Aucun repli login/mot de passe, et la colonne `pwd_pastell` a été supprimée (migration « drop pwd_pastell »). Seul le compte technique admin (`settings.pastell.*`) s'authentifie encore par login/mot de passe.
+- **Création du token (seule exception)** : à la première connexion (aucun token configuré), le mot de passe Pastell est réinitialisé via le compte technique (`PATCH /v2/utilisateur/{id_u}`). Le token est ensuite créé via l'endpoint self-service `POST /v2/utilisateur/token` en Basic Auth avec le login / mot de passe temporaire — la seule utilisation du login/mot de passe d'un utilisateur (la création par le compte admin `POST /utilisateur/{id_u}/token` ne fonctionne pas pour les utilisateurs qui ne sont pas de type `api`).
+- **Clé Fernet** : le token est chiffré avec `pwd_key` du user (générée à l'enrôlement ou à la création manuelle si absente).
 - **Sanity check sync** : si une entité échoue pendant le scan, la synchro est abandonnée (pas de commit) pour ne pas désactiver à tort des utilisateurs d'entités non scannées.
