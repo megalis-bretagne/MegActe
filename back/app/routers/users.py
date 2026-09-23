@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 from ..clients.pastell.api import ApiPastell
 from ..clients.pastell.api.entite_api import EntiteApi
 from ..database import get_db, get_user_from_db
-from ..dependencies import settings
-from ..exceptions.custom_exceptions import UserNotAdminException
+from ..dependencies import require_admin
 from ..models.users import UserPastell
 from ..schemas.flux_schemas import FluxResponseModel
 from ..schemas.user_schemas import UserCreate
@@ -36,10 +35,11 @@ def get_user(
     return UserService(client).get_user_context_service(user)
 
 
-# Add user
+# Add user — réservé aux comptes ayant le rôle admin Keycloak
 @router.post("/user", response_model=UserCreate, tags=["users"])
 def add_user(
     user_data: UserCreate,
+    payload: dict = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
     return UserService().add_user_to_db(user_data, db)
@@ -56,18 +56,17 @@ def get_user_flux_available(only_enable: bool = True, client: ApiPastell = Depen
     return FluxService(client).get_flux(only_enable)
 
 
-# Synchronisation manuelle des utilisateurs Pastell vers la BDD Megacte
+# Synchronisation manuelle des utilisateurs Pastell vers la BDD Megacte.
+# Réservée aux comptes ayant le rôle admin Keycloak (utilisateur ou service account).
 @router.post(
     "/users/refresh",
     tags=["users"],
-    description="Déclenche la synchronisation des utilisateurs Pastell. Réservé à l'admin Pastell.",
+    description="Déclenche la synchronisation des utilisateurs Pastell. Réservé aux comptes admin Keycloak.",
 )
 def refresh_users(
-    current_user: UserPastell = Depends(get_user_from_db),
+    payload: dict = Depends(require_admin),
     db: Session = Depends(get_db),
     client_admin: ApiPastell = Depends(get_or_make_api_pastell_for_admin),
 ):
-    if settings.pastell.user and current_user.login != settings.pastell.user:
-        raise UserNotAdminException()
     count = SyncUserService(client_admin).sync_users(db)
     return {"message": f"Synchronisation terminée : {count} utilisateurs actifs"}

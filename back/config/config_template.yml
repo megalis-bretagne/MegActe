@@ -9,6 +9,10 @@ keycloak:
   auth_url: <auth>
   jwks_url: <jwks>
   client_id: megacte
+  # audiences autorisées pour le JWT (client web + clients de synchronisation)
+  valid_audiences: [megacte, megacte-sync]
+  # rôle Keycloak requis pour les endpoints admin (POST /user, POST /users/refresh)
+  admin_role: megacte-admin
 
 database:
   pwd : <pwd>

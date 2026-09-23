@@ -68,7 +68,7 @@ flowchart TD
 
 ## Synchronisation de fond
 
-La synchro (démarrage + job périodique `settings.sync.interval_minutes`, + endpoint `POST /users/refresh` réservé à l'admin) est le **seul** mécanisme d'enrôlement : elle remplit la table `pastell_users` à l'avance pour que les logins soient présents à la connexion. Pour chaque entité, liste des utilisateurs → upsert des lignes locales + désactivation des absents.
+La synchro (démarrage + job périodique `settings.sync.interval_minutes`, + endpoint `POST /users/refresh` réservé aux comptes possédant le rôle admin Keycloak — utilisateur ou service account) est le **seul** mécanisme d'enrôlement : elle remplit la table `pastell_users` à l'avance pour que les logins soient présents à la connexion. Pour chaque entité, liste des utilisateurs → upsert des lignes locales + désactivation des absents.
 
 ## Points clés
 

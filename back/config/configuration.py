@@ -78,7 +78,12 @@ class Keycloak(BaseModel):
     refresh_url: str
     auth_url: str
     jwks_url: str
-    client_id: str = "megacte"
+    client_id: str
+    # Audiences acceptées pour le JWT : client web + clients de synchronisation
+    # (service accounts) qui appellent les endpoints admin.
+    valid_audiences: list[str]
+    # Rôle Keycloak requis pour les endpoints admin (POST /user, POST /users/refresh).
+    admin_role: str
 
 
 class Database(BaseModel):
