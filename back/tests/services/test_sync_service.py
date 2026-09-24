@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from app.models.users import UserPastell
-from app.services.sync_service import SyncUserService
+from app.services.sync_service import SyncUserService, purge_users
 
 from ..conftest import TestDatabase
 
@@ -90,3 +90,18 @@ class TestSyncUserService(TestDatabase):
         rows = self.session.query(UserPastell).filter(UserPastell.login == "duplicate@x.fr").all()
         self.assertEqual(len(rows), 1)
         self.assertIn(rows[0].id_pastell, (10, 20))
+
+    def test_purge_users_deletes_all_rows(self):
+        self.service.sync_users(self.session)
+        self.assertEqual(self.session.query(UserPastell).count(), 3)
+
+        deleted = purge_users(self.session)
+
+        self.assertEqual(deleted, 3)
+        self.assertEqual(self.session.query(UserPastell).count(), 0)
+
+    def test_purge_users_on_empty_table(self):
+        deleted = purge_users(self.session)
+
+        self.assertEqual(deleted, 0)
+        self.assertEqual(self.session.query(UserPastell).count(), 0)

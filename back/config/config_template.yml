@@ -30,3 +30,7 @@ s2low:
 sync:
   enabled: true
   interval_minutes: 1440
+  # Si true (uniquement pris en compte si enabled: true) : supprime toutes les
+  # lignes de la table pastell_users au démarrage, avant la synchronisation.
+  # Utile pour repartir d'un état propre (rechargement complet depuis Pastell).
+  delete_users_on_startup: false

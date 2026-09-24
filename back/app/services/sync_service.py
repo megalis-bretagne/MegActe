@@ -134,6 +134,40 @@ def run_sync(
 _sync_lock = threading.Lock()
 
 
+def purge_users(db: Session) -> int:
+    """Supprime toutes les lignes de la table pastell_users.
+
+    Args:
+        db (Session): session de BDD
+
+    Returns:
+        int: le nombre de lignes supprimées
+    """
+    deleted = db.query(UserPastell).delete(synchronize_session=False)
+    db.commit()
+    return deleted
+
+
+def purge_users_on_startup_job() -> None:
+    """Supprime toutes les lignes de la table pastell_users (purge du démarrage).
+
+    S'exécute au démarrage, uniquement si `sync.enabled` est vrai et
+    `sync.delete_users_on_startup` est vrai, avant la première synchronisation.
+    Ne lève jamais : les erreurs sont journalisées pour ne pas bloquer le démarrage.
+    """
+    from ..database import SessionLocal
+
+    db = SessionLocal()
+    try:
+        deleted = purge_users(db)
+        logger.info(f"Purge de la table pastell_users au démarrage : {deleted} ligne(s) supprimée(s)")
+    except Exception as e:  # noqa: BLE001 - une purge ne doit jamais bloquer le démarrage
+        db.rollback()
+        logger.error(f"Erreur lors de la purge de la table pastell_users : {e}")
+    finally:
+        db.close()
+
+
 def run_sync_users_job() -> None:
     """Exécute une synchronisation complète des utilisateurs Pastell (job de fond).
 

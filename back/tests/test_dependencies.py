@@ -2,6 +2,12 @@ import pytest
 
 from app.dependencies import _token_roles, require_admin
 from app.exceptions.custom_exceptions import UserNotAdminException
+from config.configuration import SyncConfig
+
+
+def test_sync_config_delete_users_defaults_to_false():
+    assert SyncConfig().delete_users_on_startup is False
+    assert SyncConfig(delete_users_on_startup=True).delete_users_on_startup is True
 
 
 class TestTokenRoles:

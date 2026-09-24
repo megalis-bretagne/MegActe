@@ -49,6 +49,9 @@ class SyncConfig(BaseModel):
 
     enabled: bool = True
     interval_minutes: int = 1440  # 24h par défaut
+    # Si true (et `enabled` true uniquement) : purge complète de la table
+    # pastell_users au démarrage de MegActe, avant la synchronisation.
+    delete_users_on_startup: bool = False
 
 
 class Pastell(BaseModel):

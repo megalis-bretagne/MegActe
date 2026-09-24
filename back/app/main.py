@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .dependencies import settings, validate_token
 from .exceptions.error_handlers import add_exception_handlers
 from .routers import connecteurs, documents, entite, flux, health, users
-from .services.sync_service import run_sync_users_job
+from .services.sync_service import purge_users_on_startup_job, run_sync_users_job
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,8 @@ async def _periodic_sync() -> None:
 async def lifespan(app: FastAPI):
     sync_task = None
     if settings.sync.enabled:
+        if settings.sync.delete_users_on_startup:
+            await asyncio.to_thread(purge_users_on_startup_job)
         await asyncio.to_thread(run_sync_users_job)
         sync_task = asyncio.create_task(_periodic_sync())
         logger.info(
