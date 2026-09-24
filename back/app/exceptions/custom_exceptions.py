@@ -138,7 +138,9 @@ class UserExistException(MegActeException):
             login (str): Le login de l'utilisateur.
             id_pastell (int): L'identifiant Pastell de l'utilisateur.
         """
-        super().__init__(status_code=400, detail=f"User with login: {login} or with pastell id: {id_pastell} already exist")
+        super().__init__(
+            status_code=400, detail=f"User with login: {login} or with pastell id: {id_pastell} already exist"
+        )
 
 
 class UserNotFoundException(MegActeException):
