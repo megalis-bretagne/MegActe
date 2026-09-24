@@ -131,13 +131,14 @@ class UserExistException(MegActeException):
         HTTPException (HTTPException): Classe de base pour les exceptions HTTP.
     """
 
-    def __init__(self, login: str):
+    def __init__(self, login: str, id_pastell: int):
         """Initialise une UserExistException.
 
         Args:
-            detail (str, optional): Le message détaillé de l'erreur. Defaults to "User already exist".
+            login (str): Le login de l'utilisateur.
+            id_pastell (int): L'identifiant Pastell de l'utilisateur.
         """
-        super().__init__(status_code=400, detail=f"User {login} already exist")
+        super().__init__(status_code=400, detail=f"User with login: {login} or with pastell id: {id_pastell} already exist")
 
 
 class UserNotFoundException(MegActeException):

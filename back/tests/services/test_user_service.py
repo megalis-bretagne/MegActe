@@ -35,8 +35,11 @@ class TestUserService(TestDatabase):
             id_pastell=100,
         )
         # Assert
-        with pytest.raises(UserExistException):
+        with pytest.raises(UserExistException) as exc_info:
             UserService(self.client_api).add_user_to_db(user_login_exist, self.session)
+        self.assertEqual(
+            exc_info.value.detail, f"User with login: {self.user_fake.login} or with pastell id: 100 already exist"
+        )
 
     def test_should_return_error_add_exist_user_id_pastell(self):
         # Given
@@ -45,8 +48,12 @@ class TestUserService(TestDatabase):
             id_pastell=1,
         )
         # Assert
-        with pytest.raises(UserExistException):
+        with pytest.raises(UserExistException) as exc_info:
             UserService(self.client_api).add_user_to_db(user_id_pastell_exist, self.session)
+        self.assertEqual(
+            exc_info.value.detail,
+            f"User with login: fake_login or with pastell id: {self.user_fake.id_pastell} already exist",
+        )
 
     def test_should_add_new_user(self):
         # Given

@@ -54,7 +54,7 @@ class UserService(BaseService):
             .first()
         )
         if db_user:
-            raise UserExistException(user_data.login)
+            raise UserExistException(user_data.login, user_data.id_pastell)
 
         new_user = UserPastell(
             login=user_data.login,
