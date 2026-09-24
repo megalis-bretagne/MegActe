@@ -1,4 +1,5 @@
 import logging
+import threading
 from collections.abc import Callable
 
 from sqlalchemy import or_
@@ -127,3 +128,31 @@ def run_sync(
         return service.sync_users(db)
     finally:
         db.close()
+
+
+# Empêche l'empilement de synchronisations concurrentes (endpoint, démarrage, job périodique).
+_sync_lock = threading.Lock()
+
+
+def run_sync_users_job() -> None:
+    """Exécute une synchronisation complète des utilisateurs Pastell (job de fond).
+
+    Ouvre sa propre session BDD et son propre client Pastell admin : utilisable en
+    tâche de fond (démarrage, job périodique, `POST /users/refresh`) sans dépendre
+    du cycle de vie d'une requête HTTP. Ne lève jamais : les erreurs sont journalisées
+    pour ne pas faire planter l'application. Si une synchronisation est déjà en cours,
+    le lancement est ignoré.
+    """
+    from ..database import SessionLocal
+    from . import get_or_make_api_pastell_for_admin
+
+    if not _sync_lock.acquire(blocking=False):
+        logger.info("Synchronisation des utilisateurs déjà en cours, lancement ignoré")
+        return
+    try:
+        count = run_sync(get_or_make_api_pastell_for_admin, SessionLocal)
+        logger.info(f"Synchronisation des utilisateurs Pastell terminée : {count} utilisateurs actifs")
+    except Exception as e:  # noqa: BLE001 - un job de fond ne doit jamais faire planter l'app
+        logger.error(f"Erreur lors de la synchronisation des utilisateurs Pastell : {e}")
+    finally:
+        _sync_lock.release()

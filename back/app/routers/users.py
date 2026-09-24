@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
 
 from ..clients.pastell.api import ApiPastell
@@ -11,10 +11,9 @@ from ..schemas.user_schemas import UserCreate
 from ..services import (
     get_client_api_pastell,
     get_or_make_api_pastell,
-    get_or_make_api_pastell_for_admin,
 )
 from ..services.flux_service import FluxService
-from ..services.sync_service import SyncUserService
+from ..services.sync_service import run_sync_users_job
 from ..services.user_service import UserService
 
 router = APIRouter()
@@ -58,15 +57,19 @@ def get_user_flux_available(only_enable: bool = True, client: ApiPastell = Depen
 
 # Synchronisation manuelle des utilisateurs Pastell vers la BDD Megacte.
 # Réservée aux comptes ayant le rôle admin Keycloak (utilisateur ou service account).
+# Réponse immédiate : la synchro s'exécute en arrière-plan (tâche de fond),
+# afin de ne pas bloquer l'appelant (scripts de synchronisation).
 @router.post(
     "/users/refresh",
     tags=["users"],
-    description="Déclenche la synchronisation des utilisateurs Pastell. Réservé aux comptes admin Keycloak.",
+    description=(
+        "Déclenche la synchronisation des utilisateurs Pastell (asynchrone) et renvoie "
+        "un accusé de réception immédiat. Réservé aux comptes admin Keycloak."
+    ),
 )
 def refresh_users(
     payload: dict = Depends(require_admin),
-    db: Session = Depends(get_db),
-    client_admin: ApiPastell = Depends(get_or_make_api_pastell_for_admin),
+    background_tasks: BackgroundTasks = BackgroundTasks,
 ):
-    count = SyncUserService(client_admin).sync_users(db)
-    return {"message": f"Synchronisation terminée : {count} utilisateurs actifs"}
+    background_tasks.add_task(run_sync_users_job)
+    return {"message": "Synchronisation des utilisateurs lancée en arrière-plan"}
