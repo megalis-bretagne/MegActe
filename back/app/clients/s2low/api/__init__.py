@@ -23,6 +23,9 @@ class ApiS2low:
     TEST_AUTHENTICATION_ENDPOINT = "api/test-connexion.php"
     INFO_CONNEXION_ENDPOINT = "api/info-connexion.php"
     GET_NOUNCE_ENDPOINT = "api/get-nounce.php?api=1"
+    ADMIN_AUTHORITIES_ENDPOINT = "admin/authorities/admin_authorities.php"
+    ADMIN_USERS_ENDPOINT = "admin/users/admin_users.php"
+    ADMIN_USER_EDIT_ENDPOINT = "admin/users/admin_user_edit_handler.php"
     ACTES_TRANSAC_POST_CONFIRME = "modules/actes/actes_transac_post_confirm_api.php"
     ACTES_TRANSAC_POST_CONFIRME_MULTI = "modules/actes/actes_transac_post_confirm_api_multi.php"
 
@@ -104,6 +107,64 @@ class ApiS2low:
         )
         response.raise_for_status()
         return response.status_code, response.json()["nounce"]
+
+    def _admin_auth(self) -> HTTPBasicAuth:
+        if not self._config.superadmin_login or not self._config.superadmin_password:
+            raise RuntimeError("Les identifiants superadmin S2low ne sont pas configurés")
+        return HTTPBasicAuth(self._config.superadmin_login, self._config.superadmin_password)
+
+    def get_authority_by_siret(self, siret: str):
+        response = self.session_request.get(
+            self._config.base_url + self.ADMIN_AUTHORITIES_ENDPOINT,
+            params={"api": "1", "siret": siret},
+            auth=self._admin_auth(),
+            timeout=self._timeout,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def get_users(self, authority_id: int, name: str):
+        response = self.session_request.get(
+            self._config.base_url + self.ADMIN_USERS_ENDPOINT,
+            params={"api": "1", "authority": authority_id, "name": name},
+            auth=self._admin_auth(),
+            timeout=self._timeout,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def create_technical_user(self, authority_id: int, password: str):
+        data = {
+            "name": "MegActe",
+            "givenname": "MegActe",
+            "email": "mdsn@megalis.bretagne.bzh",
+            "role": "ADM",
+            "authority_id": authority_id,
+            "status": 1,
+            "auth_method": 2,
+            "login": f"megacte_{authority_id}",
+            "password": password,
+            "password2": password,
+        }
+        with open(self._config.certificate_path, "rb") as certificate:
+            response = self.session_request.post(
+                self._config.base_url + self.ADMIN_USER_EDIT_ENDPOINT,
+                params={"api": "1"},
+                auth=self._admin_auth(),
+                data={**data, "mode": "create"},
+                files={"certificate": (self._config.certificate_path, certificate, "application/x-pem-file")},
+                timeout=self._timeout,
+            )
+        response.raise_for_status()
+        if not response.content:
+            raise RuntimeError("S2low n'a retourné aucun résultat lors de la création du compte technique")
+        try:
+            result = response.json()
+        except ValueError as exc:
+            raise RuntimeError(f"Réponse S2low invalide lors de la création du compte : {response.text[:500]}") from exc
+        if result.get("status") != "ok":
+            raise RuntimeError(f"Échec de création du compte technique S2low : {result}")
+        return result
 
     def get_url_post_confirm(self, auth: HTTPBasicAuth, tedetis_transaction_id: int) -> str:
         """

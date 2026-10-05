@@ -26,6 +26,9 @@ s2low:
   path_certificate: <certificat .pem>
   path_key: <private_key.pem>
   key_password: <password>
+  superadmin_login: <login superadmin>
+  superadmin_password: <mot de passe superadmin>
+  password_salt: <salt partagé pour les comptes techniques MegActe>
 
 sync:
   enabled: true

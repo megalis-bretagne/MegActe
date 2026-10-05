@@ -4,9 +4,9 @@ configs:
   api-config:
     file: ./config_local_nuxt_kc_xp/api-config.yml
   private-key:
-    file: ./config_local_nuxt_kc_xp/private_key.pem
+    file: ./config_local_nuxt_kc_xp/MegActe_Provisioning_S2LOW_private_key.pem
   public-certificate:
-    file: ./config_local_nuxt_kc_xp/publicCertificate_tech.pem
+    file: ./config_local_nuxt_kc_xp/MegActe_Provisioning_Administrateur_S2LOW.pem
 
 services:
   backend:
@@ -18,9 +18,9 @@ services:
       - source: api-config
         target: /megacte-back/config/config.yml
       - source: private-key
-        target: /megacte-back/config/private_key.pem
+        target: /megacte-back/config/MegActe_Provisioning_S2LOW_private_key.pem
       - source: public-certificate
-        target: /megacte-back/config/publicCertificate_tech.pem
+        target: /megacte-back/config/MegActe_Provisioning_Administrateur_S2LOW.pem
     depends_on:
       db:
         condition: service_healthy

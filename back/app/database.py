@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from .dependencies import get_current_user, get_settings
+from .dependencies import get_settings, validate_token
 from .exceptions.custom_exceptions import UserNotFoundException, UserRegistrationException
 from .models.users import UserPastell
 
@@ -49,7 +49,7 @@ def _ensure_user_has_token(user: UserPastell, db: Session) -> None:
         raise UserRegistrationException(f"Impossible de créer un token pour l'utilisateur {user.login}") from e
 
 
-def get_user_from_db(login_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> UserPastell:
+def get_user_from_db(payload: dict = Depends(validate_token), db: Session = Depends(get_db)) -> UserPastell:
     """Récupère l'utilisateur depuis la BD.
 
     Args:
@@ -62,10 +62,22 @@ def get_user_from_db(login_user: dict = Depends(get_current_user), db: Session =
     Returns:
         UserPastell: L'utilisateur récupéré depuis la BD.
     """
+    login_user = payload.get("preferred_username")
     logger.debug(f"Getting User form DB : {login_user}")
     user = db.query(UserPastell).filter(UserPastell.login == login_user).first()
     if not user or not user.active:
         raise UserNotFoundException()
 
     _ensure_user_has_token(user, db)
+    siret = payload.get("siret")
+    if not siret:
+        raise UserRegistrationException("Le SIRET est absent du token OIDC")
+
+    from .services.connecteur_service import ConnecteurTdtService
+
+    try:
+        ConnecteurTdtService().ensure_s2low_account(user, str(siret), db)
+    except Exception as e:
+        logger.error(f"Échec de création du compte S2low pour {user.login} : {e}")
+        raise UserRegistrationException(f"Impossible de créer le compte S2low pour {user.login}") from e
     return user

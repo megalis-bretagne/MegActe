@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import os
 import secrets
 import string
@@ -56,7 +57,7 @@ class PasswordUtils:
     SPECIAL_CHARS = "!@#$%&*"
 
     @staticmethod
-    def generate_password(length: int = 15) -> str:
+    def generate_password(length: int = 15, special_chars: str = SPECIAL_CHARS) -> str:
         """Génère un mot de passe aléatoire conforme à la politique Pastell.
 
         Le mot de passe contient au moins un caractère minuscule, un caractère
@@ -71,14 +72,29 @@ class PasswordUtils:
             secrets.choice(lowercase),
             secrets.choice(uppercase),
             secrets.choice(digits),
-            secrets.choice(PasswordUtils.SPECIAL_CHARS),
-            secrets.choice(PasswordUtils.SPECIAL_CHARS),
-            secrets.choice(PasswordUtils.SPECIAL_CHARS),
+            secrets.choice(special_chars),
+            secrets.choice(special_chars),
+            secrets.choice(special_chars),
         ]
-        all_chars = lowercase + uppercase + digits + PasswordUtils.SPECIAL_CHARS
+        all_chars = lowercase + uppercase + digits + special_chars
         chars = guaranteed + [secrets.choice(all_chars) for _ in range(length - len(guaranteed))]
         secrets.SystemRandom().shuffle(chars)
         return "".join(chars)
+
+    @staticmethod
+    def generate_s2low_password(authority_id: int, salt: str) -> str:
+        """Génère de façon stable le mot de passe d'un compte technique S2low."""
+        digest = hashlib.sha256(f"{salt}:{authority_id}".encode()).digest()
+        special_chars = "!*$;#"
+        password = [
+            string.ascii_lowercase[digest[0] % 26],
+            string.ascii_uppercase[digest[1] % 26],
+            string.digits[digest[2] % 10],
+            special_chars[digest[3] % len(special_chars)],
+        ]
+        alphabet = string.ascii_letters + string.digits + special_chars
+        password.extend(alphabet[value % len(alphabet)] for value in digest[4:10])
+        return "".join(password)
 
     @staticmethod
     def encrypt_password(password: str) -> tuple:

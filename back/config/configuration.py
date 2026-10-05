@@ -24,6 +24,9 @@ class S2low(BaseModel):
     path_certificate: str
     path_key: str
     key_password: str
+    superadmin_login: str | None = None
+    superadmin_password: str | None = None
+    password_salt: str | None = None
 
 
 class DocumentConfig(BaseModel):

@@ -89,6 +89,9 @@ def get_or_make_api_s2low() -> ApiS2low:
         certificate_path=settings.s2low.path_certificate,
         key_path=settings.s2low.path_key,
         key_password=settings.s2low.key_password,
+        superadmin_login=settings.s2low.superadmin_login,
+        superadmin_password=settings.s2low.superadmin_password,
+        password_salt=settings.s2low.password_salt,
     )
     return ApiS2low(api_config)
 
