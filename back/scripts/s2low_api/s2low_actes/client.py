@@ -80,9 +80,7 @@ class Settings:
         login = os.getenv("S2LOW_LOGIN")
         password = os.getenv("S2LOW_PASSWORD")
         if bool(login) != bool(password):
-            raise S2lowError(
-                "S2LOW_LOGIN et S2LOW_PASSWORD doivent etre fournis ensemble"
-            )
+            raise S2lowError("S2LOW_LOGIN et S2LOW_PASSWORD doivent etre fournis ensemble")
 
         return cls(
             base_url=base_url,
@@ -121,9 +119,7 @@ class S2lowActesClient:
     def authenticate(self) -> None:
         """Obtient un nounce puis prepare login/nounce/hash pour les appels API."""
         if self.settings.login is None or self.settings.password is None:
-            raise S2lowError(
-                "S2LOW_LOGIN et S2LOW_PASSWORD sont necessaires pour utiliser le nounce"
-            )
+            raise S2lowError("S2LOW_LOGIN et S2LOW_PASSWORD sont necessaires pour utiliser le nounce")
         response = self._request(
             "GET",
             "/api/get-nounce.php",
@@ -134,9 +130,7 @@ class S2lowActesClient:
         except (ValueError, KeyError) as exc:
             raise S2lowError(f"Reponse nounce invalide: {response.text[:500]}") from exc
 
-        digest = hashlib.sha256(
-            f"{self.settings.password}:{nounce}".encode("utf-8")
-        ).hexdigest()
+        digest = hashlib.sha256(f"{self.settings.password}:{nounce}".encode("utf-8")).hexdigest()
         self._auth_params = {
             "login": self.settings.login,
             "nounce": nounce,
@@ -219,9 +213,7 @@ class S2lowActesClient:
         return self._admin_get("/admin/modules/admin_modules.php")
 
     def admin_authority_detail(self, authority_id: int) -> Any:
-        return self._admin_get(
-            "/admin/authorities/admin_authority_detail.php", {"id": authority_id}
-        )
+        return self._admin_get("/admin/authorities/admin_authority_detail.php", {"id": authority_id})
 
     def admin_authority_sirens(self, authority_group_id: int | None = None) -> Any:
         params = {}
@@ -362,9 +354,7 @@ class S2lowActesClient:
         return self._json_get("/modules/actes/api/actes_status.php")
 
     def count(self, status_id: int) -> Any:
-        return self._json_get(
-            "/modules/actes/api/number_actes.php", {"status_id": status_id}
-        )
+        return self._json_get("/modules/actes/api/number_actes.php", {"status_id": status_id})
 
     def list_actes(
         self,
@@ -394,26 +384,18 @@ class S2lowActesClient:
             {"transaction_id": transaction_id},
         )
 
-    def transaction_status(
-        self, transaction: int | None = None, unique_id: str | None = None
-    ) -> str:
+    def transaction_status(self, transaction: int | None = None, unique_id: str | None = None) -> str:
         if transaction is None and unique_id is None:
             raise ValueError("transaction ou unique_id est requis")
         params = {"transaction": transaction} if transaction is not None else {"unique_id": unique_id}
-        response = self._request(
-            "GET", "/modules/actes/actes_transac_get_status.php", params=self._params(params)
-        )
+        response = self._request("GET", "/modules/actes/actes_transac_get_status.php", params=self._params(params))
         return _legacy_text(response)
 
-    def transaction_files(
-        self, transaction: int | None = None, unique_id: str | None = None
-    ) -> Any:
+    def transaction_files(self, transaction: int | None = None, unique_id: str | None = None) -> Any:
         if transaction is None and unique_id is None:
             raise ValueError("transaction ou unique_id est requis")
         params = {"transaction": transaction} if transaction is not None else {"unique_id": unique_id}
-        response = self._request(
-            "GET", "/modules/actes/actes_transac_get_files_list.php", params=self._params(params)
-        )
+        response = self._request("GET", "/modules/actes/actes_transac_get_files_list.php", params=self._params(params))
         try:
             return response.json()
         except ValueError as exc:
@@ -513,8 +495,7 @@ def main() -> int:
     subparsers.add_parser("admin-authority-types", help="Lister les types de collectivite")
     authorities = subparsers.add_parser("admin-authorities", help="Lister les collectivites")
     authorities.add_argument("--name", help="Filtrer sur le nom")
-    authorities.add_argument("--type", dest="authority_type", type=int,
-                             help="Filtrer sur le type de collectivite")
+    authorities.add_argument("--type", dest="authority_type", type=int, help="Filtrer sur le type de collectivite")
     authorities.add_argument("--group", type=int, help="Filtrer sur le groupe")
     authorities.add_argument("--siren", help="Filtrer sur le SIREN")
     subparsers.add_parser("admin-modules", help="Lister les modules")
