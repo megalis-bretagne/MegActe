@@ -9,6 +9,12 @@ const entiteId = useSelectedEntiteId();
 const selectedFlux = useSelectedFlux();
 const router = useRouter();
 const queryClient = useQueryClient();
+// Les requêtes client peuvent se terminer pendant l'hydratation. Tant qu'elle n'est pas
+// terminée, conserver les mêmes branches de template que celles rendues par le serveur.
+const isHydrated = ref(false);
+onMounted(() => {
+  isHydrated.value = true;
+});
 
 // useLazyFetch (pas useFetch+await) : ne bloque pas le <Suspense>, le tableau principal
 // s'affiche direct, les widgets dépendant des flux se remplissent après.
@@ -211,9 +217,14 @@ function openDoc(doc: DocumentInfo) {
           Tableau de bord général
         </h2>
 
-        <div v-if="isError" class="text-red-600 p-4">{{ error?.message }}</div>
+        <div v-if="isHydrated && isError" class="text-red-600 p-4">
+          {{ error?.message }}
+        </div>
 
-        <div v-else-if="isFetching && !documents.length" class="p-4">
+        <div
+          v-else-if="!isHydrated || (isFetching && !documents.length)"
+          class="p-4"
+        >
           <table class="min-w-full text-sm">
             <thead>
               <tr class="border-b border-gray-200 text-left">
@@ -350,7 +361,10 @@ function openDoc(doc: DocumentInfo) {
             >
           </div>
         </div>
-        <div v-if="fluxCounts.length" class="h-64 overflow-x-auto">
+        <div
+          v-if="isHydrated && fluxCounts.length"
+          class="h-64 overflow-x-auto"
+        >
           <div
             :style="{ minWidth: `${fluxCounts.length * 90}px`, height: '100%' }"
           >
@@ -362,7 +376,7 @@ function openDoc(doc: DocumentInfo) {
             />
           </div>
         </div>
-        <div v-else-if="fluxStatsLoading" class="h-64">
+        <div v-else-if="!isHydrated || fluxStatsLoading" class="h-64">
           <Skeleton height="100%" />
         </div>
         <p v-else class="text-sm text-gray-400 italic">Aucun flux à afficher</p>
@@ -384,7 +398,7 @@ function openDoc(doc: DocumentInfo) {
           Nombre d'actes créés par mois, sur les {{ periods.length }} derniers
           mois.
         </p>
-        <div v-if="trendSeries.length" class="h-72">
+        <div v-if="isHydrated && trendSeries.length" class="h-72">
           <Chart
             type="line"
             :data="trendChartData"
@@ -392,7 +406,7 @@ function openDoc(doc: DocumentInfo) {
             class="h-full"
           />
         </div>
-        <div v-else-if="fluxStatsLoading" class="h-72">
+        <div v-else-if="!isHydrated || fluxStatsLoading" class="h-72">
           <Skeleton height="100%" />
         </div>
         <p v-else class="text-sm text-gray-400 italic">Aucun flux à afficher</p>
