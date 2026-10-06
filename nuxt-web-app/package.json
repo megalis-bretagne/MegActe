@@ -19,7 +19,7 @@
     "@primeuix/themes": "^2.0.3",
     "chart.js": "^4.5.1",
     "next-auth": "^4.21.1",
-    "nuxt": "^4.4.2",
+    "nuxt": "^4.6.0",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.5",
     "tailwindcss-primeui": "^0.6.1",
