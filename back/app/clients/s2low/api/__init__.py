@@ -163,9 +163,15 @@ class ApiS2low:
                 auth=self._admin_auth(),
                 data={**data, "mode": "create"},
                 files={"certificate": (self._config.certificate_path, certificate, "application/x-pem-file")},
+                allow_redirects=False,
                 timeout=self._timeout,
             )
         response.raise_for_status()
+        # S2low redirects to the newly created user's HTML page on success.
+        # Following it is unnecessary and can fail because that endpoint may
+        # not support the API client's TLS setup.
+        if response.is_redirect:
+            return {"status": "ok"}
         if not response.content:
             raise RuntimeError("S2low n'a retourné aucun résultat lors de la création du compte technique")
         try:
