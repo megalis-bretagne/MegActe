@@ -65,7 +65,8 @@ class ConnecteurTdtService:
     def ensure_s2low_account(
         self,
         user,
-        siret: str,
+        siren: str | None,
+        siret: str | None,
         db: Session,
         pastell_api=None,
         s2low_api=None,
@@ -81,12 +82,15 @@ class ConnecteurTdtService:
         if existing:
             return existing
 
-        authorities = s2low_api.get_authority_by_siret(siret)
+        authority_identifier = siren or siret
+        authority_type = "SIREN" if siren else "SIRET"
+        authority_lookup = s2low_api.get_authority_by_siren if siren else s2low_api.get_authority_by_siret
+        authorities = authority_lookup(authority_identifier)
         if not authorities or not isinstance(authorities, list):
-            raise ValueError(f"Aucune collectivité S2low trouvée pour le SIRET {siret}")
+            raise ValueError(f"Aucune collectivité S2low trouvée pour le {authority_type} {authority_identifier}")
         authority_id = authorities[0].get("id")
         if authority_id is None:
-            raise ValueError(f"Réponse S2low invalide pour le SIRET {siret}: {authorities!r}")
+            raise ValueError(f"Réponse S2low invalide pour le {authority_type} {authority_identifier}: {authorities!r}")
 
         authority_id = int(authority_id)
         technical_login = f"megacte_{authority_id}"

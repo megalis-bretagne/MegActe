@@ -123,6 +123,16 @@ class ApiS2low:
         response.raise_for_status()
         return response.json()
 
+    def get_authority_by_siren(self, siren: str):
+        response = self.session_request.get(
+            self._config.base_url + self.ADMIN_AUTHORITIES_ENDPOINT,
+            params={"api": "1", "siren": siren},
+            auth=self._admin_auth(),
+            timeout=self._timeout,
+        )
+        response.raise_for_status()
+        return response.json()
+
     def get_users(self, authority_id: int, name: str):
         response = self.session_request.get(
             self._config.base_url + self.ADMIN_USERS_ENDPOINT,

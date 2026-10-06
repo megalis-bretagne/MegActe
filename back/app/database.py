@@ -69,14 +69,20 @@ def get_user_from_db(payload: dict = Depends(validate_token), db: Session = Depe
         raise UserNotFoundException()
 
     _ensure_user_has_token(user, db)
+    siren = payload.get("siren")
     siret = payload.get("siret")
-    if not siret:
-        raise UserRegistrationException("Le SIRET est absent du token OIDC")
+    if not siren and not siret:
+        raise UserRegistrationException("Le SIREN et le SIRET sont absents du token OIDC")
 
     from .services.connecteur_service import ConnecteurTdtService
 
     try:
-        ConnecteurTdtService().ensure_s2low_account(user, str(siret), db)
+        ConnecteurTdtService().ensure_s2low_account(
+            user,
+            str(siren) if siren else None,
+            str(siret) if siret else None,
+            db,
+        )
     except Exception as e:
         logger.error(f"Échec de création du compte S2low pour {user.login} : {e}")
         raise UserRegistrationException(f"Impossible de créer le compte S2low pour {user.login}") from e

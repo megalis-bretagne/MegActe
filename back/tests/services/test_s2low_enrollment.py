@@ -12,21 +12,24 @@ class TestS2lowEnrollment(TestDatabase):
         pastell = MagicMock()
         pastell.get_user_by_id_u.return_value.id_e = 42
         s2low = MagicMock()
-        s2low.get_authority_by_siret.return_value = [{"id": 99}]
+        s2low.get_authority_by_siren.return_value = [{"id": 99}]
         s2low._config.password_salt = "test-salt"
         s2low.get_users.return_value = []
 
-        account = ConnecteurTdtService().ensure_s2low_account(user, "12345678901234", self.session, pastell, s2low)
+        account = ConnecteurTdtService().ensure_s2low_account(
+            user, "123456789", "12345678901234", self.session, pastell, s2low
+        )
 
         assert account.id_e == 42
         assert account.s2low_authority_id == 99
         assert account.login_tech_tdt == "megacte_99"
         assert account.get_decrypt_password()
         s2low.create_technical_user.assert_called_once()
+        s2low.get_authority_by_siret.assert_not_called()
         assert (
             account.get_decrypt_password()
             == ConnecteurTdtService()
-            .ensure_s2low_account(user, "12345678901234", self.session, pastell, s2low)
+            .ensure_s2low_account(user, "123456789", "12345678901234", self.session, pastell, s2low)
             .get_decrypt_password()
         )
 
@@ -50,7 +53,9 @@ class TestS2lowEnrollment(TestDatabase):
         s2low = MagicMock()
         s2low._config.password_salt = "test-salt"
 
-        account = ConnecteurTdtService().ensure_s2low_account(user, "12345678901234", self.session, pastell, s2low)
+        account = ConnecteurTdtService().ensure_s2low_account(
+            user, None, "12345678901234", self.session, pastell, s2low
+        )
 
         assert account.s2low_authority_id == 99
         s2low.get_authority_by_siret.assert_not_called()
