@@ -238,8 +238,13 @@ function getFilteredFields() {
     );
 }
 
-const { actionLoading, actionError, waitingForOrientationStatus, runAction } =
-  useDocumentActions(
+const {
+  actionLoading,
+  actionError,
+  actionMessage,
+  waitingForOrientationStatus,
+  runAction,
+} = useDocumentActions(
     entiteId,
     toRef(props, "idD"),
     effectiveFluxType,
@@ -311,6 +316,21 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
         class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300 w-full"
       >
         {{ actionError }}
+      </div>
+
+      <div
+        v-if="actionMessage"
+        class="mb-4 flex items-start justify-between gap-4 text-sm text-blue-800 bg-blue-50 px-4 py-3 rounded border border-blue-300 w-full"
+        role="status"
+      >
+        <span>{{ actionMessage }}</span>
+        <button
+          class="text-current opacity-60 hover:opacity-100 transition-opacity"
+          aria-label="Fermer"
+          @click="actionMessage = null"
+        >
+          <i class="pi pi-times text-xs" />
+        </button>
       </div>
 
       <div

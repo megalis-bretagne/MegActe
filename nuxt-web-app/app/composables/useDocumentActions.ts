@@ -18,6 +18,7 @@ export function useDocumentActions(
 
   const actionLoading = ref<string | null>(null);
   const actionError = ref<string | null>(null);
+  const actionMessage = ref<string | null>(null);
   const waitingForOrientationStatus = ref(false);
 
   async function syncActionStatus() {
@@ -102,6 +103,10 @@ export function useDocumentActions(
       result,
       { action: actionName, previousState, targetEntiteId, targetIdD }
     ) => {
+      if (actionName === "verif-tdt" && result.message?.trim()) {
+        actionMessage.value = result.message;
+      }
+
       if (actionName === "supression") {
         // Le document n'existe plus : retour à la liste (et non au tableau de bord `/`).
         navigateTo("/documents");
@@ -177,6 +182,7 @@ export function useDocumentActions(
   return {
     actionLoading,
     actionError,
+    actionMessage,
     waitingForOrientationStatus,
     runAction,
   };
