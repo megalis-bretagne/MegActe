@@ -1,6 +1,7 @@
 import type { FetchError } from "ofetch";
 
 type SavePhase = "step1" | "single-send" | "step2-save" | "step2-send";
+const ORIENTATION_STATUS_DELAY_MS = 3000;
 
 export function useDocumentSave(
   props: { entiteId: number; idD: string; fluxType?: string },
@@ -27,6 +28,7 @@ export function useDocumentSave(
   // Quel bouton précisément est en cours (pour n'afficher le spinner que sur celui-ci,
   // `saving` restant vrai pour les deux tant que la mutation tourne, afin de les désactiver)
   const activePhase = ref<SavePhase | null>(null);
+  const waitingForOrientationStatus = ref(false);
 
   async function ensureDocExists(): Promise<string> {
     if (!state.isNew.value) return props.idD;
@@ -157,10 +159,24 @@ export function useDocumentSave(
 
       return { idD, nextStep: null };
     },
-    onSuccess: ({ idD, nextStep }) => {
-      queryClient.invalidateQueries({
-        queryKey: ["document", props.entiteId, idD],
-      });
+    onSuccess: async ({ idD, nextStep }) => {
+      const documentQueryKey = ["document", props.entiteId, idD];
+      await queryClient.invalidateQueries({ queryKey: documentQueryKey });
+
+      if (!nextStep) {
+        // Pastell peut terminer l'orientation après la réponse POST. Attendre
+        // avant le GET évite de remettre en cache un état intermédiaire.
+        waitingForOrientationStatus.value = true;
+        await new Promise((resolve) =>
+          setTimeout(resolve, ORIENTATION_STATUS_DELAY_MS)
+        );
+        try {
+          await queryClient.refetchQueries({ queryKey: documentQueryKey });
+        } finally {
+          waitingForOrientationStatus.value = false;
+        }
+      }
+
       if (nextStep) {
         state.currentStep.value = nextStep;
         return;
@@ -301,6 +317,7 @@ export function useDocumentSave(
     sendActe,
     saveTypePiece,
     saving,
+    waitingForOrientationStatus,
     saveError,
     savingStep1: computed(() => saving.value && activePhase.value === "step1"),
     savingTypePiece: computed(

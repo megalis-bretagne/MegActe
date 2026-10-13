@@ -1,5 +1,7 @@
 import { ref, type Ref } from "vue";
 
+const ORIENTATION_STATUS_DELAY_MS = 3000;
+
 // Alignées avec DocumentConfig.external_data_to_retrieve (back) : non retéléchargées par
 // fetchDocumentStatus, on garde donc leur version déjà enrichie plutôt que de les écraser.
 const EXTERNAL_DATA_KEYS = ["type_piece_fichier", "ged_document_id_file"];
@@ -16,6 +18,7 @@ export function useDocumentActions(
 
   const actionLoading = ref<string | null>(null);
   const actionError = ref<string | null>(null);
+  const waitingForOrientationStatus = ref(false);
 
   async function syncActionStatus() {
     const [updated] = await Promise.all([
@@ -95,7 +98,7 @@ export function useDocumentActions(
         }
       ),
 
-    onSuccess: (
+    onSuccess: async (
       result,
       { action: actionName, previousState, targetEntiteId, targetIdD }
     ) => {
@@ -121,6 +124,19 @@ export function useDocumentActions(
       }
 
       if (actionName === "duplicate") {
+        return;
+      }
+
+      if (actionName === "orientation") {
+        waitingForOrientationStatus.value = true;
+        await new Promise((resolve) =>
+          setTimeout(resolve, ORIENTATION_STATUS_DELAY_MS)
+        );
+        try {
+          await syncActionStatus();
+        } finally {
+          waitingForOrientationStatus.value = false;
+        }
         return;
       }
 
@@ -161,6 +177,7 @@ export function useDocumentActions(
   return {
     actionLoading,
     actionError,
+    waitingForOrientationStatus,
     runAction,
   };
 }

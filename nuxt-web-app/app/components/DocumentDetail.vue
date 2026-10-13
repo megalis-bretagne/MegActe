@@ -238,13 +238,14 @@ function getFilteredFields() {
     );
 }
 
-const { actionLoading, actionError, runAction } = useDocumentActions(
-  entiteId,
-  toRef(props, "idD"),
-  effectiveFluxType,
-  doc,
-  fetchDocument
-);
+const { actionLoading, actionError, waitingForOrientationStatus, runAction } =
+  useDocumentActions(
+    entiteId,
+    toRef(props, "idD"),
+    effectiveFluxType,
+    doc,
+    fetchDocument
+  );
 
 const journalEntries = computed(() => journalData.value ?? []);
 
@@ -310,6 +311,15 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
         class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300 w-full"
       >
         {{ actionError }}
+      </div>
+
+      <div
+        v-if="waitingForOrientationStatus"
+        class="mb-4 flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-4 py-3 rounded border border-blue-300"
+        role="status"
+      >
+        <i class="pi pi-spin pi-spinner" />
+        En attente du nouveau statut du document...
       </div>
 
       <div class="border-b border-gray-200 mb-0">

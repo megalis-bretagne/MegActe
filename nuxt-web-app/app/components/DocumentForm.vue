@@ -47,6 +47,7 @@ const {
   savingStep1,
   savingTypePiece,
   sending,
+  waitingForOrientationStatus,
 } = useDocumentSave(formProps, editState);
 
 // Id du document déjà créé (pour télécharger les fichiers déjà enregistrés) : celui qu'on
@@ -112,6 +113,15 @@ const otherFields = (fields: FieldEdit[]) =>
         class="mb-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300"
       >
         {{ fileError }}
+      </div>
+
+      <div
+        v-if="waitingForOrientationStatus"
+        class="mb-4 flex items-center gap-2 text-sm text-blue-700 bg-blue-50 px-4 py-3 rounded border border-blue-300"
+        role="status"
+      >
+        <i class="pi pi-spin pi-spinner" />
+        En attente du nouveau statut du document...
       </div>
 
       <h1 class="text-2xl font-bold text-gray-900 mb-6">
