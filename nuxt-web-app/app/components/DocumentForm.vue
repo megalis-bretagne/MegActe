@@ -258,6 +258,12 @@ const otherFields = (fields: FieldEdit[]) =>
             />
           </template>
         </div>
+        <div
+          v-if="saveError"
+          class="mt-4 text-sm text-red-700 bg-red-50 px-4 py-3 rounded border border-red-300"
+        >
+          {{ saveError }}
+        </div>
       </template>
 
       <template v-else>
