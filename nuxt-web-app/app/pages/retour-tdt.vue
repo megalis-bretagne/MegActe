@@ -16,6 +16,9 @@ const multipleIdD = computed(() => {
 const errorCode = computed(() => Number(route.query.error ?? 0));
 const message = computed(() => (route.query.message as string) ?? "");
 const hasError = computed(() => errorCode.value >= 1);
+const verifyingStatus = ref(true);
+const verificationError = ref<string | null>(null);
+const apiFetch = useApiFetch();
 
 // S2low ne renvoie pas d'erreur/message pour un envoi groupé (cf. doc API S2low,
 // §4.17) : impossible de savoir ici si la transmission de chaque document a réussi,
@@ -23,6 +26,32 @@ const hasError = computed(() => errorCode.value >= 1);
 const isMultiple = computed(() => multipleIdD.value.length > 0);
 
 if (idE.value) entiteId.value = idE.value;
+
+async function verifyTransmissionStatus() {
+  if (!singleIdD.value || hasError.value || isMultiple.value) return;
+
+  verifyingStatus.value = true;
+  verificationError.value = null;
+  await new Promise((resolve) => setTimeout(resolve, 10000));
+
+  try {
+    await apiFetch(`/entite/${idE.value}/documents/perform_action`, {
+      method: "POST",
+      body: { document_ids: singleIdD.value, action: "verif-tdt" },
+    });
+  } catch (error: unknown) {
+    verificationError.value = getErrorDetail(
+      error,
+      "Impossible de vérifier le statut de la transmission."
+    );
+  } finally {
+    verifyingStatus.value = false;
+  }
+}
+
+onMounted(() => {
+  void verifyTransmissionStatus();
+});
 
 function backToDocuments() {
   if (singleIdD.value) {
@@ -80,16 +109,28 @@ function backToDocuments() {
         <p v-if="singleIdD" class="text-xs text-gray-400 mb-3">
           Document : {{ singleIdD }}
         </p>
-        <p class="text-sm text-gray-500 mb-6">
-          Vérifiez le statut de la transaction depuis la fiche du document.
+        <div
+          v-if="verifyingStatus"
+          class="mb-6 flex items-center gap-2 text-sm text-blue-800 bg-blue-50 px-4 py-3 rounded border border-blue-300"
+          role="status"
+        >
+          <i class="pi pi-spin pi-spinner" />
+          <span>Vérification du statut de la transaction...</span>
+        </div>
+        <p v-else-if="verificationError" class="text-sm text-red-600 mb-6">
+          {{ verificationError }}
         </p>
+        <p v-else class="text-sm text-gray-500 mb-6">
+          Le statut de la transaction a été vérifié. Vous pouvez revenir à la
+          fiche du document.
+        </p>
+        <Button
+          v-if="!verifyingStatus"
+          label="Revenir au document"
+          class="w-full"
+          @click="backToDocuments"
+        />
       </template>
-
-      <Button
-        label="Revenir aux documents"
-        class="w-full"
-        @click="backToDocuments"
-      />
     </div>
   </div>
 </template>
