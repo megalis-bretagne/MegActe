@@ -269,7 +269,7 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
 <template>
   <div class="max-w-8xl mx-auto px-4 py-6">
     <button
-      class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors"
+      class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white mb-6 transition-colors"
       @click="router.push('/documents')"
     >
       <i class="pi pi-arrow-left text-xs" />
@@ -303,7 +303,7 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
       <div class="mb-6">
         <div class="flex items-start justify-between gap-4">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900">
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
               {{ doc.info.titre || "Sans titre" }}
             </h1>
             <p class="text-sm text-gray-500 mt-1">{{ doc.info.type }}</p>
@@ -342,7 +342,7 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
         En attente du nouveau statut du document...
       </div>
 
-      <div class="border-b border-gray-200 mb-0">
+      <div class="border-b border-gray-200 dark:border-gray-700 mb-0">
         <nav class="flex gap-0">
           <button
             v-for="tab in tabs"
@@ -350,7 +350,7 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
             :class="
               activeTab === tab.id
                 ? 'border-b-2 border-blue-600 text-blue-600 font-medium'
-                : 'text-gray-500 hover:text-gray-700 hover:border-b-2 hover:border-gray-300'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:border-b-2 hover:border-gray-300 dark:hover:border-gray-600'
             "
             class="px-6 py-3 text-sm transition-colors -mb-px"
             @click="activeTab = tab.id"
@@ -361,7 +361,7 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
       </div>
 
       <div
-        class="rounded-b-lg rounded-tr-lg border border-t-0 border-gray-200 overflow-hidden"
+        class="rounded-b-lg rounded-tr-lg border border-t-0 border-gray-200 dark:border-gray-700 overflow-hidden"
       >
         <!-- Skeleton flux pas encore chargé -->
         <div
@@ -394,7 +394,7 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
               >
                 {{ field.label }}
               </dt>
-              <dd class="text-sm text-gray-800">
+              <dd class="text-sm text-gray-800 dark:text-gray-200">
                 <DocumentFieldViewer
                   :field="field"
                   :entite-id="entiteId"
@@ -436,9 +436,9 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
         </template>
       </div>
 
-      <div class="mt-6 border border-gray-200 rounded-lg overflow-hidden">
-        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
-          <h2 class="text-sm font-semibold text-gray-700">États du dossier</h2>
+      <div class="mt-6 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">États du dossier</h2>
         </div>
         <div v-if="journalPending" class="p-4 space-y-5">
           <div v-for="i in 3" :key="i" class="flex gap-3">
@@ -466,7 +466,7 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
           </template>
           <template #content="{ item }">
             <div class="pb-2.5 flex items-baseline gap-2">
-              <p class="text-sm text-gray-800">
+              <p class="text-sm text-gray-800 dark:text-gray-200">
                 {{ item.action_libelle || item.action || "—" }}
               </p>
               <p class="text-xs text-gray-400 tabular-nums whitespace-nowrap">

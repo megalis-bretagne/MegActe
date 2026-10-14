@@ -56,16 +56,16 @@ const resolveSelectValue = (field: Field) => {
       !Array.isArray(field.val)
     "
   >
-    <table class="text-xs border border-gray-200 rounded">
+    <table class="text-xs border border-gray-200 dark:border-gray-700 rounded">
       <thead>
         <tr class="bg-gray-50">
           <th
-            class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
+            class="px-3 py-1 text-left font-medium text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700"
           >
             Nom du fichier
           </th>
           <th
-            class="px-3 py-1 text-left font-medium text-gray-600 border-b border-gray-200"
+            class="px-3 py-1 text-left font-medium text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700"
           >
             Identifiant
           </th>
@@ -77,7 +77,7 @@ const resolveSelectValue = (field: Field) => {
           :key="name"
           class="border-t border-gray-100"
         >
-          <td class="px-3 py-1 text-gray-700">{{ name }}</td>
+          <td class="px-3 py-1 text-gray-700 dark:text-gray-200">{{ name }}</td>
           <td class="px-3 py-1 text-gray-500">{{ id }}</td>
         </tr>
       </tbody>

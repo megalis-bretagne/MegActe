@@ -45,7 +45,7 @@ function clear() {
       v-model="localValue"
       type="text"
       placeholder="Rechercher…"
-      class="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-200 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400"
+      class="w-full pl-9 pr-8 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400"
     />
     <button
       v-if="localValue"

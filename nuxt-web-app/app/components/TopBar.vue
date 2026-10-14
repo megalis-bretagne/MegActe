@@ -4,6 +4,7 @@ const router = useRouter();
 const { handleSignOut } = useKeycloakSignOut();
 
 const userMenu = ref();
+const isDarkMode = ref(false);
 const userMenuItems = [
   {
     label: "Dashboard",
@@ -30,10 +31,21 @@ const userMenuItems = [
 function toggleUserMenu(event: Event) {
   userMenu.value?.toggle(event);
 }
+
+function toggleDarkMode() {
+  isDarkMode.value = !isDarkMode.value;
+  document.documentElement.classList.toggle("p-dark", isDarkMode.value);
+  localStorage.setItem("dark-mode", String(isDarkMode.value));
+}
+
+onMounted(() => {
+  isDarkMode.value = localStorage.getItem("dark-mode") === "true";
+  document.documentElement.classList.toggle("p-dark", isDarkMode.value);
+});
 </script>
 
 <template>
-  <header class="bg-white shadow-sm border-b border-gray-200">
+  <header class="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700">
     <div class="container mx-auto px-4 py-3">
       <div class="flex items-center justify-between gap-4">
         <div class="flex items-center space-x-3 flex-shrink-0">
@@ -52,11 +64,11 @@ function toggleUserMenu(event: Event) {
             <NuxtLink
               to="/"
               title="Accueil MegActes"
-              class="text-lg font-bold text-gray-900"
+              class="text-lg font-bold text-gray-900 dark:text-white"
             >
               MegActes
             </NuxtLink>
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
               Gestion des actes administratifs
             </p>
           </div>
@@ -67,6 +79,13 @@ function toggleUserMenu(event: Event) {
         </div>
 
         <div class="flex items-center gap-2 flex-shrink-0">
+          <Button
+            :icon="isDarkMode ? 'pi pi-sun' : 'pi pi-moon'"
+            :aria-label="isDarkMode ? 'Mode clair' : 'Mode sombre'"
+            text
+            rounded
+            @click="toggleDarkMode"
+          />
           <button
             type="button"
             class="flex items-center cursor-pointer bg-transparent border-0"

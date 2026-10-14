@@ -30,15 +30,15 @@ async function createDoc(flux: { id: string }) {
 <template>
   <aside
     :class="collapsed ? 'w-14' : 'w-96'"
-    class="shrink-0 bg-white border-r border-gray-200 min-h-screen transition-[width] duration-200 overflow-hidden"
+    class="shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 min-h-screen transition-[width] duration-200 overflow-hidden"
   >
     <div
-      class="p-3 border-b border-gray-100 flex"
+      class="p-3 border-b border-gray-100 dark:border-gray-700 flex"
       :class="collapsed ? 'justify-center' : 'justify-end'"
     >
       <button
         v-tooltip.right="collapsed ? 'Déplier le menu' : 'Replier le menu'"
-        class="shrink-0 p-1.5 text-gray-500 hover:bg-gray-100 rounded"
+        class="shrink-0 p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
         @click="collapsed = !collapsed"
       >
         <AngleRightIcon v-if="collapsed" class="w-4 h-4" />
@@ -47,12 +47,12 @@ async function createDoc(flux: { id: string }) {
     </div>
 
     <template v-if="!collapsed">
-      <div class="p-3 border-b border-gray-100">
+      <div class="p-3 border-b border-gray-100 dark:border-gray-700">
         <button
           :class="
             !selectedFlux
               ? 'bg-blue-600 text-white'
-              : 'text-gray-700 hover:bg-gray-100'
+               : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
           "
           class="w-full text-left px-3 py-2 rounded text-sm font-medium transition-colors"
           @click="selectFlux(null)"
@@ -82,7 +82,7 @@ async function createDoc(flux: { id: string }) {
               :class="
                 selectedFlux === flux.id
                   ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
+                   : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
               "
               class="flex-1 min-w-0 text-left px-3 py-2 rounded text-sm transition-colors whitespace-nowrap"
               @click="selectFlux(flux.id)"

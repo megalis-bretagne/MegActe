@@ -212,7 +212,7 @@ function onChangePage(p: number) {
 <template>
   <div class="w-full h-full flex flex-col min-h-0">
     <div class="shrink-0 flex justify-between items-center mb-4">
-      <h1 class="text-xl font-semibold text-gray-900">
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
         {{ selectedFlux ? `Liste des ${selectedFlux}` : "Liste des documents" }}
       </h1>
       <div class="flex items-center gap-3">
@@ -230,7 +230,7 @@ function onChangePage(p: number) {
 
     <div
       v-show="showAdvanced"
-      class="shrink-0 bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4"
+      class="shrink-0 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4"
     >
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="flex flex-col gap-1">
@@ -347,7 +347,7 @@ function onChangePage(p: number) {
 
     <div
       v-if="selected.length"
-      class="shrink-0 flex items-center justify-between bg-white border-b border-gray-200 px-2 py-2 mb-4"
+      class="shrink-0 flex items-center justify-between bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-2 py-2 mb-4"
     >
       <span class="text-sm text-gray-500">
         {{ selected.length }} document{{
@@ -374,10 +374,10 @@ function onChangePage(p: number) {
     <div class="flex-1 overflow-y-auto min-h-0">
       <div
         v-if="!entiteId || (isFetching && documents.length === 0)"
-        class="overflow-x-auto rounded border border-gray-200"
+        class="overflow-x-auto rounded border border-gray-200 dark:border-gray-700"
       >
         <table class="min-w-full text-sm">
-          <thead class="bg-white border-b border-gray-200">
+          <thead class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
             <tr>
               <th class="px-4 py-3">
                 <Skeleton width="4rem" height="0.75rem" />
@@ -400,7 +400,7 @@ function onChangePage(p: number) {
             <tr
               v-for="i in ITEMS_PER_PAGE"
               :key="i"
-              :class="i % 2 === 0 ? 'bg-white' : 'bg-gray-50'"
+              :class="i % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'"
             >
               <td class="px-4 py-2">
                 <Skeleton
@@ -463,7 +463,7 @@ function onChangePage(p: number) {
             <template #body="{ data: doc }">
               <button
                 v-if="doc.titre"
-                class="text-blue-600 hover:underline text-left"
+                class="text-blue-600 dark:text-blue-400 hover:underline text-left"
                 @click="openDoc(doc)"
               >
                 {{ doc.titre }}
@@ -480,13 +480,13 @@ function onChangePage(p: number) {
             body-class="hidden sm:table-cell"
           >
             <template #body="{ data: doc }">
-              <span class="text-gray-700">{{ doc.type }}</span>
+               <span class="text-gray-700 dark:text-gray-200">{{ doc.type }}</span>
             </template>
           </Column>
 
           <Column field="last_action_message" header="Dernier état">
             <template #body="{ data: doc }">
-              <span class="text-gray-700">{{
+              <span class="text-gray-700 dark:text-gray-200">{{
                 doc.last_action_message || doc.last_action || "—"
               }}</span>
             </template>
@@ -499,7 +499,7 @@ function onChangePage(p: number) {
             body-class="hidden sm:table-cell"
           >
             <template #body="{ data: doc }">
-              <span class="text-gray-600 tabular-nums">{{
+              <span class="text-gray-600 dark:text-gray-300 tabular-nums">{{
                 formatDate(doc.last_action_date)
               }}</span>
             </template>

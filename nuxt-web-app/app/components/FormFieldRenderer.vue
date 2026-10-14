@@ -69,7 +69,7 @@ function handleDrop(event: DragEvent) {
   </div>
 
   <div v-else>
-    <label class="block text-sm font-medium text-gray-700 mb-1">
+    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
       {{ field.label }}
       <span v-if="field.required" class="text-red-500 ml-1">*</span>
     </label>
@@ -81,7 +81,7 @@ function handleDrop(event: DragEvent) {
       <select
         :value="modelValue"
         :disabled="field.readonly"
-        class="w-full border border-gray-300 rounded px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+        class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
         @change="
           emit('update:modelValue', ($event.target as HTMLSelectElement).value)
         "
@@ -106,7 +106,7 @@ function handleDrop(event: DragEvent) {
         @drop.prevent="handleDrop"
       >
         <label
-          class="inline-flex items-center gap-2 px-3 py-1 text-base border border-gray-300 rounded bg-white hover:bg-gray-50 cursor-pointer w-fit"
+          class="inline-flex items-center gap-2 px-3 py-1 text-base border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer w-fit"
         >
           <span
             >Choisir {{ field.multiple ? "des fichiers" : "un fichier" }}</span
@@ -186,7 +186,7 @@ function handleDrop(event: DragEvent) {
       <div class="flex items-start gap-3">
         <span
           v-if="externalDisplayValue"
-          class="text-base text-gray-700 flex-1 min-w-0 break-words"
+          class="text-base text-gray-700 dark:text-gray-200 flex-1 min-w-0 break-words"
         >
           {{ externalDisplayValue }}
         </span>
