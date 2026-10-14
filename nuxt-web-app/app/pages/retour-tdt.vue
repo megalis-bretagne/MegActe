@@ -32,13 +32,31 @@ async function verifyTransmissionStatus() {
 
   verifyingStatus.value = true;
   verificationError.value = null;
-  await new Promise((resolve) => setTimeout(resolve, 10000));
-
   try {
-    await apiFetch(`/entite/${idE.value}/documents/perform_action`, {
-      method: "POST",
-      body: { document_ids: singleIdD.value, action: "verif-tdt" },
-    });
+    const initialDocument = await apiFetch<DocumentDetail>(
+      `/entite/${idE.value}/document/${singleIdD.value}`
+    );
+    const initialActions = JSON.stringify(
+      initialDocument.action_possible ?? []
+    );
+
+    while (true) {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await apiFetch(`/entite/${idE.value}/documents/perform_action`, {
+        method: "POST",
+        body: { document_ids: singleIdD.value, action: "verif-tdt" },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const updatedDocument = await apiFetch<DocumentDetail>(
+        `/entite/${idE.value}/document/${singleIdD.value}`
+      );
+      const updatedActions = JSON.stringify(
+        updatedDocument.action_possible ?? []
+      );
+
+      if (updatedActions !== initialActions) break;
+    }
   } catch (error: unknown) {
     verificationError.value = getErrorDetail(
       error,
