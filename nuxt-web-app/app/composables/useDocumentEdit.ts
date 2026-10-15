@@ -186,6 +186,7 @@ export async function useDocumentEdit(props: {
   watch(fluxDef, applyCreationDefaults, { immediate: true });
 
   function onFileChange(key: string, event: Event) {
+    const MAX_TOTAL_FILE_SIZE = 150 * 1024 * 1024;
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const newFiles = Array.from(input.files);
@@ -215,6 +216,17 @@ export async function useDocumentEdit(props: {
         continue;
       }
       accepted.push(file);
+    }
+
+    const currentTotalSize = Object.values(pendingFiles.value)
+      .flat()
+      .reduce((total, file) => total + file.size, 0);
+    const newTotalSize = currentTotalSize + accepted.reduce((total, file) => total + file.size, 0);
+    if (newTotalSize > MAX_TOTAL_FILE_SIZE) {
+      fileError.value =
+        "Le fichier n'a pas pu être ajouté, la taille totale des documents dépasse les 150 Mo";
+      input.value = "";
+      return;
     }
 
     if (duplicateName) {
