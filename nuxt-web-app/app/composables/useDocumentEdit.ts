@@ -187,6 +187,7 @@ export async function useDocumentEdit(props: {
 
   function onFileChange(key: string, event: Event) {
     const MAX_TOTAL_FILE_SIZE = 150 * 1024 * 1024;
+    const ACTE_EXTENSIONS = ["pdf", "doc", "docx", "odt"];
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
     const newFiles = Array.from(input.files);
@@ -206,7 +207,16 @@ export async function useDocumentEdit(props: {
 
     const accepted: File[] = [];
     let duplicateName: string | null = null;
+    let invalidFileName: string | null = null;
+    const allowedExtensions = fluxDef.value[key]?.multiple
+      ? ["pdf"]
+      : ACTE_EXTENSIONS;
     for (const file of newFiles) {
+      const extension = file.name.split(".").pop()?.toLowerCase();
+      if (!extension || !allowedExtensions.includes(extension)) {
+        invalidFileName = file.name;
+        continue;
+      }
       const name = file.name.trim().toLowerCase();
       const isDuplicate =
         alreadyPending.some((f) => f.name.trim().toLowerCase() === name) ||
@@ -216,6 +226,11 @@ export async function useDocumentEdit(props: {
         continue;
       }
       accepted.push(file);
+    }
+
+    if (invalidFileName) {
+      const formats = allowedExtensions.map((extension) => `.${extension}`).join(", ");
+      fileError.value = `Le fichier « ${invalidFileName} » n'est pas dans un format accepté (formats acceptés : ${formats}).`;
     }
 
     const currentTotalSize = Object.values(pendingFiles.value)
