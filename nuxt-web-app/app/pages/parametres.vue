@@ -13,59 +13,59 @@ const entiteBaseName = computed(() => {
 
 <template>
   <div class="space-y-6">
-    <h1 class="text-xl font-semibold text-gray-900">Paramètres</h1>
+    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Paramètres</h1>
 
-    <section class="bg-white border border-gray-200 rounded-lg p-6">
-      <h2 class="font-medium text-gray-900 mb-3">Profil</h2>
+    <section class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+      <h2 class="font-medium text-gray-900 dark:text-white mb-3">Profil</h2>
       <div class="flex items-center gap-4">
         <Avatar :label="data?.user?.name?.charAt(0)" size="xlarge" />
         <dl class="text-sm">
           <div class="flex gap-2">
-            <dt class="text-gray-500 w-20 shrink-0">Nom</dt>
-            <dd class="text-gray-900">{{ data?.user?.name ?? "—" }}</dd>
+            <dt class="text-gray-500 dark:text-gray-400 w-20 shrink-0">Nom</dt>
+            <dd class="text-gray-900 dark:text-gray-100">{{ data?.user?.name ?? "—" }}</dd>
           </div>
           <div class="flex gap-2">
-            <dt class="text-gray-500 w-20 shrink-0">Email</dt>
-            <dd class="text-gray-900">{{ data?.user?.email ?? "—" }}</dd>
+            <dt class="text-gray-500 dark:text-gray-400 w-20 shrink-0">Email</dt>
+            <dd class="text-gray-900 dark:text-gray-100">{{ data?.user?.email ?? "—" }}</dd>
           </div>
         </dl>
       </div>
     </section>
 
-    <section class="bg-white border border-gray-200 rounded-lg p-6">
-      <h2 class="font-medium text-gray-900 mb-3">Compte Pastell</h2>
+    <section class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+      <h2 class="font-medium text-gray-900 dark:text-white mb-3">Compte Pastell</h2>
       <dl
         v-if="pastellUser?.user_info"
         class="text-sm grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1"
       >
         <div class="flex gap-2">
-          <dt class="text-gray-500 w-32 shrink-0">Nom</dt>
-          <dd class="text-gray-900">
+          <dt class="text-gray-500 dark:text-gray-400 w-32 shrink-0">Nom</dt>
+          <dd class="text-gray-900 dark:text-gray-100">
             {{ pastellUser.user_info.nom }} {{ pastellUser.user_info.prenom }}
           </dd>
         </div>
         <div class="flex gap-2">
-          <dt class="text-gray-500 w-32 shrink-0">Identifiant</dt>
-          <dd class="text-gray-900">{{ pastellUser.user_info.login }}</dd>
+          <dt class="text-gray-500 dark:text-gray-400 w-32 shrink-0">Identifiant</dt>
+          <dd class="text-gray-900 dark:text-gray-100">{{ pastellUser.user_info.login }}</dd>
         </div>
         <div class="flex gap-2">
-          <dt class="text-gray-500 w-32 shrink-0">Email Pastell</dt>
-          <dd class="text-gray-900">{{ pastellUser.user_info.email }}</dd>
+          <dt class="text-gray-500 dark:text-gray-400 w-32 shrink-0">Email Pastell</dt>
+          <dd class="text-gray-900 dark:text-gray-100">{{ pastellUser.user_info.email }}</dd>
         </div>
         <div class="flex gap-2">
-          <dt class="text-gray-500 w-32 shrink-0">Id utilisateur</dt>
-          <dd class="text-gray-900 tabular-nums">
+          <dt class="text-gray-500 dark:text-gray-400 w-32 shrink-0">Id utilisateur</dt>
+          <dd class="text-gray-900 dark:text-gray-100 tabular-nums">
             {{ pastellUser.user_info.id_u }}
           </dd>
         </div>
         <div class="flex gap-2">
-          <dt class="text-gray-500 w-32 shrink-0">Entité de base</dt>
-          <dd class="text-gray-900">
+          <dt class="text-gray-500 dark:text-gray-400 w-32 shrink-0">Entité de base</dt>
+          <dd class="text-gray-900 dark:text-gray-100">
             {{ entiteBaseName ?? pastellUser.user_info.id_e }}
           </dd>
         </div>
       </dl>
-      <p v-else class="text-sm text-gray-400 italic">Chargement…</p>
+      <p v-else class="text-sm text-gray-400 dark:text-gray-500 italic">Chargement…</p>
     </section>
   </div>
 </template>
