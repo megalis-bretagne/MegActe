@@ -1,4 +1,5 @@
 from logging.config import fileConfig
+import os
 
 from sqlalchemy import create_engine, engine_from_config
 from sqlalchemy import pool
@@ -38,7 +39,11 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = os.environ.get("DATABASE_URL")
+    if url is None:
+        from app.dependencies import get_settings
+
+        url = get_settings().database.database_url
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -57,11 +62,13 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    from app.dependencies import get_settings
+    url = os.environ.get("DATABASE_URL")
+    if url is None:
+        from app.dependencies import get_settings
 
-    connectable = create_engine(
-        get_settings().database.database_url, poolclass=pool.NullPool
-    )
+        url = get_settings().database.database_url
+
+    connectable = create_engine(url, poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
