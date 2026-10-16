@@ -17,6 +17,4 @@ RUN  uv sync --frozen --no-dev
 
 ENV PATH="${APP_PATH}/.venv/bin:$PATH"
 
-EXPOSE 8080
-
 CMD ["./docker-backend-start.sh"]
