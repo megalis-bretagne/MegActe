@@ -4,7 +4,7 @@ export function useApiFetch() {
   const nuxtApp = useNuxtApp();
 
   return $fetch.create({
-    baseURL: config.public.apiBaseUrl,
+    baseURL: import.meta.server ? config.apiBaseUrl : config.public.apiBaseUrl,
     retry: 1,
     retryStatusCodes: [403],
     async onRequest({ options }) {
