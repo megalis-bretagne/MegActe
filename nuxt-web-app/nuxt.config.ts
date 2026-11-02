@@ -9,9 +9,12 @@ export default defineNuxtConfig({
     preset: "node-server",
   },
 
+  // see https://nuxt.com/docs/4.x/guide/going-further/runtime-config
   runtimeConfig: {
+    // can be overridden by NUXT_API_BASE_URL environment variable
     apiBaseUrl: "http://backend:8080",
     public: {
+      // can be overridden by NUXT_PUBLIC_API_BASE_URL environment variable
       apiBaseUrl: "http://localhost:8080",
     },
   },
