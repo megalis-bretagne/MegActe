@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
 
   const config = useRuntimeConfig();
   const data = await $fetch("/user", {
-    baseURL: config.public.apiBaseUrl,
+    baseURL: config.apiBaseUrl,
     headers: { Authorization: `Bearer ${session.accessToken}` },
   });
 

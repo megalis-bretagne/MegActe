@@ -10,10 +10,9 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    apiBaseUrl: "http://backend:8080",
     public: {
-      apiBaseUrl: process.env.API_URL || "http://localhost:8080",
-      pastellUrl:
-        process.env.PASTELL_URL || "https://pastell.megalis.bretagne.bzh",
+      apiBaseUrl: "http://localhost:8080",
     },
   },
 
