@@ -1,6 +1,6 @@
 # README.md
 
-Megacte est un outil permettant de faciliter la visualisation et la publication d'actes via les API Pastell.
+MegActes est un outil permettant de faciliter la visualisation et la publication d'actes via les API Pastell.
 
 ## Préambule
 
@@ -51,14 +51,38 @@ Pin: release o=Ubuntu
 Pin-Priority: -1
 ```
 
-## Keycloak
+## Configuration Keycloak
 
-a client "megacte-sync" of type client-grant credentials must be created. client-id and client-secret must be written in configuration file.
-It will automatically create a user "service-account-megacte-sync".
+### Audiences autorisées
 
-Then the client (I did it with the client) or the user must have the role "megacte-admin".
-And in order to have the correct "aud"" in the access token (the "aud" is checked in the code, it must be either "megacte" or "megacte-admin"), a mapper of type "Audience mapper" must be created. Otherwise by defaut the "aud" is set to "account" and the "azp" to "megacte-sync". This is also accepted by the back but it is preferable to have the correct aud thanks to this "Audience mapper".
+Un claim *audience* est présent par défaut dans l'access token d'un utilisateur. L'audience véhicule les clients oidc autorisés à utiliser le service. Pour MegActes, il faut que le claim *audience* contienne les valeurs *megacte* ou *megacte-sync*. Sinon le token sera refusé par le backend.
+
+### Siren
+
+Le siren (ou le siret) doit être présent dans l'access token de l'utilisateur. Sans le siren, MegActes est en incapacité de récupérer l'entité s2low de l'utilisateur.
+
+### Synchronisation et ajout d'utilisateurs
+
+Un endpoint de synchronisation (*POST /user/refresh*) a été créé pour pouvoir déclencher une mise à jour de la base utilisateurs Pastell dans MegActes.
+De même un endpoint spécifique (*POST /user*) permet l'ajout d'utilisateurs à MegActes.
+Pour ces 2 endpoints un rôle *megacte-admin* est nécessaire.
+
+Un client oidc *megacte_sync* de type *client-grant credentials* doit ainsi être créé et être utilisé pour réaliser ces opérations de synchronisation qui nécessitent ce rôle admin. La création de ce client dans keycloak va créer automatiquement un utilisateur *service-account-megacte-sync*. Ensuite on peut configurer le rôle *megacte-admin* au niveau du client oidc ou de l'utilisateur *service-account*.
+
+## Démarrage en local
+
+Le service peut être démarré en local grâce à un docker compose.
 
 ## Docker compose
 
-docker compose -f ./docker-compose.nuxt.yml up --build --no-deps frontend
+```bash
+docker compose up --build
+```
+
+Si vos images docker sont déjà buildées, un ```docker compose up``` suffit
+
+Un docker compose permettant de binder les sources existe également :
+
+```bash
+docker compose up -f docker-compose.bind.yml up
+```
