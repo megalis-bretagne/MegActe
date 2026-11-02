@@ -37,6 +37,7 @@ async function refreshAccessToken(token: JWT) {
 
     return {
       ...token,
+      accessToken: undefined,
       error: "RefreshAccessTokenError",
     };
   }

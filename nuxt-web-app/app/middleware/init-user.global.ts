@@ -6,9 +6,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // à la première connexion, loggé en erreur par le handler Ni'tro avant même le backend.
   if (to.path === "/acces-refuse" || to.path === "/login") return;
 
-  const { status } = useAuth();
+  const { status, data: session } = useAuth();
   // Pas de session valide : auth.global.ts déclenche déjà le login/signIn.
-  if (status.value !== "authenticated") return;
+  if (status.value !== "authenticated" || session.value?.error) return;
 
   const user = usePastellUser();
   const entityId = useSelectedEntiteId();

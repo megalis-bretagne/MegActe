@@ -8,14 +8,6 @@ export const tryRefreshToken = async (): Promise<string | null> => {
     if (session?.accessToken && !session?.error) {
       return session.accessToken;
     }
-    if (session?.error === "RefreshAccessTokenError" && import.meta.client) {
-      const { signIn } = useAuth();
-      try {
-        await signIn("keycloak");
-      } catch (e) {
-        console.error("Échec de la redirection vers la reconnexion :", e);
-      }
-    }
   } catch {
     /* ignore */
   }
