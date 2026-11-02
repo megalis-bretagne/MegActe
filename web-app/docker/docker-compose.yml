@@ -2,17 +2,20 @@ name: megacte
 
 configs:
   api-config:
-    file: ./config_local_nuxt_kc_xp/api-config.yml
+    file: ./config_local_angular_kc_preprod/api-config.yml
+  settings:
+    file: ./config_local_angular_kc_preprod/settings.json
   private-key:
-    file: ./config_local_nuxt_kc_xp/private_key.pem
+    file: ./config_local_angular_kc_preprod/private_key.pem
   public-certificate:
-    file: ./config_local_nuxt_kc_xp/publicCertificate_tech.pem
+    file: ./config_local_angular_kc_preprod/publicCertificate_tech.pem
 
 services:
   backend:
     image: megacte-backend
     build:
       context: ./back
+    command: ["./docker-backend-start.sh", "--dev"]
     configs:
       - source: api-config
         target: /megacte-back/config/config.yml
@@ -24,29 +27,37 @@ services:
       - db
     environment:
       MEGACTE_LOGLEVEL: "DEBUG"
+      PYTHONDONTWRITEBYTECODE: 1
     ports:
       - "8080:8080"
     networks:
       - megacte-front-tier
       - megacte-back-tier
 
+    volumes:
+      - type: bind
+        source: ./back/app
+        target: /megacte-back/app
+
   frontend:
-    image: megacte-frontend-nuxt
+    image: megacte-frontend-angular
     build:
-      context: ./nuxt-web-app
-    environment:
-      APP_URL: ${APP_URL}
-      API_URL: ${API_URL}
-      AUTH_ORIGIN: ${AUTH_ORIGIN}
-      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      context: ./web-app
+      dockerfile: Dockerfile.dev
+    command: npm start -- --host 0.0.0.0 --port 80 --public-host http://localhost
+    configs:
+      - source: settings
+        target: /app/src/assets/settings.json
     ports:
-      - "3000:3000"
+      - "80:80"
     depends_on:
       - backend
     networks:
       - megacte-front-tier
+    volumes:
+      - type: bind
+        source: ./web-app/src
+        target: /app/src
 
   db:
     image: postgres:18.3-alpine
