@@ -33,7 +33,10 @@ async function refreshAccessToken(token: JWT) {
       refreshToken: res.refresh_token ?? token.refreshToken,
     };
   } catch (error) {
-    console.error("Échec du rafraîchissement du token Keycloak", error);
+    console.error(
+      "Échec du rafraîchissement du token Keycloak:",
+      error instanceof Error ? error.message : String(error)
+    );
 
     return {
       ...token,
