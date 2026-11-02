@@ -1,4 +1,6 @@
-# Enrôlement des utilisateurs Pastell (auto-provisioning)
+# Les process d'enrôlement dans MegActes
+
+## Eutilisateurs Pastell (auto-provisioning)
 
 ## Vue d'ensemble
 
@@ -76,3 +78,66 @@ La synchro (démarrage + job périodique `settings.sync.interval_minutes`, + end
 - **Création du token (seule exception)** : à la première connexion (aucun token configuré), le mot de passe Pastell est réinitialisé via le compte technique (`PATCH /v2/utilisateur/{id_u}`). Le token est ensuite créé via l'endpoint self-service `POST /v2/utilisateur/token` en Basic Auth avec le login / mot de passe temporaire — la seule utilisation du login/mot de passe d'un utilisateur (la création par le compte admin `POST /utilisateur/{id_u}/token` ne fonctionne pas pour les utilisateurs qui ne sont pas de type `api`).
 - **Clé Fernet** : le token est chiffré avec `pwd_key` du user (générée à l'enrôlement ou à la création manuelle si absente).
 - **Sanity check sync** : si une entité échoue pendant le scan, la synchro est abandonnée (pas de commit) pour ne pas désactiver à tort des utilisateurs d'entités non scannées.
+
+## Enrôlement S2low du connecteur TDT
+
+Contrairement à l'enrôlement Pastell, le compte technique S2low est créé **à la
+demande**, au premier besoin du connecteur TDT pour une entité. La
+synchronisation Pastell enregistre l'identifiant de l'entité mère dans
+`pastell_users.id_entite_pastell`. Le service `ensure_s2low_account` réutilise
+le connecteur déjà présent en base s'il existe ; sinon, il recherche l'autorité
+S2low à partir du SIREN (prioritaire) ou du SIRET fourni par la configuration de
+l'entité, sans nouvel appel API Pastell.
+
+```mermaid
+flowchart TB
+    subgraph S1["Utilisateur / MegActe"]
+        A["Utilisateur authentifié"]
+        B["ensure_s2low_account"]
+        P["Lecture de user.id_entite_pastell<br/>en base"]
+        C{"Connecteur déjà en BDD<br/>pour l'entité ?"}
+        D["Réutilisation du connecteur"]
+        E["Génération du mot de passe déterministe<br/>avec authority_id + password_salt"]
+        F["Chiffrement Fernet du mot de passe"]
+        G[("ConnecteurAuthTdt<br/>login = megacte_authority_id<br/>s2low_authority_id<br/>mot de passe chiffré")]
+    end
+
+    subgraph S2["S2low"]
+        Q["Recherche de l'autorité<br/>par SIREN ou SIRET"]
+        R{"Utilisateur MegActe<br/>déjà présent ?"}
+        T["Création du compte technique<br/>login megacte_authority_id<br/>rôle ADM, auth_method 2"]
+        U["Compte technique existant"]
+    end
+
+    A --> B --> P --> C
+    C -- "Oui" --> D
+    C -- "Non" --> Q
+    Q --> R
+    R -- "Non" --> T --> E
+    R -- "Oui" --> U --> E
+    E --> F --> G
+```
+
+### Déroulement
+
+- La synchronisation enregistre l'`id_e` de l'entité parcourue dans
+  `pastell_users.id_entite_pastell`. `ensure_s2low_account` lit cette valeur en
+  base, sans appel API Pastell. Une valeur absente provoque une erreur et aucun
+  enrôlement n'est effectué.
+- Si un `ConnecteurAuthTdt` existe déjà pour cette entité, il est retourné sans
+  appel à S2low.
+- Sinon, l'autorité est recherchée via le compte **superadmin S2low** : par
+  SIREN lorsqu'il est disponible, sinon par SIRET. La première autorité
+  retournée fournit son identifiant numérique `authority_id`.
+- Le service vérifie la présence d'un utilisateur nommé `MegActe` dans cette
+  autorité. En son absence, l'API d'administration crée le compte technique
+  `megacte_<authority_id>` avec le certificat client, le rôle `ADM`, le statut
+  actif et le mode d'authentification par mot de passe.
+- Le mot de passe est dérivé de `authority_id` et du `password_salt` configuré.
+  Il n'est jamais stocké en clair : il est chiffré avec une clé Fernet propre
+  au connecteur, puis le connecteur est enregistré avec `s2low_authority_id`.
+
+Les appels d'administration S2low utilisent les identifiants superadmin et le
+certificat configurés dans le client (`get_authority_by_siren`,
+`get_authority_by_siret`, `get_users` et `create_technical_user`). Les appels
+opérationnels utilisent ensuite le compte technique stocké dans le connecteur.

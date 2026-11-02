@@ -39,7 +39,7 @@ class SyncUserService:
             for user_data in users_json:
                 user_info = UserInfo.model_validate(user_data)
                 seen_id_pastell.add(user_info.id_u)
-                self._upsert_user(db, user_info)
+                self._upsert_user(db, user_info, entite_id)
 
         self._deactivate_missing_users(db, seen_id_pastell)
         db.commit()
@@ -62,12 +62,12 @@ class SyncUserService:
             for user_data in users_json:
                 user_info = UserInfo.model_validate(user_data)
                 if user_info.login == login:
-                    self._upsert_user(db, user_info)
+                    self._upsert_user(db, user_info, entite_id)
                     db.commit()
                     return db.query(UserPastell).filter(UserPastell.login == login).first()
         return None
 
-    def _upsert_user(self, db: Session, user_info: UserInfo) -> None:
+    def _upsert_user(self, db: Session, user_info: UserInfo, entite_id: int) -> None:
         # Flush pour rendre visibles les insertions en attente de ce cycle : sans
         # cela (autoflush=False), deux comptes Pastell partageant le même login mais
         # avec des id_u différents seraient insérés deux fois → violation d'unicité.
@@ -86,6 +86,7 @@ class SyncUserService:
             user = UserPastell(
                 login=user_info.login,
                 id_pastell=user_info.id_u,
+                id_entite_pastell=entite_id,
                 active=user_info.active,
                 pwd_key=PasswordUtils.generate_fernet_key(),
             )
@@ -100,6 +101,8 @@ class SyncUserService:
             if user.active != user_info.active:
                 user.active = user_info.active
                 logger.info(f"Mise à jour du statut actif de l'utilisateur {user_info.login} : {user_info.active}")
+            if user.id_entite_pastell != entite_id:
+                user.id_entite_pastell = entite_id
 
     def _deactivate_missing_users(self, db: Session, seen_id_pastell: set[int]) -> None:
         users = db.query(UserPastell).filter(UserPastell.active.is_(True)).all()

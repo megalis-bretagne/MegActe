@@ -21,6 +21,7 @@ class UserPastell(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     login = Column(String, unique=True, nullable=False, index=True)
     id_pastell = Column(Integer, unique=True, nullable=False)
+    id_entite_pastell = Column(Integer, nullable=True)
     pwd_key = Column(String)
     token_name = Column(String)
     token = Column(String)

@@ -8,7 +8,7 @@ from ..exceptions.custom_exceptions import ConnecteurExistException, ConnecteurN
 from ..models.connecteur_auth_tdt import ConnecteurAuthTdt
 from ..schemas.connecteur_schemas import ConnecteurCreateAuthTdt
 from ..utils import PasswordUtils
-from . import get_or_make_api_pastell_for_admin, get_or_make_api_s2low
+from . import get_or_make_api_s2low
 
 logger = logging.getLogger(__name__)
 
@@ -68,15 +68,13 @@ class ConnecteurTdtService:
         siren: str | None,
         siret: str | None,
         db: Session,
-        pastell_api=None,
         s2low_api=None,
     ) -> ConnecteurAuthTdt:
         """Crée à la demande le compte S2low associé à l'entité de l'utilisateur."""
-        pastell_api = pastell_api or get_or_make_api_pastell_for_admin()
         s2low_api = s2low_api or get_or_make_api_s2low()
-        id_e = pastell_api.get_user_by_id_u(user.id_pastell).id_e
+        id_e = user.id_entite_pastell
         if id_e is None:
-            raise ValueError(f"L'utilisateur Pastell {user.login} n'a pas d'entité")
+            raise ValueError(f"L'utilisateur Pastell {user.login} n'a pas d'entité enregistrée")
 
         existing = db.scalars(select(ConnecteurAuthTdt).where(ConnecteurAuthTdt.id_e == id_e)).first()
         if existing:
