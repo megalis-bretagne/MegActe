@@ -35,7 +35,8 @@ services:
   frontend:
     image: megacte-frontend
     build:
-      context: ./nuxt-web-app
+      context: .
+      dockerfile: nuxt-web-app/Dockerfile
     environment:
       KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER}
       KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}

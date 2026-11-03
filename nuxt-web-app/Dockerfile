@@ -8,10 +8,11 @@ WORKDIR /nuxt-app
 FROM base AS build
 
 #COPY --link package.json package-lock.json ./
-COPY --link package.json .
+COPY --link nuxt-web-app/package.json /nuxt-app/package.json
 RUN npm install
 
-COPY --link . .
+COPY --link nuxt-web-app/ /nuxt-app/
+COPY --link VERSION /nuxt-app/VERSION
 
 RUN npm run build
 
@@ -22,6 +23,7 @@ ENV PORT=$PORT
 ENV NODE_ENV=production
 
 COPY --from=build /nuxt-app/.output /nuxt-app/.output
+COPY --from=build /nuxt-app/VERSION /nuxt-app/VERSION
 # Optional, only needed if you rely on unbundled dependencies
 # COPY --from=build /nuxt-app/node_modules /nuxt-app/node_modules
 

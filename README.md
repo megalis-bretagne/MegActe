@@ -81,8 +81,19 @@ docker compose up --build
 
 Si vos images docker sont déjà buildées, un ```docker compose up``` suffit
 
-Un docker compose permettant de binder les sources existe également :
-
 ```bash
 docker compose up -f docker-compose.bind.yml up
+```
+
+## Build des images docker
+
+Si le build est fait en dehors des docker compose.
+
+### Build du front Linux
+
+```bash
+docker build \
+  -f nuxt-web-app/Dockerfile \
+  -t megacte-frontend:0.3.0 \
+  .
 ```

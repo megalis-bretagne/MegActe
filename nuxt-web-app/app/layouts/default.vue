@@ -1,6 +1,6 @@
 <script setup lang="ts"></script>
 <template>
-  <div class="h-screen flex flex-col">
+  <div class="flex min-h-screen flex-col">
     <TopBar />
     <div class="flex flex-1 overflow-hidden">
       <SideBar />
@@ -9,5 +9,6 @@
         <slot />
       </main>
     </div>
+    <AppFooter />
   </div>
 </template>
