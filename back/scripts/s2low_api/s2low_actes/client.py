@@ -40,7 +40,7 @@ class Settings:
     timeout: float
 
     @classmethod
-    def from_environment(cls) -> "Settings":
+    def from_environment(cls) -> Settings:
         base_url = _required_env("S2LOW_BASE_URL").rstrip("/")
         cert_path = Path(_required_env("S2LOW_CERT_PATH")).expanduser()
         if not cert_path.is_file():
@@ -130,7 +130,7 @@ class S2lowActesClient:
         except (ValueError, KeyError) as exc:
             raise S2lowError(f"Reponse nounce invalide: {response.text[:500]}") from exc
 
-        digest = hashlib.sha256(f"{self.settings.password}:{nounce}".encode("utf-8")).hexdigest()
+        digest = hashlib.sha256(f"{self.settings.password}:{nounce}".encode()).hexdigest()
         self._auth_params = {
             "login": self.settings.login,
             "nounce": nounce,
