@@ -359,6 +359,9 @@ const otherFields = (fields: FieldEdit[]) =>
       :style="{ width: 'min(90vw, 900px)' }"
     >
       <div class="mb-3">
+        <label for="external-dialog-search" class="sr-only">
+          Rechercher une option
+        </label>
         <input
           id="external-dialog-search"
           v-model="externalDialogSearch"

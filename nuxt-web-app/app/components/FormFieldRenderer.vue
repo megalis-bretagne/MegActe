@@ -213,6 +213,7 @@ function handleDrop(event: DragEvent) {
 
     <template v-else>
       <input
+        :id="`field-${field.key}`"
         :value="modelValue"
         type="text"
         :disabled="field.readonly"

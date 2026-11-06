@@ -240,8 +240,8 @@ function onChangePage(p: number) {
             >Dernier état</label
           >
           <Select
+            id="filter-etat"
             v-model="filterEtat"
-            input-id="filter-etat"
             :options="etatOptions"
             :loading="etatLoading"
             :disabled="!selectedFlux"
@@ -261,8 +261,8 @@ function onChangePage(p: number) {
             >Depuis</label
           >
           <DatePicker
+            id="filter-date-debut"
             v-model="filterDateDebut"
-            input-id="filter-date-debut"
             date-format="dd/mm/yy"
             show-icon
             placeholder="Date de début"
@@ -276,8 +276,8 @@ function onChangePage(p: number) {
             >Jusqu'au</label
           >
           <DatePicker
+            id="filter-date-fin"
             v-model="filterDateFin"
-            input-id="filter-date-fin"
             date-format="dd/mm/yy"
             show-icon
             placeholder="Date de fin"
@@ -293,8 +293,8 @@ function onChangePage(p: number) {
             >État transitoire</label
           >
           <Select
+            id="filter-etat-transit"
             v-model="filterEtatTransit"
-            input-id="filter-etat-transit"
             :options="etatOptions"
             :loading="etatLoading"
             :disabled="!selectedFlux"
@@ -316,8 +316,8 @@ function onChangePage(p: number) {
             >Depuis</label
           >
           <DatePicker
+            id="filter-date-debut-transit"
             v-model="filterDateDebutTransit"
-            input-id="filter-date-debut-transit"
             date-format="dd/mm/yy"
             show-icon
             placeholder="Date de début"
@@ -331,8 +331,8 @@ function onChangePage(p: number) {
             >Jusqu'au</label
           >
           <DatePicker
+            id="filter-date-fin-transit"
             v-model="filterDateFinTransit"
-            input-id="filter-date-fin-transit"
             date-format="dd/mm/yy"
             show-icon
             placeholder="Date de fin"
@@ -459,7 +459,7 @@ function onChangePage(p: number) {
           <Column header-class="w-10" body-class="w-10">
             <template #header>
               <Checkbox
-                input-id="select-all-documents"
+                id="select-all-documents"
                 :model-value="allSelected"
                 :indeterminate="someSelected"
                 binary
@@ -469,7 +469,7 @@ function onChangePage(p: number) {
             <template #body="{ data: doc }">
               <Checkbox
                 v-if="canBatchSelect(doc)"
-                :input-id="`select-document-${doc.id_d}`"
+                :id="`select-document-${doc.id_d}`"
                 :model-value="isSelected(doc)"
                 binary
                 @update:model-value="
@@ -599,8 +599,8 @@ function onChangePage(p: number) {
               @click="onChangePage(pageActive + 1)"
             />
             <Select
+              id="rows-per-page-filtered"
               v-model="rowsPerPage"
-              input-id="rows-per-page-filtered"
               :options="[5, 10, 20, 50]"
               class="w-24 text-sm"
             />
