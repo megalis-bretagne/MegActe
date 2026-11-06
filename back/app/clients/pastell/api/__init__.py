@@ -123,12 +123,13 @@ class ApiPastell:
         Méthode générique pour effectuer des requêtes HTTP.
         """
         parsed_url = urlsplit(url)
-        if parsed_url.scheme or parsed_url.netloc or not url or url.startswith("/"):
+        if parsed_url.scheme or parsed_url.netloc or not url:
             raise ValueError("Le chemin Pastell doit être une URL relative")
-        path_parts = parsed_url.path.split("/")
+        path = parsed_url.path.lstrip("/")
+        path_parts = path.split("/")
         if ".." in path_parts or "" in path_parts:
             raise ValueError("Le chemin Pastell contient un segment invalide")
-        safe_path = quote(parsed_url.path, safe="/")
+        safe_path = quote(path, safe="/")
         full_url = f"{self._config.base_url}/{safe_path}"
         response = _session.request(
             method=method,
