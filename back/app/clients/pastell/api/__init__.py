@@ -1,4 +1,5 @@
 import time
+from urllib.parse import quote, urlsplit
 
 import requests
 from pydantic import TypeAdapter
@@ -122,7 +123,14 @@ class ApiPastell:
         """
         Méthode générique pour effectuer des requêtes HTTP.
         """
-        full_url = f"{self._config.base_url}/{url}"
+        parsed_url = urlsplit(url)
+        if parsed_url.scheme or parsed_url.netloc or not url or url.startswith("/"):
+            raise ValueError("Le chemin Pastell doit être une URL relative")
+        path_parts = parsed_url.path.split("/")
+        if ".." in path_parts or "" in path_parts:
+            raise ValueError("Le chemin Pastell contient un segment invalide")
+        safe_path = quote(parsed_url.path, safe="/")
+        full_url = f"{self._config.base_url}/{safe_path}"
         response = _session.request(
             method=method,
             url=full_url,
