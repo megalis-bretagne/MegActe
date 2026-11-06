@@ -97,12 +97,24 @@ def _parse_body(response: requests.Response) -> Any:
 
 
 HTTP_METHODS = {"get", "post", "patch", "put", "delete", "head", "options", "trace"}
+SPEC_ROOT = Path(__file__).resolve().parent.parent / "docs"
+
+
+def _resolve_spec_path(spec_path: Path) -> Path:
+    """Résout une spécification uniquement dans le répertoire docs du projet."""
+    candidate = (SPEC_ROOT / spec_path).resolve() if not spec_path.is_absolute() else spec_path.resolve()
+    try:
+        candidate.relative_to(SPEC_ROOT)
+    except ValueError as exc:
+        raise ValueError(f"La spécification doit être située dans {SPEC_ROOT}") from exc
+    return candidate
 
 
 def list_endpoints(spec_path: Path) -> int:
     """Affiche les chemins et méthodes de l'API à partir de la spécification OpenAPI."""
     try:
-        spec = json.loads(spec_path.read_text())
+        safe_spec_path = _resolve_spec_path(spec_path)
+        spec = json.loads(safe_spec_path.read_text())
     except (OSError, ValueError) as exc:
         print(f"Erreur: impossible de lire la spécification {spec_path}: {exc}")
         return 1
@@ -259,7 +271,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--spec",
         type=Path,
-        default=Path(__file__).resolve().parent.parent / "docs" / "pastell_4.1.18_openapi.json",
+        default=SPEC_ROOT / "pastell_4.1.18_openapi.json",
         help="Chemin de la spécification OpenAPI (défaut: docs/pastell_4.1.18_openapi.json)",
     )
     args = parser.parse_args(argv)
