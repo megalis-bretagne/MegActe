@@ -19,7 +19,7 @@ COPY migrations ./migrations
 COPY config ./config
 COPY --chmod=+x docker-backend-start.sh .
 
-RUN  uv sync --frozen --no-dev \
+RUN  uv sync --frozen --no-build --no-dev \
   && chown -R ${APP_UID}:${APP_GID} ${APP_PATH}
 
 ENV PATH="${APP_PATH}/.venv/bin:$PATH"
