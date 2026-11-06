@@ -117,6 +117,7 @@ const resolveSelectValue = (field: Field) => {
 
   <template v-else-if="field.type === 'checkbox'">
     <input
+      :id="`field-viewer-${field.key}`"
       type="checkbox"
       :checked="
         field.val === 'checked' || field.val === 'on' || field.val === '1'

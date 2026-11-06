@@ -28,6 +28,7 @@ function clear() {
 
 <template>
   <div class="relative w-full max-w-sm">
+    <label for="document-search" class="sr-only">Rechercher un document</label>
     <svg
       class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none"
       fill="none"
@@ -42,6 +43,7 @@ function clear() {
       />
     </svg>
     <input
+      id="document-search"
       v-model="localValue"
       type="text"
       placeholder="Rechercher…"

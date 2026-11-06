@@ -299,7 +299,12 @@ const otherFields = (fields: FieldEdit[]) =>
               </td>
               <td class="px-4 py-3 text-gray-400 text-xs">{{ item.piece }}</td>
               <td class="px-4 py-3">
+                <label :for="`type-piece-${i}`" class="sr-only">
+                  Type de pièce pour
+                  {{ i === 0 ? "la pièce principale" : `l'annexe numéro ${i}` }}
+                </label>
                 <select
+                  :id="`type-piece-${i}`"
                   v-model="item.label"
                   class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
@@ -355,6 +360,7 @@ const otherFields = (fields: FieldEdit[]) =>
     >
       <div class="mb-3">
         <input
+          id="external-dialog-search"
           v-model="externalDialogSearch"
           type="text"
           placeholder="Rechercher..."

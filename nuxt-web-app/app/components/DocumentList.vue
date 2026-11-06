@@ -235,11 +235,13 @@ function onChangePage(p: number) {
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="flex flex-col gap-1">
           <label
+            for="filter-etat"
             class="text-xs font-medium text-gray-500 uppercase tracking-wide"
             >Dernier état</label
           >
           <Select
             v-model="filterEtat"
+            input-id="filter-etat"
             :options="etatOptions"
             :loading="etatLoading"
             :disabled="!selectedFlux"
@@ -254,11 +256,13 @@ function onChangePage(p: number) {
         </div>
         <div class="flex flex-col gap-1">
           <label
+            for="filter-date-debut"
             class="text-xs font-medium text-gray-500 uppercase tracking-wide"
             >Depuis</label
           >
           <DatePicker
             v-model="filterDateDebut"
+            input-id="filter-date-debut"
             date-format="dd/mm/yy"
             show-icon
             placeholder="Date de début"
@@ -267,11 +271,13 @@ function onChangePage(p: number) {
         </div>
         <div class="flex flex-col gap-1">
           <label
+            for="filter-date-fin"
             class="text-xs font-medium text-gray-500 uppercase tracking-wide"
             >Jusqu'au</label
           >
           <DatePicker
             v-model="filterDateFin"
+            input-id="filter-date-fin"
             date-format="dd/mm/yy"
             show-icon
             placeholder="Date de fin"
@@ -282,11 +288,13 @@ function onChangePage(p: number) {
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
         <div class="flex flex-col gap-1">
           <label
+            for="filter-etat-transit"
             class="text-xs font-medium text-gray-500 uppercase tracking-wide"
             >État transitoire</label
           >
           <Select
             v-model="filterEtatTransit"
+            input-id="filter-etat-transit"
             :options="etatOptions"
             :loading="etatLoading"
             :disabled="!selectedFlux"
@@ -303,11 +311,13 @@ function onChangePage(p: number) {
         </div>
         <div class="flex flex-col gap-1">
           <label
+            for="filter-date-debut-transit"
             class="text-xs font-medium text-gray-500 uppercase tracking-wide"
             >Depuis</label
           >
           <DatePicker
             v-model="filterDateDebutTransit"
+            input-id="filter-date-debut-transit"
             date-format="dd/mm/yy"
             show-icon
             placeholder="Date de début"
@@ -316,11 +326,13 @@ function onChangePage(p: number) {
         </div>
         <div class="flex flex-col gap-1">
           <label
+            for="filter-date-fin-transit"
             class="text-xs font-medium text-gray-500 uppercase tracking-wide"
             >Jusqu'au</label
           >
           <DatePicker
             v-model="filterDateFinTransit"
+            input-id="filter-date-fin-transit"
             date-format="dd/mm/yy"
             show-icon
             placeholder="Date de fin"
@@ -377,7 +389,9 @@ function onChangePage(p: number) {
         class="overflow-x-auto rounded border border-gray-200 dark:border-gray-700"
       >
         <table class="min-w-full text-sm">
-          <thead class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+          <thead
+            class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700"
+          >
             <tr>
               <th class="px-4 py-3">
                 <Skeleton width="4rem" height="0.75rem" />
@@ -400,7 +414,11 @@ function onChangePage(p: number) {
             <tr
               v-for="i in ITEMS_PER_PAGE"
               :key="i"
-              :class="i % 2 === 0 ? 'bg-white dark:bg-gray-900' : 'bg-gray-50 dark:bg-gray-800'"
+              :class="
+                i % 2 === 0
+                  ? 'bg-white dark:bg-gray-900'
+                  : 'bg-gray-50 dark:bg-gray-800'
+              "
             >
               <td class="px-4 py-2">
                 <Skeleton
@@ -441,6 +459,7 @@ function onChangePage(p: number) {
           <Column header-class="w-10" body-class="w-10">
             <template #header>
               <Checkbox
+                input-id="select-all-documents"
                 :model-value="allSelected"
                 :indeterminate="someSelected"
                 binary
@@ -450,6 +469,7 @@ function onChangePage(p: number) {
             <template #body="{ data: doc }">
               <Checkbox
                 v-if="canBatchSelect(doc)"
+                :input-id="`select-document-${doc.id_d}`"
                 :model-value="isSelected(doc)"
                 binary
                 @update:model-value="
@@ -480,7 +500,9 @@ function onChangePage(p: number) {
             body-class="hidden sm:table-cell"
           >
             <template #body="{ data: doc }">
-               <span class="text-gray-700 dark:text-gray-200">{{ doc.type }}</span>
+              <span class="text-gray-700 dark:text-gray-200">{{
+                doc.type
+              }}</span>
             </template>
           </Column>
 
@@ -578,6 +600,7 @@ function onChangePage(p: number) {
             />
             <Select
               v-model="rowsPerPage"
+              input-id="rows-per-page-filtered"
               :options="[5, 10, 20, 50]"
               class="w-24 text-sm"
             />

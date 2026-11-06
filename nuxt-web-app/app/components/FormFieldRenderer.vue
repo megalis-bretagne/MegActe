@@ -69,7 +69,10 @@ function handleDrop(event: DragEvent) {
   </div>
 
   <div v-else>
-    <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
+    <label
+      :for="`field-${field.key}`"
+      class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+    >
       {{ field.label }}
       <span v-if="field.required" class="text-red-500 ml-1">*</span>
     </label>
@@ -79,6 +82,7 @@ function handleDrop(event: DragEvent) {
 
     <template v-if="field.type === 'select'">
       <select
+        :id="`field-${field.key}`"
         :value="modelValue"
         :disabled="field.readonly"
         class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-base bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-700 disabled:cursor-not-allowed"
@@ -112,6 +116,7 @@ function handleDrop(event: DragEvent) {
             >Choisir {{ field.multiple ? "des fichiers" : "un fichier" }}</span
           >
           <input
+            :id="`field-${field.key}`"
             ref="fileInputRef"
             type="file"
             :multiple="field.multiple"
@@ -157,6 +162,7 @@ function handleDrop(event: DragEvent) {
 
     <template v-else-if="field.type === 'checkbox'">
       <input
+        :id="`field-${field.key}`"
         type="checkbox"
         :checked="modelValue === 'checked' || modelValue === '1'"
         :disabled="field.readonly"
@@ -172,6 +178,7 @@ function handleDrop(event: DragEvent) {
 
     <template v-else-if="field.type === 'date'">
       <input
+        :id="`field-${field.key}`"
         :value="modelValue"
         type="date"
         class="w-full border border-gray-300 rounded px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
