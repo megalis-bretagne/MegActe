@@ -120,9 +120,19 @@ export function useDocumentSave(
         const typePiece = state.formData.value.type_piece;
         if (typePiece) {
           const rawPieces = Array.isArray(typePiece) ? typePiece : [typePiece];
-          const codes = rawPieces.map(
-            (p: string) => p.match(/\(([^)]+)\)$/)?.[1] ?? p
-          );
+          const codes = rawPieces.map((piece: string) => {
+            if (!piece.endsWith(")")) return piece;
+
+            const openingParenthesis = piece.lastIndexOf("(");
+            if (
+              openingParenthesis < 0 ||
+              openingParenthesis === piece.length - 1
+            ) {
+              return piece;
+            }
+
+            return piece.slice(openingParenthesis + 1, -1);
+          });
           await apiFetch(
             `/entite/${props.entiteId}/document/${idD}/externalData/type_piece`,
             {
