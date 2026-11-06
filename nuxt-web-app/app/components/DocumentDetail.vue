@@ -245,12 +245,12 @@ const {
   waitingForOrientationStatus,
   runAction,
 } = useDocumentActions(
-    entiteId,
-    toRef(props, "idD"),
-    effectiveFluxType,
-    doc,
-    fetchDocument
-  );
+  entiteId,
+  toRef(props, "idD"),
+  effectiveFluxType,
+  doc,
+  fetchDocument
+);
 
 const journalEntries = computed(() => journalData.value ?? []);
 
@@ -270,7 +270,7 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
   <div class="max-w-8xl mx-auto px-4 py-6">
     <button
       class="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white mb-6 transition-colors"
-      @click="router.push('/documents')"
+      @click="void router.push('/documents')"
     >
       <i class="pi pi-arrow-left text-xs" />
       Retour à la liste
@@ -431,14 +431,20 @@ const actionSeverity = (action: string) => ACTION_SEVERITY[action] ?? "primary";
             :severity="actionSeverity(action.action)"
             :disabled="!!actionLoading"
             size="small"
-            @click="runAction(action)"
+            @click="void runAction(action)"
           />
         </template>
       </div>
 
-      <div class="mt-6 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-          <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">États du dossier</h2>
+      <div
+        class="mt-6 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+      >
+        <div
+          class="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
+        >
+          <h2 class="text-sm font-semibold text-gray-700 dark:text-gray-200">
+            États du dossier
+          </h2>
         </div>
         <div v-if="journalPending" class="p-4 space-y-5">
           <div v-for="i in 3" :key="i" class="flex gap-3">

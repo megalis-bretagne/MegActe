@@ -62,7 +62,7 @@ function goToFlux(index: number) {
   const flux = fluxCounts.value[index];
   if (!flux) return;
   selectedFlux.value = flux.id;
-  router.push("/documents");
+  void router.push("/documents");
 }
 
 const chartOptions = {
@@ -191,16 +191,22 @@ function openDoc(doc: DocumentInfo) {
     action_possible: doc.action_possible ?? [],
     data: {},
   });
-  queryClient.invalidateQueries({ queryKey: ["document", doc.id_e, doc.id_d] });
-  router.push(`/org/${doc.id_e}/document/${doc.id_d}?type=${doc.type}`);
+  void queryClient.invalidateQueries({
+    queryKey: ["document", doc.id_e, doc.id_d],
+  });
+  void router.push(`/org/${doc.id_e}/document/${doc.id_d}?type=${doc.type}`);
 }
 </script>
 
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">Tableau de bord</h1>
-      <p v-if="entiteName" class="text-sm text-gray-500 dark:text-gray-400">{{ entiteName }}</p>
+      <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+        Tableau de bord
+      </h1>
+      <p v-if="entiteName" class="text-sm text-gray-500 dark:text-gray-400">
+        {{ entiteName }}
+      </p>
     </div>
 
     <div v-if="!entiteId" class="text-gray-500 dark:text-gray-400 italic">
@@ -227,7 +233,9 @@ function openDoc(doc: DocumentInfo) {
         >
           <table class="min-w-full text-sm">
             <thead>
-              <tr class="border-b border-gray-200 dark:border-gray-700 text-left">
+              <tr
+                class="border-b border-gray-200 dark:border-gray-700 text-left"
+              >
                 <th class="px-3 py-2">
                   <Skeleton width="4rem" height="0.75rem" />
                 </th>
@@ -280,7 +288,9 @@ function openDoc(doc: DocumentInfo) {
           :class="{ 'opacity-60 pointer-events-none': isFetching }"
         >
           <template #empty>
-            <div class="text-center py-8 text-gray-400 dark:text-gray-500 italic">
+            <div
+              class="text-center py-8 text-gray-400 dark:text-gray-500 italic"
+            >
               Aucun document
             </div>
           </template>
@@ -336,7 +346,9 @@ function openDoc(doc: DocumentInfo) {
           </Column>
         </DataTable>
 
-        <div class="px-4 py-2 text-right border-t border-gray-100 dark:border-gray-700">
+        <div
+          class="px-4 py-2 text-right border-t border-gray-100 dark:border-gray-700"
+        >
           <NuxtLink
             to="/documents"
             class="text-sm text-blue-600 hover:underline"
@@ -347,16 +359,20 @@ function openDoc(doc: DocumentInfo) {
       </section>
 
       <!-- Répartition par flux (noms réels renvoyés par Pastell, pas de catégorie inventée) -->
-      <section class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+      <section
+        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+      >
         <div class="flex items-baseline justify-between mb-3">
           <h2 class="font-medium text-gray-900 dark:text-white">
             Répartition par type de flux
           </h2>
           <div class="text-right">
-            <span class="text-2xl font-semibold text-gray-900 dark:text-white">{{
-              total
-            }}</span>
-            <span class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide ml-1"
+            <span
+              class="text-2xl font-semibold text-gray-900 dark:text-white"
+              >{{ total }}</span
+            >
+            <span
+              class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide ml-1"
               >actes au total</span
             >
           </div>
@@ -379,13 +395,19 @@ function openDoc(doc: DocumentInfo) {
         <div v-else-if="!isHydrated || fluxStatsLoading" class="h-64">
           <Skeleton height="100%" />
         </div>
-        <p v-else class="text-sm text-gray-400 dark:text-gray-500 italic">Aucun flux à afficher</p>
+        <p v-else class="text-sm text-gray-400 dark:text-gray-500 italic">
+          Aucun flux à afficher
+        </p>
       </section>
 
       <!-- Évolution dans le temps : documents créés par mois et par flux (approximation à
            partir de `creation`, Pastell ne fournit pas d'historique d'état). -->
-      <section class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-        <h2 class="font-medium text-gray-900 dark:text-white mb-1 flex items-center gap-1.5">
+      <section
+        class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
+      >
+        <h2
+          class="font-medium text-gray-900 dark:text-white mb-1 flex items-center gap-1.5"
+        >
           Évolution par type d'acte
           <i
             v-tooltip.top="
@@ -409,7 +431,9 @@ function openDoc(doc: DocumentInfo) {
         <div v-else-if="!isHydrated || fluxStatsLoading" class="h-72">
           <Skeleton height="100%" />
         </div>
-        <p v-else class="text-sm text-gray-400 dark:text-gray-500 italic">Aucun flux à afficher</p>
+        <p v-else class="text-sm text-gray-400 dark:text-gray-500 italic">
+          Aucun flux à afficher
+        </p>
       </section>
     </template>
   </div>

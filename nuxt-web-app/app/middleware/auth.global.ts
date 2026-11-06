@@ -17,7 +17,7 @@ export default defineNuxtRouteMiddleware((to) => {
         query: { callbackUrl: to.fullPath },
       });
     }
-    signIn("keycloak", { callbackUrl: to.fullPath });
+    void signIn("keycloak", { callbackUrl: to.fullPath });
     return false;
   }
 

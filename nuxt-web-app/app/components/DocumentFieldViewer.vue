@@ -8,9 +8,19 @@ const props = defineProps<{
 
 const { downloadDocumentFile } = useFileDownload();
 
-function downloadFile(filename: string, elementId: string, index?: number) {
+async function downloadFile(
+  filename: string,
+  elementId: string,
+  index?: number
+) {
   // index : évite au backend de refaire un fetch en plus pour retrouver le fichier par son nom
-  downloadDocumentFile(props.entiteId, props.idD, elementId, filename, index);
+  await downloadDocumentFile(
+    props.entiteId,
+    props.idD,
+    elementId,
+    filename,
+    index
+  );
 }
 
 function resolveFileRef(filename: string): {
@@ -29,9 +39,9 @@ function resolveFileRef(filename: string): {
   return { elementId: "arrete" };
 }
 
-function downloadPieceFile(filename: string) {
+async function downloadPieceFile(filename: string) {
   const ref = resolveFileRef(filename);
-  downloadFile(filename, ref.elementId, ref.index);
+  await downloadFile(filename, ref.elementId, ref.index);
 }
 
 const isFileArray = (val: FieldValue) =>
@@ -92,7 +102,7 @@ const resolveSelectValue = (field: Field) => {
     >
       <button
         class="text-blue-600 hover:underline text-left"
-        @click="downloadPieceFile(piece.filename)"
+        @click="void downloadPieceFile(piece.filename)"
       >
         {{ piece.filename }}
       </button>
@@ -104,7 +114,7 @@ const resolveSelectValue = (field: Field) => {
     <div v-for="(filename, i) in toFileList(field.val)" :key="i" class="mb-1">
       <button
         class="text-blue-600 hover:underline text-left"
-        @click="downloadFile(filename, field.key, i)"
+        @click="void downloadFile(filename, field.key, i)"
       >
         {{ filename }}
       </button>

@@ -9,22 +9,22 @@ const userMenuItems = [
   {
     label: "Dashboard",
     icon: "pi pi-chart-bar",
-    command: () => router.push("/"),
+    command: () => void router.push("/"),
   },
   {
     label: "Documents",
     icon: "pi pi-file",
-    command: () => router.push("/documents"),
+    command: () => void router.push("/documents"),
   },
   {
     label: "Paramètres",
     icon: "pi pi-cog",
-    command: () => router.push("/parametres"),
+    command: () => void router.push("/parametres"),
   },
   {
     label: "Se déconnecter",
     icon: "pi pi-sign-out",
-    command: () => handleSignOut(),
+    command: () => void handleSignOut(),
   },
 ];
 
@@ -45,7 +45,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <header class="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700">
+  <header
+    class="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700"
+  >
     <div class="container mx-auto px-4 py-3">
       <div class="flex items-center justify-between gap-4">
         <div class="flex items-center space-x-3 flex-shrink-0">

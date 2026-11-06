@@ -161,7 +161,7 @@ export function useBatchDocuments(
     if (action !== "supression" && action !== "duplicate") {
       await waitForBatchActionSync(targetEntiteId, previousStates);
     }
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: ["documents", Number(targetEntiteId)],
     });
   }

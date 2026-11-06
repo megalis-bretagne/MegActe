@@ -24,7 +24,7 @@ export function useDocumentActions(
   async function syncActionStatus() {
     const [updated] = await Promise.all([
       fetchDocumentStatus(),
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ["journal", entiteId.value, idD.value],
       }),
     ]);
@@ -109,7 +109,7 @@ export function useDocumentActions(
 
       if (actionName === "supression") {
         // Le document n'existe plus : retour à la liste (et non au tableau de bord `/`).
-        navigateTo("/documents");
+        void navigateTo("/documents");
         return;
       }
 
@@ -124,7 +124,7 @@ export function useDocumentActions(
         }
         // Pas d'URL de redirection S2low (flux ne nécessitant pas de signature externe) :
         // resynchronise l'affichage comme pour les autres actions.
-        waitForActionSync(previousState).catch(() => {});
+        void waitForActionSync(previousState).catch(() => {});
         return;
       }
 
@@ -145,13 +145,13 @@ export function useDocumentActions(
         return;
       }
 
-      waitForActionSync(previousState).catch(() => {});
+      void waitForActionSync(previousState).catch(() => {});
     },
   });
 
   async function runAction(action: { action: string; message: string }) {
     if (action.action === "modification") {
-      navigateTo(
+      void navigateTo(
         `/org/${entiteId.value}/document/${idD.value}/edit?type=${effectiveFluxType.value ?? ""}`
       );
       return;
@@ -173,7 +173,7 @@ export function useDocumentActions(
       actionError.value = getErrorDetail(e, "Une erreur est survenue");
       // Cas fréquent : action_possible périmé en cache. Resynchronise tout de suite plutôt que
       // forcer un rechargement manuel pour voir les bons boutons.
-      syncActionStatus().catch(() => {});
+      void syncActionStatus().catch(() => {});
     } finally {
       actionLoading.value = null;
     }

@@ -57,8 +57,8 @@ const effectiveDocId = computed(
 );
 
 // Raccord de l'affichage d'erreurs pour les dialogs externes
-function handleOpenExternal(key: string, label: string) {
-  openExternalDialog(key, label, (msg) => {
+async function handleOpenExternal(key: string, label: string) {
+  await openExternalDialog(key, label, (msg) => {
     saveError.value = msg;
   });
 }
@@ -75,7 +75,7 @@ const otherFields = (fields: FieldEdit[]) =>
   <div class="max-w-8xl mx-auto px-4 py-6">
     <button
       class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 mb-6 transition-colors"
-      @click="router.back()"
+      @click="void router.back()"
     >
       <i class="pi pi-arrow-left text-xs" />
       Retour
@@ -221,7 +221,7 @@ const otherFields = (fields: FieldEdit[]) =>
                   @file-change="(e) => onFileChange(field!.key, e)"
                   @file-remove="(f) => removeFile(field!.key, f)"
                   @open-external="
-                    (key, label) => handleOpenExternal(key, label)
+                    (key, label) => void handleOpenExternal(key, label)
                   "
                 />
               </div>
@@ -237,7 +237,7 @@ const otherFields = (fields: FieldEdit[]) =>
               icon-pos="right"
               :loading="savingStep1"
               :disabled="saving"
-              @click="save"
+              @click="void save()"
             />
           </template>
           <template v-else>
@@ -247,14 +247,14 @@ const otherFields = (fields: FieldEdit[]) =>
               severity="secondary"
               :loading="savingStep1"
               :disabled="saving"
-              @click="save"
+              @click="void save()"
             />
             <Button
               :label="sending ? 'Enregistrement...' : 'Enregistrer et envoyer'"
               icon="pi pi-send"
               :loading="sending"
               :disabled="saving"
-              @click="sendActe"
+              @click="void sendActe()"
             />
           </template>
         </div>
@@ -337,14 +337,14 @@ const otherFields = (fields: FieldEdit[]) =>
               severity="secondary"
               :loading="savingTypePiece"
               :disabled="saving"
-              @click="saveTypePiece"
+              @click="void saveTypePiece()"
             />
             <Button
               :label="sending ? 'Envoi...' : `Envoyer l'acte`"
               icon="pi pi-send"
               :loading="sending"
               :disabled="saving"
-              @click="sendActe"
+              @click="void sendActe()"
             />
           </div>
         </div>

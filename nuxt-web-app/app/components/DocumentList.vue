@@ -54,12 +54,16 @@ function openDoc(doc: DocumentInfo) {
     action_possible: doc.action_possible ?? [],
     data: {},
   });
-  queryClient.invalidateQueries({ queryKey: ["document", doc.id_e, doc.id_d] });
-  router.push(`/org/${doc.id_e}/document/${doc.id_d}?type=${doc.type}`);
+  void queryClient.invalidateQueries({
+    queryKey: ["document", doc.id_e, doc.id_d],
+  });
+  void router.push(`/org/${doc.id_e}/document/${doc.id_d}?type=${doc.type}`);
 }
 
 function editDoc(doc: DocumentInfo) {
-  router.push(`/org/${doc.id_e}/document/${doc.id_d}/edit?type=${doc.type}`);
+  void router.push(
+    `/org/${doc.id_e}/document/${doc.id_d}/edit?type=${doc.type}`
+  );
 }
 
 const showAdvanced = ref(false);
@@ -129,7 +133,7 @@ watch(
   selectedFlux,
   (flux) => {
     resetAdvancedFilters();
-    if (flux) fetchEtatOptions(flux);
+    if (flux) void fetchEtatOptions(flux);
     else etatOptions.value = [];
   },
   { immediate: true }
@@ -183,7 +187,7 @@ watch([search, rowsPerPage, advancedFilters], () => {
 });
 
 watch([pageActive, search, rowsPerPage], ([page, s, rows]) => {
-  router.replace({
+  void router.replace({
     query: { ...route.query, page, search: s || undefined, rows },
   });
 });
@@ -378,7 +382,7 @@ function onChangePage(p: number) {
           rounded
           :loading="runningBatchAction === a.value"
           :disabled="!!runningBatchAction && runningBatchAction !== a.value"
-          @click="executeBatchAction(a.value)"
+          @click="void executeBatchAction(a.value)"
         />
       </div>
     </div>
@@ -558,7 +562,7 @@ function onChangePage(p: number) {
                   rounded
                   size="small"
                   :loading="actionLoading === `duplicate_${doc.id_d}`"
-                  @click="duplicateDoc(doc)"
+                  @click="void duplicateDoc(doc)"
                 />
                 <Button
                   v-if="hasAction(doc, 'supression')"
@@ -569,7 +573,7 @@ function onChangePage(p: number) {
                   rounded
                   size="small"
                   :loading="actionLoading === `delete_${doc.id_d}`"
-                  @click="deleteDoc(doc)"
+                  @click="void deleteDoc(doc)"
                 />
               </div>
             </template>

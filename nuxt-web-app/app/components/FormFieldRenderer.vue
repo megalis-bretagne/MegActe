@@ -30,9 +30,9 @@ const fieldError = computed(() => {
 const savedFiles = computed(() => toFileList(props.modelValue));
 
 const { downloadDocumentFile } = useFileDownload();
-function downloadSavedFile(filename: string, index: number) {
+async function downloadSavedFile(filename: string, index: number) {
   if (!props.entiteId || !props.idD) return;
-  downloadDocumentFile(
+  await downloadDocumentFile(
     props.entiteId,
     props.idD,
     props.field.key,
@@ -152,7 +152,7 @@ function handleDrop(event: DragEvent) {
             :key="filename"
             type="button"
             class="text-xs text-blue-600 hover:underline"
-            @click="downloadSavedFile(filename, i)"
+            @click="void downloadSavedFile(filename, i)"
           >
             {{ filename }}
           </button>

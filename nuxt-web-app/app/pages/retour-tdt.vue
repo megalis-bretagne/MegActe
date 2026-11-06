@@ -73,9 +73,9 @@ onMounted(() => {
 
 function backToDocuments() {
   if (singleIdD.value) {
-    navigateTo(`/org/${idE.value}/document/${singleIdD.value}`);
+    void navigateTo(`/org/${idE.value}/document/${singleIdD.value}`);
   } else {
-    navigateTo("/documents");
+    void navigateTo("/documents");
   }
 }
 </script>

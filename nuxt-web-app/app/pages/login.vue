@@ -8,7 +8,7 @@ const route = useRoute();
 const { signIn } = useAuth();
 
 onMounted(() => {
-  signIn("keycloak", {
+  void signIn("keycloak", {
     callbackUrl: (route.query.callbackUrl as string) || "/",
   });
 });

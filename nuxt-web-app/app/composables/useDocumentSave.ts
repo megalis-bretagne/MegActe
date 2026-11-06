@@ -181,7 +181,7 @@ export function useDocumentSave(
         state.currentStep.value = nextStep;
         return;
       }
-      navigateTo(
+      await navigateTo(
         `/org/${props.entiteId}/document/${idD}?type=${props.fluxType ?? ""}`
       );
     },

@@ -52,10 +52,10 @@ async function createDoc(flux: { id: string }) {
           :class="
             !selectedFlux
               ? 'bg-blue-600 text-white'
-               : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+              : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
           "
           class="w-full text-left px-3 py-2 rounded text-sm font-medium transition-colors"
-          @click="selectFlux(null)"
+          @click="void selectFlux(null)"
         >
           Tous les documents
         </button>
@@ -82,10 +82,10 @@ async function createDoc(flux: { id: string }) {
               :class="
                 selectedFlux === flux.id
                   ? 'bg-blue-600 text-white'
-                   : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
               "
               class="flex-1 min-w-0 text-left px-3 py-2 rounded text-sm transition-colors whitespace-nowrap"
-              @click="selectFlux(flux.id)"
+              @click="void selectFlux(flux.id)"
             >
               {{ flux.nom }}
             </button>
@@ -93,7 +93,7 @@ async function createDoc(flux: { id: string }) {
               v-if="entiteId"
               v-tooltip.top="`Créer un document ${flux.nom}`"
               class="shrink-0 p-1 text-blue-600 hover:text-blue-700"
-              @click="createDoc(flux)"
+              @click="void createDoc(flux)"
             >
               <i class="pi pi-plus-circle text-lg" />
             </button>
