@@ -605,9 +605,13 @@ function onChangePage(p: number) {
             <Select
               id="rows-per-page-filtered"
               v-model="rowsPerPage"
+              aria-label="Nombre de documents par page"
               :options="[5, 10, 20, 50]"
               class="w-24 text-sm"
             />
+            <label for="rows-per-page-filtered" class="sr-only">
+              Nombre de documents par page
+            </label>
           </div>
 
           <Paginator
