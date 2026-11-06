@@ -1,5 +1,4 @@
 import logging
-import time
 from io import BytesIO
 
 from fastapi import HTTPException
@@ -41,9 +40,7 @@ class DocumentFileService(BaseService):
         boucle plutôt qu'à chaque fichier, puis on téléverse tous les fichiers en parallèle
         (chacun a sa position réservée à l'avance, donc pas de risque de collision).
         """
-        t0 = time.monotonic()
         existing_files = self.get_existing_files(files_data.entite_id, document_id, element_id)
-        logger.info(f"[perf] get_existing_files {element_id} : {time.monotonic() - t0:.3f}s")
         start_index = 0 if replace else len(existing_files)
 
         # Le contenu de chaque UploadFile est lu ici (thread principal) : SpooledTemporaryFile
@@ -55,7 +52,6 @@ class DocumentFileService(BaseService):
 
         def _upload(item):
             file_number, filename, content, content_type = item
-            file_t0 = time.monotonic()
             result = self.add_file(
                 document_id,
                 element_id,
@@ -65,15 +61,9 @@ class DocumentFileService(BaseService):
                 content,
                 content_type,
             )
-            logger.info(f"[perf] add_file {element_id}/{file_number} ({filename}) : {time.monotonic() - file_t0:.3f}s")
             return result
 
-        t1 = time.monotonic()
         results = list(_EXECUTOR.map(_upload, prepared))
-        logger.info(
-            f"[perf] add_multiple_files {element_id} : {len(prepared)} fichier(s) en {time.monotonic() - t1:.3f}s "
-            f"(total avec get_existing_files : {time.monotonic() - t0:.3f}s)"
-        )
         return results
 
     def add_file(
@@ -212,7 +202,6 @@ class DocumentFileService(BaseService):
                 raise
             # Pastell refuse l'accès à ce document précis → on récupère son type
             # et on bascule sur la logique by_flux_type (qui crée un doc temporaire si nécessaire)
-            logger.warning(f"externalData 403 sur doc {document_id}, tentative via flux_type")
             doc = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}")
             flux_type = doc.get("info", {}).get("type")
             if not flux_type:

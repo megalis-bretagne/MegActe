@@ -102,9 +102,7 @@ class DocumentService(BaseService):
                 # Type de flux obsolète/supprimé côté Pastell, ou réponse Pastell mal formée pour
                 # ce flux : on continue sans enrichissement plutôt que de faire échouer le détail
                 logger.warning(
-                    "Impossible de récupérer les actions du flux '%s' (document %s), flux probablement obsolète ou réponse invalide",
-                    document["info"]["type"],
-                    document_id,
+                    "Impossible de récupérer les actions du flux, flux probablement obsolète ou réponse invalide",
                 )
                 flux_action = None
 
