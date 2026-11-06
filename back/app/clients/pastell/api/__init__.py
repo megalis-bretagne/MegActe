@@ -28,7 +28,6 @@ _session = requests.Session()
 # Aligné sur le pool de threads partagé (document_service._EXECUTOR, 32 workers)
 _adapter = HTTPAdapter(pool_maxsize=32)
 _session.mount("https://", _adapter)
-_session.mount("http://", _adapter)
 
 
 class ApiPastell:
