@@ -130,7 +130,7 @@ export function decodeHtmlEntities(text: string): string {
   return text
     .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(Number(dec)))
     .replace(/&#x([0-9a-f]+);/gi, (_, hex) =>
-      String.fromCharCode(parseInt(hex, 16))
+      String.fromCharCode(Number.parseInt(hex, 16))
     )
     .replace(/&(\w+);/g, (match, name) => HTML_NAMED_ENTITIES[name] ?? match);
 }
