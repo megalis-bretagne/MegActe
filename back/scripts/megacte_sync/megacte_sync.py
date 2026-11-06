@@ -37,10 +37,12 @@ import os
 import sys
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import urlsplit
 
 import requests
 
 DEFAULT_TIMEOUT = 30
+ALLOWED_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 ENV_API_URL = "MEGACTE_API_URL"
 ENV_TOKEN_URL = "MEGACTE_OIDC_TOKEN_URL"
@@ -51,6 +53,20 @@ ENV_SCOPE = "MEGACTE_OIDC_SCOPE"
 
 class MegacteSyncError(Exception):
     """Erreur applicative du script (message affiché en sortie d'erreur)."""
+
+
+def validate_service_url(value: str, label: str) -> str:
+    """Valide une URL de service avant toute requête réseau."""
+    parsed = urlsplit(value)
+    if parsed.scheme not in {"https", "http"} or not parsed.hostname:
+        raise MegacteSyncError(f"{label}: URL HTTP(S) invalide")
+    if parsed.username or parsed.password or parsed.query or parsed.fragment:
+        raise MegacteSyncError(f"{label}: URL contenant des composants interdits")
+    if parsed.scheme != "https" and parsed.hostname not in ALLOWED_LOCAL_HOSTS:
+        raise MegacteSyncError(f"{label}: HTTPS requis hors environnement local")
+    if parsed.path not in {"", "/"}:
+        raise MegacteSyncError(f"{label}: le chemin n'est pas autorisé")
+    return value.rstrip("/")
 
 
 @dataclass
@@ -70,8 +86,9 @@ def fetch_access_token(creds: OidcCredentials, timeout: int = DEFAULT_TIMEOUT) -
     }
     if creds.scope:
         data["scope"] = creds.scope
+    token_url = validate_service_url(creds.token_url, "URL token")
     try:
-        response = requests.post(creds.token_url, data=data, timeout=timeout)
+        response = requests.post(token_url, data=data, timeout=timeout)
     except requests.RequestException as exc:
         raise MegacteSyncError(f"Impossible de joindre le serveur de token: {exc}") from exc
     if response.status_code != 200:
@@ -140,9 +157,6 @@ def main(argv: list[str] | None = None) -> int:
         description="Ajoute un utilisateur dans MegActe et/ou lance la synchronisation globale.",
     )
     parser.add_argument(
-        "--api-url", default=os.getenv(ENV_API_URL), help=f"URL de base de l'API MegActe (env: {ENV_API_URL})"
-    )
-    parser.add_argument(
         "--token-url", default=os.getenv(ENV_TOKEN_URL), help=f"Endpoint token Keycloak (env: {ENV_TOKEN_URL})"
     )
     parser.add_argument(
@@ -174,7 +188,7 @@ def main(argv: list[str] | None = None) -> int:
     missing = [
         name
         for name, value in (
-            ("URL API MegActe", args.api_url),
+            ("URL API MegActe", os.getenv(ENV_API_URL)),
             ("URL token", args.token_url),
             ("client_id", args.client_id),
             ("client_secret", args.client_secret),
@@ -184,7 +198,13 @@ def main(argv: list[str] | None = None) -> int:
     if missing:
         parser.error(f"Paramètre(s) manquant(s): {', '.join(missing)}")
 
-    creds = OidcCredentials(args.token_url, args.client_id, args.client_secret, args.scope)
+    try:
+        api_url = validate_service_url(os.environ[ENV_API_URL], "URL API MegActe")
+        token_url = validate_service_url(args.token_url, "URL token")
+    except MegacteSyncError as exc:
+        parser.error(str(exc))
+
+    creds = OidcCredentials(token_url, args.client_id, args.client_secret, args.scope)
     try:
         token = fetch_access_token(creds, timeout=args.timeout)
     except MegacteSyncError as exc:
@@ -193,8 +213,8 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         if args.command == "add-user":
-            return run_add_user(args.api_url, token, args.login, args.id_pastell)
-        return run_refresh(args.api_url, token)
+            return run_add_user(api_url, token, args.login, args.id_pastell)
+        return run_refresh(api_url, token)
     except MegacteSyncError as exc:
         print(f"Erreur: {exc}", file=sys.stderr)
         return 1
