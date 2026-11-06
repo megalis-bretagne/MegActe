@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import os
+import random
 import secrets
 import string
 
@@ -78,7 +79,7 @@ class PasswordUtils:
         ]
         all_chars = lowercase + uppercase + digits + special_chars
         chars = guaranteed + [secrets.choice(all_chars) for _ in range(length - len(guaranteed))]
-        secrets.SystemRandom().shuffle(chars)
+        random.SystemRandom().shuffle(chars)
         return "".join(chars)
 
     @staticmethod
