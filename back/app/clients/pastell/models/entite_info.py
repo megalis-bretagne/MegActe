@@ -43,4 +43,4 @@ class EntiteInfoWithChild(EntiteInfo):
         EntiteInfo (_type_): _description_
     """
 
-    child: list["EntiteInfoWithChild"] | None = []
+    child: list[EntiteInfoWithChild] | None = []

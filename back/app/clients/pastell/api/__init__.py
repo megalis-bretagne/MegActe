@@ -44,7 +44,7 @@ class ApiPastell:
     def auth(self, auth: AuthBase):
         self._auth = auth
 
-    def with_auth(self, auth: AuthBase) -> "ApiPastell":
+    def with_auth(self, auth: AuthBase) -> ApiPastell:
         """Retourne un nouveau client Pastell avec une authentification différente.
         Utilisé uniquement à l'enrôlement : création du token via login / mot de passe
         temporaire.
