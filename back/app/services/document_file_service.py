@@ -149,7 +149,7 @@ class DocumentFileService(BaseService):
 
         try:
             result = self.get_external_data(entite_id, doc_id, element_id, _allow_fallback=False)
-        except (ApiPastellHttpForbidden, ApiPastellHttp40XError):
+        except ApiPastellHttpForbidden, ApiPastellHttp40XError:
             # Le doc trouvé est inaccessible → créer un nouveau doc temporaire et réessayer
             logger.warning(f"externalData 403 sur doc {doc_id}, création d'un doc temporaire")
             response = self.api_pastell.perform_post(f"/entite/{entite_id}/document", data={"type": flux_type})
@@ -197,7 +197,7 @@ class DocumentFileService(BaseService):
             result = self.api_pastell.perform_get(
                 f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
             )
-        except (ApiPastellHttpForbidden, ApiPastellHttp40XError):
+        except ApiPastellHttpForbidden, ApiPastellHttp40XError:
             if not _allow_fallback:
                 raise
             # Pastell refuse l'accès à ce document précis → on récupère son type

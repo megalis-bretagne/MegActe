@@ -98,7 +98,7 @@ class DocumentService(BaseService):
         if flux_action_future is not None:
             try:
                 flux_action = flux_action_future.result()
-            except (ApiError, ValidationError):
+            except ApiError, ValidationError:
                 # Type de flux obsolète/supprimé côté Pastell, ou réponse Pastell mal formée pour
                 # ce flux : on continue sans enrichissement plutôt que de faire échouer le détail
                 logger.warning(
@@ -168,7 +168,7 @@ class DocumentService(BaseService):
             # Pastell (tri Python stable = ordre indéfini en cas d'égalité sur la seule date).
             try:
                 id_j = int(entry.get("id_j"))
-            except (TypeError, ValueError):
+            except TypeError, ValueError:
                 id_j = 0
             return (entry.get("date", ""), id_j)
 
@@ -234,7 +234,7 @@ class DocumentService(BaseService):
         def _fetch_flux_action(type_flux: str) -> FluxAction | None:
             try:
                 return self.flux_action_service.get_action_on_flux(type_flux)
-            except (ApiError, ValidationError):
+            except ApiError, ValidationError:
                 # Flux obsolète ou réponse invalide : on continue sans enrichissement
                 logger.warning(
                     "Impossible de récupérer les actions du flux '%s', flux probablement obsolète ou réponse invalide",

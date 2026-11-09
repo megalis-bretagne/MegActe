@@ -44,7 +44,7 @@ class PasswordUtils:
         try:
             fernet = Fernet(key.encode("utf-8"))
             return fernet.decrypt(data.encode("utf-8")).decode("utf-8")
-        except (TypeError, ValueError, InvalidToken):
+        except TypeError, ValueError, InvalidToken:
             raise DecryptionException
 
     @staticmethod
@@ -52,7 +52,7 @@ class PasswordUtils:
         try:
             fernet = Fernet(base64.urlsafe_b64decode(key.encode("utf-8")))
             return fernet.decrypt(password.encode("utf-8")).decode()
-        except (TypeError, ValueError, InvalidToken):
+        except TypeError, ValueError, InvalidToken:
             raise DecryptionException
 
     SPECIAL_CHARS = "!@#$%&*"
