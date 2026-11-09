@@ -37,12 +37,16 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Run tests with coverage
-        run: uv run pytest --cov=app --cov-report=xml --cov-report=term
+        run: uv run pytest --cov=app --cov-report=xml:coverage.xml --cov-report=term
+
+      - name: Check coverage report
+        run: test -s coverage.xml
 
       - name: SonarCloud scan
         uses: SonarSource/sonarqube-scan-action@v6
         with:
           projectBaseDir: back
+          args: -Dsonar.python.coverage.reportPaths=coverage.xml
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BACKEND }}
           SONAR_HOST_URL: https://sonarcloud.io
