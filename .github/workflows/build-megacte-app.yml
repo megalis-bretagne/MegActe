@@ -79,6 +79,14 @@ jobs:
         working-directory: nuxt-web-app
         run: npm run typecheck
 
+      - name: Run unit tests with coverage
+        working-directory: nuxt-web-app
+        run: npm run test:coverage
+
+      - name: Check frontend coverage report
+        working-directory: nuxt-web-app
+        run: test -s coverage/lcov.info
+
       - name: Build
         working-directory: nuxt-web-app
         run: npm run build
@@ -87,6 +95,7 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v6
         with:
           projectBaseDir: nuxt-web-app
+          args: -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_FRONTEND }}
           SONAR_HOST_URL: https://sonarcloud.io
