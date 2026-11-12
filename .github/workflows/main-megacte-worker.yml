@@ -10,6 +10,8 @@ on:
     branches:
       - main
     types: [opened, synchronize, reopened]
+  schedule:
+    - cron: "30 1 * * 1"
 
 permissions:
   contents: read
@@ -21,6 +23,16 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'pull_request'
     uses: ./.github/workflows/build-megacte-app.yml
     secrets: inherit
+
+  codeql:
+    name: CodeQL analysis
+    if: github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'schedule'
+    uses: ./.github/workflows/codeql.yml
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+      packages: read
 
   build-images-pr:
     name: Build Megacte images for PR
