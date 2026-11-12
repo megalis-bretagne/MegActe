@@ -73,7 +73,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-back:${{ needs.metadata.outputs.version }}
 
       - name: Scan backend image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-back:${{ needs.metadata.outputs.version }}
           format: table
@@ -116,7 +116,7 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-web:${{ needs.metadata.outputs.version }}
 
       - name: Scan frontend image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-web:${{ needs.metadata.outputs.version }}
           format: table
