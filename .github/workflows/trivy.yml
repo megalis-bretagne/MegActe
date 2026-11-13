@@ -1,0 +1,66 @@
+name: Trivy
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: Image name to build and scan
+        required: true
+        type: string
+      context:
+        description: Docker build context
+        required: true
+        type: string
+      dockerfile:
+        description: Dockerfile path
+        required: true
+        type: string
+      tag:
+        description: Image tag
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+env:
+  TRIVY_VERSION: 0.76.0
+
+jobs:
+  trivy:
+    name: Build and scan ${{ inputs.image }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.context }}
+          file: ${{ inputs.dockerfile }}
+          load: true
+          push: false
+          tags: ${{ inputs.image }}:${{ inputs.tag }}
+
+      - name: Install Trivy
+        run: |
+          archive="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          base_url="https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}"
+          curl --fail --location --silent --show-error "$base_url/$archive" --output "/tmp/$archive"
+          curl --fail --location --silent --show-error \
+            "$base_url/trivy_${TRIVY_VERSION}_checksums.txt" \
+            --output /tmp/trivy_checksums.txt
+          grep " $archive$" /tmp/trivy_checksums.txt > /tmp/trivy_checksum.txt
+          (cd /tmp && sha256sum --check trivy_checksum.txt)
+          tar -xzf "/tmp/$archive" -C /tmp trivy
+          sudo install /tmp/trivy /usr/local/bin/trivy
+          trivy --version
+
+      - name: Scan image
+        run: |
+          trivy image \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --format table \
+            "${{ inputs.image }}:${{ inputs.tag }}"

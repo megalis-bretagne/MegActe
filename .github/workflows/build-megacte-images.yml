@@ -49,7 +49,7 @@ jobs:
 
   build-backend:
     name: Build and scan backend image
-    needs: metadata
+    needs: [metadata, scan-backend]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -72,15 +72,6 @@ jobs:
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-back:${{ needs.metadata.outputs.version }}
 
-      - name: Scan backend image
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-back:${{ needs.metadata.outputs.version }}
-          format: table
-          exit-code: 1
-          ignore-unfixed: true
-          severity: CRITICAL,HIGH
-
       - name: Push backend image
         if: inputs.push-images
         uses: docker/build-push-action@v6
@@ -92,7 +83,7 @@ jobs:
 
   build-frontend:
     name: Build and scan frontend image
-    needs: metadata
+    needs: [metadata, scan-frontend]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -115,15 +106,6 @@ jobs:
           push: false
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-web:${{ needs.metadata.outputs.version }}
 
-      - name: Scan frontend image
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-web:${{ needs.metadata.outputs.version }}
-          format: table
-          exit-code: 1
-          ignore-unfixed: true
-          severity: CRITICAL,HIGH
-
       - name: Push frontend image
         if: inputs.push-images
         uses: docker/build-push-action@v6
@@ -132,3 +114,23 @@ jobs:
           file: ./nuxt-web-app/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-web:${{ needs.metadata.outputs.version }}
+
+  scan-backend:
+    name: Scan backend image with Trivy
+    needs: metadata
+    uses: ./.github/workflows/trivy.yml
+    with:
+      image: megacte-back
+      context: ./back
+      dockerfile: ./back/Dockerfile
+      tag: ${{ needs.metadata.outputs.version }}
+
+  scan-frontend:
+    name: Scan frontend image with Trivy
+    needs: metadata
+    uses: ./.github/workflows/trivy.yml
+    with:
+      image: megacte-web
+      context: .
+      dockerfile: ./nuxt-web-app/Dockerfile
+      tag: ${{ needs.metadata.outputs.version }}
