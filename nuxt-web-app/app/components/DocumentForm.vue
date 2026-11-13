@@ -137,12 +137,18 @@ const otherFields = (fields: FieldEdit[]) =>
         <li
           class="flex items-center"
           :class="
-            currentStep === 1 ? 'text-blue-600 font-medium' : 'text-gray-500'
+            currentStep === 1
+              ? 'text-blue-600 dark:text-blue-400 font-medium'
+              : 'text-gray-500 dark:text-gray-300'
           "
         >
           <span
             class="flex items-center justify-center w-6 h-6 mr-2 text-xs border rounded-full shrink-0"
-            :class="currentStep === 1 ? 'border-blue-600' : 'border-gray-400'"
+            :class="
+              currentStep === 1
+                ? 'border-blue-600 dark:border-blue-400'
+                : 'border-gray-400 dark:border-gray-500'
+            "
             >1</span
           >
           Préparation de l'acte
@@ -151,12 +157,18 @@ const otherFields = (fields: FieldEdit[]) =>
         <li
           class="flex items-center"
           :class="
-            currentStep === 2 ? 'text-blue-600 font-medium' : 'text-gray-500'
+            currentStep === 2
+              ? 'text-blue-600 dark:text-blue-400 font-medium'
+              : 'text-gray-500 dark:text-gray-300'
           "
         >
           <span
             class="flex items-center justify-center w-6 h-6 mr-2 text-xs border rounded-full shrink-0"
-            :class="currentStep === 2 ? 'border-blue-600' : 'border-gray-400'"
+            :class="
+              currentStep === 2
+                ? 'border-blue-600 dark:border-blue-400'
+                : 'border-gray-400 dark:border-gray-500'
+            "
             >2</span
           >
           Envoyer l'acte
@@ -180,7 +192,7 @@ const otherFields = (fields: FieldEdit[]) =>
         <div v-else class="space-y-8">
           <section v-for="section in sections" :key="section.id">
             <h2
-              class="text-sm font-semibold text-gray-700 mb-4 pb-2 border-b border-gray-200"
+              class="text-sm font-semibold text-gray-700 dark:text-gray-100 mb-4 pb-2 border-b border-gray-200 dark:border-gray-700"
             >
               {{ section.label }}
             </h2>
@@ -281,18 +293,18 @@ const otherFields = (fields: FieldEdit[]) =>
 
         <table
           v-else
-          class="w-full text-sm border border-gray-200 rounded-lg overflow-hidden"
+          class="w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg border-separate border-spacing-0 overflow-hidden"
         >
           <thead>
             <tr
-              class="text-left text-xs text-gray-500 border-b border-gray-200 bg-gray-50"
+              class="text-left text-xs text-gray-600 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
             >
               <th class="px-4 py-2 pr-6 font-medium">Pièce</th>
               <th class="px-4 py-2 pr-6 font-medium">Nom du fichier</th>
               <th class="px-4 py-2 font-medium">Type de pièce</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100">
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
             <tr v-for="(item, i) in typePieceItems" :key="i">
               <td class="px-4 py-3 text-gray-600 whitespace-nowrap">
                 {{ i === 0 ? "Pièce principale" : `Annexe numéro ${i}` }}
@@ -306,7 +318,7 @@ const otherFields = (fields: FieldEdit[]) =>
                 <select
                   :id="`type-piece-${i}`"
                   v-model="item.label"
-                  class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">— Sélectionner —</option>
                   <option
@@ -367,13 +379,13 @@ const otherFields = (fields: FieldEdit[]) =>
           v-model="externalDialogSearch"
           type="text"
           placeholder="Rechercher..."
-          class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           autofocus
         />
       </div>
 
       <div
-        class="max-h-96 overflow-y-auto divide-y divide-gray-100 border border-gray-200 rounded"
+        class="max-h-96 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-700 border border-gray-200 dark:border-gray-700 rounded"
       >
         <div
           v-if="!filteredExternalOptions.length"
@@ -385,7 +397,7 @@ const otherFields = (fields: FieldEdit[]) =>
           <!-- En-tête de groupe : non cliquable -->
           <div
             v-if="isExternalOptionHeader(opt)"
-            class="w-full text-left px-3 py-2 text-sm font-semibold text-gray-500 bg-gray-50 select-none"
+            class="w-full text-left px-3 py-2 text-sm font-semibold text-gray-700 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 select-none"
           >
             {{ opt }}
           </div>
@@ -393,17 +405,17 @@ const otherFields = (fields: FieldEdit[]) =>
           <button
             v-else
             type="button"
-            class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2 transition-colors"
+            class="w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-gray-800 flex items-center gap-2 transition-colors"
             :class="
               externalDialogTemp.includes(opt)
-                ? 'bg-blue-50 text-blue-700 font-medium'
-                : 'text-gray-700'
+                ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-100 font-medium'
+                : ''
             "
             @click="toggleExternalOption(opt)"
           >
             <i
               v-if="externalDialogTemp.includes(opt)"
-              class="pi pi-check text-blue-600"
+              class="pi pi-check text-blue-600 dark:text-blue-300"
             />
             {{ opt }}
           </button>
