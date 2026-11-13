@@ -48,7 +48,7 @@ onMounted(() => {
   <header
     class="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-700"
   >
-    <div class="container mx-auto px-4 py-3">
+    <div class="w-full px-4 py-3">
       <div class="flex items-center justify-between gap-4">
         <div class="flex items-center space-x-3 flex-shrink-0">
           <a
