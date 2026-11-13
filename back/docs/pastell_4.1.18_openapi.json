@@ -1,0 +1,3147 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Pastell API",
+    "description": "Pastell is a web service used in public administrations. This document describes its REST API (version v2).\n\nAll requests are handled by a custom dispatcher (HttpApi) under `web/api/index.php`. URL rewriting maps `api_function=<path>` to the controller. Requests and responses are JSON encoded (`application/json`). POST responses use HTTP 201, DELETE may return 204.\n\nAuthentication is attempted in the following order:\n1. `auth=cas` query parameter (CAS single sign-on)\n2. Client certificate (mTLS) matching `utilisateur.certificat_verif_number`\n3. Bearer token (`Authorization: Bearer <token>`, created via the user token endpoints)\n4. HTTP Basic authentication (`Authorization: Basic ...`)\n\nFailures return HTTP 401 with `WWW-Authenticate: Basic realm=\"API Pastell\"`. Brute-force attempts are rate limited to 5 per minute (HTTP 429 with `Retry-after: 60`).\n\nErrors use the following shape, matching the HTTP status code:\n```json\n{ \"status\": \"error\", \"error-message\": \"Description of the error\" }\n```\n\nID values are always returned as strings.",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "{scheme}://{host}/api",
+      "variables": {
+        "scheme": { "default": "https", "enum": ["http", "https"] },
+        "host": { "default": "pastell.example.org" }
+      }
+    }
+  ],
+  "security": [
+    { "BearerAuth": [] },
+    { "basicAuth": [] },
+    { "clientCertificate": [] },
+    { "casAuth": [] }
+  ],
+  "tags": [
+    { "name": "version", "description": "API version and compatibility information" },
+    { "name": "entite", "description": "Organizations / entities" },
+    { "name": "connecteur", "description": "Connectors attached to an entity (data sources/sinks)" },
+    { "name": "document", "description": "Documents belonging to an entity" },
+    { "name": "flux", "description": "Document types / workflows" },
+    { "name": "utilisateur", "description": "Users and API tokens" },
+    { "name": "role", "description": "Roles and user-role assignment" },
+    { "name": "extension", "description": "Extensions management" },
+    { "name": "journal", "description": "Audit journal" },
+    { "name": "entite-flux", "description": "Entity to flux/connector associations" },
+    { "name": "familleConnecteur", "description": "Connector families (types)" },
+    { "name": "frequenceConnecteur", "description": "Connector frequencies" }
+  ],
+  "paths": {
+    "/v2/version": {
+      "get": {
+        "tags": ["version"],
+        "summary": "Get Pastell version information",
+        "security": [{ "BearerAuth": [] }, { "basicAuth": [] }, { "clientCertificate": [] }, { "casAuth": [] }],
+        "operationId": "getVersion",
+        "responses": {
+          "200": {
+            "description": "Version information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": { "type": "string", "example": "2.0.16" },
+                    "revision": { "type": "integer", "example": 31810 },
+                    "last_changed_date": { "type": "string", "example": "mardi 14 mai 2019, 15:00:58 (UTC+0000)" },
+                    "extensions_versions_accepted": { "type": "array", "items": { "type": "string" }, "example": ["2.0.12"] },
+                    "version_complete": { "type": "string", "example": "Version 2.0.16 - Revision 31810" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/version/allo": {
+      "get": {
+        "tags": ["version"],
+        "summary": "ALLO software compatibility check (not public)",
+        "operationId": "getVersionAllo",
+        "responses": {
+          "200": {
+            "description": "Compatibility response",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite": {
+      "get": {
+        "tags": ["entite"],
+        "summary": "List entities",
+        "operationId": "listEntite",
+        "parameters": [
+          {
+            "name": "is_active",
+            "in": "query",
+            "required": false,
+            "description": "Filter on entity activation state (0/1)",
+            "schema": { "type": "string", "enum": ["0", "1"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of entities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Entite" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["entite"],
+        "summary": "Create an entity",
+        "operationId": "createEntite",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["denomination"],
+                "properties": {
+                  "entite_mere": { "type": "string", "description": "Parent entity id" },
+                  "type": { "type": "string", "description": "Entity type" },
+                  "siren": { "type": "string" },
+                  "denomination": { "type": "string" },
+                  "centre_de_gestion": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created entity",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Entite" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}": {
+      "get": {
+        "tags": ["entite"],
+        "summary": "Get entity detail",
+        "operationId": "getEntite",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entity detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Entite" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "patch": {
+        "tags": ["entite"],
+        "summary": "Modify an entity",
+        "operationId": "modifyEntite",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": { "type": "string" },
+                "properties": {
+                  "entite_mere": { "type": "string" },
+                  "type": { "type": "string" },
+                  "siren": { "type": "string" },
+                  "denomination": { "type": "string" },
+                  "centre_de_gestion": { "type": "string" },
+                  "is_active": { "type": "string", "enum": ["0", "1"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Modified entity",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Entite" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["entite"],
+        "summary": "Delete an entity",
+        "operationId": "deleteEntite",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" }
+        ],
+        "responses": {
+          "204": { "description": "Entity deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/activate": {
+      "post": {
+        "tags": ["entite"],
+        "summary": "Activate an entity",
+        "operationId": "activateEntite",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" }
+        ],
+        "responses": {
+          "201": {
+            "description": "Entity activated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Entite" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/deactivate": {
+      "post": {
+        "tags": ["entite"],
+        "summary": "Deactivate an entity",
+        "operationId": "deactivateEntite",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" }
+        ],
+        "responses": {
+          "201": {
+            "description": "Entity deactivated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Entite" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/connecteur": {
+      "get": {
+        "tags": ["connecteur"],
+        "summary": "List connectors for an entity",
+        "operationId": "listConnecteur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of connectors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Connecteur" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["connecteur"],
+        "summary": "Create a connector for an entity",
+        "operationId": "createConnecteur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id_connecteur"],
+                "properties": {
+                  "id_connecteur": { "type": "string", "description": "Connector type id" },
+                  "libelle": { "type": "string", "description": "Human readable label" },
+                  "global": { "type": "string", "enum": ["0", "1"], "description": "Whether the connector is global (platform-wide)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created connector",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Connecteur" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/all/connecteur": {
+      "get": {
+        "tags": ["connecteur"],
+        "summary": "List all connectors for the platform",
+        "operationId": "listAllConnecteur",
+        "responses": {
+          "200": {
+            "description": "List of all connectors (optionally of a type, see /v2/entite/all/connecteur/{id_connecteur})",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Connecteur" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/all/connecteur/{id_connecteur}": {
+      "get": {
+        "tags": ["connecteur"],
+        "summary": "List all connectors of a given type",
+        "operationId": "listAllConnecteurByType",
+        "parameters": [
+          {
+            "name": "id_connecteur",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of connectors of the given type",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Connecteur" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/connecteur/{id_ce}": {
+      "get": {
+        "tags": ["connecteur"],
+        "summary": "Get connector detail (including form data)",
+        "operationId": "getConnecteur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Connector detail with form data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ConnecteurDetail" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["connecteur"],
+        "summary": "Upload a file to a connector",
+        "description": "Multipart upload. Fields `file_name` (file name) and `file_content` (file content).",
+        "operationId": "postConnecteurFile",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file_name": { "type": "string" },
+                  "file_content": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/Created" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "patch": {
+        "tags": ["connecteur"],
+        "summary": "Modify a connector",
+        "operationId": "modifyConnecteur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "libelle": { "type": "string" },
+                  "frequence_en_minute": { "type": "string" },
+                  "id_verrou": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Modified" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["connecteur"],
+        "summary": "Delete a connector",
+        "operationId": "deleteConnecteur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" }
+        ],
+        "responses": {
+          "204": { "description": "Connector deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/connecteur/{id_ce}/content": {
+      "patch": {
+        "tags": ["connecteur"],
+        "summary": "Edit connector form content",
+        "operationId": "patchConnecteurContent",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": { "type": "string" },
+                "description": "Form fields of the connector type"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Modified" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/connecteur/{id_ce}/chunk": {
+      "post": {
+        "tags": ["connecteur"],
+        "summary": "Upload a file chunk to a connector",
+        "description": "Chunked upload using Symfony ChunkUploader.",
+        "operationId": "postConnecteurChunk",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file_content": { "type": "string", "format": "binary" },
+                  "name": { "type": "string" },
+                  "num": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/Created" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/connecteur/{id_ce}/action/{action_name}": {
+      "post": {
+        "tags": ["connecteur"],
+        "summary": "Execute an action on a connector",
+        "description": "Requires the `connecteur:action` right when USE_CONNECTOR_ACTION_PERMISSION is enabled.",
+        "operationId": "postConnecteurAction",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" },
+          {
+            "name": "action_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Action executed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": { "type": "boolean", "example": true },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/connecteur/{id_ce}/file/{field}/{num}": {
+      "get": {
+        "tags": ["connecteur"],
+        "summary": "Download a connector file",
+        "operationId": "getConnecteurFile",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Form field holding the file"
+          },
+          {
+            "name": "num",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "File index in the field"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File content",
+            "content": {
+              "application/octet-stream": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["connecteur"],
+        "summary": "Delete a connector file",
+        "operationId": "deleteConnecteurFile",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "num",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "File deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/connecteur/{id_ce}/externalData/{field}": {
+      "get": {
+        "tags": ["connecteur"],
+        "summary": "Get external data choices for a connector field",
+        "operationId": "getConnecteurExternalData",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available choices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "patch": {
+        "tags": ["connecteur"],
+        "summary": "Edit external data of a connector field",
+        "operationId": "patchConnecteurExternalData",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_ce" },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Modified" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/document": {
+      "get": {
+        "tags": ["document"],
+        "summary": "Search/list documents",
+        "description": "Returns documents matching the filters. Set `id_d[]` multiple times to fetch several documents by id. Pagination is available with `offset`/`limit`.",
+        "operationId": "listDocuments",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Document type / flux",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "description": "Full text search",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "lastetat",
+            "in": "query",
+            "required": false,
+            "description": "Filter on last workflow state",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "last_state_begin",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "last_state_end",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "tri",
+            "in": "query",
+            "required": false,
+            "description": "Sort field (indexed field)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "sens_tri",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["ASC", "DESC"] }
+          },
+          {
+            "name": "etatTransit",
+            "in": "query",
+            "required": false,
+            "description": "State of the document at a given step",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "notEtatTransit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "state_begin",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "state_end",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "date_in_fr",
+            "in": "query",
+            "required": false,
+            "description": "Date formatted in French",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "id_d[]",
+            "in": "query",
+            "required": false,
+            "description": "Get specific documents by id (repeatable)",
+            "schema": { "type": "array", "items": { "type": "string" } },
+            "style": "form",
+            "explode": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of documents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Document" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["document"],
+        "summary": "Create a document",
+        "operationId": "createDocument",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": { "type": "string", "description": "Document type / flux" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created document",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Document" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/document/count": {
+      "get": {
+        "tags": ["document"],
+        "summary": "Count documents",
+        "description": "Same filters as the document list endpoint.",
+        "operationId": "countDocuments",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "lastetat",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document count",
+            "content": {
+              "application/json": {
+                "schema": { "type": "string", "example": "42" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/document/{id_d}": {
+      "get": {
+        "tags": ["document"],
+        "summary": "Get document detail",
+        "operationId": "getDocument",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_d" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Document" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["document"],
+        "summary": "Upload a file to a document",
+        "description": "Multipart upload. Fields `file_name` (file name) and `file_content` (file content).",
+        "operationId": "postDocumentFile",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_d" },
+          {
+            "name": "field",
+            "in": "query",
+            "required": false,
+            "description": "Form field to store the file in",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file_name": { "type": "string" },
+                  "file_content": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/Created" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "patch": {
+        "tags": ["document"],
+        "summary": "Modify document form data",
+        "operationId": "modifyDocument",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_d" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": { "type": "string" },
+                "description": "Form data fields of the document type"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Document modified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": { "type": "string", "example": "ok" },
+                    "formulaire_ok": { "type": "integer", "example": 1 },
+                    "message": { "type": "string" },
+                    "content": { "$ref": "#/components/schemas/Document" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["document"],
+        "summary": "Delete a document",
+        "operationId": "deleteDocument",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_d" }
+        ],
+        "responses": {
+          "204": { "description": "Document deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/document/{id_d}/action/{action_name}": {
+      "post": {
+        "tags": ["document"],
+        "summary": "Execute an action on a document (workflow transition)",
+        "operationId": "postDocumentAction",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_d" },
+          {
+            "name": "action_name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Action executed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Le document a ete envoye au controle de legalite" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/document/{id_d}/chunk": {
+      "post": {
+        "tags": ["document"],
+        "summary": "Upload a file chunk to a document",
+        "operationId": "postDocumentChunk",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_d" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file_content": { "type": "string", "format": "binary" },
+                  "name": { "type": "string" },
+                  "num": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "$ref": "#/components/responses/Created" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/document/{id_d}/externalData/{field}": {
+      "get": {
+        "tags": ["document"],
+        "summary": "Get external data for a document field",
+        "operationId": "getDocumentExternalData",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_d" },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "External data value",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "patch": {
+        "tags": ["document"],
+        "summary": "Modify external data of a document field",
+        "operationId": "patchDocumentExternalData",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_d" },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Modified" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/document/{id_d}/file/{field}/{num}": {
+      "get": {
+        "tags": ["document"],
+        "summary": "Download a document file",
+        "description": "With `?receive=true`, returns the file content as JSON (base64) instead of a binary stream.",
+        "operationId": "getDocumentFile",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_d" },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Form field holding the file"
+          },
+          {
+            "name": "num",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "File index in the field"
+          },
+          {
+            "name": "receive",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "boolean" },
+            "description": "Return the content as JSON (base64) payload"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File content (binary) or JSON with base64 content when `receive=true`",
+            "content": {
+              "application/octet-stream": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["document"],
+        "summary": "Delete a document file",
+        "operationId": "deleteDocumentFile",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          { "$ref": "#/components/parameters/id_d" },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "num",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "File deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/flux": {
+      "get": {
+        "tags": ["flux"],
+        "summary": "List all document types (flux)",
+        "operationId": "listFlux",
+        "responses": {
+          "200": {
+            "description": "List of flux",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Flux" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/flux/{id_flux}": {
+      "get": {
+        "tags": ["flux"],
+        "summary": "Get document type fields definition",
+        "operationId": "getFlux",
+        "parameters": [
+          {
+            "name": "id_flux",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Functionnal document type / flux id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Flux definition with its fields",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FluxDetail" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/flux/{id_flux}/action": {
+      "get": {
+        "tags": ["flux"],
+        "summary": "List available actions for a document type",
+        "operationId": "listFluxAction",
+        "parameters": [
+          {
+            "name": "id_flux",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available actions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur": {
+      "get": {
+        "tags": ["utilisateur"],
+        "summary": "List users",
+        "operationId": "listUtilisateurs",
+        "parameters": [
+          {
+            "name": "id_e",
+            "in": "query",
+            "required": false,
+            "description": "Filter users by entity",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Utilisateur" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["utilisateur"],
+        "summary": "Create a user",
+        "operationId": "createUtilisateur",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["login", "id_e"],
+                "properties": {
+                  "login": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "prenom": { "type": "string" },
+                  "nom": { "type": "string" },
+                  "id_e": { "type": "string", "description": "Entity the user belongs to" },
+                  "password": { "type": "string", "format": "password" },
+                  "is_api": { "type": "string", "enum": ["0", "1"], "description": "API-only user (no UI login)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Utilisateur" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/token": {
+      "get": {
+        "tags": ["utilisateur"],
+        "summary": "List current user's API tokens",
+        "operationId": "getUserTokens",
+        "responses": {
+          "200": {
+            "description": "List of tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/UserToken" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["utilisateur"],
+        "summary": "Create an API token for the current user",
+        "operationId": "postUserTokenSelf",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "description": "Token name" },
+                  "expired_at": { "type": "string", "description": "Expiration date (YYYY-MM-DD)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created token",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserToken" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/{id_u}": {
+      "get": {
+        "tags": ["utilisateur"],
+        "summary": "Get user detail",
+        "operationId": "getUtilisateur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "responses": {
+          "200": {
+            "description": "User detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Utilisateur" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "patch": {
+        "tags": ["utilisateur"],
+        "summary": "Modify a user",
+        "operationId": "modifyUtilisateur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "prenom": { "type": "string" },
+                  "nom": { "type": "string" },
+                  "id_e": { "type": "string" },
+                  "password": { "type": "string", "format": "password" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Modified user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Utilisateur" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["utilisateur"],
+        "summary": "Delete a user",
+        "operationId": "deleteUtilisateur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "responses": {
+          "204": { "description": "User deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/{id_u}/activate": {
+      "post": {
+        "tags": ["utilisateur"],
+        "summary": "Activate a user",
+        "operationId": "activateUtilisateur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "responses": {
+          "201": {
+            "description": "User activated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Utilisateur" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/{id_u}/deactivate": {
+      "post": {
+        "tags": ["utilisateur"],
+        "summary": "Deactivate a user",
+        "operationId": "deactivateUtilisateur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "responses": {
+          "201": {
+            "description": "User deactivated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Utilisateur" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/{id_u}/token": {
+      "post": {
+        "tags": ["utilisateur"],
+        "summary": "Create an API token for a user",
+        "operationId": "postUserToken",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "expired_at": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created token",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserToken" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/token/{token_id}/renew": {
+      "post": {
+        "tags": ["utilisateur"],
+        "summary": "Renew current user's API token",
+        "operationId": "renewUserTokenSelf",
+        "parameters": [
+          {
+            "name": "token_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Renewed token",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserToken" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/{id_u}/token/{token_id}/renew": {
+      "post": {
+        "tags": ["utilisateur"],
+        "summary": "Renew a user's API token",
+        "operationId": "renewUserToken",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" },
+          {
+            "name": "token_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Renewed token",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UserToken" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/token/{token_id}": {
+      "delete": {
+        "tags": ["utilisateur"],
+        "summary": "Delete current user's API token",
+        "operationId": "deleteUserTokenSelf",
+        "parameters": [
+          {
+            "name": "token_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Token deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/{id_u}/token/{token_id}": {
+      "delete": {
+        "tags": ["utilisateur"],
+        "summary": "Delete a user's API token",
+        "operationId": "deleteUserToken",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" },
+          {
+            "name": "token_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Token deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/{id_u}/role": {
+      "get": {
+        "tags": ["role"],
+        "summary": "List roles of a user",
+        "operationId": "listUserRoles",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of roles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Role" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["role"],
+        "summary": "Add a role to a user",
+        "operationId": "addUserRole",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["role"],
+                "properties": {
+                  "role": { "type": "string", "description": "Role name" },
+                  "id_e": { "type": "string", "description": "Entity scope of the role (when relevant)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Role added",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["role"],
+        "summary": "Remove a role from a user",
+        "description": "With `role=ALL_ROLES` every role of the user on the entity is removed.",
+        "operationId": "deleteUserRole",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["role"],
+                "properties": {
+                  "role": { "type": "string", "description": "Role name or ALL_ROLES" },
+                  "id_e": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": { "description": "Role removed" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/{id_u}/role/add": {
+      "post": {
+        "tags": ["role"],
+        "summary": "Add several roles to a user (compatibility endpoint)",
+        "operationId": "addUserRolesCompat",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Roles to add"
+                  },
+                  "id_e": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Roles added",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/utilisateur/{id_u}/role/delete": {
+      "post": {
+        "tags": ["role"],
+        "summary": "Delete several roles from a user (compatibility endpoint)",
+        "operationId": "deleteUserRolesCompat",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_u" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Roles to remove"
+                  },
+                  "id_e": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Roles deleted",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/role": {
+      "get": {
+        "tags": ["role"],
+        "summary": "List roles delegable by the current user",
+        "operationId": "listRoles",
+        "responses": {
+          "200": {
+            "description": "List of roles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Role" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/extension": {
+      "get": {
+        "tags": ["extension"],
+        "summary": "List all extensions",
+        "operationId": "listExtensions",
+        "responses": {
+          "200": {
+            "description": "List of extensions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Extension" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["extension"],
+        "summary": "Add an extension",
+        "operationId": "addExtension",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["path"],
+                "properties": {
+                  "path": { "type": "string", "description": "Path to the extension" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Extension added",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Extension" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/extension/{id_extension}": {
+      "get": {
+        "tags": ["extension"],
+        "summary": "Get extension detail",
+        "operationId": "getExtension",
+        "parameters": [
+          {
+            "name": "id_extension",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Extension detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Extension" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "patch": {
+        "tags": ["extension"],
+        "summary": "Update an extension",
+        "operationId": "updateExtension",
+        "parameters": [
+          {
+            "name": "id_extension",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["path"],
+                "properties": {
+                  "path": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Modified" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["extension"],
+        "summary": "Delete an extension",
+        "operationId": "deleteExtension",
+        "parameters": [
+          {
+            "name": "id_extension",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Extension deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/journal": {
+      "get": {
+        "tags": ["journal"],
+        "summary": "List journal entries",
+        "description": "With `format=csv`, the entries are returned as CSV instead of JSON.",
+        "operationId": "listJournal",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "id_e",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "id_d",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "id_user",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "recherche",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "date_debut",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "date_fin",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["json", "csv"] }
+          },
+          {
+            "name": "csv_entete_colonne",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Journal entries (JSON array or CSV export)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/JournalEntry" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/journal/{id_j}": {
+      "get": {
+        "tags": ["journal"],
+        "summary": "Get journal entry detail",
+        "operationId": "getJournalEntry",
+        "parameters": [
+          {
+            "name": "id_j",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Journal entry",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JournalEntry" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/journal/{id_j}/jeton": {
+      "get": {
+        "tags": ["journal"],
+        "summary": "Download the timestamp proof (token) of a journal entry",
+        "operationId": "getJournalPreuve",
+        "parameters": [
+          {
+            "name": "id_j",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Timestamp proof (.tsr)",
+            "content": {
+              "application/octet-stream": {
+                "schema": { "type": "string", "format": "binary" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/flux": {
+      "get": {
+        "tags": ["entite-flux"],
+        "summary": "List flux/connector associations of an entity",
+        "operationId": "listEntiteFlux",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          {
+            "name": "flux",
+            "in": "query",
+            "required": false,
+            "description": "Filter by flux id",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Association type",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of associations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/EntiteFlux" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/flux/{flux}/connecteur/{id_ce}": {
+      "post": {
+        "tags": ["entite-flux"],
+        "summary": "Create a flux/connector association",
+        "operationId": "createEntiteFluxConnecteur",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          {
+            "name": "flux",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          { "$ref": "#/components/parameters/id_ce" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string" },
+                  "num_same_type": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Association created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EntiteFlux" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/flux/{flux}/action": {
+      "post": {
+        "tags": ["entite-flux"],
+        "summary": "Execute an action on a connector via a flux",
+        "operationId": "postEntiteFluxAction",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          {
+            "name": "flux",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": { "type": "string" },
+                "properties": {
+                  "id_ce": { "type": "string" },
+                  "action": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Action executed",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/entite/{id_e}/flux/{id_fe}": {
+      "delete": {
+        "tags": ["entite-flux"],
+        "summary": "Delete a flux/connector association",
+        "operationId": "deleteEntiteFlux",
+        "parameters": [
+          { "$ref": "#/components/parameters/id_e" },
+          {
+            "name": "id_fe",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Association deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/familleConnecteur": {
+      "get": {
+        "tags": ["familleConnecteur"],
+        "summary": "List connector families",
+        "operationId": "listFamilleConnecteur",
+        "parameters": [
+          {
+            "name": "global",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["0", "1"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of families",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/FamilleConnecteur" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/familleConnecteur/{famille}": {
+      "get": {
+        "tags": ["familleConnecteur"],
+        "summary": "List connectors in a family",
+        "operationId": "listConnecteurByFamille",
+        "parameters": [
+          {
+            "name": "famille",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of connectors",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Connecteur" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/familleConnecteur/{famille}/{id_connecteur}": {
+      "get": {
+        "tags": ["familleConnecteur"],
+        "summary": "Get specific connector information",
+        "operationId": "getConnecteurByFamille",
+        "parameters": [
+          {
+            "name": "famille",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "id_connecteur",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Connector information",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Connecteur" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/frequenceConnecteur": {
+      "get": {
+        "tags": ["frequenceConnecteur"],
+        "summary": "List all connector frequencies",
+        "operationId": "listFrequenceConnecteur",
+        "responses": {
+          "200": {
+            "description": "List of frequencies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/FrequenceConnecteur" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "post": {
+        "tags": ["frequenceConnecteur"],
+        "summary": "Create a connector frequency",
+        "operationId": "createFrequenceConnecteur",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "$ref": "#/components/schemas/FrequenceConnecteurInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created frequency",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FrequenceConnecteur" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    },
+    "/v2/frequenceConnecteur/{id_cf}": {
+      "get": {
+        "tags": ["frequenceConnecteur"],
+        "summary": "Get frequency detail",
+        "operationId": "getFrequenceConnecteur",
+        "parameters": [
+          {
+            "name": "id_cf",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Frequency detail",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FrequenceConnecteur" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "patch": {
+        "tags": ["frequenceConnecteur"],
+        "summary": "Update a connector frequency",
+        "operationId": "updateFrequenceConnecteur",
+        "parameters": [
+          {
+            "name": "id_cf",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "$ref": "#/components/schemas/FrequenceConnecteurInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Modified" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      },
+      "delete": {
+        "tags": ["frequenceConnecteur"],
+        "summary": "Delete a connector frequency",
+        "operationId": "deleteFrequenceConnecteur",
+        "parameters": [
+          {
+            "name": "id_cf",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Frequency deleted" },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalServerError" }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "id_e": {
+        "name": "id_e",
+        "in": "path",
+        "required": true,
+        "description": "Entity id",
+        "schema": { "type": "string" }
+      },
+      "id_ce": {
+        "name": "id_ce",
+        "in": "path",
+        "required": true,
+        "description": "Connector instance id",
+        "schema": { "type": "string" }
+      },
+      "id_d": {
+        "name": "id_d",
+        "in": "path",
+        "required": true,
+        "description": "Document id",
+        "schema": { "type": "string" }
+      },
+      "id_u": {
+        "name": "id_u",
+        "in": "path",
+        "required": true,
+        "description": "User id",
+        "schema": { "type": "string" }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API token created via the user token endpoints (`Authorization: Bearer <token>`)."
+      },
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "Login/password of a Pastell user. A registered client certificate must also match when one is set."
+      },
+      "clientCertificate": {
+        "type": "mutualTLS",
+        "description": "Client certificate (mTLS) matched against `utilisateur.certificat_verif_number`."
+      },
+      "casAuth": {
+        "type": "apiKey",
+        "in": "query",
+        "name": "auth",
+        "description": "Set `auth=cas` to authenticate via CAS single sign-on."
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Bad request",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Authentication failed",
+        "headers": {
+          "WWW-Authenticate": {
+            "schema": { "type": "string" },
+            "description": "Basic realm=\"API Pastell\""
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Not authorized (missing right)",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "MethodNotAllowed": {
+        "description": "HTTP method not supported on this endpoint",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Conflict with the current state",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Rate limit exceeded (5 attempts per minute)",
+        "headers": {
+          "Retry-After": {
+            "schema": { "type": "integer" },
+            "description": "Seconds to wait before retrying"
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "Created": {
+        "description": "Resource created"
+      },
+      "Modified": {
+        "description": "Resource modified"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "example": "error" },
+          "error-message": { "type": "string", "example": "Description of the error" }
+        },
+        "required": ["status", "error-message"]
+      },
+      "Entite": {
+        "type": "object",
+        "properties": {
+          "id_e": { "type": "string", "example": "123" },
+          "denomination": { "type": "string", "example": "Mairie de ..." },
+          "siren": { "type": "string" },
+          "type": { "type": "string" },
+          "entite_mere": { "type": "string", "example": "0" },
+          "entite_fille": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": { "id_e": { "type": "string" } }
+            }
+          },
+          "centre_de_gestion": { "type": "string", "example": "0" },
+          "is_active": { "type": "boolean", "example": true }
+        }
+      },
+      "Connecteur": {
+        "type": "object",
+        "description": "A connector (instance of a connector type, attached to an entity)",
+        "properties": {
+          "id_ce": { "type": "string" },
+          "id_connecteur": { "type": "string" },
+          "libelle": { "type": "string" },
+          "global": { "type": "boolean" },
+          "id_e": { "type": "string" }
+        }
+      },
+      "ConnecteurDetail": {
+        "type": "object",
+        "description": "Connector detail including its form data",
+        "properties": {
+          "id_ce": { "type": "string" },
+          "id_connecteur": { "type": "string" },
+          "libelle": { "type": "string" },
+          "global": { "type": "boolean" },
+          "id_e": { "type": "string" },
+          "content": {
+            "type": "object",
+            "additionalProperties": { "type": "string" },
+            "description": "Connector form data"
+          },
+          "action_possible": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "Document": {
+        "type": "object",
+        "description": "A document. `data` contains the form fields of the document's type, `action_possible`/`action-possible` list the workflow actions, `last_action` describes the last executed action.",
+        "properties": {
+          "info": {
+            "type": "object",
+            "properties": {
+              "id_d": { "type": "string", "example": "68hpWOt" },
+              "type": { "type": "string", "example": "actes-generique" },
+              "titre": { "type": "string" },
+              "creation": { "type": "string", "example": "2019-05-16 10:02:19" },
+              "modification": { "type": "string", "example": "2019-05-16 10:15:46" }
+            }
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": { "type": "string" },
+            "example": { "objet": "Mon objet", "acte_nature": "2" }
+          },
+          "action_possible": { "type": "array", "items": { "type": "string" }, "example": ["modification", "supression", "send-tdt"] },
+          "action-possible": { "type": "array", "items": { "type": "string" } },
+          "last_action": {
+            "type": "object",
+            "properties": {
+              "action": { "type": "string" },
+              "message": { "type": "string" },
+              "date": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Flux": {
+        "type": "object",
+        "properties": {
+          "id_flux": { "type": "string" },
+          "nom": { "type": "string", "description": "Flux name" }
+        }
+      },
+      "FluxDetail": {
+        "type": "object",
+        "description": "Flux definition with its data fields",
+        "properties": {
+          "id_flux": { "type": "string" },
+          "nom": { "type": "string" },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": { "type": "string" },
+                "type": { "type": "string" },
+                "obligatoire": { "type": "boolean" }
+              }
+            }
+          },
+          "actions": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "Utilisateur": {
+        "type": "object",
+        "properties": {
+          "id_u": { "type": "string", "example": "42" },
+          "login": { "type": "string", "example": "jdupont" },
+          "nom": { "type": "string", "example": "Dupont" },
+          "prenom": { "type": "string", "example": "Jean" },
+          "email": { "type": "string", "example": "jean@example.com" },
+          "certificat": { "type": "string" },
+          "id_e": { "type": "string", "example": "5" },
+          "active": { "type": "boolean", "example": true }
+        }
+      },
+      "UserToken": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "1" },
+          "id_u": { "type": "string", "example": "42" },
+          "name": { "type": "string", "example": "my-token" },
+          "token": { "type": "string", "example": "abc123..." },
+          "expired_at": { "type": "string", "example": "2020-03-31" },
+          "is_expired": { "type": "boolean", "example": false }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "properties": {
+          "id_role": { "type": "string" },
+          "nom": { "type": "string" },
+          "id_e": { "type": "string" }
+        }
+      },
+      "Extension": {
+        "type": "object",
+        "properties": {
+          "id_extension": { "type": "string" },
+          "path": { "type": "string" },
+          "module": { "type": "string" }
+        }
+      },
+      "JournalEntry": {
+        "type": "object",
+        "properties": {
+          "id_j": { "type": "string" },
+          "id_e": { "type": "string" },
+          "date": { "type": "string" },
+          "type": { "type": "string" },
+          "action": { "type": "string" },
+          "id_d": { "type": "string" },
+          "id_user": { "type": "string" },
+          "login": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      },
+      "EntiteFlux": {
+        "type": "object",
+        "description": "Flux/connector association",
+        "properties": {
+          "id_fe": { "type": "string" },
+          "id_e": { "type": "string" },
+          "flux": { "type": "string" },
+          "id_ce": { "type": "string" },
+          "type": { "type": "string" },
+          "num_same_type": { "type": "string" }
+        }
+      },
+      "FamilleConnecteur": {
+        "type": "object",
+        "properties": {
+          "nom": { "type": "string" },
+          "id": { "type": "string" }
+        }
+      },
+      "FrequenceConnecteur": {
+        "type": "object",
+        "description": "Connector frequency",
+        "properties": {
+          "id_cf": { "type": "string" },
+          "nom": { "type": "string" },
+          "frequence_en_minute": { "type": "string" }
+        }
+      },
+      "FrequenceConnecteurInput": {
+        "type": "object",
+        "description": "Connector frequency input",
+        "properties": {
+          "nom": { "type": "string" },
+          "frequence_en_minute": { "type": "string" }
+        }
+      }
+    }
+  }
+}

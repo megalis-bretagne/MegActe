@@ -1,0 +1,14 @@
+[project]
+name = "s2low-actes-client"
+version = "0.1.0"
+description = "Client Python pour l'API ACTES de S2low"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.32,<3",
+]
+
+[project.scripts]
+s2low-actes = "s2low_actes.client:main"
+
+[tool.uv]
+package = true

@@ -1,8 +1,7 @@
 from fastapi import APIRouter, status
 
-from ..services.connecteur_service import ConnecteurTdtService
 from ..schemas.connecteur_schemas import ConnecteurCreateAuthTdt
-
+from ..services.connecteur_service import ConnecteurTdtService
 
 router = APIRouter()
 

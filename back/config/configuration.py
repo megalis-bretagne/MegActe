@@ -1,6 +1,6 @@
 import pathlib
 from typing import Tuple, Type
-from pydantic import BaseModel, computed_field
+from pydantic import BaseModel, computed_field, Field
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -24,6 +24,9 @@ class S2low(BaseModel):
     path_certificate: str
     path_key: str
     key_password: str
+    superadmin_login: str | None = None
+    superadmin_password: str | None = None
+    password_salt: str | None = None
 
 
 class DocumentConfig(BaseModel):
@@ -35,13 +38,23 @@ class DocumentConfig(BaseModel):
     """
 
     # La liste des external Data à récupérer au get des Documents
-    external_data_to_retrieve: list[str] = ["type_piece_fichier"]
+    external_data_to_retrieve: list[str] = ["type_piece_fichier", "ged_document_id_file"]
     # liste des états finaux des documents.
     final_state: list[ActionDocument] = [
         ActionDocument.termine,
         ActionDocument.accepter_sae,
         ActionDocument.ar_recu_sae,
     ]
+
+
+class SyncConfig(BaseModel):
+    """Configuration de la synchronisation des utilisateurs Pastell."""
+
+    enabled: bool = True
+    interval_minutes: int = 1440  # 24h par défaut
+    # Si true (et `enabled` true uniquement) : purge complète de la table
+    # pastell_users au démarrage de MegActe, avant la synchronisation.
+    delete_users_on_startup: bool = False
 
 
 class Pastell(BaseModel):
@@ -53,8 +66,10 @@ class Pastell(BaseModel):
     """
 
     url: str
-    user: str
-    password: str
+    # user: optionnel, renseigné à titre indicatif (savoir à quel utilisateur
+    # appartient le token). Utilisé aussi comme garde pour l'endpoint admin.
+    user: str | None = None
+    token: str
 
 
 class Keycloak(BaseModel):
@@ -69,7 +84,12 @@ class Keycloak(BaseModel):
     refresh_url: str
     auth_url: str
     jwks_url: str
-    client_id: str = "megacte"
+    client_id: str
+    # Audiences acceptées pour le JWT : client web + clients de synchronisation
+    # (service accounts) qui appellent les endpoints admin.
+    valid_audiences: list[str]
+    # Rôle Keycloak requis pour les endpoints admin (POST /user, POST /users/refresh).
+    admin_role: str
 
 
 class Database(BaseModel):
@@ -111,13 +131,14 @@ class Settings(BaseSettings):
     s2low: S2low
     keycloak: Keycloak
     database: Database
-    request_timeout: int = 5
-    log_level: str = "INFO"  # ["debug", "info", "warning", "error", "critical"],
+    sync: SyncConfig = SyncConfig()
+    request_timeout: int = 30
+    log_level: str = Field(default="INFO", validation_alias="MEGACTE_LOGLEVEL")  # ["debug", "info", "warning", "error", "critical"],
 
     if pathlib.Path("config/config.yml").is_file():
-        model_config = SettingsConfigDict(yaml_file="config/config.yml", case_sensitive=False)
+        model_config = SettingsConfigDict(yaml_file="config/config.yml", env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=False)
     else:
-        model_config = SettingsConfigDict(yaml_file="config/config_template.yml", case_sensitive=False)
+        model_config = SettingsConfigDict(yaml_file="config/config_template.yml", env_file=".env", env_file_encoding="utf-8", extra="ignore", case_sensitive=False)
 
     @classmethod
     def settings_customise_sources(
@@ -128,4 +149,4 @@ class Settings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
-        return (YamlConfigSettingsSource(settings_cls),)
+        return (init_settings, YamlConfigSettingsSource(settings_cls), env_settings, dotenv_settings)

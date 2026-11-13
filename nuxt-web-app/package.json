@@ -1,0 +1,51 @@
+{
+  "name": "megacte-nuxt-wep-app",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier . --check",
+    "format:fix": "prettier . --write",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@peterbud/nuxt-query": "^1.8.0",
+    "@primeuix/themes": "^2.0.3",
+    "chart.js": "^4.5.1",
+    "next-auth": "^4.21.1",
+    "nuxt": "^4.6.0",
+    "primeicons": "^7.0.0",
+    "primevue": "^4.5.5",
+    "tailwindcss-primeui": "^0.6.1",
+    "unstorage": "^1.17.5",
+    "vue": "^3.5.32",
+    "vue-router": "^5.0.4"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.15.2",
+    "@nuxt/test-utils": "^4.4.0",
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "@primevue/nuxt-module": "^4.5.5",
+    "@sidebase/nuxt-auth": "^1.2.0",
+    "@vitest/coverage-v8": "^5.1.0",
+    "@vue/test-utils": "^2.5.1",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "happy-dom": "^21.0.4",
+    "playwright-core": "^1.65.0",
+    "prettier": "3.8.3",
+    "tailwindcss": "^3.4.19",
+    "typecheck": "^0.1.2",
+    "typescript": "^6.0.3",
+    "vitest": "^5.1.0"
+  }
+}

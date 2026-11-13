@@ -1,9 +1,12 @@
 from unittest.mock import MagicMock
+
 import pytest
-from app.services.connecteur_service import ConnecteurTdtService
-from app.schemas.connecteur_schemas import ConnecteurCreateAuthTdt
+
 from app.exceptions.custom_exceptions import ConnecteurExistException
 from app.models.connecteur_auth_tdt import ConnecteurAuthTdt
+from app.schemas.connecteur_schemas import ConnecteurCreateAuthTdt
+from app.services.connecteur_service import ConnecteurTdtService
+
 from ..conftest import TestDatabase
 
 
@@ -57,5 +60,11 @@ class TesterConnecteurService(TestDatabase):
 
     def _insert_one_fake_connecteur(self, co: ConnecteurAuthTdt):
         with self._sessionLocal() as db:
+            if (
+                db.query(ConnecteurAuthTdt)
+                .filter(ConnecteurAuthTdt.id_e == co.id_e, ConnecteurAuthTdt.flux == co.flux)
+                .first()
+            ):
+                return
             db.add(co)
             db.commit()

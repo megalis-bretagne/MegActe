@@ -1,8 +1,9 @@
 import unittest
+
 import pytest
 
-from app.utils import PasswordUtils
 from app.exceptions.custom_exceptions import DecryptionException
+from app.utils import PasswordUtils
 
 
 class TestPassword(unittest.TestCase):
@@ -37,3 +38,43 @@ class TestPassword(unittest.TestCase):
 
         with pytest.raises(DecryptionException):
             PasswordUtils.decrypt_password("bad password", g_key)
+
+    def test_should_encrypt_and_decrypt_with_key(self):
+        # GIVEN
+        g_data = "token-valeur-secrete"
+        g_key = PasswordUtils.generate_fernet_key()
+
+        g_encrypted = PasswordUtils.encrypt_with_key(g_data, g_key)
+
+        # THEN
+        self.assertEqual(g_data, PasswordUtils.decrypt_with_key(g_encrypted, g_key))
+
+    def test_should_generate_random_password(self):
+        # WHEN
+        password = PasswordUtils.generate_password(15)
+
+        # THEN
+        self.assertEqual(len(password), 15)
+        self.assertTrue(any(c.islower() for c in password))
+        self.assertTrue(any(c.isupper() for c in password))
+        self.assertTrue(any(c.isdigit() for c in password))
+        special_count = sum(1 for c in password if c in "!@#$%&*")
+        self.assertGreaterEqual(special_count, 3)
+
+    def test_should_generate_random_password_unique(self):
+        # WHEN
+        password_1 = PasswordUtils.generate_password(15)
+        password_2 = PasswordUtils.generate_password(15)
+
+        # THEN
+        self.assertNotEqual(password_1, password_2)
+
+    def test_raise_decrypt_with_bad_key(self):
+        # GIVEN
+        g_data = "token-valeur-secrete"
+        g_key = PasswordUtils.generate_fernet_key()
+        g_encrypted = PasswordUtils.encrypt_with_key(g_data, g_key)
+
+        # THEN
+        with pytest.raises(DecryptionException):
+            PasswordUtils.decrypt_with_key(g_encrypted, "mauvaise-cle")

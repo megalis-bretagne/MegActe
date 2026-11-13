@@ -1,27 +1,24 @@
-from typing_extensions import Annotated
-from fastapi import APIRouter, Depends, File, Query, UploadFile, status
-from typing import List
+import logging
+from typing import Annotated
 
-from ..schemas.flux_action import ActionResult
-from ..services.acte_service import ActeService
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 
 from ..clients.pastell.api import ApiPastell
-
+from ..schemas.flux_action import ActionResult
 from ..services import get_or_make_api_pastell
-
-from ..services.document_service import DocumentService
+from ..services.acte_service import ActeService
 from ..services.document_file_service import DocumentFileService
-
-import logging
+from ..services.document_service import DocumentService
 
 logger = logging.getLogger(__name__)
 
 from ..schemas.document_schemas import (
-    DocCreateInfo,
-    DocUpdateInfo,
-    DeleteFileFromDoc,
     AddFilesToDoc,
+    DeleteFileFromDoc,
+    DocCreateInfo,
     DocumentActionRequest,
+    DocUpdateInfo,
+    JournalEntry,
 )
 
 router = APIRouter()
@@ -56,9 +53,53 @@ def update_document(
 def get_document(
     document_id: str,
     entite_id: int,
+    type_flux: Annotated[
+        str | None,
+        Query(description="Type de flux déjà connu du front, pour paralléliser le fetch des actions possibles"),
+    ] = None,
+    skip_external_data: Annotated[
+        bool,
+        Query(description="Ne pas retélécharger les pièces jointes (utilisé pour le polling après une action)"),
+    ] = False,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentService(client).get_single_document(entite_id, document_id)
+    return DocumentService(client).get_single_document(
+        entite_id, document_id, type_flux=type_flux, skip_external_data=skip_external_data
+    )
+
+
+# Champs external_data enrichis du document (pièces jointes, etc.), séparés de l'endpoint
+# principal : la partie la plus lente à récupérer, pour ne pas bloquer l'affichage initial.
+@router.get(
+    "/entite/{entite_id}/document/{document_id}/external-data",
+    tags=["document"],
+)
+def get_document_external_data(
+    document_id: str,
+    entite_id: int,
+    keys: Annotated[
+        list[str] | None,
+        Query(
+            description="Clés présentes dans le data du document (déjà connu du front), pour ne tenter que celles-ci"
+        ),
+    ] = None,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return DocumentService(client).get_document_external_data(entite_id, document_id, doc_keys=keys)
+
+
+# Journal doc
+@router.get(
+    "/entite/{entite_id}/document/{document_id}/journal",
+    tags=["document"],
+    response_model=list[JournalEntry],
+)
+def get_document_journal(
+    document_id: str,
+    entite_id: int,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return DocumentService(client).get_document_journal(entite_id, document_id)
 
 
 # Delete Document
@@ -71,7 +112,7 @@ def get_document(
 def delete_document(
     entite_id: int,
     documents_id: Annotated[
-        List[str],
+        list[str] | None,
         Query(
             title="les identifiants de documents",
             description="Les identifiants de documents",
@@ -93,11 +134,12 @@ def add_files_to_document(
     document_id: str,
     element_id: str,
     entite_id: int,
-    files: List[UploadFile] = File(...),
+    files: list[UploadFile] = File(...),
+    replace: bool = False,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
     file_data = AddFilesToDoc(entite_id=entite_id, files=files)
-    return DocumentFileService(client).add_multiple_files(document_id, element_id, file_data)
+    return DocumentFileService(client).add_multiple_files(document_id, element_id, file_data, replace=replace)
 
 
 # Supprimer un fichier appartenant à un document
@@ -122,9 +164,10 @@ def get_file_for_document(
     entite_id: int,
     element_id: str,
     file_name: str,
+    index: int | None = Query(None, description="Position du fichier, pour éviter un fetch en plus"),
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentFileService(client).get_file_by_name(entite_id, document_id, element_id, file_name)
+    return DocumentFileService(client).get_file_by_name(entite_id, document_id, element_id, file_name, index)
 
 
 # Attribuer un type à un fichier
@@ -136,7 +179,7 @@ def patch_external_data(
     document_id: str,
     entite_id: int,
     element_id: str,
-    data: List[str],
+    data: list[str],
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
 
@@ -145,7 +188,7 @@ def patch_external_data(
     return 200
 
 
-# Récupérer les valeurs pour un champ externalData
+# Récupérer les valeurs pour un champ externalData (par document)
 @router.get(
     "/entite/{entite_id}/document/{document_id}/externalData/{element_id}",
     tags=["document"],
@@ -154,9 +197,27 @@ def get_external_data(
     entite_id: int,
     document_id: str,
     element_id: str,
+    type_flux: Annotated[
+        str | None,
+        Query(description="Type de flux déjà connu du front, pour réutiliser le cache par type de flux"),
+    ] = None,
     client: ApiPastell = Depends(get_or_make_api_pastell),
 ):
-    return DocumentFileService(client).get_external_data(entite_id, document_id, element_id)
+    return DocumentFileService(client).get_external_data(entite_id, document_id, element_id, type_flux=type_flux)
+
+
+# Récupérer les valeurs pour un champ externalData (par type de flux, sans document_id)
+@router.get(
+    "/entite/{entite_id}/flux/{flux_type}/externalData/{element_id}",
+    tags=["document"],
+)
+def get_external_data_by_flux_type(
+    entite_id: int,
+    flux_type: str,
+    element_id: str,
+    client: ApiPastell = Depends(get_or_make_api_pastell),
+):
+    return DocumentFileService(client).get_external_data_by_flux_type(entite_id, flux_type, element_id)
 
 
 @router.post(

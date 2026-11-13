@@ -1,16 +1,22 @@
-from . import BaseService
+import logging
+from io import BytesIO
+
+from fastapi import HTTPException
+from fastapi.responses import StreamingResponse
+
+from ..clients.pastell.exeptions import ApiPastellHttp40XError, ApiPastellHttpForbidden
 from ..exceptions.custom_exceptions import PastellException
 from ..schemas.document_schemas import (
-    DeleteFileFromDoc,
     AddFilesToDoc,
-    AddFileToDoc,
+    DeleteFileFromDoc,
 )
-from fastapi import HTTPException
-from io import BytesIO
-from fastapi.responses import StreamingResponse
-import logging
+from . import BaseService
+from .document_service import _EXECUTOR
 
 logger = logging.getLogger(__name__)
+
+# Cache mémoire : (entite_id, flux_type, element_id) → données externalData
+_external_data_cache: dict[tuple, dict] = {}
 
 
 class DocumentFileService(BaseService):
@@ -25,63 +31,58 @@ class DocumentFileService(BaseService):
         document_id: str,
         element_id: str,
         files_data: AddFilesToDoc,
+        replace: bool = False,
     ):
-        """Ajoute plusieurs fichiers à un document en appelant le service add_file_to_document_service.
+        """Ajoute plusieurs fichiers à un même champ d'un document.
 
-        Args:
-            document_id (str): L'ID du document.
-            element_id (str): L'ID de l'élément auquel les fichiers sont associés.
-            files_data (AddFilesToDoc): Les informations nécessaires pour ajouter les fichiers.
-            user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
-
-        Returns:
-            dict: Les détails de l'ajout des fichiers.
+        Le numéro de fichier suivant (position où Pastell attend chaque fichier) ne dépend
+        que du nombre de fichiers déjà présents : on le récupère une seule fois avant la
+        boucle plutôt qu'à chaque fichier, puis on téléverse tous les fichiers en parallèle
+        (chacun a sa position réservée à l'avance, donc pas de risque de collision).
         """
-        results = []
+        existing_files = self.get_existing_files(files_data.entite_id, document_id, element_id)
+        start_index = 0 if replace else len(existing_files)
 
-        for file in files_data.files:
-            file_data = AddFileToDoc(entite_id=files_data.entite_id, file=file)
-            result = self.add_file(document_id, element_id, file_data)
-            results.append(result)
+        # Le contenu de chaque UploadFile est lu ici (thread principal) : SpooledTemporaryFile
+        # n'est pas garanti thread-safe pour une lecture concurrente depuis le pool de threads.
+        prepared = [
+            (start_index + i, file.filename, file.file.read(), file.content_type)
+            for i, file in enumerate(files_data.files)
+        ]
 
+        def _upload(item):
+            file_number, filename, content, content_type = item
+            result = self.add_file(
+                document_id,
+                element_id,
+                files_data.entite_id,
+                file_number,
+                filename,
+                content,
+                content_type,
+            )
+            return result
+
+        results = list(_EXECUTOR.map(_upload, prepared))
         return results
 
     def add_file(
         self,
         document_id: str,
         element_id: str,
-        file_data: AddFileToDoc,
+        entite_id: int,
+        file_number: int,
+        filename: str,
+        content: bytes,
+        content_type: str,
     ):
-        """Ajoute un fichier à un document spécifique dans Pastell.
-
-        Args:
-            document_id (str): L'ID du document.
-            element_id (str): L'ID de l'élément auquel le fichier est associé.
-            file_data (AddFileToDoc): Les informations nécessaires pour ajouter un fichier.
-            user (UserPastell): L'utilisateur pour lequel l'opération doit être effectuée.
-
-        Raises:
-            PastellException: Si le fichier ne peut pas être ajouté à Pastell.
-
-        Returns:
-            dict: Les détails de l'ajout du fichier.
-        """
-        existing_files = self.get_existing_files(file_data.entite_id, document_id, element_id)
-        next_file_number = len(existing_files)
-
-        file_content = file_data.file.file.read()
-
         files = {
-            "file_name": (None, file_data.file.filename),
-            "file_content": (
-                file_data.file.filename,
-                file_content,
-                file_data.file.content_type,
-            ),
+            "file_name": (None, filename),
+            "file_content": (filename, content, content_type),
         }
 
         return self.api_pastell.perform_post(
-            f"/entite/{file_data.entite_id}/document/{document_id}/file/{element_id}/{next_file_number}",
+            f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_number}",
             files=files,
         )
 
@@ -119,11 +120,59 @@ class DocumentFileService(BaseService):
             f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_index}"
         )
 
+    def get_external_data_by_flux_type(
+        self,
+        entite_id: int,
+        flux_type: str,
+        element_id: str,
+    ) -> dict:
+        """Retourne les options externalData pour un type de flux, sans avoir besoin d'un document_id.
+        Les options sont identiques pour tous les documents d'un même flux, donc on met le résultat en cache.
+        """
+        cache_key = (entite_id, flux_type, element_id)
+        if cache_key in _external_data_cache:
+            logger.debug(f"Cache hit externalData ({entite_id}, {flux_type}, {element_id})")
+            return _external_data_cache[cache_key]
+
+        # Trouver n'importe quel doc du même type pour emprunter son ID
+        docs = self.api_pastell.perform_get(
+            f"entite/{entite_id}/document",
+            query_params={"type": flux_type, "limit": 1},
+        )
+        borrowed = bool(docs)
+        if docs:
+            doc_id = docs[0]["id_d"]
+        else:
+            # Aucun doc existant : on en crée un vide temporaire
+            response = self.api_pastell.perform_post(f"/entite/{entite_id}/document", data={"type": flux_type})
+            doc_id = response["info"]["id_d"]
+
+        try:
+            result = self.get_external_data(entite_id, doc_id, element_id, _allow_fallback=False)
+        except ApiPastellHttpForbidden, ApiPastellHttp40XError:
+            # Le doc trouvé est inaccessible → créer un nouveau doc temporaire et réessayer
+            logger.warning(f"externalData 403 sur doc {doc_id}, création d'un doc temporaire")
+            response = self.api_pastell.perform_post(f"/entite/{entite_id}/document", data={"type": flux_type})
+            doc_id = response["info"]["id_d"]
+            borrowed = False
+            result = self.get_external_data(entite_id, doc_id, element_id, _allow_fallback=False)
+
+        if borrowed and element_id == "type_piece" and isinstance(result, dict) and "pieces" in result:
+            # `pieces` provient d'un document emprunté, sans rapport avec le document
+            # qu'on est en train de créer : on ne renvoie pas ce champ ici pour éviter
+            # que les appelants ne s'en servent comme s'il reflétait leurs propres fichiers.
+            result = {**result, "pieces": []}
+
+        _external_data_cache[cache_key] = result
+        return result
+
     def get_external_data(
         self,
         entite_id: int,
         document_id: str,
         element_id: str,
+        type_flux: str | None = None,
+        _allow_fallback: bool = True,
     ) -> dict:
         """Récupère les valeurs possibles pour un champ externalData dans Pastell.
 
@@ -131,11 +180,37 @@ class DocumentFileService(BaseService):
             entite_id (int): L'ID de l'entité.
             document_id (str): L'ID du document.
             element_id (str): L'ID de l'élément externalData.
+            type_flux (str | None) : type de flux déjà connu du front. Si fourni (et hors
+                type_piece, dont la réponse contient les fichiers propres à ce document),
+                réutilise le cache partagé avec get_external_data_by_flux_type.
+            _allow_fallback: False quand appelé depuis get_external_data_by_flux_type pour éviter la récursion.
         Returns:
             dict: Les valeurs possibles pour l'élément externalData.
         """
+        cacheable = type_flux is not None and element_id != "type_piece"
+        cache_key = (entite_id, type_flux, element_id)
+        if cacheable and cache_key in _external_data_cache:
+            logger.debug(f"Cache hit externalData ({entite_id}, {type_flux}, {element_id})")
+            return _external_data_cache[cache_key]
 
-        return self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}")
+        try:
+            result = self.api_pastell.perform_get(
+                f"/entite/{entite_id}/document/{document_id}/externalData/{element_id}"
+            )
+        except ApiPastellHttpForbidden, ApiPastellHttp40XError:
+            if not _allow_fallback:
+                raise
+            # Pastell refuse l'accès à ce document précis → on récupère son type
+            # et on bascule sur la logique by_flux_type (qui crée un doc temporaire si nécessaire)
+            doc = self.api_pastell.perform_get(f"/entite/{entite_id}/document/{document_id}")
+            flux_type = doc.get("info", {}).get("type")
+            if not flux_type:
+                raise
+            return self.get_external_data_by_flux_type(entite_id, flux_type, element_id)
+
+        if cacheable:
+            _external_data_cache[cache_key] = result
+        return result
 
     def assign_file_typologie(
         self,
@@ -204,6 +279,7 @@ class DocumentFileService(BaseService):
         document_id: str,
         element_id: str,
         file_name: str,
+        file_index: int | None = None,
     ):
         """Récupère un fichier spécifique par son nom depuis Pastell.
 
@@ -212,16 +288,17 @@ class DocumentFileService(BaseService):
             document_id (str): L'ID du document.
             element_id (str): L'ID de l'élément auquel le fichier est associé.
             file_name (str): Le nom du fichier à récupérer.
+            file_index (int | None): Position déjà connue du fichier, pour éviter un fetch en plus.
 
         Returns:
             Response: La réponse de l'API Pastell contenant le fichier.
         """
-        existing_files = self.get_existing_files(entite_id, document_id, element_id)
-
-        try:
-            file_index = existing_files.index(file_name)
-        except ValueError:
-            raise HTTPException(status_code=404, detail="File not found")
+        if file_index is None:
+            existing_files = self.get_existing_files(entite_id, document_id, element_id)
+            try:
+                file_index = existing_files.index(file_name)
+            except ValueError:
+                raise HTTPException(status_code=404, detail="File not found")
 
         response = self.api_pastell.perform_get(
             f"/entite/{entite_id}/document/{document_id}/file/{element_id}/{file_index}"

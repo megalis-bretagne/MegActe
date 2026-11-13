@@ -1,7 +1,7 @@
 pastell:
   url : <url>
-  user : <user>
-  password : <mdp>
+  # user : <utilisateur Pastell à qui appartient le token> (optionnel, indicatif)
+  token : <token d'accès Pastell>
 
 keycloak:
   token_url: <token>
@@ -9,6 +9,10 @@ keycloak:
   auth_url: <auth>
   jwks_url: <jwks>
   client_id: megacte
+  # audiences autorisées pour le JWT (client web + clients de synchronisation)
+  valid_audiences: [megacte, megacte-sync]
+  # rôle Keycloak requis pour les endpoints admin (POST /user, POST /users/refresh)
+  admin_role: megacte-admin
 
 database:
   pwd : <pwd>
@@ -22,3 +26,14 @@ s2low:
   path_certificate: <certificat .pem>
   path_key: <private_key.pem>
   key_password: <password>
+  superadmin_login: <login superadmin>
+  superadmin_password: <mot de passe superadmin>
+  password_salt: <salt partagé pour les comptes techniques MegActe>
+
+sync:
+  enabled: true
+  interval_minutes: 1440
+  # Si true (uniquement pris en compte si enabled: true) : supprime toutes les
+  # lignes de la table pastell_users au démarrage, avant la synchronisation.
+  # Utile pour repartir d'un état propre (rechargement complet depuis Pastell).
+  delete_users_on_startup: false

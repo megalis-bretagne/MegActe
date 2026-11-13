@@ -1,0 +1,172 @@
+<script setup lang="ts">
+const props = defineProps<{
+  field: Field;
+  entiteId: number;
+  idD: string;
+  docData?: DocumentData;
+}>();
+
+const { downloadDocumentFile } = useFileDownload();
+
+async function downloadFile(
+  filename: string,
+  elementId: string,
+  index?: number
+) {
+  // index : évite au backend de refaire un fetch en plus pour retrouver le fichier par son nom
+  await downloadDocumentFile(
+    props.entiteId,
+    props.idD,
+    elementId,
+    filename,
+    index
+  );
+}
+
+function resolveFileRef(filename: string): {
+  elementId: string;
+  index?: number;
+} {
+  const arreteList = toFileList(props.docData?.arrete);
+  const arreteIndex = arreteList.indexOf(filename);
+  if (arreteIndex !== -1) return { elementId: "arrete", index: arreteIndex };
+
+  const autreList = toFileList(props.docData?.autre_document_attache);
+  const autreIndex = autreList.indexOf(filename);
+  if (autreIndex !== -1)
+    return { elementId: "autre_document_attache", index: autreIndex };
+
+  return { elementId: "arrete" };
+}
+
+async function downloadPieceFile(filename: string) {
+  const ref = resolveFileRef(filename);
+  await downloadFile(filename, ref.elementId, ref.index);
+}
+
+const isFileArray = (val: FieldValue) =>
+  Array.isArray(val) &&
+  val.length > 0 &&
+  typeof val[0] === "string" &&
+  val[0].includes(".");
+
+const resolveSelectValue = (field: Field) => {
+  if (!field.selectValues) return field.val;
+  return field.selectValues[field.val] ?? field.val;
+};
+</script>
+
+<template>
+  <!-- ged_document_id_file : tableau tant que non résolu en map par external_data, on tombe
+       alors sur l'affichage "Fichiers" standard plus bas. -->
+  <template
+    v-if="
+      field.key === 'ged_document_id_file' &&
+      field.val &&
+      !Array.isArray(field.val)
+    "
+  >
+    <table class="text-xs border border-gray-200 dark:border-gray-700 rounded">
+      <thead>
+        <tr class="bg-gray-50 dark:bg-gray-800">
+          <th
+            class="px-3 py-1 text-left font-medium text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700"
+          >
+            Nom du fichier
+          </th>
+          <th
+            class="px-3 py-1 text-left font-medium text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700"
+          >
+            Identifiant
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="(id, name) in field.val as Record<string, string>"
+          :key="name"
+          class="border-t border-gray-100"
+        >
+          <td class="px-3 py-1 text-gray-700 dark:text-gray-200">{{ name }}</td>
+          <td class="px-3 py-1 text-gray-500">{{ id }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </template>
+
+  <template v-else-if="field.key === 'type_piece_fichier'">
+    <div
+      v-for="(piece, i) in field.val as TypePieceFichier[]"
+      :key="i"
+      class="mb-1"
+    >
+      <button
+        class="text-blue-600 hover:underline text-left"
+        @click="void downloadPieceFile(piece.filename)"
+      >
+        {{ piece.filename }}
+      </button>
+      <span class="text-gray-400 ml-2 text-xs">{{ piece.typologie }}</span>
+    </div>
+  </template>
+
+  <template v-else-if="field.type === 'file' || isFileArray(field.val)">
+    <div v-for="(filename, i) in toFileList(field.val)" :key="i" class="mb-1">
+      <button
+        class="text-blue-600 hover:underline text-left"
+        @click="void downloadFile(filename, field.key, i)"
+      >
+        {{ filename }}
+      </button>
+    </div>
+  </template>
+
+  <template v-else-if="field.selectValues">
+    {{ resolveSelectValue(field) }}
+  </template>
+
+  <template v-else-if="field.type === 'checkbox'">
+    <input
+      :id="`field-viewer-${field.key}`"
+      type="checkbox"
+      :checked="
+        field.val === 'checked' || field.val === 'on' || field.val === '1'
+      "
+      disabled
+      class="w-4 h-4 accent-blue-600 cursor-default"
+    />
+  </template>
+
+  <template
+    v-else-if="
+      typeof field.val === 'string' &&
+      field.key !== 'date_cloture_journal_iso8601' &&
+      /^\d{4}-\d{2}-\d{2}/.test(field.val)
+    "
+  >
+    {{ formatDateOnly(field.val) }}
+  </template>
+
+  <template
+    v-else-if="typeof field.val === 'string' && field.val.startsWith('http')"
+  >
+    <a
+      :href="field.val"
+      target="_blank"
+      class="text-blue-600 hover:underline"
+      >{{ field.val }}</a
+    >
+  </template>
+
+  <template
+    v-else-if="typeof field.val === 'string' && field.val.includes('\n')"
+  >
+    <p class="whitespace-pre-line text-base text-gray-600">
+      {{ field.val }}
+    </p>
+  </template>
+
+  <template v-else>
+    {{ Array.isArray(field.val) ? field.val.join(", ") : field.val }}
+  </template>
+</template>

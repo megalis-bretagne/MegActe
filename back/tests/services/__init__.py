@@ -1,8 +1,10 @@
 from unittest.mock import MagicMock
-from app.services.flux_action_service import FluxActionService
-from app.schemas.flux_action import FluxAction
-from ..conftest import engine
+
 from app.models.users import Base
+from app.schemas.flux_action import FluxAction
+from app.services.flux_action_service import FluxActionService
+
+from ..conftest import engine
 
 
 def setUpModule():
@@ -14,7 +16,6 @@ def tearDownModule():
 
 
 class FluxActionServiceMock(FluxActionService):
-
     def __init__(self) -> None:
         self.api_pastell = MagicMock()
 

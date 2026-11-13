@@ -1,0 +1,143 @@
+# Les process d'enrôlement dans MegActes
+
+## Eutilisateurs Pastell (auto-provisioning)
+
+## Vue d'ensemble
+
+```mermaid
+flowchart TB
+    subgraph S1["Utilisateur"]
+        A["Agent territorial"]
+    end
+
+    subgraph S2["Connexion SSO"]
+        K["Compte habituel de la collectivité"]
+    end
+
+    subgraph S3["MegActe"]
+        DB[("Base des profils agents")]
+        SYNC["Rafraîchissement automatique<br/>toutes les 24 heures"]
+        R{"Agent en BDD et actif ?"}
+        TOKEN["Jeton d'accès dédié créé<br/>au premier accès"]
+        REFUSED["Accès refusé<br/>404 UserNotFoundException"]
+        OK["Accès aux documents"]
+    end
+
+    subgraph S4["Pastell"]
+        SRC[("Liste officielle des agents")]
+    end
+
+    A -->|"1. Connexion"| K -->|"2. Identité vérifiée"| R
+    R -- "Oui" --> TOKEN --> OK
+    R -- "Non (absent ou inactif)" --> REFUSED
+    SYNC -->|"interroge la liste des agents"| SRC
+    SRC -->|"retourne la liste, mise à jour automatique"| SYNC
+    SYNC --> DB
+    DB --> R
+```
+
+### Points importants
+
+Un agent se connecte à MegActe avec **son compte habituel** (SSO).
+
+- **L'enrôlement passe par la synchronisation de fond uniquement** : MegActe
+  rafraîchit automatiquement (toutes les 24 h) la liste des agents depuis Pastell.
+  Pas de saisie manuelle.
+- **Au premier accès**, si le profil de l'agent est déjà présent en BDD (déjà
+  synchronisé), un jeton d'accès dédié lui est créé. Pas de nouveau mot de passe à retenir.
+- **Un agent absent de la BDD ou désactivé se voit refuser l'accès**
+  (`UserNotFoundException`) jusqu'à la prochaine synchronisation : aucun scan Pastell
+  n'est déclenché à la connexion.
+
+## Flux de connexion détaillé
+
+Flux déclenché à chaque appel authentifié : le JWT Keycloak est validé, `preferred_username` sert de login Pastell, puis `get_user_from_db` (`app/database.py`) résout l'utilisateur local.
+
+```mermaid
+flowchart TD
+    A[Requête HTTP + JWT OIDC validé<br/>login = preferred_username] --> B[get_user_from_db: SELECT pastell_users<br/>WHERE login = ?] --> C{User en BDD ET actif ?}
+
+    C -- Non / absent / désactivé --> D[UserNotFoundException<br/>aucun scan Pastell]
+    C -- Oui --> E[ensure_user_has_token]
+
+    E --> L{Token valide en BDD ?}
+    L -- Oui --> M[Utilisateur authentifié<br/>auth prêt]
+
+    L -- Non / absent / expiré --> N["PATCH /utilisateur/{id_u}<br/>via compte technique password=aléatoire<br/>sur 10 caractères"] --> O["POST /utilisateur/token<br/>Basic Auth login / mot de passe temporaire"] --> P{Création OK ?}
+    P -- Oui --> Q["Token chiffré Fernet (pwd_key)<br/>stocké en BDD, sans expiration.<br/>Le mot de passe temporaire n'est pas conservé"] --> M
+    P -- Non --> R["UserRegistrationException<br/>(réessaie à la connexion suivante)"]
+```
+
+## Synchronisation de fond
+
+La synchro (démarrage + job périodique `settings.sync.interval_minutes`, + endpoint `POST /users/refresh` réservé aux comptes possédant le rôle admin Keycloak — utilisateur ou service account) est le **seul** mécanisme d'enrôlement : elle remplit la table `pastell_users` à l'avance pour que les logins soient présents à la connexion. Pour chaque entité, liste des utilisateurs → upsert des lignes locales + désactivation des absents. Le endpoint `POST /users/refresh` répond immédiatement (accusé de réception 200) et lance la synchronisation en arrière-plan : l'appelant (script de synchro) n'est pas bloqué jusqu'à la fin du traitement. Un verrou empêche l'empilement de synchronisations concurrentes (endpoint / démarrage / job périodique) : un lancement pendant une synchro en cours est ignoré. Option `sync.delete_users_on_startup` : si `true` (uniquement pris en compte avec `sync.enabled: true`), toutes les lignes de `pastell_users` sont supprimées au démarrage, avant la première synchronisation — pratique pour repartir d'un état propre (rechargement complet depuis Pastell).
+
+## Points clés
+
+- **Token partout** : tous les appels vers Pastell passent par un token Bearer — les appels utilisateur (`build_user_auth`, token stocké en base) comme les appels du compte technique admin (`settings.pastell.token`). Aucun login/mot de passe, et la colonne `pwd_pastell` a été supprimée (migration « drop pwd_pastell »). Le champ `user` de la config n'est plus qu'indicatif.
+- **Création du token (seule exception)** : à la première connexion (aucun token configuré), le mot de passe Pastell est réinitialisé via le compte technique (`PATCH /v2/utilisateur/{id_u}`). Le token est ensuite créé via l'endpoint self-service `POST /v2/utilisateur/token` en Basic Auth avec le login / mot de passe temporaire — la seule utilisation du login/mot de passe d'un utilisateur (la création par le compte admin `POST /utilisateur/{id_u}/token` ne fonctionne pas pour les utilisateurs qui ne sont pas de type `api`).
+- **Clé Fernet** : le token est chiffré avec `pwd_key` du user (générée à l'enrôlement ou à la création manuelle si absente).
+- **Sanity check sync** : si une entité échoue pendant le scan, la synchro est abandonnée (pas de commit) pour ne pas désactiver à tort des utilisateurs d'entités non scannées.
+
+## Enrôlement S2low du connecteur TDT
+
+Contrairement à l'enrôlement Pastell, le compte technique S2low est créé **à la
+demande**, au premier besoin du connecteur TDT pour une entité. La
+synchronisation Pastell enregistre l'identifiant de l'entité mère dans
+`pastell_users.id_entite_pastell`. Le service `ensure_s2low_account` réutilise
+le connecteur déjà présent en base s'il existe ; sinon, il recherche l'autorité
+S2low à partir du SIREN (prioritaire) ou du SIRET fourni par la configuration de
+l'entité, sans nouvel appel API Pastell.
+
+```mermaid
+flowchart TB
+    subgraph S1["Utilisateur / MegActe"]
+        A["Utilisateur authentifié"]
+        B["ensure_s2low_account"]
+        P["Lecture de user.id_entite_pastell<br/>en base"]
+        C{"Connecteur déjà en BDD<br/>pour l'entité ?"}
+        D["Réutilisation du connecteur"]
+        E["Génération du mot de passe déterministe<br/>avec authority_id + password_salt"]
+        F["Chiffrement Fernet du mot de passe"]
+        G[("ConnecteurAuthTdt<br/>login = megacte_authority_id<br/>s2low_authority_id<br/>mot de passe chiffré")]
+    end
+
+    subgraph S2["S2low"]
+        Q["Recherche de l'autorité<br/>par SIREN ou SIRET"]
+        R{"Utilisateur MegActe<br/>déjà présent ?"}
+        T["Création du compte technique<br/>login megacte_authority_id<br/>rôle ADM, auth_method 2"]
+        U["Compte technique existant"]
+    end
+
+    A --> B --> P --> C
+    C -- "Oui" --> D
+    C -- "Non" --> Q
+    Q --> R
+    R -- "Non" --> T --> E
+    R -- "Oui" --> U --> E
+    E --> F --> G
+```
+
+### Déroulement
+
+- La synchronisation enregistre l'`id_e` de l'entité parcourue dans
+  `pastell_users.id_entite_pastell`. `ensure_s2low_account` lit cette valeur en
+  base, sans appel API Pastell. Une valeur absente provoque une erreur et aucun
+  enrôlement n'est effectué.
+- Si un `ConnecteurAuthTdt` existe déjà pour cette entité, il est retourné sans
+  appel à S2low.
+- Sinon, l'autorité est recherchée via le compte **superadmin S2low** : par
+  SIREN lorsqu'il est disponible, sinon par SIRET. La première autorité
+  retournée fournit son identifiant numérique `authority_id`.
+- Le service vérifie la présence d'un utilisateur nommé `MegActe` dans cette
+  autorité. En son absence, l'API d'administration crée le compte technique
+  `megacte_<authority_id>` avec le certificat client, le rôle `ADM`, le statut
+  actif et le mode d'authentification par mot de passe.
+- Le mot de passe est dérivé de `authority_id` et du `password_salt` configuré.
+  Il n'est jamais stocké en clair : il est chiffré avec une clé Fernet propre
+  au connecteur, puis le connecteur est enregistré avec `s2low_authority_id`.
+
+Les appels d'administration S2low utilisent les identifiants superadmin et le
+certificat configurés dans le client (`get_authority_by_siren`,
+`get_authority_by_siret`, `get_users` et `create_technical_user`). Les appels
+opérationnels utilisent ensuite le compte technique stocké dans le connecteur.

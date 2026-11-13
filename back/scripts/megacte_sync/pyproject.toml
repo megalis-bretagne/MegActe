@@ -1,0 +1,11 @@
+[project]
+name = "megacte-sync"
+version = "0.1.0"
+description = "Outil CLI d'ajout d'utilisateur et de synchronisation globale MegActe"
+requires-python = ">=3.12"
+dependencies = [
+    "requests~=2.32.3",
+]
+
+[tool.ruff]
+line-length = 120
