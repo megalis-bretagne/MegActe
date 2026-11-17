@@ -1,6 +1,6 @@
 [project]
 name = "megacte-back"
-version = "0.3.3"
+version = "0.3.4"
 description = "Megacte backend"
 readme = "README.md"
 requires-python = ">=3.14"
