@@ -100,7 +100,7 @@ class Database(BaseModel):
         BaseModel (_type_):
     """
 
-    type: str = "postgresql"
+    type: str = "postgresql+psycopg"
     pwd: str
     user: str
     host: str
