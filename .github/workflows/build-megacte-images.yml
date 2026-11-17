@@ -124,6 +124,7 @@ jobs:
       context: ./back
       dockerfile: ./back/Dockerfile-hardened
       tag: ${{ needs.metadata.outputs.version }}
+      application: back
 
   scan-frontend:
     name: Scan frontend image with Trivy
@@ -134,3 +135,4 @@ jobs:
       context: .
       dockerfile: ./nuxt-web-app/Dockerfile-hardened
       tag: ${{ needs.metadata.outputs.version }}
+      application: front

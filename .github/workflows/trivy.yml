@@ -19,6 +19,10 @@ on:
         description: Image tag
         required: true
         type: string
+      application:
+        description: Application used to select the Trivy ignore file
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -63,4 +67,5 @@ jobs:
             --severity HIGH,CRITICAL \
             --exit-code 1 \
             --format table \
+            --ignorefile ".trivyignore-${{ inputs.application }}.yaml" \
             "${{ inputs.image }}:${{ inputs.tag }}"

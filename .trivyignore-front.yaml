@@ -1,0 +1,15 @@
+vulnerabilities:
+  - id: CVE-2026-73420
+    expired_at: 2027-03-01
+    statement: >-
+      Ignored temporarily because @sidebase/nuxt-auth requires next-auth ~4.21.1
+      as a peer dependency. The fixed next-auth version 4.24.15 is outside the
+      declared compatibility range and the authentication integration must be
+      migrated or validated before upgrading.
+  - id: CVE-2026-73418
+    expired_at: 2027-03-01
+    statement: >-
+      Ignored temporarily because @sidebase/nuxt-auth requires next-auth ~4.21.1
+      as a peer dependency. The fixed next-auth version 4.24.15 is outside the
+      declared compatibility range and the authentication integration must be
+      migrated or validated before upgrading.
