@@ -1,4 +1,4 @@
-FROM node:24-trixie-slim AS base
+FROM node:26.13.1-trixie-slim AS base
 
 ARG PORT=3000
 
