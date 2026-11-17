@@ -1,0 +1,4 @@
+name: MegActe CodeQL configuration
+
+paths-ignore:
+  - angular-web-app-old/**
