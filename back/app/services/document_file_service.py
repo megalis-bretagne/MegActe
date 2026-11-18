@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 
 from ..clients.pastell.exeptions import ApiPastellHttp40XError, ApiPastellHttpForbidden
 from ..exceptions.custom_exceptions import PastellException
+from ..log import safe_log_value
 from ..schemas.document_schemas import (
     AddFilesToDoc,
     DeleteFileFromDoc,
@@ -131,7 +132,12 @@ class DocumentFileService(BaseService):
         """
         cache_key = (entite_id, flux_type, element_id)
         if cache_key in _external_data_cache:
-            logger.debug(f"Cache hit externalData ({entite_id}, {flux_type}, {element_id})")
+            logger.debug(
+                "Cache hit externalData (%s, %s, %s)",
+                safe_log_value(entite_id),
+                safe_log_value(flux_type),
+                safe_log_value(element_id),
+            )
             return _external_data_cache[cache_key]
 
         # Trouver n'importe quel doc du même type pour emprunter son ID
@@ -151,7 +157,10 @@ class DocumentFileService(BaseService):
             result = self.get_external_data(entite_id, doc_id, element_id, _allow_fallback=False)
         except ApiPastellHttpForbidden, ApiPastellHttp40XError:
             # Le doc trouvé est inaccessible → créer un nouveau doc temporaire et réessayer
-            logger.warning(f"externalData 403 sur doc {doc_id}, création d'un doc temporaire")
+            logger.warning(
+                "externalData 403 sur doc %s, création d'un doc temporaire",
+                safe_log_value(doc_id),
+            )
             response = self.api_pastell.perform_post(f"/entite/{entite_id}/document", data={"type": flux_type})
             doc_id = response["info"]["id_d"]
             borrowed = False
@@ -190,7 +199,12 @@ class DocumentFileService(BaseService):
         cacheable = type_flux is not None and element_id != "type_piece"
         cache_key = (entite_id, type_flux, element_id)
         if cacheable and cache_key in _external_data_cache:
-            logger.debug(f"Cache hit externalData ({entite_id}, {type_flux}, {element_id})")
+            logger.debug(
+                "Cache hit externalData (%s, %s, %s)",
+                safe_log_value(entite_id),
+                safe_log_value(type_flux),
+                safe_log_value(element_id),
+            )
             return _external_data_cache[cache_key]
 
         try:

@@ -4,6 +4,8 @@ from enum import Enum
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 
+from ..log import safe_log_value
+
 logger = logging.getLogger(__name__)
 
 
@@ -37,7 +39,7 @@ class MegActeException(Exception):
         Args:
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "Decryption failed".
         """
-        logger.error(f"{self.__class__.__name__} : {detail}")
+        logger.error("%s : %s", self.__class__.__name__, safe_log_value(detail))
         self.code = code
         self.status_code = status_code
         self.detail = detail

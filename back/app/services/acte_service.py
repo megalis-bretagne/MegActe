@@ -2,6 +2,7 @@ import logging
 from http import HTTPStatus
 
 from ..exceptions.custom_exceptions import ErrorCode, MegActeException
+from ..log import safe_log_value
 from ..schemas.document_schemas import ActionDocument, DocumentDetail
 from ..schemas.flux_action import ActionResult
 from ..services.document_service import _EXECUTOR
@@ -50,10 +51,14 @@ class ActeService(BaseService):
             )
 
         if action == ActionDocument.teletransmission_tdt:
-            logger.info(f"Génération de l'url pour teletransmission  au TDT doc {document_id} entite {entite_id}")
+            logger.info(
+                "Génération de l'url pour teletransmission au TDT doc %s entite %s",
+                safe_log_value(document_id),
+                safe_log_value(entite_id),
+            )
             document = DocumentDetail(**response)
             url = self.tdt_service.teletransmission(document, entite_id)
-            logger.debug(f"Url généré : {url}")
+            logger.debug("Url généré : %s", safe_log_value(url))
             return ActionResult(
                 result=True,
                 message="",
@@ -87,7 +92,9 @@ class ActeService(BaseService):
 
         if action == ActionDocument.teletransmission_tdt:
             logger.info(
-                f"Génération de l'url pour teletransmission au TDT des documents {documents_id} entite {entite_id}"
+                "Génération de l'url pour teletransmission au TDT des documents %s entite %s",
+                safe_log_value(documents_id),
+                safe_log_value(entite_id),
             )
 
             def _fetch_doc(doc_id):
@@ -98,7 +105,7 @@ class ActeService(BaseService):
             futures = [_EXECUTOR.submit(_fetch_doc, doc_id) for doc_id in documents_id]
             documents = [DocumentDetail(**future.result()) for future in futures]
             url = self.tdt_service.teletransmission_multi(documents, entite_id)
-            logger.debug(f"Url généré : {url}")
+            logger.debug("Url généré : %s", safe_log_value(url))
 
             return ActionResult(
                 result=True,

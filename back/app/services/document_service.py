@@ -7,6 +7,7 @@ from app.dependencies import get_settings
 
 from ..clients.pastell.exeptions import ApiError, ApiPastellHttpForbidden
 from ..exceptions.custom_exceptions import EntiteIdException, ErrorCode, MegActeException
+from ..log import safe_log_value
 from ..schemas.document_schemas import ActionDocument, ActionPossible, DocumentDetail, DocumentInfo
 from ..schemas.flux_action import FluxAction
 from ..services.flux_action_service import FluxActionService
@@ -91,7 +92,11 @@ class DocumentService(BaseService):
             flux_action_future = _EXECUTOR.submit(self.flux_action_service.get_action_on_flux, document["info"]["type"])
 
         for key, future in external_data_futures.items():
-            logger.debug(f"Récupération des informations de {key} pour le document {document_id}")
+            logger.debug(
+                "Récupération des informations de %s pour le document %s",
+                safe_log_value(key),
+                safe_log_value(document_id),
+            )
             document["data"][key] = future.result().json()
 
         flux_action = None
