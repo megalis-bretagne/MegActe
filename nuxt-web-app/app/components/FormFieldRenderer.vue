@@ -77,7 +77,7 @@ function handleDrop(event: DragEvent) {
       <span v-if="field.required" class="text-red-500 ml-1">*</span>
     </label>
     <p v-if="field.commentaire" class="text-xs text-gray-400 mb-1.5">
-      {{ decodeHtmlEntities(field.commentaire.replace(/<[^>]*>/g, "")) }}
+      {{ decodeHtmlEntities(field.commentaire) }}
     </p>
 
     <template v-if="field.type === 'select'">
