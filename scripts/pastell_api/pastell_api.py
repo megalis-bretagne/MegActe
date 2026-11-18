@@ -97,7 +97,8 @@ def _parse_body(response: requests.Response) -> Any:
 
 
 HTTP_METHODS = {"get", "post", "patch", "put", "delete", "head", "options", "trace"}
-SPEC_ROOT = Path(__file__).resolve().parent.parent / "docs"
+REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
+SPEC_ROOT = REPOSITORY_ROOT / "docs"
 
 
 def _resolve_spec_path(spec_path: Path) -> Path:
