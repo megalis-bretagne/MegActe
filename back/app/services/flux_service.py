@@ -1,8 +1,9 @@
 from sqlalchemy import select
-from . import BaseService
-from ..schemas.flux_schemas import FluxResponseModel
-from ..models.flux import FluxAvailable
+
 from ..database import SessionLocal
+from ..models.flux import FluxAvailable
+from ..schemas.flux_schemas import FluxResponseModel
+from . import BaseService
 
 
 class FluxService(BaseService):

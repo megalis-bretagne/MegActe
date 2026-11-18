@@ -1,15 +1,14 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-
-from .models.users import UserPastell
-from .exceptions.custom_exceptions import (
-    UserNotFoundException,
-    UserPasswordNullException,
-)
-from .dependencies import get_settings, get_current_user
-from fastapi import Depends
 import logging
 
+from fastapi import Depends
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from .dependencies import get_settings, validate_token
+from .exceptions.custom_exceptions import UserNotFoundException, UserRegistrationException
+from .models.users import UserPastell
+
+logger = logging.getLogger(__name__)
 engine = create_engine(get_settings().database.database_url, pool_pre_ping=True, pool_recycle=30)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -23,23 +22,68 @@ def get_db():
         db.close()
 
 
-def get_user_from_db(login_user: dict = Depends(get_current_user), db: Session = Depends(get_db)) -> UserPastell:
+def _ensure_user_has_token(user: UserPastell, db: Session) -> None:
+    """Crée un token Pastell pour l'utilisateur s'il n'en a pas de valide.
+
+    S'exécute au premier accès de l'utilisateur (aucun token configuré dans la
+    table pastell_users) : le mot de passe Pastell de l'utilisateur est réinitialisé
+    via le compte technique, puis un token est créé par l'utilisateur lui-même via
+    l'endpoint self-service POST /v2/utilisateur/token. Seul le token (chiffré) est
+    conservé en base.
+
+    Args:
+        user (UserPastell): l'utilisateur
+        db (Session): session de BDD
+    """
+    if user.is_token_valid():
+        return
+
+    from .services import get_or_make_api_pastell_for_admin
+    from .services.user_service import UserService
+
+    admin_api = get_or_make_api_pastell_for_admin()
+    try:
+        UserService(admin_api).create_user_token(user, db)
+    except Exception as e:
+        logger.error(f"Échec de création du token pour l'utilisateur {user.login} : {e}")
+        raise UserRegistrationException(f"Impossible de créer un token pour l'utilisateur {user.login}") from e
+
+
+def get_user_from_db(payload: dict = Depends(validate_token), db: Session = Depends(get_db)) -> UserPastell:
     """Récupère l'utilisateur depuis la BD.
 
     Args:
         current_user (dict): Le dictionnaire contenant les infos du user actuel
         db (Session): La session de BD
+
     Raises:
-        UserNotFoundException: Si le user n'est pas trouvé dans la BD.
-        UserPasswordNullException: i le mot de passe du user est manquant.
+        UserNotFoundException: Si le user n'est pas trouvé dans la BD ou est inactif.
 
     Returns:
         UserPastell: L'utilisateur récupéré depuis la BD.
     """
-    logging.debug(f"Retrieve User form DB : {login_user}")
+    login_user = payload.get("preferred_username")
+    logger.debug(f"Getting User form DB : {login_user}")
     user = db.query(UserPastell).filter(UserPastell.login == login_user).first()
-    if not user:
+    if not user or not user.active:
         raise UserNotFoundException()
-    if not user.pwd_pastell:
-        raise UserPasswordNullException()
+
+    _ensure_user_has_token(user, db)
+    siren = payload.get("siren")
+    siret = payload.get("siret")
+    if not siren and not siret:
+        raise UserRegistrationException("Le SIREN et le SIRET sont absents du token OIDC")
+
+    from .services.connecteur_service import ConnecteurTdtService
+
+    try:
+        ConnecteurTdtService().ensure_s2low_account(
+            user,
+            str(siren) if siren else None,
+            str(siret) if siret else None,
+            db,
+        )
+    except Exception as e:
+        logger.error(f"Échec de création du compte S2low pour {user.login} : {e}")
+        raise UserRegistrationException(f"Impossible de créer le compte S2low pour {user.login}") from e
     return user

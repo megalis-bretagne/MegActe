@@ -1,11 +1,46 @@
-from fastapi import FastAPI, Depends
+import asyncio
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .dependencies import validate_token
-from .routers import users, health, flux, documents, entite, connecteurs
+from .dependencies import settings, validate_token
 from .exceptions.error_handlers import add_exception_handlers
+from .routers import connecteurs, documents, entite, flux, health, users
+from .services.sync_service import purge_users_on_startup_job, run_sync_users_job
 
-app = FastAPI()
+logger = logging.getLogger(__name__)
+
+
+async def _periodic_sync() -> None:
+    """Boucle de synchronisation périodique des utilisateurs Pastell."""
+    interval = settings.sync.interval_minutes * 60
+    while True:
+        await asyncio.sleep(interval)
+        await asyncio.to_thread(run_sync_users_job)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    sync_task = None
+    if settings.sync.enabled:
+        if settings.sync.delete_users_on_startup:
+            await asyncio.to_thread(purge_users_on_startup_job)
+        await asyncio.to_thread(run_sync_users_job)
+        sync_task = asyncio.create_task(_periodic_sync())
+        logger.info(
+            f"Synchronisation périodique des utilisateurs activée (toutes les {settings.sync.interval_minutes} min)"
+        )
+    else:
+        logger.info("Synchronisation des utilisateurs désactivée (settings.sync.enabled = False)")
+    yield
+    if sync_task:
+        sync_task.cancel()
+        await sync_task
+
+
+app = FastAPI(lifespan=lifespan)
 origins = ["*"]
 
 app.add_middleware(

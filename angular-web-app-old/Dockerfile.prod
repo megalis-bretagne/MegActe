@@ -1,0 +1,7 @@
+FROM nginx:1.28.2-alpine
+
+COPY ./docker/nginx/ /etc/nginx/
+
+COPY ./dist/web-app /usr/share/nginx/html/
+
+CMD ["nginx", "-g", "daemon off;"]

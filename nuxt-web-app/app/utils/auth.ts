@@ -1,0 +1,15 @@
+export const tryRefreshToken = async (): Promise<string | null> => {
+  try {
+    const session = await $fetch("/auth/session");
+
+    // session.error (RefreshAccessTokenError) : accessToken reste l'ancien token expiré (jwt
+    // callback ne l'efface pas) — sans ce check on le renverrait comme valide, retry en boucle.
+
+    if (session?.accessToken && !session?.error) {
+      return session.accessToken;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+};

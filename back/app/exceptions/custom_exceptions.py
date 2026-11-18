@@ -1,7 +1,10 @@
-from enum import Enum
-from fastapi import HTTPException
 import logging
+from enum import Enum
+
+from fastapi import HTTPException
 from fastapi.responses import JSONResponse
+
+from ..log import safe_log_value
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +39,7 @@ class MegActeException(Exception):
         Args:
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "Decryption failed".
         """
-        logging.error(f"{self.__class__.__name__} : {detail}")
+        logger.error("%s : %s", self.__class__.__name__, safe_log_value(detail))
         self.code = code
         self.status_code = status_code
         self.detail = detail
@@ -130,13 +133,16 @@ class UserExistException(MegActeException):
         HTTPException (HTTPException): Classe de base pour les exceptions HTTP.
     """
 
-    def __init__(self, login: str):
+    def __init__(self, login: str, id_pastell: int):
         """Initialise une UserExistException.
 
         Args:
-            detail (str, optional): Le message détaillé de l'erreur. Defaults to "User already exist".
+            login (str): Le login de l'utilisateur.
+            id_pastell (int): L'identifiant Pastell de l'utilisateur.
         """
-        super().__init__(status_code=400, detail=f"User {login} already exist")
+        super().__init__(
+            status_code=400, detail=f"User with login: {login} or with pastell id: {id_pastell} already exist"
+        )
 
 
 class UserNotFoundException(MegActeException):
@@ -185,6 +191,26 @@ class UserPasswordNullException(MegActeException):
             detail (str, optional): Le message détaillé de l'erreur. Defaults to "User password is null".
         """
         super().__init__(status_code=400, detail=detail)
+
+
+class UserNoCredentialException(MegActeException):
+    """Exception lorsqu'un utilisateur n'a ni token valide ni mot de passe utilisable."""
+
+    def __init__(self, login: str):
+        super().__init__(
+            status_code=400,
+            detail=f"Aucune credential Pastell disponible pour l'utilisateur {login}",
+        )
+
+
+class UserNotAdminException(MegActeException):
+    """Exception lorsque l'utilisateur connecté n'a pas le rôle admin Pastell."""
+
+    def __init__(self):
+        super().__init__(
+            status_code=403,
+            detail="Seul l'utilisateur admin Pastell peut déclencher la synchronisation",
+        )
 
 
 class MegacteErrorResponse(JSONResponse):

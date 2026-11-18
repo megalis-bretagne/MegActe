@@ -1,0 +1,74 @@
+vulnerabilities:
+  - id: CVE-2026-113351
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libexpat1. The current Python hardened image does not provide a fixed
+      package version yet; review when the DHI base image is updated.
+  - id: CVE-2026-115506
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libexpat1. The current Python hardened image does not provide a fixed
+      package version yet; review when the DHI base image is updated.
+  - id: CVE-2026-117610
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libexpat1. The current Python hardened image does not provide a fixed
+      package version yet; review when the DHI base image is updated.
+  - id: CVE-2026-118370
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libexpat1. The current Python hardened image does not provide a fixed
+      package version yet; review when the DHI base image is updated.
+  - id: CVE-2025-69720
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for the Debian ncurses runtime dependencies
+      libncursesw6, libtinfo6, ncurses-base and ncurses-bin. The current Python
+      hardened image does not provide a fixed package version yet; review when
+      the DHI base image is updated.
+  - id: CVE-2026-119373
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libsqlite3-0. The application uses PostgreSQL and does not use SQLite;
+      review when the DHI base image is updated.
+  - id: CVE-2026-119374
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libsqlite3-0. The application uses PostgreSQL and does not use SQLite;
+      review when the DHI base image is updated.
+  - id: CVE-2026-119379
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libsqlite3-0. The application uses PostgreSQL and does not use SQLite;
+      review when the DHI base image is updated.
+  - id: CVE-2026-76642
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libuuid1. The backend runs as a non-root user without mount privileges;
+      review when the DHI base image is updated.
+  - id: CVE-2026-78408
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libuuid1. The backend runs as a non-root user without mount privileges;
+      review when the DHI base image is updated.
+  - id: CVE-2026-78409
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libuuid1. The backend runs as a non-root user without mount privileges;
+      review when the DHI base image is updated.
+  - id: CVE-2026-78410
+    expired_at: 2026-12-31
+    statement: >-
+      Temporary exception for a vulnerability in the Debian runtime dependency
+      libuuid1. The backend runs as a non-root user without mount privileges;
+      review when the DHI base image is updated.

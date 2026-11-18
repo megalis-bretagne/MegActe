@@ -1,0 +1,28 @@
+FROM dhi.io/node:26.13.1-debian13-dev@sha256:00ef551fd0a27ea1ed732302f798604eff5221ee102bb359110c31b209af7a92 AS build
+
+WORKDIR /nuxt-app
+
+COPY --link nuxt-web-app/package.json /nuxt-app/package.json
+COPY --link nuxt-web-app/package-lock.json /nuxt-app/package-lock.json
+RUN npm ci --ignore-scripts
+
+COPY --link nuxt-web-app/ /nuxt-app/
+COPY --link VERSION /nuxt-app/VERSION
+
+RUN npm run build
+
+FROM dhi.io/node:26.13.1-debian13@sha256:25ed2b0240365e3b459cb22934e87557115b95f1f3cf5dab5dca45f80d5987de
+
+ARG PORT=3000
+
+ENV PORT=$PORT
+ENV NODE_ENV=production
+
+WORKDIR /nuxt-app
+
+COPY --from=build /nuxt-app/.output /nuxt-app/.output
+COPY --from=build /nuxt-app/VERSION /nuxt-app/VERSION
+
+EXPOSE $PORT
+
+CMD ["node", ".output/server/index.mjs"]

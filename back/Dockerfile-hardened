@@ -1,0 +1,27 @@
+FROM dhi.io/python:3.14.10-debian13-dev@sha256:d43af3feac6200c6d6ebd2000d8833779bd69260bb91d9035aaaa0b0635f705f AS build
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
+
+ARG APP_PATH=/megacte-back
+
+WORKDIR $APP_PATH
+
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-build --no-dev
+
+COPY app/ ./app/
+COPY config ./config
+
+FROM dhi.io/python:3.14.10-debian13@sha256:d20d953b545c83acd9e1b6b6b6d27cf14de38e6a39689334f71454c33cf41893
+
+ARG APP_PATH=/megacte-back
+
+WORKDIR $APP_PATH
+
+COPY --from=build ${APP_PATH}/.venv ./.venv
+COPY --from=build ${APP_PATH}/app ./app
+COPY --from=build ${APP_PATH}/config ./config
+
+ENV PATH="${APP_PATH}/.venv/bin:$PATH"
+
+CMD ["fastapi", "run", "app/main.py", "--port", "8080"]

@@ -1,9 +1,12 @@
 from unittest.mock import MagicMock
+
 import pytest
-from app.services.document_service import DocumentService
+
 from app.exceptions.custom_exceptions import EntiteIdException
-from . import FluxActionServiceMock
+from app.services.document_service import DocumentService
+
 from ..conftest import TestDatabase
+from . import FluxActionServiceMock
 
 
 class TestDocumentService(TestDatabase):

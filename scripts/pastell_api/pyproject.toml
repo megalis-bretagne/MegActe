@@ -1,0 +1,11 @@
+[project]
+name = "pastell-api-tests"
+version = "0.1.0"
+description = "Script de test de l'API Pastell"
+requires-python = ">=3.12"
+dependencies = [
+    "requests~=2.32.3",
+]
+
+[tool.ruff]
+line-length = 120

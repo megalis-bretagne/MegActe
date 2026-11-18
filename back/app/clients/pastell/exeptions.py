@@ -1,5 +1,6 @@
-from .models.errors import ApiErrorResponse
 from http import HTTPStatus
+
+from .models.errors import ApiErrorResponse
 
 
 class ApiError(Exception):

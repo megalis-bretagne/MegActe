@@ -1,8 +1,12 @@
 from functools import lru_cache
+
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
-import jwt
+
 from config.configuration import Settings
+
+from .exceptions.custom_exceptions import UserNotAdminException
 
 
 @lru_cache
@@ -50,13 +54,35 @@ def validate_token(
             token,
             signing_key.key,
             algorithms=["RS256"],
-            audience=settings.keycloak.client_id,
+            audience=settings.keycloak.valid_audiences,
         )
     except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
+
+
+def _token_roles(payload: dict) -> set[str]:
+    """Extrait les rôles Keycloak d'un JWT (roles realm + rôles par client)."""
+    roles: set[str] = set()
+    realm_access = payload.get("realm_access") or {}
+    roles.update(realm_access.get("roles", []))
+    for client_access in (payload.get("resource_access") or {}).values():
+        roles.update(client_access.get("roles", []))
+    return roles
+
+
+def require_admin(payload: dict = Depends(validate_token)) -> dict:
+    """Restreint un endpoint à un utilisateur/service possédant le rôle admin Keycloak.
+
+    Raises:
+        UserNotAdminException: si le rôle admin (`settings.keycloak.admin_role`)
+            n'est pas présent dans le token.
+    """
+    if settings.keycloak.admin_role not in _token_roles(payload):
+        raise UserNotAdminException()
+    return payload
 
 
 # Fonction pour obtenir les informations de l'utilisateur à partir du payload decodé

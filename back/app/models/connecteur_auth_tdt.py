@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column, String, UniqueConstraint
+from sqlalchemy import Column, Integer, String, UniqueConstraint
 
 from ..utils import PasswordUtils
 from .base import Base  # Assurez-vous de pointer vers la base SQLAlchemy
@@ -22,8 +22,9 @@ class ConnecteurAuthTdt(Base):
     login_tech_tdt = Column(String, nullable=False)
     pwd_tech_tdt = Column(String, nullable=False)
     pwd_key = Column(String, nullable=False)
+    s2low_authority_id = Column(Integer, nullable=True)
 
-    UniqueConstraint("id_e", "flux", name="id_e_flux")
+    __table_args__ = (UniqueConstraint("id_e", "flux", name="id_e_flux"),)
 
     def get_decrypt_password(self) -> str:
         """Retourne le mot de passe non crypté

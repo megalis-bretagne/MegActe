@@ -1,13 +1,33 @@
-from pydantic import TypeAdapter
+import time
+from urllib.parse import quote, urlsplit
+
 import requests
+from pydantic import TypeAdapter
+from requests.adapters import HTTPAdapter
+from requests.auth import AuthBase
 
-from ..models.user_info import UserInfo
-from ..models.config import Config
 from ..handlers import call_handler
-from requests.auth import HTTPBasicAuth
+from ..models.config import Config
+from ..models.user_info import UserInfo
 
+__all__ = ("ApiPastell", "entite_api")
 
-__all__ = ("entite_api", "ApiPastell")
+# Cache du nombre de documents par entité, en dehors de la classe : un ApiPastell
+# est recréé à chaque requête (client = Depends(get_or_make_api_pastell)), donc un
+# cache sur self ne survivrait pas d'une page à l'autre. TTL court car le total peut
+# changer (création/suppression de document), mais évite de refaire l'appel Pastell
+# à chaque clic sur "page suivante" d'une même liste.
+_COUNT_CACHE_TTL_S = 30
+_count_documents_cache: dict[tuple[int, str | None], tuple[float, int]] = {}
+
+# Session HTTP partagée à l'échelle du process, hors de la classe pour la même raison
+# que le cache ci-dessus (ApiPastell recréé à chaque requête). Réutilise les connexions
+# TCP/TLS déjà établies vers Pastell au lieu d'en ouvrir une nouvelle à chaque appel
+# (perform_get/post/...), ce qui évite une poignée de main TLS à chaque requête.
+_session = requests.Session()
+# Aligné sur le pool de threads partagé (document_service._EXECUTOR, 32 workers)
+_adapter = HTTPAdapter(pool_maxsize=32)
+_session.mount("https://", _adapter)
 
 
 class ApiPastell:
@@ -15,46 +35,58 @@ class ApiPastell:
     Client pour Pastell V4
     """
 
-    def __init__(self, conf: Config, auth: HTTPBasicAuth = None) -> None:
+    def __init__(self, conf: Config, auth: AuthBase = None) -> None:
         self._config = conf
         self._timeout_s = conf.timeout
         self._version = "v4"
         self._auth = auth
 
-    def auth(self, auth: HTTPBasicAuth):
+    def auth(self, auth: AuthBase):
         self._auth = auth
 
-    def perform_get(self, url, auth: HTTPBasicAuth = None, **kwagrs):
+    def with_auth(self, auth: AuthBase) -> ApiPastell:
+        """Retourne un nouveau client Pastell avec une authentification différente.
+        Utilisé uniquement à l'enrôlement : création du token via login / mot de passe
+        temporaire.
+        """
+        return ApiPastell(self._config, auth)
+
+    def perform_get(self, url, auth: AuthBase = None, **kwagrs):
         return self._perform_request("GET", url, auth=auth, **kwagrs)
 
-    def perform_patch(self, url, data, auth: HTTPBasicAuth = None):
+    def perform_patch(self, url, data, auth: AuthBase = None):
         return self._perform_request("PATCH", url, data=data, auth=auth)
 
-    def perform_delete(self, url, auth: HTTPBasicAuth = None):
+    def perform_delete(self, url, auth: AuthBase = None):
         return self._perform_request("DELETE", url, auth=auth)
 
-    def perform_post(self, url, data=None, files=None, auth: HTTPBasicAuth = None):
+    def perform_post(self, url, data=None, files=None, auth: AuthBase = None):
         return self._perform_request("POST", url, data=data, files=files, auth=auth)
 
-    def get_user_by_id_u(self, id_u: int, auth: HTTPBasicAuth = None):
+    def get_user_by_id_u(self, id_u: int, auth: AuthBase = None):
         """Retourne les infos d'un utilisateur
 
         Args:
             id_u (int): identifiant de l'utilisateur
-            auth (HTTPBasicAuth, optional): le contexte utilisateur redéfini
+            auth (AuthBase, optional): le contexte utilisateur redéfini
         """
 
         response = self.perform_get(f"utilisateur/{id_u}", auth)
         return TypeAdapter(UserInfo).validate_python(response)
 
-    def count_documents_by_id_e(self, id_e: int, type_document: str = None, auth: HTTPBasicAuth | None = None):
+    def count_documents_by_id_e(self, id_e: int, type_document: str | None = None, auth: AuthBase | None = None):
         """Retourne le nombre de document sur une entite
 
         Args:
             id_e (int): l'id_e
             type_document (str, optional): possibilité de filtré par le type de flux
-            auth (HTTPBasicAuth, optional): _description_. Defaults to None.
+            auth (AuthBase, optional): _description_. Defaults to None.
         """
+        cache_key = (id_e, type_document)
+        cached = _count_documents_cache.get(cache_key)
+        if cached and (time.monotonic() - cached[0]) < _COUNT_CACHE_TTL_S:
+            return cached[1]
+
         query_param = {"id_e": id_e}
         # Dictionnaire pour renommer les clés
         if type_document:
@@ -64,15 +96,17 @@ class ApiPastell:
         total = 0
 
         if len(count_response) == 0:
+            _count_documents_cache[cache_key] = (time.monotonic(), 0)
             return 0
 
-        for _, value in count_response[str(id_e)]["flux"].items():
+        for value in count_response[str(id_e)]["flux"].values():
             if not isinstance(value, list):
                 try:
                     total += sum(value.values())
                 except TypeError:  # pour compatibilité pastell v3
                     total += sum(int(x) for x in value.values())
 
+        _count_documents_cache[cache_key] = (time.monotonic(), total)
         return total
 
     @call_handler
@@ -83,13 +117,21 @@ class ApiPastell:
         data=None,
         query_params=None,
         files=None,
-        auth: HTTPBasicAuth = None,
+        auth: AuthBase = None,
     ):
         """
         Méthode générique pour effectuer des requêtes HTTP.
         """
-        full_url = f"{self._config.base_url}/{url}"
-        response = requests.request(
+        parsed_url = urlsplit(url)
+        if parsed_url.scheme or parsed_url.netloc or not url:
+            raise ValueError("Le chemin Pastell doit être une URL relative")
+        path = parsed_url.path.lstrip("/")
+        path_parts = path.split("/")
+        if ".." in path_parts or "" in path_parts:
+            raise ValueError("Le chemin Pastell contient un segment invalide")
+        safe_path = quote(path, safe="/")
+        full_url = f"{self._config.base_url}/{safe_path}"
+        response = _session.request(
             method=method,
             url=full_url,
             data=data,

@@ -1,8 +1,12 @@
+import logging
+
+from requests.auth import HTTPBasicAuth
+
 from ..schemas.document_schemas import DocumentDetail
 from ..services.connecteur_service import ConnecteurTdtService
 from . import get_or_make_api_s2low
-import logging
-from requests.auth import HTTPBasicAuth
+
+logger = logging.getLogger(__name__)
 
 
 class TdtService:
@@ -24,11 +28,11 @@ class TdtService:
         Returns:
             str: l'url de télétransmission
         """
-        logging.debug("Demande de teletransmission")
+        logger.debug("Demande de teletransmission")
 
         # Avoir en paramètre le Document (id,e, flux, id tedetis_transaction_id)
         co = self.connecteur_service.get_connecteur(doc.info.type, id_e)
-        logging.debug("Récupératoin du connecteur")
+        logger.debug("Récupératoin du connecteur")
         # Récupérer le connecteur associé avec le login_tech et le password
         # Faire appel à GetNoune de s2low pour récupérer un nounce
         #

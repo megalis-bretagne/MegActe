@@ -1,0 +1,101 @@
+name: Build Megacte app
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend build, lint, test and SonarCloud
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: back
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: latest
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Ruff check
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: Run tests with coverage
+        run: uv run pytest --cov=app --cov-report=xml:coverage.xml --cov-report=term
+
+      - name: Check coverage report
+        run: test -s coverage.xml
+
+      - name: SonarCloud scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        with:
+          projectBaseDir: back
+          args: -Dsonar.python.coverage.reportPaths=coverage.xml
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_BACKEND }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+  frontend:
+    name: Nuxt build, lint, typecheck and SonarCloud
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: nuxt-web-app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: nuxt-web-app
+        run: npm ci
+
+      - name: Lint
+        working-directory: nuxt-web-app
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: nuxt-web-app
+        run: npm run typecheck
+
+      - name: Run unit tests with coverage
+        working-directory: nuxt-web-app
+        run: npm run test:coverage
+
+      - name: Check frontend coverage report
+        working-directory: nuxt-web-app
+        run: test -s coverage/lcov.info
+
+      - name: Build
+        working-directory: nuxt-web-app
+        run: npm run build
+
+      - name: SonarCloud scan
+        uses: SonarSource/sonarqube-scan-action@v6
+        with:
+          projectBaseDir: nuxt-web-app
+          args: -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_FRONTEND }}
+          SONAR_HOST_URL: https://sonarcloud.io
