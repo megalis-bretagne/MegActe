@@ -3,12 +3,10 @@ updates:
   # Mise à jour des dépendances Python
   - package-ecosystem: "pip"
     directory: "/back"
+    target-branch: "dev"
     open-pull-requests-limit: 5
     schedule:
       interval: "weekly"
-    ignore: 
-      - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
     labels:
       - "dependencies"
       - "python"
@@ -17,23 +15,48 @@ updates:
 
   # Mise à jour des dépendances npm
   - package-ecosystem: "npm"
-    directory: "/web-app"
+    directory: "/nuxt-web-app"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
     labels:
       - "dependencies"
-      - "javascript"
+      - "typescript"
       - "frontend"
       - "dependabot"
-    ignore: 
-      - dependency-name: "*"
-        update-types: ["version-update:semver-patch"]
     groups:
-      angular:
+      nuxt:
         patterns:
-          - "angular*"
-          - "@angular*"
+          - "nuxt"
+          - "@nuxt/*"
+      vue:
+        patterns:
+          - "vue"
+          - "vue-*"
+      primevue:
+        patterns:
+          - "primevue"
+          - "@primeuix/*"
+          - "primeicons"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "tailwindcss-*"
       typescript:
         patterns:
-          - "@typescript*"
+          - "typescript"
+          - "@types/*"
+
+  # Mise à jour des actions GitHub
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    target-branch: "dev"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "ci"
+      - "dependabot"
