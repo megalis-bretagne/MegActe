@@ -43,7 +43,7 @@
     "happy-dom": "^21.0.4",
     "playwright-core": "^1.65.0",
     "prettier": "3.8.3",
-    "tailwindcss": "^3.4.19",
+    "tailwindcss": "^4.3.5",
     "typecheck": "^0.1.2",
     "typescript": "^6.0.3",
     "vitest": "^5.1.0"
