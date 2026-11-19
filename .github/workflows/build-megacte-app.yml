@@ -43,7 +43,7 @@ jobs:
         run: test -s coverage.xml
 
       - name: SonarCloud scan
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarqube-scan-action@v8
         with:
           projectBaseDir: back
           args: -Dsonar.python.coverage.reportPaths=coverage.xml
@@ -92,7 +92,7 @@ jobs:
         run: npm run build
 
       - name: SonarCloud scan
-        uses: SonarSource/sonarqube-scan-action@v6
+        uses: SonarSource/sonarqube-scan-action@v8
         with:
           projectBaseDir: nuxt-web-app
           args: -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
