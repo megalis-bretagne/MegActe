@@ -2,6 +2,12 @@ name: Build Megacte app
 
 on:
   workflow_call:
+    inputs:
+      run-sonar:
+        description: Run SonarCloud analysis
+        required: false
+        default: true
+        type: boolean
 
 permissions:
   contents: read
@@ -43,6 +49,7 @@ jobs:
         run: test -s coverage.xml
 
       - name: SonarCloud scan
+        if: inputs.run-sonar
         uses: SonarSource/sonarqube-scan-action@v8
         with:
           projectBaseDir: back
@@ -92,6 +99,7 @@ jobs:
         run: npm run build
 
       - name: SonarCloud scan
+        if: inputs.run-sonar
         uses: SonarSource/sonarqube-scan-action@v8
         with:
           projectBaseDir: nuxt-web-app
