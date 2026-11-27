@@ -55,7 +55,7 @@ class MegacteSyncError(Exception):
     """Erreur applicative du script (message affiché en sortie d'erreur)."""
 
 
-def validate_service_url(value: str, label: str) -> str:
+def validate_service_url(value: str, label: str, *, allow_path: bool = False) -> str:
     """Valide une URL de service avant toute requête réseau."""
     parsed = urlsplit(value)
     if parsed.scheme not in {"https", "http"} or not parsed.hostname:
@@ -64,7 +64,7 @@ def validate_service_url(value: str, label: str) -> str:
         raise MegacteSyncError(f"{label}: URL contenant des composants interdits")
     if parsed.scheme != "https" and parsed.hostname not in ALLOWED_LOCAL_HOSTS:
         raise MegacteSyncError(f"{label}: HTTPS requis hors environnement local")
-    if parsed.path not in {"", "/"}:
+    if not allow_path and parsed.path not in {"", "/"}:
         raise MegacteSyncError(f"{label}: le chemin n'est pas autorisé")
     return value.rstrip("/")
 
@@ -86,7 +86,7 @@ def fetch_access_token(creds: OidcCredentials, timeout: int = DEFAULT_TIMEOUT) -
     }
     if creds.scope:
         data["scope"] = creds.scope
-    token_url = validate_service_url(creds.token_url, "URL token")
+    token_url = validate_service_url(creds.token_url, "URL token", allow_path=True)
     try:
         response = requests.post(token_url, data=data, timeout=timeout)
     except requests.RequestException as exc:
@@ -200,7 +200,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         api_url = validate_service_url(os.environ[ENV_API_URL], "URL API MegActe")
-        token_url = validate_service_url(args.token_url, "URL token")
+        token_url = validate_service_url(args.token_url, "URL token", allow_path=True)
     except MegacteSyncError as exc:
         parser.error(str(exc))
 
