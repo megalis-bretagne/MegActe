@@ -1,7 +1,7 @@
 version: 2
 updates:
   # Mise à jour des dépendances Python
-  - package-ecosystem: "pip"
+  - package-ecosystem: "uv"
     directory: "/back"
     target-branch: "dev"
     open-pull-requests-limit: 5
@@ -20,6 +20,10 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
     labels:
       - "dependencies"
       - "typescript"
