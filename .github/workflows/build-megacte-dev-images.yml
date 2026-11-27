@@ -1,0 +1,21 @@
+name: Build Megacte development images
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - VERSION
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-images-dev:
+    name: Build and push Megacte development images
+    uses: ./.github/workflows/build-megacte-images.yml
+    with:
+      push-images: true
+      tag-prefix: dev-
+    secrets: inherit

@@ -8,10 +8,18 @@ on:
         required: false
         default: false
         type: boolean
+      tag-prefix:
+        description: Prefix for image tags
+        required: false
+        default: ""
+        type: string
     outputs:
       version:
         description: Validated application version
         value: ${{ jobs.metadata.outputs.version }}
+      image-tag:
+        description: Published image tag
+        value: ${{ jobs.metadata.outputs.image-tag }}
 
 permissions:
   contents: read
@@ -27,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
+      image-tag: ${{ steps.version.outputs.image-tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -37,8 +46,8 @@ jobs:
         run: |
           set -euo pipefail
           version="$(tr -d '\r\n' < VERSION)"
-          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-            echo "VERSION must contain a strict SemVer value such as 0.3.1" >&2
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+            echo "VERSION must contain a valid SemVer value such as 0.3.1 or 0.3.1-rc.1" >&2
             exit 1
           fi
           if [[ "$(wc -l < VERSION)" -gt 1 ]]; then
@@ -46,6 +55,7 @@ jobs:
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "image-tag=${{ inputs['tag-prefix'] }}$version" >> "$GITHUB_OUTPUT"
 
   build-backend:
     name: Build and scan backend image
@@ -70,7 +80,7 @@ jobs:
           file: ./back/Dockerfile-hardened
           load: true
           push: false
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-back:${{ needs.metadata.outputs.version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-back:${{ needs.metadata.outputs.image-tag }}
 
       - name: Push backend image
         if: inputs.push-images
@@ -79,7 +89,7 @@ jobs:
           context: ./back
           file: ./back/Dockerfile-hardened
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-back:${{ needs.metadata.outputs.version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-back:${{ needs.metadata.outputs.image-tag }}
 
   build-frontend:
     name: Build and scan frontend image
@@ -104,7 +114,7 @@ jobs:
           file: ./nuxt-web-app/Dockerfile-hardened
           load: true
           push: false
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-web:${{ needs.metadata.outputs.version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-web:${{ needs.metadata.outputs.image-tag }}
 
       - name: Push frontend image
         if: inputs.push-images
@@ -113,7 +123,7 @@ jobs:
           context: .
           file: ./nuxt-web-app/Dockerfile-hardened
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-web:${{ needs.metadata.outputs.version }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAMESPACE }}/megacte-web:${{ needs.metadata.outputs.image-tag }}
 
   scan-backend:
     name: Scan backend image with Trivy
