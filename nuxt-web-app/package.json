@@ -18,7 +18,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@peterbud/nuxt-query": "^1.8.0",
+    "@peterbud/nuxt-query": "^1.13.0",
     "@primeuix/themes": "^2.0.3",
     "chart.js": "^4.5.1",
     "next-auth": "^4.21.1",
