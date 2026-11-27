@@ -93,7 +93,8 @@ export function useDocumentSave(
               const err = e as FetchError;
               throw new Error(
                 err?.data?.detail ??
-                  `Erreur lors de l'upload du fichier (${err?.status ?? err?.response?.status ?? "?"})`
+                  `Erreur lors de l'upload du fichier (${err?.status ?? err?.response?.status ?? "?"})`,
+                { cause: e }
               );
             }
 
@@ -153,7 +154,8 @@ export function useDocumentSave(
           const err = e as FetchError;
           const detail = err?.data?.detail ?? err?.message;
           throw new Error(
-            `Document enregistré, mais l'envoi a échoué${detail ? ` : ${detail}` : ""}.`
+            `Document enregistré, mais l'envoi a échoué${detail ? ` : ${detail}` : ""}.`,
+            { cause: e }
           );
         }
       }
